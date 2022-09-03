@@ -21,6 +21,9 @@
       "playwright",
     ],
     "paths": {
+      "*": [
+        "node_modules/"
+      ],
       "@/*": [
         "src/*"
       ]
@@ -33,7 +36,10 @@
     ]
   },
   "typeRoots": [
+    "./node_modules",
+    "./node_modules/@types",
     "./src/types/declarations",
+    "./node_modules/@nodert-win10-20h1/windows.media/lib"
   ],
   "include": [
     "src/**/*.ts",
