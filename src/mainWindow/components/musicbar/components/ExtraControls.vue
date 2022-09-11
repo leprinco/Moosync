@@ -32,7 +32,7 @@
     <b-col cols="auto">
       <VolumeIcon
         class="volume-icon align-self-center"
-        @click.native="volumeIconClick"
+        @click.native="muteToggle"
         :cut="volume == 0"
         @mouseenter.native="handleVolumeIconMouseEnter"
         @mouseleave.native="handleVolumeIconMouseLeave"
@@ -45,12 +45,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component } from 'vue-property-decorator'
 import VolumeIcon from '@/icons/VolumeIcon.vue'
 import ExpandIcon from '@/icons/ExpandIcon.vue'
-import { vxm } from '@/mainWindow/store'
 import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue'
 import { bus } from '@/mainWindow/main'
+import { mixins } from 'vue-class-component'
+import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 
 @Component({
   components: {
@@ -59,34 +60,11 @@ import { bus } from '@/mainWindow/main'
     Timestamp
   }
 })
-export default class ExtraControls extends Vue {
+export default class ExtraControls extends mixins(PlayerControls) {
   private sliderOpen = false
-  private oldVolume = 50
 
   private volumeIconHover = false
   private showVolume = false
-
-  get volume() {
-    return vxm.player.volume
-  }
-
-  set volume(value: number) {
-    // Fuck javascript floating precision
-    value = Math.floor(value)
-    vxm.player.volume = value
-    if (value != 0) {
-      this.oldVolume = value
-    }
-  }
-
-  private volumeIconClick() {
-    if (this.volume !== 0) {
-      this.oldVolume = this.volume
-      this.volume = 0
-    } else {
-      this.volume = this.oldVolume
-    }
-  }
 
   private emitToggleSlider() {
     bus.$emit('onToggleSlider', !this.sliderOpen)

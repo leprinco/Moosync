@@ -40,6 +40,7 @@ import SongInfoModal from './components/modals/SongInfoModal.vue'
 import { vxm } from './store'
 import { bus } from './main'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
+import KeyHandlerMixin from '@/utils/ui/mixins/KeyHandlerMixin'
 import { v1 } from 'uuid'
 import { EventBus } from '@/utils/main/ipc/constants'
 import OAuthModal from './components/modals/OAuthModal.vue'
@@ -61,7 +62,7 @@ import { i18n } from './plugins/i18n'
     EntityInfoModal
   }
 })
-export default class App extends mixins(ThemeHandler, PlayerControls) {
+export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandlerMixin) {
   created() {
     this.registerNotifier()
     this.setLanguage()
@@ -109,20 +110,6 @@ export default class App extends mixins(ThemeHandler, PlayerControls) {
     })
 
     window.UpdateUtils.check()
-  }
-
-  private registerKeyboardHotkeys() {
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'F11') {
-        window.WindowUtils.toggleDevTools(true)
-      } else if (e.code === 'F5') {
-        location.reload()
-      }
-
-      if (e.code === 'F1') {
-        window.WindowUtils.openExternal('https://github.com/Moosync/Moosync#readme')
-      }
-    })
   }
 
   private watchPlaylistUpdates() {

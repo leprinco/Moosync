@@ -62,6 +62,12 @@ export default class PlayerControls extends Vue {
     vxm.player.playerState = 'PAUSED'
   }
 
+  public togglePlay() {
+    if (!vxm.player.loading) {
+      vxm.player.playerState = vxm.player.playerState === 'PLAYING' ? 'PAUSED' : 'PLAYING'
+    }
+  }
+
   public shuffle() {
     vxm.player.shuffle()
     this.$toasted.show('Shuffled', {
@@ -101,7 +107,43 @@ export default class PlayerControls extends Vue {
     return vxm.player.Repeat
   }
 
+  set repeat(val: boolean) {
+    vxm.player.Repeat = val
+  }
+
   public toggleRepeat() {
-    vxm.player.Repeat = !this.repeat
+    this.repeat = !this.repeat
+  }
+
+  private oldVolume = 50
+
+  get volume() {
+    return vxm.player.volume
+  }
+
+  set volume(value: number) {
+    // Fuck javascript floating precision
+    value = Math.floor(value)
+    vxm.player.volume = value
+    if (value != 0) {
+      this.oldVolume = value
+    }
+  }
+
+  public muteToggle() {
+    if (this.volume !== 0) {
+      this.mute()
+    } else {
+      this.unmute()
+    }
+  }
+
+  public mute() {
+    this.oldVolume = this.volume
+    this.volume = 0
+  }
+
+  public unmute() {
+    this.volume = this.oldVolume
   }
 }
