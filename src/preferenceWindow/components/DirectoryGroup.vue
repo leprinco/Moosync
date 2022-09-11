@@ -42,7 +42,7 @@
           :class="{ 'no-checkbox-margin': !enableCheckbox, 'ml-3': enableCheckbox }"
           class="justify-content-start"
         >
-          <div class="item-text text-truncate">{{ path.path }}</div>
+          <div class="item-text text-truncate" :title="path.path">{{ path.path }}</div>
         </b-col>
         <b-col cols="auto" align-self="center" class="ml-auto">
           <div class="remove-button w-100" @click="removePath(index)">{{ $t('settings.paths.remove') }}</div>

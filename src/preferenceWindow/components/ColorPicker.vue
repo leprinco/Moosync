@@ -9,7 +9,7 @@
 
 <template>
   <tr height="60">
-    <td class="color-title pr-5">
+    <td class="color-title pr-5" :title="title">
       {{ title }}
     </td>
     <td class="pr-4" ref="parent">

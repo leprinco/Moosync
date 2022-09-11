@@ -19,7 +19,7 @@
         />
       </b-col>
       <b-col col md="8" lg="9" align-self="center" class="ml-3 justify-content-start">
-        <div class="item-text text-truncate">{{ checkbox.title }}</div>
+        <div class="item-text text-truncate" :title="checkbox.title">{{ checkbox.title }}</div>
       </b-col>
     </b-row>
   </b-container>
