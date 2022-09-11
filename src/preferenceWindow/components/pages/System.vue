@@ -126,7 +126,7 @@
           <Dropdown
             class="mt-5"
             :defaultValue="languageDropdown"
-            title="$t('settings.system.language')"
+            :title="$t('settings.system.language')"
             :tooltip="$t('settings.system.language_tooltip')"
             prefKey="system_language"
             :onValueChange="onLanguageChanged"
