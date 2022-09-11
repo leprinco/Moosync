@@ -67,12 +67,18 @@ export default class ExtraControls extends mixins(PlayerControls) {
   private showVolume = false
 
   private emitToggleSlider() {
-    bus.$emit('onToggleSlider', !this.sliderOpen)
+    bus.$emit('onToggleSlider')
   }
 
   mounted() {
-    bus.$on('onToggleSlider', () => {
-      this.sliderOpen = !this.sliderOpen
+    bus.$on('onToggleSlider', (val: boolean) => {
+      if (typeof val !== 'undefined') {
+        this.sliderOpen = val
+      } else {
+        this.sliderOpen = !this.sliderOpen
+      }
+
+      bus.$emit('onToggleSliderWindow', this.sliderOpen)
     })
   }
 

@@ -161,7 +161,7 @@ export default class MusicBar extends mixins(ImgLoader) {
 
   async mounted() {
     this.hasFrame = await window.WindowUtils.hasFrame()
-    bus.$on('onToggleSlider', this.toggleSlider)
+    bus.$on('onToggleSliderWindow', this.toggleSlider)
     this.iconType = (await this.getIconType()) ?? ''
   }
 }

@@ -10,6 +10,7 @@
 import { Component } from 'vue-property-decorator'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import { mixins } from 'vue-class-component'
+import { bus } from '@/mainWindow/main'
 
 const enum HotkeyEvents {
   PLAY,
@@ -23,6 +24,9 @@ const enum HotkeyEvents {
   REPEAT_ACTIVE,
   REPEAT_INACTIVE,
   REPEAT_TOGGLE,
+  QUEUE_OPEN,
+  QUEUE_CLOSE,
+  QUEUE_TOGGLE,
   RELOAD_PAGE,
   DEVTOOLS_TOGGLE,
   HELP
@@ -69,6 +73,10 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
     {
       key: [['F1']],
       value: HotkeyEvents.HELP
+    },
+    {
+      key: [['Escape']],
+      value: HotkeyEvents.QUEUE_CLOSE
     }
   ])
 
@@ -119,6 +127,15 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
         break
       case HotkeyEvents.HELP:
         window.WindowUtils.openExternal('https://github.com/Moosync/Moosync#readme')
+        break
+      case HotkeyEvents.QUEUE_CLOSE:
+        bus.$emit('onToggleSlider', false)
+        break
+      case HotkeyEvents.QUEUE_OPEN:
+        bus.$emit('onToggleSlider', true)
+        break
+      case HotkeyEvents.QUEUE_TOGGLE:
+        bus.$emit('onToggleSlider')
         break
     }
   }
