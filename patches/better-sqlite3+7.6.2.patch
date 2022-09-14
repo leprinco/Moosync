@@ -15,15 +15,33 @@ index 59fa0a8..fe8d144 100644
        },
        'conditions': [
          ['OS=="linux"', {
-diff --git a/node_modules/better-sqlite3/build/Release/better_sqlite3.node b/node_modules/better-sqlite3/build/Release/better_sqlite3.node
-deleted file mode 100755
-index 5df7544..0000000
-Binary files a/node_modules/better-sqlite3/build/Release/better_sqlite3.node and /dev/null differ
 diff --git a/node_modules/better-sqlite3/src/better_sqlite3.cpp b/node_modules/better-sqlite3/src/better_sqlite3.cpp
-index 777c8b8..0cfaf51 100644
+index 777c8b8..e11e432 100644
 --- a/node_modules/better-sqlite3/src/better_sqlite3.cpp
 +++ b/node_modules/better-sqlite3/src/better_sqlite3.cpp
-@@ -104,8 +104,7 @@ void SetPrototypeGetter (v8::Isolate * isolate, v8::Local <v8::External> data, v
+@@ -2,6 +2,21 @@
+ //
+ 
+ #include "better_sqlite3.hpp"
++#line 39 "./src/util/binder.lzz"
++	static bool IsPlainObject(v8::Isolate* isolate, v8::Local<v8::Object> obj) {
++		v8::Local<v8::Value> proto = obj->GetPrototype();
++
++		#if defined NODE_MODULE_VERSION && NODE_MODULE_VERSION < 93
++		v8::Local<v8::Context> ctx = obj->CreationContext();
++		#else
++		v8::Local<v8::Context> ctx = obj->GetCreationContext().ToLocalChecked();
++		#endif
++
++		ctx->Enter();
++		v8::Local<v8::Value> baseProto = v8::Object::New(isolate)->GetPrototype();
++		ctx->Exit();
++		return proto->StrictEquals(baseProto) || proto->StrictEquals(v8::Null(isolate));
++	}
+ #line 67 "./src/better_sqlite3.lzz"
+ NODE_MODULE_INIT(/* exports, context */) {
+ 	v8::Isolate* isolate = context->GetIsolate();
+@@ -104,8 +119,7 @@ void SetPrototypeGetter (v8::Isolate * isolate, v8::Local <v8::External> data, v
                  0,
                  data,
                  v8::AccessControl::DEFAULT,
@@ -33,12 +51,134 @@ index 777c8b8..0cfaf51 100644
          );
  }
  #line 4 "./src/util/constants.lzz"
-@@ -1949,7 +1948,7 @@ bool Binder::IsPlainObject (v8::Isolate * isolate, v8::Local <v8::Object> obj)
- #line 35 "./src/util/binder.lzz"
-                                                                                    {
-                 v8::Local<v8::Value> proto = obj->GetPrototype();
+@@ -1944,20 +1958,9 @@ bool Binder::Bind (v8::FunctionCallbackInfo <v8 :: Value> const & info, int argc
+                 }
+                 return success;
+ }
+-#line 35 "./src/util/binder.lzz"
+-bool Binder::IsPlainObject (v8::Isolate * isolate, v8::Local <v8::Object> obj)
+-#line 35 "./src/util/binder.lzz"
+-                                                                                   {
+-                v8::Local<v8::Value> proto = obj->GetPrototype();
 -                v8::Local<v8::Context> ctx = obj->CreationContext();
-+                v8::Local<v8::Context> ctx = obj->GetCreationContext().ToLocalChecked();
-                 ctx->Enter();
-                 v8::Local<v8::Value> baseProto = v8::Object::New(isolate)->GetPrototype();
-                 ctx->Exit();
+-                ctx->Enter();
+-                v8::Local<v8::Value> baseProto = v8::Object::New(isolate)->GetPrototype();
+-                ctx->Exit();
+-                return proto->StrictEquals(baseProto) || proto->StrictEquals(v8::Null(isolate));
+-}
+-#line 44 "./src/util/binder.lzz"
++#line 54 "./src/util/binder.lzz"
+ void Binder::Fail (void (* Throw) (char const *), char const * message)
+-#line 44 "./src/util/binder.lzz"
++#line 54 "./src/util/binder.lzz"
+                                                                      {
+                 assert(success == true);
+                 assert((Throw == NULL) == (message == NULL));
+@@ -1965,16 +1968,16 @@ void Binder::Fail (void (* Throw) (char const *), char const * message)
+                 if (Throw) Throw(message);
+                 success = false;
+ }
+-#line 52 "./src/util/binder.lzz"
++#line 62 "./src/util/binder.lzz"
+ int Binder::NextAnonIndex ()
+-#line 52 "./src/util/binder.lzz"
++#line 62 "./src/util/binder.lzz"
+                             {
+                 while (sqlite3_bind_parameter_name(handle, ++anon_index) != NULL) {}
+                 return anon_index;
+ }
+-#line 58 "./src/util/binder.lzz"
++#line 68 "./src/util/binder.lzz"
+ void Binder::BindValue (v8::Isolate * isolate, v8::Local <v8::Value> value, int index)
+-#line 58 "./src/util/binder.lzz"
++#line 68 "./src/util/binder.lzz"
+                                                                                     {
+                 int status = Data::BindValueFromJS(isolate, handle, index, value);
+                 if (status != SQLITE_OK) {
+@@ -1993,9 +1996,9 @@ void Binder::BindValue (v8::Isolate * isolate, v8::Local <v8::Value> value, int
+                         assert(false);
+                 }
+ }
+-#line 79 "./src/util/binder.lzz"
++#line 89 "./src/util/binder.lzz"
+ int Binder::BindArray (v8::Isolate * isolate, v8::Local <v8::Array> arr)
+-#line 79 "./src/util/binder.lzz"
++#line 89 "./src/util/binder.lzz"
+                                                                       {
+                 v8 :: Local < v8 :: Context > ctx = isolate -> GetCurrentContext ( ) ;
+                 uint32_t length = arr->Length();
+@@ -2017,9 +2020,9 @@ int Binder::BindArray (v8::Isolate * isolate, v8::Local <v8::Array> arr)
+                 }
+                 return len;
+ }
+-#line 105 "./src/util/binder.lzz"
++#line 115 "./src/util/binder.lzz"
+ int Binder::BindObject (v8::Isolate * isolate, v8::Local <v8::Object> obj, Statement * stmt)
+-#line 105 "./src/util/binder.lzz"
++#line 115 "./src/util/binder.lzz"
+                                                                                          {
+                 v8 :: Local < v8 :: Context > ctx = isolate -> GetCurrentContext ( ) ;
+                 BindMap* bind_map = stmt->GetBindMap(isolate);
+@@ -2056,9 +2059,9 @@ int Binder::BindObject (v8::Isolate * isolate, v8::Local <v8::Object> obj, State
+ 
+                 return len;
+ }
+-#line 149 "./src/util/binder.lzz"
++#line 159 "./src/util/binder.lzz"
+ Binder::Result Binder::BindArgs (v8::FunctionCallbackInfo <v8 :: Value> const & info, int argc, Statement * stmt)
+-#line 149 "./src/util/binder.lzz"
++#line 159 "./src/util/binder.lzz"
+                                                                         {
+                 v8 :: Isolate * isolate = info . GetIsolate ( ) ;
+                 int count = 0;
+diff --git a/node_modules/better-sqlite3/src/better_sqlite3.hpp b/node_modules/better-sqlite3/src/better_sqlite3.hpp
+index 5d25ee9..1e7cd19 100644
+--- a/node_modules/better-sqlite3/src/better_sqlite3.hpp
++++ b/node_modules/better-sqlite3/src/better_sqlite3.hpp
+@@ -18,6 +18,8 @@
+ #include <node_buffer.h>
+ #line 31 "./src/util/macros.lzz"
+ template <class T> using CopyablePersistent = v8::Persistent<T, v8::CopyablePersistentTraits<T>>;
++#line 36 "./src/util/binder.lzz"
++	static bool IsPlainObject(v8::Isolate* isolate, v8::Local<v8::Object> obj);
+ #define LZZ_INLINE inline
+ #line 16 "./src/util/macros.lzz"
+ v8::Local <v8::String> StringFromUtf8 (v8::Isolate * isolate, char const * data, int length);
+@@ -752,27 +754,25 @@ private:
+ #line 32 "./src/util/binder.lzz"
+     bool bound_object;
+   };
+-#line 35 "./src/util/binder.lzz"
+-  static bool IsPlainObject (v8::Isolate * isolate, v8::Local <v8::Object> obj);
+-#line 44 "./src/util/binder.lzz"
++#line 54 "./src/util/binder.lzz"
+   void Fail (void (* Throw) (char const *), char const * message);
+-#line 52 "./src/util/binder.lzz"
++#line 62 "./src/util/binder.lzz"
+   int NextAnonIndex ();
+-#line 58 "./src/util/binder.lzz"
++#line 68 "./src/util/binder.lzz"
+   void BindValue (v8::Isolate * isolate, v8::Local <v8::Value> value, int index);
+-#line 79 "./src/util/binder.lzz"
++#line 89 "./src/util/binder.lzz"
+   int BindArray (v8::Isolate * isolate, v8::Local <v8::Array> arr);
+-#line 105 "./src/util/binder.lzz"
++#line 115 "./src/util/binder.lzz"
+   int BindObject (v8::Isolate * isolate, v8::Local <v8::Object> obj, Statement * stmt);
+-#line 149 "./src/util/binder.lzz"
++#line 159 "./src/util/binder.lzz"
+   Result BindArgs (v8::FunctionCallbackInfo <v8 :: Value> const & info, int argc, Statement * stmt);
+-#line 189 "./src/util/binder.lzz"
++#line 199 "./src/util/binder.lzz"
+   sqlite3_stmt * handle;
+-#line 190 "./src/util/binder.lzz"
++#line 200 "./src/util/binder.lzz"
+   int param_count;
+-#line 191 "./src/util/binder.lzz"
++#line 201 "./src/util/binder.lzz"
+   int anon_index;
+-#line 192 "./src/util/binder.lzz"
++#line 202 "./src/util/binder.lzz"
+   bool success;
+ };
+ #line 34 "./src/better_sqlite3.lzz"
