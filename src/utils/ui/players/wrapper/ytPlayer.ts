@@ -150,6 +150,7 @@ export class YTPlayerWrapper implements CustomAudioInstance {
 
     this.instance.addListener(ev, (...args: unknown[]) => {
       if (ev === 'paused' && this.pauseAsStop) {
+        this.pauseAsStop = false
         return
       }
       callback(...args)
