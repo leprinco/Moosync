@@ -186,10 +186,10 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
         this.activePlayerTypes = parsedType
       }
 
-      this.showYTPlayer = this.useEmbed && this.activePlayerTypes === 'YOUTUBE' ? 2 : 0
-
       this.analyserNode = undefined
     }
+
+    this.showYTPlayer = this.useEmbed && this.activePlayerTypes === 'YOUTUBE' ? 2 : 0
 
     return parsedType
   }
