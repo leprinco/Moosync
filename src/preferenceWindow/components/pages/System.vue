@@ -116,6 +116,7 @@
             :title="$t('settings.system.lastfm.client_id')"
             prefKey="lastfm.client_id"
           />
+
           <EditText
             v-if="!lastfmEnvExists"
             :isExtension="false"

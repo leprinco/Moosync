@@ -34,6 +34,8 @@ export class ExtensionPreferenceMixin extends Vue {
   @Prop({ default: 'text' })
   private type!: string
 
+  protected shouldMergeDefaultValues = true
+
   public value: unknown = ''
 
   public loading = false
@@ -61,14 +63,14 @@ export class ExtensionPreferenceMixin extends Vue {
             val = val && JSON.parse(val as string)
           }
 
-          if (typeof val === 'object' && typeof this.defaultValue === 'object') {
+          if (typeof val === 'object' && typeof this.defaultValue === 'object' && this.shouldMergeDefaultValues) {
             if (Array.isArray(this.defaultValue)) {
               this.value = Object.assign([], this.defaultValue, val)
             } else {
               this.value = Object.assign({}, this.defaultValue, val)
             }
           } else {
-            this.value = (val as string) ?? this.defaultValue
+            this.value = val ?? this.defaultValue
           }
         })
         .then(() => (this.loading = false))

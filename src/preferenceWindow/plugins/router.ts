@@ -12,6 +12,7 @@ import NewTheme from '../components/pages/NewTheme.vue'
 import Paths from '@/preferenceWindow/components/pages/Paths.vue'
 import Router from 'vue-router'
 import System from '../components/pages/System.vue'
+import Keybinds from '../components/pages/Keybinds.vue'
 import Themes from '../components/pages/Themes.vue'
 import Vue from 'vue'
 import Logs from '../components/pages/Logs.vue'
@@ -37,6 +38,11 @@ const routes = [
     name: 'system',
     path: '/system',
     component: System
+  },
+  {
+    name: 'keybinds',
+    path: '/keybinds',
+    component: Keybinds
   },
   {
     name: 'themes',

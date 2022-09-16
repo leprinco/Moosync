@@ -72,7 +72,7 @@ export default class Dropdown extends Mixins(ExtensionPreferenceMixin) {
 <style lang="sass">
 .dropdown-button
   background-color: var(--tertiary) !important
-  border-radius: 0 !important
+  border-radius: 8px !important
   border: none !important
   padding: 5px 35px 5px 15px
   text-align: start
@@ -87,7 +87,7 @@ export default class Dropdown extends Mixins(ExtensionPreferenceMixin) {
     margin-left: 10px
 
 .dropdown > ul
-  height: 500px
+  max-height: 500px
   overflow-y: auto
   overflow-x: hidden
   &::-webkit-scrollbar-track

@@ -11,74 +11,19 @@ import { Component } from 'vue-property-decorator'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import { mixins } from 'vue-class-component'
 import { bus } from '@/mainWindow/main'
-
-const enum HotkeyEvents {
-  PLAY,
-  PAUSE,
-  PLAY_TOGGLE,
-  MUTE_ACTIVE,
-  MUTE_INACTIVE,
-  MUTE_TOGGLE,
-  VOLUME_INC,
-  VOLUME_DEC,
-  REPEAT_ACTIVE,
-  REPEAT_INACTIVE,
-  REPEAT_TOGGLE,
-  QUEUE_OPEN,
-  QUEUE_CLOSE,
-  QUEUE_TOGGLE,
-  RELOAD_PAGE,
-  DEVTOOLS_TOGGLE,
-  HELP
-}
-
-type HotkeyPair = {
-  key: KeyboardEvent['code'][][]
-  value: HotkeyEvents
-}
+import { defaultKeybinds, HotkeyEvents } from '@/utils/commonConstants'
 
 @Component
 export default class KeyHandlerMixin extends mixins(PlayerControls) {
   private pressedKeys: Record<string, boolean> = {}
 
-  private keyboardHotKeyMap: readonly HotkeyPair[] = Object.freeze([
-    {
-      key: [['Space']],
-      value: HotkeyEvents.PLAY_TOGGLE
-    },
-    {
-      key: [['ShiftLeft', 'Equal'], ['NumpadAdd']],
-      value: HotkeyEvents.VOLUME_INC
-    },
-    {
-      key: [['NumpadSubtract'], ['Minus']],
-      value: HotkeyEvents.VOLUME_DEC
-    },
-    {
-      key: [['KeyM']],
-      value: HotkeyEvents.MUTE_TOGGLE
-    },
-    {
-      key: [['KeyR']],
-      value: HotkeyEvents.REPEAT_TOGGLE
-    },
-    {
-      key: [['F5']],
-      value: HotkeyEvents.RELOAD_PAGE
-    },
-    {
-      key: [['F11']],
-      value: HotkeyEvents.DEVTOOLS_TOGGLE
-    },
-    {
-      key: [['F1']],
-      value: HotkeyEvents.HELP
-    },
-    {
-      key: [['Escape']],
-      value: HotkeyEvents.QUEUE_CLOSE
-    }
-  ])
+  private keyboardHotKeyMap: readonly HotkeyPair[] = []
+
+  async created() {
+    this.keyboardHotKeyMap = Object.freeze(
+      await window.PreferenceUtils.loadSelective('hotkeys', false, defaultKeybinds)
+    )
+  }
 
   private onlyRequiredKeysPressed(requiredKeys: string[]) {
     return JSON.stringify(Object.keys(this.pressedKeys)) === JSON.stringify(requiredKeys)

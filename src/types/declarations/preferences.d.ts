@@ -28,3 +28,8 @@ interface Preferences {
   themes: { [key: string]: ThemeDetails }
   zoomFactor: string
 }
+
+type HotkeyPair = {
+  key: KeyboardEvent['code'][][]
+  value: import('@/utils/commonConstants').HotkeyEvents
+}

@@ -63,7 +63,7 @@ import { i18n } from './plugins/i18n'
   }
 })
 export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandlerMixin) {
-  created() {
+  async created() {
     this.registerNotifier()
     this.setLanguage()
     this.listenThemeChanges()
