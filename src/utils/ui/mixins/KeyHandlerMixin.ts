@@ -26,6 +26,7 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
   }
 
   private onlyRequiredKeysPressed(requiredKeys: string[]) {
+    console.log(requiredKeys, this.pressedKeys)
     return JSON.stringify(Object.keys(this.pressedKeys)) === JSON.stringify(requiredKeys)
   }
 
@@ -97,8 +98,10 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
 
   protected registerKeyboardHotkeys() {
     document.addEventListener('keydown', (e) => {
-      this.pressedKeys[e.code] = true
-      this.isHotkeyActive()
+      if ((e.target as HTMLElement).tagName !== 'INPUT') {
+        this.pressedKeys[e.code] = true
+        this.isHotkeyActive()
+      }
     })
 
     document.addEventListener('keyup', (e) => {
@@ -106,8 +109,10 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
     })
 
     document.addEventListener('mousedown', (e) => {
-      this.pressedKeys[`Mouse${e.button}`] = true
-      this.isHotkeyActive()
+      if ((e.target as HTMLElement).tagName !== 'INPUT') {
+        this.pressedKeys[`Mouse${e.button}`] = true
+        this.isHotkeyActive()
+      }
     })
 
     document.addEventListener('mouseup', (e) => {
