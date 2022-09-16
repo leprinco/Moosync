@@ -8,79 +8,81 @@
 -->
 
 <template>
-  <b-container class="h-100">
-    <TabCarousel
-      :items="searchItems"
-      :showExtraSongListActions="false"
-      :singleSelectMode="true"
-      :defaultSelected="searchItems[0].key"
-      :showBackgroundOnSelect="true"
-      @onItemsChanged="onProviderChanged"
-    />
+  <div class="w-100 h-100">
+    <b-container class="h-100 w-100">
+      <TabCarousel
+        :items="searchItems"
+        :showExtraSongListActions="false"
+        :singleSelectMode="true"
+        :defaultSelected="searchItems[0].key"
+        :showBackgroundOnSelect="true"
+        @onItemsChanged="onProviderChanged"
+      />
 
-    <TabCarousel
-      :items="subCategories"
-      :showExtraSongListActions="false"
-      :singleSelectMode="true"
-      :defaultSelected="subCategories[0].key"
-      :showBackgroundOnSelect="true"
-      @onItemsChanged="onSubcategoriesChanged"
-    />
+      <TabCarousel
+        :items="subCategories"
+        :showExtraSongListActions="false"
+        :singleSelectMode="true"
+        :defaultSelected="subCategories[0].key"
+        :showBackgroundOnSelect="true"
+        @onItemsChanged="onSubcategoriesChanged"
+      />
 
-    <div v-if="!isFetching">
-      <transition
-        appear
-        name="custom-slide-fade"
-        :enter-active-class="`animate__animated ${transitionEnterActiveClass} animate__fast`"
-        :leave-active-class="`animate__animated ${transitionExitActiveClass} animate__fast`"
-      >
-        <b-row
-          class="scroller-row w-100"
-          v-if="activeSubcategory === 'songs'"
-          :key="`${activeProvider}-${activeSubcategory}`"
+      <div v-if="!isFetching">
+        <transition
+          appear
+          name="custom-slide-fade"
+          :enter-active-class="`animate__animated ${transitionEnterActiveClass} animate__fast`"
+          :leave-active-class="`animate__animated ${transitionExitActiveClass} animate__fast`"
         >
-          <b-col class="h-100">
-            <RecycleScroller
-              class="scroller w-100 h-100"
-              :items="currentSongList"
-              :item-size="94"
-              key-field="_id"
-              :direction="'vertical'"
-            >
-              <template v-slot="{ item, index }">
-                <SongListCompactItem
-                  :item="item"
-                  :index="index"
-                  :selected="selected"
-                  @onRowDoubleClicked="queueSong([arguments[0]])"
-                  @onRowSelected="onRowSelected"
-                  @onRowContext="onRowContext"
-                  @onPlayNowClicked="playTop([arguments[0]])"
-                  @onArtistClicked="gotoArtist"
-                />
-              </template>
-            </RecycleScroller>
-          </b-col>
-        </b-row>
+          <b-row
+            class="scroller-row w-100"
+            v-if="activeSubcategory === 'songs'"
+            :key="`${activeProvider}-${activeSubcategory}`"
+          >
+            <b-col class="h-100">
+              <RecycleScroller
+                class="scroller w-100 h-100"
+                :items="currentSongList"
+                :item-size="94"
+                key-field="_id"
+                :direction="'vertical'"
+              >
+                <template v-slot="{ item, index }">
+                  <SongListCompactItem
+                    :item="item"
+                    :index="index"
+                    :selected="selected"
+                    @onRowDoubleClicked="queueSong([arguments[0]])"
+                    @onRowSelected="onRowSelected"
+                    @onRowContext="onRowContext"
+                    @onPlayNowClicked="playTop([arguments[0]])"
+                    @onArtistClicked="gotoArtist"
+                  />
+                </template>
+              </RecycleScroller>
+            </b-col>
+          </b-row>
 
-        <b-row class="scroller-row w-100" v-else :key="`${activeProvider}-${activeSubcategory}`">
-          <b-col col xl="2" md="3" v-for="entity in currentEntityList" :key="entity[entityKeyField]">
-            <CardView
-              @click.native="onCardClick(entity)"
-              :title="entity[entityTitleField]"
-              :imgSrc="entity[entityImageField]"
-            >
-              <template #defaultCover> <component :is="defaultCoverComponent" /></template>
-            </CardView>
-          </b-col>
-        </b-row>
-      </transition>
-    </div>
-    <div v-else>
-      <b-spinner label="Loading..."></b-spinner>
-    </div>
-    <div v-if="noResults" class="no-results">{{ noResultsReason }}</div>
-  </b-container>
+          <b-row class="scroller-row w-100" v-else :key="`${activeProvider}-${activeSubcategory}`">
+            <b-col col xl="2" md="3" v-for="entity in currentEntityList" :key="entity[entityKeyField]">
+              <CardView
+                @click.native="onCardClick(entity)"
+                :title="entity[entityTitleField]"
+                :imgSrc="entity[entityImageField]"
+              >
+                <template #defaultCover> <component :is="defaultCoverComponent" /></template>
+              </CardView>
+            </b-col>
+          </b-row>
+        </transition>
+      </div>
+      <div v-else>
+        <b-spinner label="Loading..."></b-spinner>
+      </div>
+      <div v-if="noResults" class="no-results">{{ noResultsReason }}</div>
+    </b-container>
+  </div>
 </template>
 
 <script lang="ts">
