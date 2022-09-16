@@ -26,7 +26,6 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
   }
 
   private onlyRequiredKeysPressed(requiredKeys: string[]) {
-    console.log(requiredKeys, this.pressedKeys)
     return JSON.stringify(Object.keys(this.pressedKeys)) === JSON.stringify(requiredKeys)
   }
 
