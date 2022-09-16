@@ -30,3 +30,5 @@ declare namespace NodeJS {
     FanartTVApiKey: string
   }
 }
+
+type ValueOf<T> = T[keyof T]

@@ -10,14 +10,18 @@
 import { IpcEvents, MprisEvents } from './constants'
 import { ButtonEnum, MediaController, PlaybackStateEnum } from 'media-controller'
 import { WindowHandler } from '../windowManager'
+import { nativeImage, ThumbarButton } from 'electron'
+import path from 'path'
 
 export class MprisChannel implements IpcChannelInterface {
   name = IpcEvents.MPRIS
   private controller = new MediaController()
 
+  private buttonState: MprisRequests.ButtonStatus = {}
+
   constructor() {
     this.controller.createPlayer('Moosync')
-    this.onButtonPressed()
+    this.setOnButtonPressed()
   }
 
   handle(event: Electron.IpcMainEvent, request: IpcRequest): void {
@@ -59,9 +63,11 @@ export class MprisChannel implements IpcChannelInterface {
       switch (request.params.state) {
         case 'PLAYING':
           this.controller.setPlaybackStatus(PlaybackStateEnum.Playing)
+          this.handlePlayPauseButtonState(true)
           break
         case 'PAUSED':
           this.controller.setPlaybackStatus(PlaybackStateEnum.Paused)
+          this.handlePlayPauseButtonState(false)
           break
         case 'STOPPED':
           this.controller.setPlaybackStatus(PlaybackStateEnum.Stopped)
@@ -76,23 +82,76 @@ export class MprisChannel implements IpcChannelInterface {
 
   private setButtonStatus(event: Electron.IpcMainEvent, request: IpcRequest<MprisRequests.ButtonStatus>) {
     if (request.params) {
-      const { play, pause, next, prev, shuffle, loop } = request.params
+      this.buttonState = { ...this.buttonState, ...request.params }
+
       this.controller.setButtonStatus({
-        play,
-        pause,
-        next,
-        prev,
-        shuffle,
-        loop
+        play: this.buttonState.play,
+        pause: this.buttonState.pause,
+        next: this.buttonState.next,
+        prev: this.buttonState.prev,
+        shuffle: this.buttonState.shuffle,
+        loop: this.buttonState.loop
       })
+      this.setWindowToolbar()
     }
 
     event.reply(request.responseChannel)
   }
 
-  private onButtonPressed() {
-    this.controller.setButtonPressCallback((args) => {
-      WindowHandler.getWindow(true)?.webContents.send(MprisEvents.ON_BUTTON_PRESSED, args as typeof ButtonEnum)
-    })
+  private handlePlayPauseButtonState(isPlaying: boolean) {
+    this.buttonState['play'] = !isPlaying
+    this.buttonState['pause'] = isPlaying
+
+    this.setWindowToolbar()
+  }
+
+  private onButtonPressed(button: ValueOf<typeof ButtonEnum>) {
+    WindowHandler.getWindow(true)?.webContents.send(MprisEvents.ON_BUTTON_PRESSED, button)
+  }
+
+  private setOnButtonPressed() {
+    this.controller.setButtonPressCallback(this.onButtonPressed.bind(this))
+  }
+
+  private setWindowToolbar() {
+    const window = WindowHandler.getWindow(true)
+
+    if (window) {
+      const buttons: ThumbarButton[] = []
+
+      if (this.buttonState.prev) {
+        buttons.push({
+          icon: nativeImage.createFromPath(path.join(__static, 'prev_track.png')),
+          click: () => this.onButtonPressed(ButtonEnum.Previous),
+          tooltip: 'Previous track'
+        })
+      }
+
+      if (this.buttonState.play) {
+        buttons.push({
+          icon: nativeImage.createFromPath(path.join(__static, 'play.png')),
+          click: () => this.onButtonPressed(ButtonEnum.Play),
+          tooltip: 'Play'
+        })
+      }
+
+      if (this.buttonState.pause) {
+        buttons.push({
+          icon: nativeImage.createFromPath(path.join(__static, 'pause.png')),
+          click: () => this.onButtonPressed(ButtonEnum.Pause),
+          tooltip: 'Pause'
+        })
+      }
+
+      if (this.buttonState.next) {
+        buttons.push({
+          icon: nativeImage.createFromPath(path.join(__static, 'next_track.png')),
+          click: () => this.onButtonPressed(ButtonEnum.Previous),
+          tooltip: 'Next track'
+        })
+      }
+
+      window.setThumbarButtons(buttons)
+    }
   }
 }

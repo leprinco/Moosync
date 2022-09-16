@@ -4,6 +4,8 @@
 
 [![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-) ![Release](https://github.com/Moosync/Moosync/actions/workflows/build.yml/badge.svg) [![Discord](https://img.shields.io/badge/Moosync-%237289DA.svg?style=fsocial&logo=discord&logoColor=white)](https://discord.gg/HsbqbRune3)
 
+<p align="center"><b>Help up translate the project at <a href="https://crwd.in/moosync">Crowdin</a></b></p>
+
 <br/>
 
 #### Moosync is a customizable desktop music player with a clean interface
@@ -26,6 +28,7 @@
 [Official website](https://moosync.app) |
 [Downloads](#releases) |
 [Discord](https://discord.gg/HsbqbRune3)
+[Crowdin](https://crwd.in/moosync)
 
 ## Releases
 
