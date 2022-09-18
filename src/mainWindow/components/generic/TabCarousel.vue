@@ -8,51 +8,53 @@
 -->
 
 <template>
-  <b-row no-gutters>
-    <b-col class="song-header-options w-100">
-      <b-row no-gutters align-v="center" class="h-100">
-        <b-col cols="auto" class="mr-3" v-if="items.length > 0 && showPrevIcon">
-          <PrevIcon @click.native="onPrevClick" />
-        </b-col>
-        <b-col class="provider-outer-container" v-if="items.length > 0">
-          <div ref="gradientContainer" class="gradient-overlay" :style="{ background: computedGradient }"></div>
-          <div ref="providersContainer" class="provider-container d-flex">
-            <div
-              v-for="provider in items"
-              cols="auto"
-              class="`h-100 item-checkbox-col mr-2"
-              :key="provider.key"
-              @click="onProviderSelected(provider.key)"
-            >
+  <b-container fluid>
+    <b-row no-gutters>
+      <b-col class="song-header-options w-100">
+        <b-row no-gutters align-v="center" class="h-100">
+          <b-col cols="auto" class="mr-3" v-if="items.length > 0 && showPrevIcon">
+            <PrevIcon @click.native="onPrevClick" />
+          </b-col>
+          <b-col class="provider-outer-container" v-if="items.length > 0">
+            <div ref="gradientContainer" class="gradient-overlay" :style="{ background: computedGradient }"></div>
+            <div ref="providersContainer" class="provider-container d-flex">
               <div
-                class="h-100 d-flex item-checkbox-container"
-                :style="{ background: getItemBackgroundColor(provider), color: getItemTextColor(provider) }"
+                v-for="provider in items"
+                cols="auto"
+                class="`h-100 item-checkbox-col mr-2"
+                :key="provider.key"
+                @click="onProviderSelected(provider.key)"
               >
-                <span class="align-self-center">{{ provider.title }}</span>
+                <div
+                  class="h-100 d-flex item-checkbox-container"
+                  :style="{ background: getItemBackgroundColor(provider), color: getItemTextColor(provider) }"
+                >
+                  <span class="align-self-center">{{ provider.title }}</span>
+                </div>
               </div>
             </div>
-          </div>
-        </b-col>
-        <b-col cols="auto" class="ml-3 mr-3" v-if="items.length > 0">
-          <NextIcon @click.native="onNextClick" v-if="showNextIcon" />
-        </b-col>
-        <b-col cols="auto" class="ml-auto d-flex" ref="buttonGroupContainer" v-if="showExtraSongListActions">
-          <div v-if="showSearchbar" class="searchbar-container mr-3">
-            <b-form-input
-              v-model="searchText"
-              class="searchbar"
-              :placeholder="$t('songView.songList.topbar.searchPlaceholder')"
-              type="text"
-              @update="onSearchChange"
-            />
-          </div>
-          <SearchIcon @click.native="toggleSearch" :accent="false" class="mr-3 align-self-center" />
-          <SortIcon v-if="isSortAsc" @click.native="showSortMenu" class="align-self-center" />
-          <SortIconAlt v-else @click.native="showSortMenu" class="align-self-center" />
-        </b-col>
-      </b-row>
-    </b-col>
-  </b-row>
+          </b-col>
+          <b-col cols="auto" class="ml-3 mr-3" v-if="items.length > 0">
+            <NextIcon @click.native="onNextClick" v-if="showNextIcon" />
+          </b-col>
+          <b-col cols="auto" class="ml-auto d-flex" ref="buttonGroupContainer" v-if="showExtraSongListActions">
+            <div v-if="showSearchbar" class="searchbar-container mr-3">
+              <b-form-input
+                v-model="searchText"
+                class="searchbar"
+                :placeholder="$t('songView.songList.topbar.searchPlaceholder')"
+                type="text"
+                @update="onSearchChange"
+              />
+            </div>
+            <SearchIcon @click.native="toggleSearch" :accent="false" class="mr-3 align-self-center" />
+            <SortIcon v-if="isSortAsc" @click.native="showSortMenu" class="align-self-center" />
+            <SortIconAlt v-else @click.native="showSortMenu" class="align-self-center" />
+          </b-col>
+        </b-row>
+      </b-col>
+    </b-row>
+  </b-container>
 </template>
 
 <script lang="ts">
