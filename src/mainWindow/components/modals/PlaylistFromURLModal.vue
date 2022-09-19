@@ -116,27 +116,27 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
   }
 
   private async parseURL(url: string) {
-    let generator
+    // let generator
     this.songList = []
     this.playlist = null
 
     if (url.startsWith('http')) {
       if (vxm.providers.youtubeProvider.matchPlaylist(url)) {
         this.playlist = (await vxm.providers.youtubeProvider.getPlaylistDetails(url)) ?? null
-        generator = vxm.providers.youtubeProvider.getPlaylistContent(url, true)
+        // generator = vxm.providers.youtubeProvider.getPlaylistContent(url, true)
       }
 
       if (vxm.providers.spotifyProvider.matchPlaylist(url)) {
         this.playlist = (await vxm.providers.spotifyProvider.getPlaylistDetails(url)) ?? null
-        generator = vxm.providers.spotifyProvider.getPlaylistContent(url, true)
+        // generator = vxm.providers.spotifyProvider.getPlaylistContent(url, true)
       }
 
-      if (generator) {
-        for await (const items of generator) {
-          this.songList.push(...items)
-        }
-        return
-      }
+      // if (generator) {
+      //   for await (const items of generator) {
+      //     this.songList.push(...items)
+      //   }
+      //   return
+      // }
 
       const res = await window.ExtensionUtils.sendEvent({
         type: 'requestedPlaylistFromURL',
