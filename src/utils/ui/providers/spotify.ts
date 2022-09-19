@@ -248,7 +248,8 @@ export class SpotifyProvider extends GenericAuth implements GenericProvider, Gen
   public async spotifyToYoutube(item: Song) {
     if (vxm.providers.loggedInYoutube) {
       const res = await vxm.providers.youtubeProvider.searchSongs(
-        `${item.artists?.map((val) => val.artist_name ?? '').join(', ') ?? ''} ${item.title}`
+        `${item.artists?.map((val) => val.artist_name ?? '').join(', ') ?? ''} ${item.title}`,
+        1
       )
       console.debug(
         'Found',
