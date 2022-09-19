@@ -368,44 +368,56 @@ export class YoutubeProvider extends GenericAuth implements GenericProvider, Gen
     }
   }
 
-  public async searchSongs(term: string): Promise<Song[]> {
+  public async searchSongs(term: string, maxResults = 30): Promise<Song[]> {
     const songList: Song[] = []
 
     if (await this.getLoggedIn()) {
       const parsedFromURL = await this.getSongDetails(term)
       if (parsedFromURL) {
         parsedFromURL && songList.push(parsedFromURL)
-      }
+      } else {
+        try {
+          const resp = await this.populateRequest(ApiResources.SEARCH, {
+            params: {
+              part: ['id', 'snippet'],
+              q: term,
+              type: 'video',
+              maxResults: maxResults,
+              order: 'relevance',
+              safeSearch: 'moderate',
+              videoEmbeddable: true
+            }
+          })
 
-      const resp = await this.populateRequest(ApiResources.SEARCH, {
-        params: {
-          part: ['id', 'snippet'],
-          q: term,
-          type: 'video',
-          maxResults: 30,
-          order: 'relevance',
-          safeSearch: 'moderate',
-          videoEmbeddable: true
+          const finalIDs: {
+            id?: string | undefined
+            date?: string | undefined
+          }[] = []
+
+          if (resp.items) {
+            resp.items.forEach((val) => finalIDs.push({ id: val.id.videoId, date: val.snippet.publishedAt }))
+            songList.push(...(await this.getSongDetailsFromID(false, ...finalIDs)))
+          }
+        } catch (e) {
+          console.error('Youtube search api failed. Falling back to unofficial search', e)
+          const resp = await this.unofficialSearch(term)
+          if (resp && resp.songs.length > 0) {
+            songList.push(...resp.songs)
+          }
         }
-      })
-
-      const finalIDs: {
-        id?: string | undefined
-        date?: string | undefined
-      }[] = []
-
-      if (resp.items) {
-        resp.items.forEach((val) => finalIDs.push({ id: val.id.videoId, date: val.snippet.publishedAt }))
-        songList.push(...(await this.getSongDetailsFromID(false, ...finalIDs)))
       }
     } else {
-      const resp = await window.SearchUtils.searchYT(term, undefined, false, false, true)
+      const resp = await this.unofficialSearch(term)
       if (resp && resp.songs.length > 0) {
         songList.push(...resp.songs)
       }
     }
 
     return songList
+  }
+
+  private async unofficialSearch(term: string) {
+    return window.SearchUtils.searchYT(term, undefined, false, false, true)
   }
 
   private matchSongURL(url: string) {
