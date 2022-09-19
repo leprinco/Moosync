@@ -591,6 +591,8 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
       if (vxm.player.currentSong && song) {
         song.duration = res.duration
         song.playbackUrl = res.url
+
+        await window.DBUtils.updateSongs([song])
       }
     }
   }
