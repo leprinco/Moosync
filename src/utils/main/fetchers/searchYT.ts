@@ -374,23 +374,28 @@ export class YTScraper extends CacheHandler {
       return cache
     }
 
-    const data = await ytdl.getInfo(id)
-
-    let format
     try {
-      format = ytdl.chooseFormat(data.formats, {
-        quality: 'highestaudio'
-      })
-    } catch (e) {
-      format = ytdl.chooseFormat(data.formats, {})
-    }
+      const data = await ytdl.getInfo(id)
 
-    try {
-      const expiry = parseInt(new URL(format.url).searchParams.get('expire') ?? '0') * 1000
-      expiry > 0 && this.addToCache(`watchURL:${id}`, format.url, expiry)
+      let format
+      try {
+        format = ytdl.chooseFormat(data.formats, {
+          quality: 'highestaudio'
+        })
+      } catch (e) {
+        format = ytdl.chooseFormat(data.formats, {})
+      }
+
+      try {
+        const expiry = parseInt(new URL(format.url).searchParams.get('expire') ?? '0') * 1000
+        expiry > 0 && this.addToCache(`watchURL:${id}`, format.url, expiry)
+      } catch (e) {
+        console.warn('Failed to add watch URL to cache', format.url)
+      }
+      return format.url
     } catch (e) {
-      console.warn('Failed to add watch URL to cache', format.url)
+      console.error('Failed to fetch video ID', id)
+      return ''
     }
-    return format.url
   }
 }

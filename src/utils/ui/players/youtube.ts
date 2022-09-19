@@ -32,6 +32,7 @@ export class YoutubePlayer extends LocalPlayer {
       audio.crossOrigin = 'anonymous'
       audio.preload = 'auto'
       playerInstance.append(audio)
+
       super(audio)
     }
   }
@@ -86,6 +87,7 @@ export class YoutubePlayer extends LocalPlayer {
 
   async load(src?: string, volume?: number, autoplay?: boolean) {
     if (src) {
+      console.debug('Loading src', src)
       src = this.extractVideoID(src)
       if (src) {
         this.getSponsorblock(src)
@@ -97,6 +99,8 @@ export class YoutubePlayer extends LocalPlayer {
       src && (this.playerInstance.src = src)
       volume && (this.volume = volume)
       autoplay && this.play()
+    } else {
+      this.playerInstance.dispatchEvent(new Event('error'))
     }
     volume && (this.volume = volume)
   }

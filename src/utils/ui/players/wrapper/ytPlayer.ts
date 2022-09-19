@@ -19,6 +19,10 @@ export class YTPlayerWrapper implements CustomAudioInstance {
     })
   }
 
+  dispatchEvent(ev: Event) {
+    this.instance.emit(ev.type)
+  }
+
   public load() {
     return
   }
