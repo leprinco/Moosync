@@ -233,8 +233,8 @@ export class InvidiousProvider extends GenericAuth implements GenericProvider, G
     if (resp) yield this.parsePlaylistItems([resp])
   }
 
-  public async *getArtistSongs(): AsyncGenerator<Song[]> {
-    yield []
+  public async *getArtistSongs(): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
+    yield { songs: [] }
   }
 
   public async searchSongs(term: string): Promise<Song[]> {

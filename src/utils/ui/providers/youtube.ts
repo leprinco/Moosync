@@ -487,35 +487,35 @@ export class YoutubeProvider extends GenericAuth implements GenericProvider, Gen
     }
   }
 
-  public async *getArtistSongs(artist: Artists): AsyncGenerator<Song[]> {
+  public async *getArtistSongs(
+    artist: Artists,
+    nextPageToken?: string
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
     const channelId = artist.artist_extra_info?.youtube?.channel_id
     const finalIDs: Parameters<typeof this.getSongDetailsFromID>[1][] = []
 
     if (channelId) {
-      let pageToken: string | undefined
-
-      do {
-        const resp = await this.populateRequest(ApiResources.SEARCH, {
-          params: {
-            part: ['id', 'snippet'],
-            type: 'video',
-            maxResults: 50,
-            order: 'relevance',
-            videoEmbeddable: true,
-            pageToken,
-            channelId
-          }
-        })
-
-        if (resp.items) {
-          resp.items.forEach((val) => finalIDs.push({ id: val.id.videoId, date: val.snippet?.publishedAt }))
+      const resp = await this.populateRequest(ApiResources.SEARCH, {
+        params: {
+          part: ['id', 'snippet'],
+          type: 'video',
+          maxResults: 50,
+          order: 'relevance',
+          videoEmbeddable: true,
+          pageToken: nextPageToken,
+          channelId
         }
+      })
 
-        pageToken = resp.nextPageToken
-      } while (pageToken)
+      if (resp.items) {
+        resp.items.forEach((val) => finalIDs.push({ id: val.id.videoId, date: val.snippet?.publishedAt }))
+      }
 
       while (finalIDs.length > 0) {
-        yield this.getSongDetailsFromID(false, ...finalIDs.splice(0, 50))
+        yield {
+          songs: await this.getSongDetailsFromID(false, ...finalIDs.splice(0, 50)),
+          nextPageToken: resp.nextPageToken
+        }
       }
     } else {
       const resp = await this.populateRequest(ApiResources.SEARCH, {
@@ -531,7 +531,7 @@ export class YoutubeProvider extends GenericAuth implements GenericProvider, Gen
 
       if (resp.items) {
         resp.items.forEach((val) => finalIDs.push({ id: val.id.videoId, date: val.snippet?.publishedAt }))
-        yield this.getSongDetailsFromID(false, ...finalIDs)
+        yield { songs: await this.getSongDetailsFromID(false, ...finalIDs) }
       }
     }
   }

@@ -92,7 +92,10 @@ export abstract class GenericProvider {
    * Get songs by artist ID
    * @param artist_id ID of artists whose tracks are to be fetched
    */
-  public abstract getArtistSongs(artist: Artists): AsyncGenerator<Song[]>
+  public abstract getArtistSongs(
+    artist: Artists,
+    nextPageToken?: string
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }>
 
   public abstract searchSongs(term: string): Promise<Song[]>
 

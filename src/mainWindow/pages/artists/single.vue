@@ -121,6 +121,7 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
   private async onArtistChange() {
     if (typeof this.$route.query.id === 'string') {
       this.artist = null
+      this.nextPageToken = undefined
       this.songList = []
       this.fetchArtists()
       this.fetchSongList()
@@ -170,11 +171,14 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     }
   }
 
+  private nextPageToken?: string
+
   private async fetchProviderSonglist(provider: GenericProvider) {
     Vue.set(this.loadingMap, provider.key, true)
     if (this.artist) {
-      for await (const songs of provider.getArtistSongs(this.artist)) {
-        for (const s of songs) {
+      for await (const items of provider.getArtistSongs(this.artist, this.nextPageToken)) {
+        this.nextPageToken = items.nextPageToken
+        for (const s of items.songs) {
           if (!this.songList.find((val) => val._id === s._id)) {
             this.songList.push(s)
 

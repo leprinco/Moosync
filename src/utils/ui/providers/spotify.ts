@@ -702,7 +702,7 @@ export class SpotifyProvider extends GenericAuth implements GenericProvider, Gen
     }
   }
 
-  public async *getArtistSongs(artist: Artists): AsyncGenerator<Song[]> {
+  public async *getArtistSongs(artist: Artists): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
     if (await this.getLoggedIn()) {
       let artist_id = artist.artist_extra_info?.spotify?.artist_id
 
@@ -722,12 +722,12 @@ export class SpotifyProvider extends GenericAuth implements GenericProvider, Gen
         })
 
         for (const s of resp.tracks) {
-          yield [this.parseSong(s)]
+          yield { songs: [this.parseSong(s)] }
         }
 
         const albums = await this.getArtistAlbums(artist_id)
         for (const a of albums) {
-          for await (const s of this._getAlbumSongs(a)) yield [s]
+          for await (const s of this._getAlbumSongs(a)) yield { songs: [s] }
         }
       }
     }

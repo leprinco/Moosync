@@ -87,6 +87,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
   private async refresh(invalidateCache = false) {
     this.fetchPlaylist()
 
+    this.nextPageToken = undefined
     this.songList = []
     await this.fetchSongListAsync(invalidateCache)
   }
