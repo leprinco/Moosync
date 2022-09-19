@@ -328,7 +328,11 @@ export class SpotifyProvider extends GenericAuth implements GenericProvider, Gen
     }
   }
 
-  public async *getPlaylistContent(str: string, invalidateCache = false): AsyncGenerator<Song[]> {
+  public async *getPlaylistContent(
+    str: string,
+    invalidateCache = false,
+    nextPageToken?: string
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
     const id: string | undefined = this.getIDFromURL(str)
 
     if (id) {
@@ -371,7 +375,7 @@ export class SpotifyProvider extends GenericAuth implements GenericProvider, Gen
           if (resp.next) {
             nextOffset += limit
           }
-          yield items
+          yield { songs: items }
         } while (isNext)
       }
     }

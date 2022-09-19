@@ -256,7 +256,6 @@ export class YTScraper extends CacheHandler {
     const term = `${artists ? artists.join(', ') + ' - ' : ''}${title}`
 
     const resp = await ytsr(term)
-    console.log(resp)
     const ret: SearchResult = {
       songs: [],
       artists: [],

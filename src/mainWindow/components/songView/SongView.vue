@@ -34,6 +34,7 @@
         @addToLibrary="addToLibrary"
         @onSortClicked="showSortMenu"
         @onSearchChange="onSearchChange"
+        @scroll="onScroll"
       ></component>
     </transition>
   </b-container>
@@ -188,6 +189,13 @@ export default class AllSongs extends mixins(
 
   private onSearchChange(text: string) {
     this.searchText = text
+  }
+
+  private onScroll(e: MouseEvent) {
+    const { scrollTop, clientHeight, scrollHeight } = e.target as HTMLDivElement
+    if (scrollTop + clientHeight >= scrollHeight) {
+      this.$emit('onScrollEnd')
+    }
   }
 }
 </script>

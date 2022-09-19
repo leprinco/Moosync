@@ -23,6 +23,7 @@
       @playAll="playPlaylist"
       @addToQueue="addPlaylistToQueue"
       @addToLibrary="addPlaylistToLibrary"
+      @onScrollEnd="loadNextPage"
     />
   </div>
 </template>
@@ -129,16 +130,22 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
     this.isLoading = false
   }
 
+  private nextPageToken?: string
+
   private async fetchYoutube(invalidateCache = false) {
     this.isLoading = true
     const generator = vxm.providers.youtubeProvider.getPlaylistContent(
       (this.$route.query.id as string)?.replace('youtube-playlist:', ''),
-      invalidateCache
+      invalidateCache,
+      this.nextPageToken
     )
 
     if (generator) {
       for await (const items of generator) {
-        this.songList.push(...items)
+        this.songList.push(...items.songs)
+        this.nextPageToken = items.nextPageToken
+
+        console.trace('np token', items.nextPageToken)
       }
     }
     this.isLoading = false
@@ -148,12 +155,14 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
     this.isLoading = true
     const generator = vxm.providers.spotifyProvider.getPlaylistContent(
       (this.$route.query.id as string)?.replace('spotify-playlist:', ''),
-      invalidateCache
+      invalidateCache,
+      this.nextPageToken
     )
 
     if (generator) {
       for await (const items of generator) {
-        this.songList.push(...items)
+        this.songList.push(...items.songs)
+        this.nextPageToken = items.nextPageToken
       }
     }
 
@@ -193,6 +202,10 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
         return this.fetchExtension(invalidateCache)
       }
     }
+  }
+
+  private loadNextPage() {
+    this.fetchSongListAsync()
   }
 
   private playPlaylist() {

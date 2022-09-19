@@ -173,14 +173,17 @@ export class InvidiousProvider extends GenericAuth implements GenericProvider, G
     }
   }
 
-  public async *getPlaylistContent(str: string, invalidateCache = false): AsyncGenerator<Song[]> {
+  public async *getPlaylistContent(
+    str: string,
+    invalidateCache = false
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
     const playlist_id = this.getIDFromURL(str) ?? str
     const resp = await this.populateRequest(
       InvidiousApiResources.PLAYLIST_ITEMS,
       { params: { playlist_id } },
       invalidateCache
     )
-    yield this.parsePlaylistItems(resp?.videos ?? [])
+    yield { songs: this.parsePlaylistItems(resp?.videos ?? []) }
   }
 
   public async getPlaybackUrlAndDuration(song: InvidiousSong) {

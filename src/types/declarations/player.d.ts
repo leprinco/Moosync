@@ -48,4 +48,6 @@ interface CustomAudioInstance {
   removeAttribute(str: string): void
   addEventListener(ev: string, callback: unknown)
   removeEventListener(ev: string, callback: unknown)
+
+  dispatchEvent(ev: Event)
 }

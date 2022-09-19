@@ -30,7 +30,8 @@ export const cache = setupCache({
     if (request.clearCacheEntry) {
       await config.store.removeItem(config.uuid)
     }
-  }
+  },
+  debug: true
 })
 
 export abstract class GenericProvider {
@@ -48,14 +49,21 @@ export abstract class GenericProvider {
    * @param id id of playlist
    * @returns Playlist if data is found otherwise undefined
    */
-  public abstract getPlaylistDetails(id: string, invalidateCache?: boolean): Promise<Playlist | undefined>
+  public abstract getPlaylistDetails(
+    id: string,
+    invalidateCache?: boolean,
+    nextPageToken?: string
+  ): Promise<Playlist | undefined>
 
   /**
    * Gets songs present in playlist
    * @param id
    * @returns Generator of array {@link Song}
    */
-  public abstract getPlaylistContent(id: string, invalidateCache?: boolean): AsyncGenerator<Song[]>
+  public abstract getPlaylistContent(
+    id: string,
+    invalidateCache?: boolean
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }>
 
   /**
    * Matches playlist link to verify if current provider is suitable for given link

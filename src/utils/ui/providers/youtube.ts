@@ -243,31 +243,32 @@ export class YoutubeProvider extends GenericAuth implements GenericProvider, Gen
     }
   }
 
-  public async *getPlaylistContent(url: string, invalidateCache = false): AsyncGenerator<Song[]> {
+  public async *getPlaylistContent(
+    url: string,
+    invalidateCache = false,
+    nextPageToken?: string
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
     const id: string | undefined = this.getIDFromURL(url)
 
     if (id) {
       if (await this.getLoggedIn()) {
-        let nextPageToken: string | undefined
-        do {
-          const resp = await this.populateRequest(
-            ApiResources.PLAYLIST_ITEMS,
-            {
-              params: {
-                part: ['id', 'snippet'],
-                playlistId: id,
-                maxResults: 50,
-                pageToken: nextPageToken
-              }
-            },
-            invalidateCache
-          )
-          nextPageToken = resp.nextPageToken
-          const parsed = await this.parsePlaylistItems(resp.items, invalidateCache)
-          yield parsed
-        } while (nextPageToken)
+        const resp = await this.populateRequest(
+          ApiResources.PLAYLIST_ITEMS,
+          {
+            params: {
+              part: ['id', 'snippet'],
+              playlistId: id,
+              maxResults: 50,
+              pageToken: nextPageToken
+            }
+          },
+          invalidateCache
+        )
+        const parsed = await this.parsePlaylistItems(resp.items, invalidateCache)
+        yield { songs: parsed, nextPageToken: resp.nextPageToken }
+      } else {
+        yield { songs: [] }
       }
-      yield []
     }
     return
   }

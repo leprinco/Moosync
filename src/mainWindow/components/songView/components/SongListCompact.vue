@@ -23,6 +23,7 @@
           :item-size="94"
           key-field="_id"
           :direction="'vertical'"
+          @scroll.native="onScroll"
           v-click-outside="clearSelection"
         >
           <template v-slot="{ item, index }">
@@ -84,6 +85,10 @@ export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
 
   private onArtistClicked(item: Artists) {
     this.$emit('onArtistClicked', item)
+  }
+
+  private onScroll(e: Event) {
+    this.$emit('scroll', e)
   }
 }
 </script>
