@@ -23,7 +23,7 @@ export const forageStore = localforage.createInstance({
 })
 
 export const cache = setupCache({
-  maxAge: 15 * 60 * 1000,
+  maxAge: 604800000, // 7 days
   store: forageStore,
   exclude: { query: false },
   invalidate: async (config: Config, request) => {
