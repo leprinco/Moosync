@@ -206,7 +206,9 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
   }
 
   private loadNextPage() {
-    this.fetchSongListAsync()
+    if (this.nextPageToken) {
+      this.fetchSongListAsync()
+    }
   }
 
   private playPlaylist() {
