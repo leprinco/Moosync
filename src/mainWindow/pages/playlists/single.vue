@@ -145,8 +145,6 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
       for await (const items of generator) {
         this.songList.push(...items.songs)
         this.nextPageToken = items.nextPageToken
-
-        console.trace('np token', items.nextPageToken)
       }
     }
     this.isLoading = false
