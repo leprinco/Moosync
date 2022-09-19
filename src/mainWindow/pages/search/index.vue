@@ -9,7 +9,7 @@
 
 <template>
   <div class="w-100 h-100">
-    <b-container class="h-100 w-100">
+    <b-container fluid class="h-100 w-100 search-container">
       <TabCarousel
         :items="searchItems"
         :showExtraSongListActions="false"
@@ -398,7 +398,7 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
 }
 </script>
 
-<style lang="sass">
+<style lang="sass" scoped>
 .scroller-row
   position: absolute
   height: calc(100% - 140px)
@@ -407,4 +407,7 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
 .no-results
   font-size: 18px
   margin-top: 35px
+
+.search-container
+  padding-top: 20px
 </style>
