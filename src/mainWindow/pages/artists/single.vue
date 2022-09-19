@@ -24,6 +24,7 @@
       @onOptionalProviderChanged="onArtistProviderChanged"
       :detailsButtonGroup="buttonGroups"
       :optionalProviders="artistSongProviders"
+      @onScrollEnd="loadNextPage"
     />
   </div>
 </template>
@@ -171,6 +172,7 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     }
   }
 
+  // TODO: Separate pageToken for each provider
   private nextPageToken?: string
 
   private async fetchProviderSonglist(provider: GenericProvider) {
@@ -242,24 +244,38 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     Vue.set(this.loadingMap, key, false)
   }
 
+  private fetchRemoteProviderByKey(key: string) {
+    if (key === vxm.providers.youtubeProvider.key) {
+      if (vxm.providers.loggedInYoutube) {
+        this.fetchProviderSonglist(vxm.providers.youtubeProvider)
+      }
+      return
+    }
+
+    if (key === vxm.providers.spotifyProvider.key) {
+      if (vxm.providers.loggedInSpotify) {
+        this.fetchProviderSonglist(vxm.providers.spotifyProvider)
+      }
+      return
+    }
+
+    this.fetchExtensionSongs(key)
+  }
+
   private onArtistProviderChanged({ key, checked }: { key: string; checked: boolean }) {
     Vue.set(this.activeProviders, key, checked)
     if (checked) {
-      if (key === vxm.providers.youtubeProvider.key) {
-        if (vxm.providers.loggedInYoutube) {
-          this.fetchProviderSonglist(vxm.providers.youtubeProvider)
-        }
-        return
-      }
+      this.fetchRemoteProviderByKey(key)
+    }
+  }
 
-      if (key === vxm.providers.spotifyProvider.key) {
-        if (vxm.providers.loggedInSpotify) {
-          this.fetchProviderSonglist(vxm.providers.spotifyProvider)
+  private loadNextPage() {
+    if (this.nextPageToken) {
+      for (const [key, checked] of Object.entries(this.activeProviders)) {
+        if (checked) {
+          this.fetchRemoteProviderByKey(key)
         }
-        return
       }
-
-      this.fetchExtensionSongs(key)
     }
   }
 }
