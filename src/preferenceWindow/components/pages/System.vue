@@ -100,12 +100,14 @@
             class="mt-5 mb-3"
             :isExtension="false"
             :title="$t('settings.system.youtube.client_id')"
+            :tooltip="$t('settings.system.youtube.client_id_tooltip')"
             prefKey="youtube.client_id"
           />
           <EditText
             v-if="!youtubeEnvExists"
             :isExtension="false"
             :title="$t('settings.system.youtube.client_secret')"
+            :tooltip="$t('settings.system.youtube.client_secret_tooltip')"
             prefKey="youtube.client_secret"
           />
 
@@ -334,7 +336,11 @@ export default class System extends Vue {
   }
 
   private openSpotifyHelp() {
-    window.WindowUtils.openExternal('https://github.com/Moosync/Moosync#enabling-spotify-integration')
+    window.WindowUtils.openExternal('https://moosync.app/wiki/integrations#enabling-spotify-integration')
+  }
+
+  private openYoutubeHelp() {
+    window.WindowUtils.openExternal('https://github.com/Moosync/Moosync#enabling-youtube-integration')
   }
 
   private closeModal() {

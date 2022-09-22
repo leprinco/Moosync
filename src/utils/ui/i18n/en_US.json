@@ -149,7 +149,9 @@
       },
       "youtube": {
         "client_id": "Youtube Client ID",
-        "client_secret": "Youtube Client Secret"
+        "client_secret": "Youtube Client Secret",
+        "client_id_tooltip": "Youtube client ID required to login to Youtube. Click to know more",
+        "client_secret_tooltip": "Youtube client Secret required to login to Youtube. Click to know more"
       },
       "lastfm": {
         "client_id": "LastFM Api Key",
