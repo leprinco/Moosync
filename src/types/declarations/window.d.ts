@@ -97,6 +97,13 @@ interface searchUtils {
    */
   getYTSuggestions: (videoID: string) => Promise<Song[]>
 
+  getYTPlaylist: (id: string) => Promise<Playlist>
+
+  getYTPlaylistContent: (
+    id: string,
+    continuation?: import('ytpl').Continuation
+  ) => Promise<{ songs: Song[]; nextPageToken?: import('ytpl').Continuation }>
+
   /**
    * Get direct stream URL from youtube
    */

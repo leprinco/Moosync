@@ -6,7 +6,6 @@
  *
  *  See LICENSE in the project root for license information.
  */
-
 interface IpcRequest<T = unknown> {
   type: string
   responseChannel?: string
@@ -156,6 +155,15 @@ declare namespace SearchRequests {
 
   interface YTSuggestions {
     videoID: string
+  }
+
+  interface YTPlaylist {
+    id: string
+  }
+
+  interface YTPlaylistContent {
+    id: string
+    nextPageToken?: import('ytpl').Continuation
   }
 
   interface LastFMSuggestions {

@@ -173,7 +173,7 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
   }
 
   // TODO: Separate pageToken for each provider
-  private nextPageToken?: string
+  private nextPageToken?: unknown
 
   private async fetchProviderSonglist(provider: GenericProvider) {
     Vue.set(this.loadingMap, provider.key, true)
@@ -246,16 +246,12 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
 
   private fetchRemoteProviderByKey(key: string) {
     if (key === vxm.providers.youtubeProvider.key) {
-      if (vxm.providers.loggedInYoutube) {
-        this.fetchProviderSonglist(vxm.providers.youtubeProvider)
-      }
+      this.fetchProviderSonglist(vxm.providers.youtubeProvider)
       return
     }
 
     if (key === vxm.providers.spotifyProvider.key) {
-      if (vxm.providers.loggedInSpotify) {
-        this.fetchProviderSonglist(vxm.providers.spotifyProvider)
-      }
+      this.fetchProviderSonglist(vxm.providers.spotifyProvider)
       return
     }
 

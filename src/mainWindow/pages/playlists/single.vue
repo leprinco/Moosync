@@ -131,7 +131,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
     this.isLoading = false
   }
 
-  private nextPageToken?: string
+  private nextPageToken?: unknown
 
   private async fetchYoutube(invalidateCache = false) {
     this.isLoading = true
@@ -154,8 +154,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
     this.isLoading = true
     const generator = vxm.providers.spotifyProvider.getPlaylistContent(
       (this.$route.query.id as string)?.replace('spotify-playlist:', ''),
-      invalidateCache,
-      this.nextPageToken
+      invalidateCache
     )
 
     if (generator) {

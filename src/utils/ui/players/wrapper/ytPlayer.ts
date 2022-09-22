@@ -5,6 +5,7 @@ export class YTPlayerWrapper implements CustomAudioInstance {
   private instance: YTPlayer
 
   private listeners: Record<string, never> = {}
+  private elementIdentifier: string
 
   // stop() should not be called if player is going to be reused
   // This var will make sure that the 'paused' event is not fired when the
@@ -13,6 +14,7 @@ export class YTPlayerWrapper implements CustomAudioInstance {
 
   constructor(element: string | HTMLElement) {
     this.instance = new YTPlayer(element)
+    this.elementIdentifier = element instanceof HTMLElement ? element.id : element
     this.supposedVolume = this.volume
     this.instance.on('playing', () => {
       this.volume = this.supposedVolume
@@ -54,6 +56,7 @@ export class YTPlayerWrapper implements CustomAudioInstance {
 
   public async play() {
     this.instance?.play()
+    // console.log(((document.getElementById(this.elementIdentifier) as HTMLIFrameElement).contentWindow as any).ytcfg)
   }
 
   public pause() {

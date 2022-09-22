@@ -138,6 +138,7 @@
     "webpack-cli": "^4.10.0",
     "yt-player": "^3.6.1",
     "ytdl-core": "^4.11.2",
+    "ytpl": "^2.3.0",
     "ytsr": "^3.8.0"
   },
   "devDependencies": {

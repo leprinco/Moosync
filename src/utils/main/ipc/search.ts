@@ -39,6 +39,12 @@ export class SearchChannel implements IpcChannelInterface {
       case SearchEvents.YT_SUGGESTIONS:
         this.getYTSuggestions(event, request as IpcRequest<SearchRequests.YTSuggestions>)
         break
+      case SearchEvents.GET_YT_PLAYLIST:
+        this.getYTPlaylist(event, request as IpcRequest<SearchRequests.YTPlaylist>)
+        break
+      case SearchEvents.GET_YT_PLAYLIST_CONTENT:
+        this.getYTPlaylistContent(event, request as IpcRequest<SearchRequests.YTPlaylistContent>)
+        break
       case SearchEvents.GET_YT_AUDIO_URL:
         this.getYTAudioURL(event, request as IpcRequest<SearchRequests.YTSuggestions>)
         break
@@ -132,6 +138,23 @@ export class SearchChannel implements IpcChannelInterface {
     const preferences = loadPreferences()
     const data = SongDB.getSongByOptions(request.params.options, getDisabledPaths(preferences.musicPaths))
     event.reply(request.responseChannel, data)
+  }
+
+  private async getYTPlaylist(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.YTPlaylist>) {
+    if (request.params && request.params.id) {
+      const data = await this.ytScraper.parsePlaylistFromID(request.params.id)
+      event.reply(request.responseChannel, data)
+    }
+  }
+
+  private async getYTPlaylistContent(
+    event: Electron.IpcMainEvent,
+    request: IpcRequest<SearchRequests.YTPlaylistContent>
+  ) {
+    if (request.params && request.params.id) {
+      const data = await this.ytScraper.getPlaylistContent(request.params.id, request.params.nextPageToken)
+      event.reply(request.responseChannel, data)
+    }
   }
 
   private async searchEntityByOptions(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.EntityOptions>) {

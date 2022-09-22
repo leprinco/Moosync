@@ -13,6 +13,8 @@ import path from 'path'
 import { CacheHandler } from './cacheFile'
 import ytsr from 'ytsr'
 import ytdl from 'ytdl-core'
+import ytpl from 'ytpl'
+import { escapeRegExp } from '@/utils/common'
 
 interface YTMusicWMatchIndex extends Song {
   matchIndex: number
@@ -142,7 +144,6 @@ export class YTScraper extends CacheHandler {
   private parseYoutubeMusicArtist(...artist: ytMusic.Artist[]): Artists[] {
     const artists: Artists[] = []
     for (const a of artist) {
-      console.log(a.thumbnails?.find((val) => val))
       artists.push({
         artist_id: `youtube-author:${a.artistId}`,
         artist_name: a.name,
@@ -310,7 +311,7 @@ export class YTScraper extends CacheHandler {
 
     for (const s of songs) {
       if (s.title) {
-        if (s.title.match(new RegExp(searchTerm, 'i'))) {
+        if (s.title.match(new RegExp(escapeRegExp(searchTerm), 'i'))) {
           finalMatches.push({
             ...s,
             matchIndex: 1
@@ -396,5 +397,51 @@ export class YTScraper extends CacheHandler {
       console.error('Failed to fetch video ID', id)
       return ''
     }
+  }
+
+  public async parsePlaylistFromID(id: string): Promise<Playlist> {
+    const cache = this.getCache(`playlist:${id}`)
+    if (cache) {
+      return JSON.parse(cache)
+    }
+
+    const playlist = await ytpl(id)
+    const parsed = {
+      playlist_id: `youtube-playlist:${playlist.id}`,
+      playlist_name: playlist.title,
+      playlist_coverPath:
+        playlist.bestThumbnail.url ?? playlist.thumbnails.filter((val) => val.url)[0].url ?? undefined,
+      playlist_desc: playlist.description ?? undefined
+    }
+
+    this.addToCache(`playlist:${id}`, JSON.stringify(parsed))
+    return parsed
+  }
+
+  public async getPlaylistContent(
+    id: string,
+    page?: ytpl.Continuation
+  ): Promise<{ songs: Song[]; nextPageToken?: ytpl.Continuation }> {
+    const cache = this.getCache(`playlistContent:${id}`)
+    if (cache) {
+      return JSON.parse(cache)
+    }
+
+    const songList: Song[] = []
+    let songs: ytpl.ContinueResult | ytpl.Result
+
+    if (!page) {
+      songs = await ytpl(id, { pages: 1 })
+    } else {
+      songs = await ytpl.continueReq(page)
+    }
+
+    for (const s of songs.items) {
+      songList.push(this.parseYoutubeVideo(s as unknown as ytsr.Video))
+    }
+
+    const ret = { songs: songList, nextPageToken: songs.continuation ?? undefined }
+    this.addToCache(`playlistContent:${id}`, JSON.stringify(ret))
+    return ret
   }
 }

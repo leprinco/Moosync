@@ -27,6 +27,7 @@ import { contextBridge, ipcRenderer } from 'electron'
 import { IpcRendererHolder } from '@/utils/preload/ipc/index'
 import { LogLevelDesc } from 'loglevel'
 import { ButtonEnum, PlayerButtons } from 'media-controller'
+import ytpl from 'ytpl'
 
 const ipcRendererHolder = new IpcRendererHolder(ipcRenderer)
 
@@ -228,6 +229,18 @@ contextBridge.exposeInMainWorld('SearchUtils', {
     ipcRendererHolder.send<SearchRequests.YTSuggestions>(IpcEvents.SEARCH, {
       type: SearchEvents.GET_YT_AUDIO_URL,
       params: { videoID }
+    }),
+
+  getYTPlaylist: (id: string) =>
+    ipcRendererHolder.send<SearchRequests.YTPlaylist>(IpcEvents.SEARCH, {
+      type: SearchEvents.GET_YT_PLAYLIST,
+      params: { id }
+    }),
+
+  getYTPlaylistContent: (id: string, continuation: ytpl.Continuation) =>
+    ipcRendererHolder.send<SearchRequests.YTPlaylistContent>(IpcEvents.SEARCH, {
+      type: SearchEvents.GET_YT_PLAYLIST_CONTENT,
+      params: { id, nextPageToken: continuation }
     }),
 
   scrapeLastFM: (url: string) =>

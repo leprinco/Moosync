@@ -44,7 +44,9 @@ export enum SearchEvents {
   GET_YT_AUDIO_URL = 'getYTAudioURL',
   SCRAPE_LASTFM = 'scrapeLastFM',
   SCRAPE_LYRICS = 'scrapeLyrics',
-  REQUEST_INVIDIOUS = 'requestInvidious'
+  REQUEST_INVIDIOUS = 'requestInvidious',
+  GET_YT_PLAYLIST = 'getYTPlaylist',
+  GET_YT_PLAYLIST_CONTENT = 'getYTPlaylistContent'
 }
 
 export enum PreferenceEvents {

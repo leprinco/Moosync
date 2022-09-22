@@ -246,8 +246,8 @@ export class YoutubeProvider extends GenericAuth implements GenericProvider, Gen
   public async *getPlaylistContent(
     url: string,
     invalidateCache = false,
-    nextPageToken?: string
-  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
+    nextPageToken?: unknown
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {
     const id: string | undefined = this.getIDFromURL(url)
 
     if (id) {
@@ -259,7 +259,7 @@ export class YoutubeProvider extends GenericAuth implements GenericProvider, Gen
               part: ['id', 'snippet'],
               playlistId: id,
               maxResults: 50,
-              pageToken: nextPageToken
+              pageToken: nextPageToken as string
             }
           },
           invalidateCache
@@ -267,7 +267,7 @@ export class YoutubeProvider extends GenericAuth implements GenericProvider, Gen
         const parsed = await this.parsePlaylistItems(resp.items, invalidateCache)
         yield { songs: parsed, nextPageToken: resp.nextPageToken }
       } else {
-        yield { songs: [] }
+        yield window.SearchUtils.getYTPlaylistContent(id, nextPageToken as any)
       }
     }
     return
@@ -316,9 +316,9 @@ export class YoutubeProvider extends GenericAuth implements GenericProvider, Gen
 
   private async getSongDetailsFromID(invalidateCache: boolean, ...songs: { id?: string; date?: string }[]) {
     const validRefreshToken = await this.auth?.hasValidRefreshToken()
-    if ((await this.getLoggedIn()) || validRefreshToken) {
-      const filtered = songs.filter((val) => !!val)
-      if (filtered.length > 0) {
+    const filtered = songs.filter((val) => !!val)
+    if (filtered.length > 0) {
+      if ((await this.getLoggedIn()) || validRefreshToken) {
         const resp = await this.populateRequest(
           ApiResources.VIDEO_DETAILS,
           {
@@ -354,18 +354,22 @@ export class YoutubeProvider extends GenericAuth implements GenericProvider, Gen
     const id = this.getIDFromURL(url)
 
     if (id) {
-      const resp = await this.populateRequest(
-        ApiResources.PLAYLISTS,
-        {
-          params: {
-            id,
-            part: ['id', 'contentDetails', 'snippet'],
-            maxResults: 1
-          }
-        },
-        invalidateCache
-      )
-      return (await this.parsePlaylists(resp.items))[0]
+      if (await this.getLoggedIn()) {
+        const resp = await this.populateRequest(
+          ApiResources.PLAYLISTS,
+          {
+            params: {
+              id,
+              part: ['id', 'contentDetails', 'snippet'],
+              maxResults: 1
+            }
+          },
+          invalidateCache
+        )
+        return (await this.parsePlaylists(resp.items))[0]
+      } else {
+        return window.SearchUtils.getYTPlaylist(id)
+      }
     }
   }
 
@@ -489,49 +493,61 @@ export class YoutubeProvider extends GenericAuth implements GenericProvider, Gen
 
   public async *getArtistSongs(
     artist: Artists,
-    nextPageToken?: string
-  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
+    nextPageToken?: unknown
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {
     const channelId = artist.artist_extra_info?.youtube?.channel_id
-    const finalIDs: Parameters<typeof this.getSongDetailsFromID>[1][] = []
 
-    if (channelId) {
-      const resp = await this.populateRequest(ApiResources.SEARCH, {
-        params: {
-          part: ['id', 'snippet'],
-          type: 'video',
-          maxResults: 50,
-          order: 'relevance',
-          videoEmbeddable: true,
-          pageToken: nextPageToken,
-          channelId
+    if (await this.getLoggedIn()) {
+      const finalIDs: Parameters<typeof this.getSongDetailsFromID>[1][] = []
+
+      if (channelId) {
+        const resp = await this.populateRequest(ApiResources.SEARCH, {
+          params: {
+            part: ['id', 'snippet'],
+            type: 'video',
+            maxResults: 50,
+            order: 'relevance',
+            videoEmbeddable: true,
+            pageToken: nextPageToken as string,
+            channelId
+          }
+        })
+
+        if (resp.items) {
+          resp.items.forEach((val) => finalIDs.push({ id: val.id.videoId, date: val.snippet?.publishedAt }))
         }
-      })
 
-      if (resp.items) {
-        resp.items.forEach((val) => finalIDs.push({ id: val.id.videoId, date: val.snippet?.publishedAt }))
-      }
+        while (finalIDs.length > 0) {
+          yield {
+            songs: await this.getSongDetailsFromID(false, ...finalIDs.splice(0, 50)),
+            nextPageToken: resp.nextPageToken
+          }
+        }
+      } else {
+        const resp = await this.populateRequest(ApiResources.SEARCH, {
+          params: {
+            part: ['id', 'snippet'],
+            type: 'video',
+            maxResults: 50,
+            order: 'relevance',
+            videoEmbeddable: true,
+            q: `${artist.artist_name} music`
+          }
+        })
 
-      while (finalIDs.length > 0) {
-        yield {
-          songs: await this.getSongDetailsFromID(false, ...finalIDs.splice(0, 50)),
-          nextPageToken: resp.nextPageToken
+        if (resp.items) {
+          resp.items.forEach((val) => finalIDs.push({ id: val.id.videoId, date: val.snippet?.publishedAt }))
+          yield { songs: await this.getSongDetailsFromID(false, ...finalIDs) }
         }
       }
     } else {
-      const resp = await this.populateRequest(ApiResources.SEARCH, {
-        params: {
-          part: ['id', 'snippet'],
-          type: 'video',
-          maxResults: 50,
-          order: 'relevance',
-          videoEmbeddable: true,
-          q: `${artist.artist_name} music`
+      if (channelId) {
+        yield await window.SearchUtils.getYTPlaylistContent(channelId, nextPageToken as any)
+      } else {
+        const resp = await window.SearchUtils.searchYT(`${artist.artist_name}`)
+        if (resp.artists?.length > 0 && resp.artists[0].artist_extra_info?.youtube?.channel_id) {
+          yield await window.SearchUtils.getYTPlaylistContent(resp.artists[0].artist_extra_info.youtube.channel_id)
         }
-      })
-
-      if (resp.items) {
-        resp.items.forEach((val) => finalIDs.push({ id: val.id.videoId, date: val.snippet?.publishedAt }))
-        yield { songs: await this.getSongDetailsFromID(false, ...finalIDs) }
       }
     }
   }

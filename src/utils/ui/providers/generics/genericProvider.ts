@@ -63,7 +63,7 @@ export abstract class GenericProvider {
   public abstract getPlaylistContent(
     id: string,
     invalidateCache?: boolean
-  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }>
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }>
 
   /**
    * Matches playlist link to verify if current provider is suitable for given link
@@ -94,8 +94,8 @@ export abstract class GenericProvider {
    */
   public abstract getArtistSongs(
     artist: Artists,
-    nextPageToken?: string
-  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }>
+    nextPageToken?: unknown
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }>
 
   public abstract searchSongs(term: string): Promise<Song[]>
 
