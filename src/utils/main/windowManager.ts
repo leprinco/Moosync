@@ -7,13 +7,13 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { BrowserWindow, Menu, Tray, app, dialog, protocol } from 'electron'
+import { BrowserWindow, Menu, Tray, app, dialog, protocol, webFrameMain } from 'electron'
 import { SongEvents, WindowEvents } from './ipc/constants'
 import { getWindowSize, setWindowSize, loadPreferences } from './db/preferences'
 
 import { BrowserWindowConstructorOptions } from 'electron/main'
 import path from 'path'
-import { access } from 'fs/promises'
+import { access, readFile } from 'fs/promises'
 import { getActiveTheme } from './themes/preferences'
 import pie from 'puppeteer-in-electron'
 import puppeteer from 'puppeteer-core'
@@ -273,6 +273,30 @@ export class WindowHandler {
     window.on('show', () => {
       this.handleWindowShow(window)
     })
+
+    window.webContents.on(
+      'did-frame-navigate',
+      async (event, url, code, status, isMainFrame, frameProcessId, frameRoutingId) => {
+        if (!isMainFrame && code === 200) {
+          try {
+            const parsedURL = new URL(url)
+            if (parsedURL.host === 'www.youtube.com') {
+              const frame = webFrameMain.fromId(frameProcessId, frameRoutingId)
+              if (frame) {
+                try {
+                  const script = await readFile(path.join(__static, 'youtube_age_bypass.js'), { encoding: 'utf-8' })
+                  await frame.executeJavaScript(script)
+                } catch (e) {
+                  console.error('Failed to execute youtube content warning bypass')
+                }
+              }
+            }
+          } catch {
+            return
+          }
+        }
+      }
+    )
 
     // TODO: Hopefully expand the blocklist in future
     window.webContents.session.webRequest.onBeforeRequest(
