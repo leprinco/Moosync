@@ -422,9 +422,14 @@ export class YTScraper extends CacheHandler {
     id: string,
     page?: ytpl.Continuation
   ): Promise<{ songs: Song[]; nextPageToken?: ytpl.Continuation }> {
-    const cache = this.getCache(`playlistContent:${id}`)
+    const cache = this.getCache(`playlistContent:${id}:page:${JSON.stringify(page)}`)
     if (cache) {
       return JSON.parse(cache)
+    }
+
+    // JSON.stringify cannot set Infinity.
+    if (page && (page as any).length >= 3 && (page as any)[3]?.limit === null) {
+      ;(page as any)[3].limit = Infinity
     }
 
     const songList: Song[] = []
@@ -441,7 +446,7 @@ export class YTScraper extends CacheHandler {
     }
 
     const ret = { songs: songList, nextPageToken: songs.continuation ?? undefined }
-    this.addToCache(`playlistContent:${id}`, JSON.stringify(ret))
+    this.addToCache(`playlistContent:${id}:page:${JSON.stringify(page)}`, JSON.stringify(ret))
     return ret
   }
 }
