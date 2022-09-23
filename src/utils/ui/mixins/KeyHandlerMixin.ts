@@ -23,6 +23,8 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
     this.keyboardHotKeyMap = Object.freeze(
       await window.PreferenceUtils.loadSelective('hotkeys', false, defaultKeybinds)
     )
+
+    console.log(this.keyboardHotKeyMap)
   }
 
   private onlyRequiredKeysPressed(requiredKeys: string[]) {
@@ -81,6 +83,9 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
         break
       case HotkeyEvents.QUEUE_TOGGLE:
         bus.$emit('onToggleSlider')
+        break
+      case HotkeyEvents.FULLSCREEN:
+        window.WindowUtils.toggleFullscreen(true)
         break
     }
   }

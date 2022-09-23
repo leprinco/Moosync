@@ -312,6 +312,13 @@ export class WindowHandler {
     window?.minimizable && window.minimize()
   }
 
+  public toggleFullscreen(isMainWindow = true) {
+    const window = WindowHandler.getWindow(isMainWindow)
+    if (window?.fullScreenable) {
+      window.setFullScreen(!window.isFullScreen())
+    }
+  }
+
   public maximizeWindow(isMainWindow = true) {
     const window = WindowHandler.getWindow(isMainWindow)
     if (window?.maximizable) {

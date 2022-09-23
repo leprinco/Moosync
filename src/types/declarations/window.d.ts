@@ -205,6 +205,7 @@ interface windowUtils {
   closeWindow: (isMainWindow: boolean) => Promise<void>
   minWindow: (isMainWindow: boolean) => Promise<void>
   maxWindow: (isMainWindow: boolean) => Promise<boolean>
+  toggleFullscreen: (isMainWindow: boolean) => Promise<void>
   hasFrame: () => Promise<boolean>
   showTitlebarIcons: () => Promise<boolean>
   openFileBrowser: (

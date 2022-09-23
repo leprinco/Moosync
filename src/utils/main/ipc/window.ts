@@ -33,6 +33,8 @@ export class BrowserWindowChannel implements IpcChannelInterface {
       case WindowEvents.MAX_WIN:
         this.maxWindow(event, request as IpcRequest<WindowRequests.MainWindowCheck>)
         break
+      case WindowEvents.TOGGLE_FULLSCREEN:
+        this.toggleFullscreen(event, request as IpcRequest<WindowRequests.MainWindowCheck>)
       case WindowEvents.TOGGLE_DEV_TOOLS:
         this.toggleDevTools(event, request as IpcRequest<WindowRequests.MainWindowCheck>)
         break
@@ -98,6 +100,11 @@ export class BrowserWindowChannel implements IpcChannelInterface {
 
   private minWindow(event: Electron.IpcMainEvent, request: IpcRequest<WindowRequests.MainWindowCheck>) {
     _windowHandler.minimizeWindow(!!request.params.isMainWindow)
+    event.reply(request.responseChannel)
+  }
+
+  private toggleFullscreen(event: Electron.IpcMainEvent, request: IpcRequest<WindowRequests.MainWindowCheck>) {
+    _windowHandler.toggleFullscreen(!!request.params.isMainWindow)
     event.reply(request.responseChannel)
   }
 

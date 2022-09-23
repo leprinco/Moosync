@@ -24,7 +24,8 @@ export enum HotkeyEvents {
   QUEUE_TOGGLE,
   RELOAD_PAGE,
   DEVTOOLS_TOGGLE,
-  HELP
+  HELP,
+  FULLSCREEN
 }
 
 export const HotKeyEventsExtras: Record<HotkeyEvents, { title: string }> = {
@@ -78,6 +79,9 @@ export const HotKeyEventsExtras: Record<HotkeyEvents, { title: string }> = {
   },
   [HotkeyEvents.HELP]: {
     title: 'Open help'
+  },
+  [HotkeyEvents.FULLSCREEN]: {
+    title: 'Fullscreen'
   }
 }
 
@@ -107,8 +111,12 @@ export const defaultKeybinds: HotkeyPair[] = [
     value: HotkeyEvents.RELOAD_PAGE
   },
   {
-    key: [['F11']],
+    key: [['Control', 'ShiftLeft', 'KeyI']],
     value: HotkeyEvents.DEVTOOLS_TOGGLE
+  },
+  {
+    key: [['F11']],
+    value: HotkeyEvents.FULLSCREEN
   },
   {
     key: [['F1']],

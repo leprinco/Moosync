@@ -99,7 +99,9 @@ export enum WindowEvents {
 
   UPDATE_ZOOM = 'updateZoom',
 
-  GET_PLATFORM = 'getPlatform'
+  GET_PLATFORM = 'getPlatform',
+
+  TOGGLE_FULLSCREEN = 'toggleFullscreen'
 }
 
 export enum AlbumEvents {
