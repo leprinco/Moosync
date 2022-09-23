@@ -202,22 +202,35 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
     }
   }
 
-  private loadNextPage() {
+  private async loadNextPage() {
     if (this.nextPageToken) {
-      this.fetchSongListAsync()
+      await this.fetchSongListAsync()
     }
   }
 
-  private playPlaylist() {
-    this.playTop(this.songList)
+  private async fetchAll(afterFetch: (songs: Song[]) => void) {
+    let songListLastSong = this.songList.length - 1
+
+    while (this.nextPageToken) {
+      await this.loadNextPage()
+      afterFetch(this.songList.slice(songListLastSong))
+      songListLastSong = this.songList.length
+    }
   }
 
-  private addPlaylistToQueue() {
+  private async playPlaylist() {
+    this.playTop(this.songList)
+    this.fetchAll(this.queueSong)
+  }
+
+  private async addPlaylistToQueue() {
     this.queueSong(this.songList)
+    this.fetchAll(this.queueSong)
   }
 
   private addPlaylistToLibrary() {
     this.addSongsToLibrary(...this.songList)
+    this.fetchAll((songs) => this.addSongsToLibrary(...songs))
   }
 }
 </script>
