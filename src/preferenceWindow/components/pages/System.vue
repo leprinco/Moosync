@@ -101,6 +101,7 @@
             :isExtension="false"
             :title="$t('settings.system.youtube.client_id')"
             :tooltip="$t('settings.system.youtube.client_id_tooltip')"
+            @tooltipClick="openYoutubeHelp"
             prefKey="youtube.client_id"
           />
           <EditText
@@ -108,6 +109,7 @@
             :isExtension="false"
             :title="$t('settings.system.youtube.client_secret')"
             :tooltip="$t('settings.system.youtube.client_secret_tooltip')"
+            @tooltipClick="openYoutubeHelp"
             prefKey="youtube.client_secret"
           />
 
@@ -340,7 +342,7 @@ export default class System extends Vue {
   }
 
   private openYoutubeHelp() {
-    window.WindowUtils.openExternal('https://github.com/Moosync/Moosync#enabling-youtube-integration')
+    window.WindowUtils.openExternal('https://moosync.app/wiki/integrations#enabling-youtube-integration')
   }
 
   private closeModal() {
