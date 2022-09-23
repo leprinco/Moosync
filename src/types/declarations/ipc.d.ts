@@ -138,6 +138,11 @@ declare namespace PreferenceRequests {
   interface SongView {
     menu: songMenu
   }
+
+  interface ListenKey {
+    key: string
+    isMainWindow: boolean
+  }
 }
 
 declare namespace SearchRequests {

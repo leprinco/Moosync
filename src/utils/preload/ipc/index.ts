@@ -29,12 +29,12 @@ export class IpcRendererHolder {
     })
   }
 
-  public on<T>(channel: string, callback: (...args: T[]) => void) {
-    this.ipcRenderer.on(channel, (_, ...args: T[]) => callback(...args))
+  public on(channel: string, callback: (...args: any[]) => void) {
+    this.ipcRenderer.on(channel, (_, ...args) => callback(...args))
   }
 
-  public once<T>(channel: string, callback: (...args: T[]) => void) {
-    this.ipcRenderer.once(channel, (_, ...args: T[]) => callback(...args))
+  public once(channel: string, callback: (...args: any[]) => void) {
+    this.ipcRenderer.once(channel, (_, ...args) => callback(...args))
   }
 
   public removeAllListener(channel: string) {

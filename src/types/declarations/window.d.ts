@@ -185,7 +185,11 @@ interface preferenceUtils {
   saveSelective: (key: string, value: unknown, isExtension?: boolean) => Promise<void>
   loadSelective: <T>(key: string, isExtension?: boolean, defaultValue?: T) => Promise<T>
   notifyPreferenceChanged: (key: string, value: unknown) => Promise<void>
-  listenPreferenceChange: (callback: (key: string, value: unknown) => void) => void
+  listenPreferenceChanged: (
+    key: string,
+    isMainWindow: boolean,
+    callback: (key: string, value: never) => void
+  ) => Promise<void>
 }
 
 /**
@@ -296,9 +300,6 @@ interface themeUtils {
   setSongView: (menu: songMenu) => Promise<void>
   getSongView: () => Promise<songMenu>
   setLanguage: (key: string) => Promise<void>
-  listenThemeChanged: (callback: (themeId: ThemeDetails) => void) => void
-  listenSongViewChanged: (callback: (menu: songMenu) => void) => void
-  listenLanguageChanged: (callback: (language: string) => void) => void
 }
 
 interface updateUtils {

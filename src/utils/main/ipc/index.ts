@@ -81,7 +81,3 @@ export function getStoreChannel() {
   }
   return storeChannel
 }
-
-export function notifyRenderer(notif: NotificationObject, mainWindow = true) {
-  WindowHandler.getWindow(mainWindow)?.webContents.send(IpcEvents.NOTIFIER, notif)
-}
