@@ -12,17 +12,17 @@
     <b-row>
       <PreferenceHeader v-if="title" :title="title" :tooltip="tooltip" />
       <b-col cols="auto" class="new-keybind ml-4">
-        <div @click="addKeybind">Add keybind</div>
+        <div @click="addKeybind">Add Hotkey</div>
       </b-col>
     </b-row>
 
     <b-row no-gutters class="w-100 mt-2 d-flex keybind-row">
-      <b-row no-gutters class="w-100">
+      <b-row no-gutters class="w-100 mb-2">
         <b-col><div>Actions</div></b-col>
-        <b-col><div>Keybinds</div></b-col>
+        <b-col class="keybind-title"><div>Keybinds</div></b-col>
+        <b-col><div></div></b-col>
       </b-row>
-      <b-row no-gutters class="w-100 actions-row" v-for="(defined, index) of definedActions" :key="defined.value">
-        <div class="divider"></div>
+      <b-row no-gutters class="w-100 actions-row mt-2" v-for="(defined, index) of definedActions" :key="defined.value">
         <b-col>
           <b-row no-gutters>
             <b-dropdown block :text="getActiveTitle(index)" toggle-class="dropdown-button h-100" class="w-100">
@@ -122,7 +122,7 @@ export default class HotkeyGroup extends Mixins(ExtensionPreferenceMixin) {
       .replaceAll('Decimal', ' .')
       .replaceAll('Left', '')
       .replaceAll('Control', 'CTRL')
-      .replace(/([A-Z])/g, ' $1')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
 
     const right = input.indexOf('Right')
     if (right != -1) {
@@ -243,4 +243,7 @@ export default class HotkeyGroup extends Mixins(ExtensionPreferenceMixin) {
   color: var(--accent)
   &:hover
     cursor: pointer
+
+.keybind-title
+  margin-left: 37px
 </style>

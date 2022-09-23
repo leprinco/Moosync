@@ -14,6 +14,7 @@
       prefKey="hotkeys"
       :isExtension="false"
       title="Hotkeys"
+      tooltip="Hotkeys to easily perform actions using button presses"
       :defaultValue="defaultKeybinds"
     />
   </div>
