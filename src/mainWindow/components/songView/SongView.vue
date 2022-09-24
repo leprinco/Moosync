@@ -201,6 +201,7 @@ export default class AllSongs extends mixins(
 
   private onSearchChange(text: string) {
     this.searchText = text
+    this.$emit('onSearchChange', text)
   }
 
   private onScroll(e: MouseEvent) {

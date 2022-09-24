@@ -26,6 +26,7 @@
       :detailsButtonGroup="buttonGroups"
       :optionalProviders="artistSongProviders"
       @onScrollEnd="loadNextPage"
+      @onSearchChange="onSearchChange"
     />
   </div>
 </template>
@@ -212,13 +213,19 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     Vue.set(this.loadingMap, 'local', false)
   }
 
-  private async fetchAll(afterFetch: (songs: Song[]) => void) {
-    let songListLastSong = this.songList.length - 1
+  private isFetching = false
 
-    while (this.nextPageToken) {
-      await this.loadNextPage()
-      afterFetch(this.songList.slice(songListLastSong))
-      songListLastSong = this.songList.length
+  private async fetchAll(afterFetch?: (songs: Song[]) => void) {
+    if (!this.isFetching) {
+      this.isFetching = true
+      let songListLastSong = this.songList.length - 1
+
+      while (this.nextPageToken) {
+        await this.loadNextPage()
+        afterFetch && afterFetch(this.songList.slice(songListLastSong))
+        songListLastSong = this.songList.length
+      }
+      this.isFetching = false
     }
   }
 
@@ -291,6 +298,10 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
         }
       }
     }
+  }
+
+  private onSearchChange() {
+    this.fetchAll()
   }
 }
 </script>
