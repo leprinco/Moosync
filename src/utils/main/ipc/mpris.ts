@@ -8,7 +8,7 @@
  */
 
 import { IpcEvents, MprisEvents } from './constants'
-import { ButtonEnum, MediaController, PlaybackStateEnum } from 'media-controller'
+import { ButtonEnum, MediaController, PlaybackStateEnum, PlayerButtons } from 'media-controller'
 import { WindowHandler } from '../windowManager'
 import { nativeImage, ThumbarButton } from 'electron'
 import path from 'path'
@@ -18,6 +18,8 @@ export class MprisChannel implements IpcChannelInterface {
   private controller = new MediaController()
 
   private buttonState: MprisRequests.ButtonStatus = {}
+
+  private buttonStatusCallbacks: ((buttons: PlayerButtons) => void)[] = []
 
   constructor() {
     this.controller.createPlayer('Moosync')
@@ -92,6 +94,10 @@ export class MprisChannel implements IpcChannelInterface {
         shuffle: this.buttonState.shuffle,
         loop: this.buttonState.loop
       })
+
+      this.buttonStatusCallbacks.forEach((val) => {
+        val(this.buttonState)
+      })
       this.setWindowToolbar()
     }
 
@@ -102,10 +108,13 @@ export class MprisChannel implements IpcChannelInterface {
     this.buttonState['play'] = !isPlaying
     this.buttonState['pause'] = isPlaying
 
+    this.buttonStatusCallbacks.forEach((val) => {
+      val(this.buttonState)
+    })
     this.setWindowToolbar()
   }
 
-  private onButtonPressed(button: ValueOf<typeof ButtonEnum>) {
+  public onButtonPressed(button: ValueOf<typeof ButtonEnum>) {
     WindowHandler.getWindow(true)?.webContents.send(MprisEvents.ON_BUTTON_PRESSED, button)
   }
 
@@ -153,5 +162,9 @@ export class MprisChannel implements IpcChannelInterface {
 
       window.setThumbarButtons(buttons)
     }
+  }
+
+  public onButtonStatusChange(callback: (buttons: PlayerButtons) => void) {
+    this.buttonStatusCallbacks.push(callback)
   }
 }

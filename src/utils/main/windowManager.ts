@@ -21,6 +21,8 @@ import { getExtensionHostChannel } from './ipc'
 import { SongDB } from './db/index'
 import https from 'https'
 import { Readable } from 'stream'
+import { getMprisChannel } from './ipc/index'
+import { ButtonEnum, PlayerButtons } from 'media-controller'
 
 export class WindowHandler {
   private static mainWindow: number
@@ -448,6 +450,16 @@ class AppExitHandler {
 class TrayHandler {
   private _tray: Tray | null = null
 
+  private extraButtons: (Electron.MenuItem | Electron.MenuItemConstructorOptions)[] = []
+
+  constructor() {
+    getMprisChannel().onButtonStatusChange((buttons) => {
+      this.extraButtons = this.buildControlButtons(buttons)
+      // Tray will be updated only if it exists
+      this.setupContextMenu()
+    })
+  }
+
   public async createTray() {
     if (!this._tray || this._tray?.isDestroyed()) {
       try {
@@ -462,6 +474,72 @@ class TrayHandler {
     this.setupContextMenu()
   }
 
+  private buildControlButtons(buttonState: PlayerButtons) {
+    const buttons: (Electron.MenuItem | Electron.MenuItemConstructorOptions)[] = []
+    if (buttonState.play) {
+      buttons.push({
+        label: 'Play',
+        click: () => {
+          getMprisChannel().onButtonPressed(ButtonEnum.Play)
+        }
+      })
+    }
+
+    if (buttonState.pause) {
+      buttons.push({
+        label: 'Pause',
+        click: () => {
+          getMprisChannel().onButtonPressed(ButtonEnum.Pause)
+        }
+      })
+    }
+
+    if (buttonState.next) {
+      buttons.push({
+        label: 'Next',
+        click: () => {
+          getMprisChannel().onButtonPressed(ButtonEnum.Next)
+        }
+      })
+    }
+
+    if (buttonState.prev) {
+      buttons.push({
+        label: 'Prev',
+        click: () => {
+          getMprisChannel().onButtonPressed(ButtonEnum.Previous)
+        }
+      })
+    }
+
+    if (buttonState.loop) {
+      buttons.push({
+        label: 'Repeat',
+        click: () => {
+          getMprisChannel().onButtonPressed(ButtonEnum.Repeat)
+        }
+      })
+    } else {
+      buttons.push({
+        label: 'No Repeat',
+        click: () => {
+          getMprisChannel().onButtonPressed(ButtonEnum.Repeat)
+        }
+      })
+    }
+
+    if (buttonState.shuffle) {
+      buttons.push({
+        label: 'Shuffle',
+        click: () => {
+          getMprisChannel().onButtonPressed(ButtonEnum.Shuffle)
+        }
+      })
+    }
+
+    return buttons
+  }
+
   private setupContextMenu() {
     if (this._tray && !this._tray.isDestroyed()) {
       this._tray.setContextMenu(
@@ -474,6 +552,7 @@ class TrayHandler {
               WindowHandler.getWindow()?.show()
             }
           },
+          ...this.extraButtons,
           {
             label: 'Quit',
             click: function () {
