@@ -320,7 +320,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
         if (time >= this.currentSong.duration - 10) {
           await this.preloadNextSong()
           if (this.isSilent()) {
-            this.nextSong()
+            this.onSongEnded()
           }
         }
       }
@@ -339,6 +339,8 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
       // Stop loading when state of player changes
       vxm.player.loading = false
       this.cancelBufferTrap()
+
+      console.log(state)
 
       if (state === 'STOPPED') {
         this.onSongEnded()
@@ -598,6 +600,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
   }
 
   private async loadAudio(song: Song, loadedState: boolean) {
+    this.unloadAudio()
     console.debug('Loading new song', song)
 
     if (this.isSyncing) {
