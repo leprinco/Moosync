@@ -622,7 +622,7 @@ export class YoutubeProvider extends GenericAuth implements GenericProvider, Gen
       artists.push(...this.parseSearchArtist(...resp.items))
     } else {
       const resp = await window.SearchUtils.searchYT(term, undefined, false, false, true)
-      if (resp && resp.songs.length > 0) {
+      if (resp && resp.artists.length > 0) {
         artists.push(...resp.artists)
       }
     }
@@ -670,7 +670,7 @@ export class YoutubeProvider extends GenericAuth implements GenericProvider, Gen
       playlists.push(...this.parseSearchPlaylists(...resp.items))
     } else {
       const resp = await window.SearchUtils.searchYT(term, undefined, false, false, true)
-      if (resp && resp.songs.length > 0) {
+      if (resp && resp.playlists.length > 0) {
         playlists.push(...resp.playlists)
       }
     }

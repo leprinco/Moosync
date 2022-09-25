@@ -36,6 +36,8 @@ export const store = new Store({
   serialize: (value) => JSON.stringify(value)
 })
 
+const preferenceListenKeys: { key: string; isMainWindow: boolean; channel: string }[] = []
+
 /**
  * Saves preferences
  * All preferences are stored under a key "prefs"
@@ -76,7 +78,11 @@ export function saveSelectivePreference(key: string, value: unknown, isExtension
   } else {
     store.delete(`prefs.${isExtension ? 'extension.' : ''}${key}` as unknown as 'prefs')
   }
-  if (notify) getPreferenceChannel().notifyPreferenceWindow(key)
+
+  const listenKey = preferenceListenKeys.find((val) => val.key === key)
+  if (listenKey) {
+    getPreferenceChannel().notifyWindow(listenKey.key, value, listenKey.isMainWindow, listenKey.channel)
+  }
 }
 
 /**
@@ -255,4 +261,10 @@ export function getDisabledPaths(paths: togglePaths): string[] {
 
 function getDefaultMusicPaths() {
   return app.getPath('music')
+}
+
+export function setPreferenceListenKey(key: string, isMainWindow = false) {
+  const channel = `${key}:mainWindow:${isMainWindow}`
+  preferenceListenKeys.push({ key, isMainWindow, channel })
+  return channel
 }

@@ -117,8 +117,17 @@ contextBridge.exposeInMainWorld('PreferenceUtils', {
       type: PreferenceEvents.PREFERENCE_REFRESH,
       params: { key, value }
     }),
-  listenPreferenceChange: (callback: (...args: unknown[]) => void) =>
-    ipcRendererHolder.on(PreferenceEvents.PREFERENCE_REFRESH, callback)
+
+  listenPreferenceChanged: (key: string, isMainWindow: boolean, callback: (key: string, value: unknown) => void) => {
+    ipcRendererHolder
+      .send<PreferenceRequests.ListenKey>(IpcEvents.PREFERENCES, {
+        type: PreferenceEvents.LISTEN_PREFERENCE,
+        params: { key, isMainWindow }
+      })
+      .then((channel) => {
+        ipcRendererHolder.on(channel as string, callback)
+      })
+  }
 })
 
 contextBridge.exposeInMainWorld('Store', {
@@ -314,16 +323,7 @@ contextBridge.exposeInMainWorld('ThemeUtils', {
     ipcRendererHolder.send<PreferenceRequests.LanguageKey>(IpcEvents.PREFERENCES, {
       type: PreferenceEvents.SET_LANGUAGE,
       params: { key }
-    }),
-
-  listenThemeChanged: (callback: (themeId: ThemeDetails) => void) =>
-    ipcRendererHolder.on(PreferenceEvents.THEME_REFRESH, callback),
-
-  listenSongViewChanged: (callback: (menu: songMenu) => void) =>
-    ipcRendererHolder.on(PreferenceEvents.SONG_VIEW_REFRESH, callback),
-
-  listenLanguageChanged: (callback: (language: string) => void) =>
-    ipcRendererHolder.on(PreferenceEvents.LANGUAGE_REFRESH, callback)
+    })
 })
 
 contextBridge.exposeInMainWorld('WindowUtils', {
@@ -348,6 +348,12 @@ contextBridge.exposeInMainWorld('WindowUtils', {
   maxWindow: (isMainWindow: boolean) =>
     ipcRendererHolder.send<WindowRequests.MainWindowCheck>(IpcEvents.BROWSER_WINDOWS, {
       type: WindowEvents.MAX_WIN,
+      params: { isMainWindow }
+    }),
+
+  toggleFullscreen: (isMainWindow: boolean) =>
+    ipcRendererHolder.send<WindowRequests.MainWindowCheck>(IpcEvents.BROWSER_WINDOWS, {
+      type: WindowEvents.TOGGLE_FULLSCREEN,
       params: { isMainWindow }
     }),
 

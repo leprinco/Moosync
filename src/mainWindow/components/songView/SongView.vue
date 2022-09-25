@@ -169,18 +169,30 @@ export default class AllSongs extends mixins(
   }
 
   private playAll() {
-    this.playTop(this.selected ?? this.songList)
-    this.selected = this.selectedCopy
+    if (this.selected) {
+      this.playTop(this.selected)
+      this.selected = this.selectedCopy
+      return
+    }
+    this.$emit('playAll')
   }
 
   private addToQueue() {
-    this.queueSong(this.selected ?? this.songList)
-    this.selected = this.selectedCopy
+    if (this.selected) {
+      this.queueSong(this.selected ?? this.songList)
+      this.selected = this.selectedCopy
+      return
+    }
+    this.$emit('addToQueue')
   }
 
   private addToLibrary() {
-    this.addSongsToLibrary(...(this.selected ?? this.songList))
-    this.selected = this.selectedCopy
+    if (this.selected) {
+      this.addSongsToLibrary(...(this.selected ?? this.songList))
+      this.selected = this.selectedCopy
+      return
+    }
+    this.$emit('addToLibrary')
   }
 
   private onOptionalProviderChanged(...args: unknown[]) {
@@ -189,6 +201,7 @@ export default class AllSongs extends mixins(
 
   private onSearchChange(text: string) {
     this.searchText = text
+    this.$emit('onSearchChange', text)
   }
 
   private onScroll(e: MouseEvent) {

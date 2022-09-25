@@ -64,7 +64,8 @@ export enum PreferenceEvents {
   THEME_REFRESH = 'themeRefresh',
   SONG_VIEW_REFRESH = 'songViewRefresh',
   SET_LANGUAGE = 'setLanguage',
-  LANGUAGE_REFRESH = 'languageRefresh'
+  LANGUAGE_REFRESH = 'languageRefresh',
+  LISTEN_PREFERENCE = 'listenPreference'
 }
 
 export enum WindowEvents {
@@ -99,7 +100,9 @@ export enum WindowEvents {
 
   UPDATE_ZOOM = 'updateZoom',
 
-  GET_PLATFORM = 'getPlatform'
+  GET_PLATFORM = 'getPlatform',
+
+  TOGGLE_FULLSCREEN = 'toggleFullscreen'
 }
 
 export enum AlbumEvents {

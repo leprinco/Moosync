@@ -80,13 +80,15 @@ export class ExtensionPreferenceMixin extends Vue {
   }
 
   private registerPreferenceListener() {
-    window.PreferenceUtils.listenPreferenceChange((...[key]) => {
-      if (typeof key === 'string') {
-        if (this.prefKey === key) {
-          this.fetch()
+    if (this.prefKey) {
+      window.PreferenceUtils.listenPreferenceChanged(this.prefKey, false, (key) => {
+        if (typeof key === 'string') {
+          if (this.prefKey === key) {
+            this.fetch()
+          }
         }
-      }
-    })
+      })
+    }
   }
 
   public onInputChange() {

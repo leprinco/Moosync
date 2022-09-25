@@ -12,7 +12,8 @@ import {
   loadSelectivePreference,
   onPreferenceChanged,
   removeSelectivePreference,
-  saveSelectivePreference
+  saveSelectivePreference,
+  setPreferenceListenKey
 } from '../db/preferences'
 
 import { WindowHandler } from '../windowManager'
@@ -32,6 +33,7 @@ import {
 
 export class PreferenceChannel implements IpcChannelInterface {
   name = IpcEvents.PREFERENCES
+
   handle(event: Electron.IpcMainEvent, request: IpcRequest): void {
     switch (request.type) {
       case PreferenceEvents.SAVE_SELECTIVE_PREFERENCES:
@@ -67,9 +69,8 @@ export class PreferenceChannel implements IpcChannelInterface {
       case PreferenceEvents.SET_SONG_VIEW:
         this.setSongView(event, request as IpcRequest<PreferenceRequests.SongView>)
         break
-      case PreferenceEvents.SET_LANGUAGE:
-        this.setActiveLanguage(event, request as IpcRequest<PreferenceRequests.LanguageKey>)
-        break
+      case PreferenceEvents.LISTEN_PREFERENCE:
+        this.setListenKey(event, request as IpcRequest<PreferenceRequests.ListenKey>)
     }
   }
 
@@ -127,7 +128,6 @@ export class PreferenceChannel implements IpcChannelInterface {
       const theme = loadTheme(request.params.id)
       if (theme || request.params.id === 'default') {
         setActiveTheme(request.params.id)
-        WindowHandler.getWindow(true)?.webContents.send(PreferenceEvents.THEME_REFRESH, theme)
         this.generateIconFile(theme)
       }
     }
@@ -168,7 +168,6 @@ export class PreferenceChannel implements IpcChannelInterface {
   private setSongView(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.SongView>) {
     if (request.params.menu) {
       setSongView(request.params.menu)
-      WindowHandler.getWindow(true)?.webContents.send(PreferenceEvents.SONG_VIEW_REFRESH, request.params.menu)
     }
     event.reply(request.responseChannel)
   }
@@ -177,13 +176,15 @@ export class PreferenceChannel implements IpcChannelInterface {
     event.reply(request.responseChannel, getSongView())
   }
 
-  public notifyPreferenceWindow(key: string) {
-    WindowHandler.getWindow(false)?.webContents.send(PreferenceEvents.PREFERENCE_REFRESH, key)
+  public notifyWindow(key: string, value: unknown, isMainWindow: boolean, channel: string) {
+    console.debug('notifying pref change on channel', channel)
+    WindowHandler.getWindow(isMainWindow)?.webContents.send(channel, key, value)
   }
 
-  private setActiveLanguage(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.LanguageKey>) {
+  private setListenKey(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ListenKey>) {
     if (request.params?.key) {
-      WindowHandler.getWindow(true)?.webContents.send(PreferenceEvents.LANGUAGE_REFRESH, request.params?.key)
+      const channel = setPreferenceListenKey(request.params.key, request.params.isMainWindow)
+      event.reply(request.responseChannel, channel)
     }
   }
 }

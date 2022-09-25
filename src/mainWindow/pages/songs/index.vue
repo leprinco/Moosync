@@ -15,6 +15,8 @@
       :songList="songList"
       :afterSongAddRefreshCallback="requestSongs"
       @onRowContext="getSongMenu(arguments[0], arguments[1], undefined)"
+      @playAll="playSongs"
+      @addToQueue="addSongsToQueue"
     />
   </div>
 </template>
@@ -78,6 +80,14 @@ export default class AllSongs extends mixins(ContextMenuMixin) {
         }
       }
     })
+  }
+
+  private playSongs() {
+    this.playTop(this.songList)
+  }
+
+  private addSongsToQueue() {
+    this.queueSong(this.songList)
   }
 }
 </script>

@@ -9,7 +9,6 @@
 
 import { BrowserWindowChannel } from './window'
 import { ExtensionHostChannel } from './extensionHost'
-import { IpcEvents } from './constants'
 import { LoggerChannel } from './logger'
 import { PlaylistsChannel } from './playlists'
 import { PreferenceChannel } from './preferences'
@@ -17,7 +16,6 @@ import { ScannerChannel } from './scanner'
 import { SearchChannel } from './search'
 import { SongsChannel } from './songs'
 import { StoreChannel } from './store'
-import { WindowHandler } from '../windowManager'
 import { ipcMain } from 'electron'
 import { UpdateChannel } from './update'
 import { NotifierChannel } from './notifier'
@@ -28,6 +26,7 @@ let updateChannel: UpdateChannel | undefined
 let extensionChannel: ExtensionHostChannel | undefined
 let preferenceChannel: PreferenceChannel | undefined
 let storeChannel: StoreChannel | undefined
+let mprisChannel: MprisChannel | undefined
 
 export function registerIpcChannels() {
   const ipcChannels = [
@@ -42,7 +41,7 @@ export function registerIpcChannels() {
     getExtensionHostChannel(),
     getUpdateChannel(),
     new NotifierChannel(),
-    new MprisChannel()
+    getMprisChannel()
   ]
   ipcChannels.forEach((channel) => ipcMain.on(channel.name, (event, request) => channel.handle(event, request)))
 }
@@ -82,6 +81,9 @@ export function getStoreChannel() {
   return storeChannel
 }
 
-export function notifyRenderer(notif: NotificationObject, mainWindow = true) {
-  WindowHandler.getWindow(mainWindow)?.webContents.send(IpcEvents.NOTIFIER, notif)
+export function getMprisChannel() {
+  if (!mprisChannel) {
+    mprisChannel = new MprisChannel()
+  }
+  return mprisChannel
 }

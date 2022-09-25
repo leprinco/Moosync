@@ -24,6 +24,7 @@
       @addToQueue="addPlaylistToQueue"
       @addToLibrary="addPlaylistToLibrary"
       @onScrollEnd="loadNextPage"
+      @onSearchChange="onSearchChange"
     />
   </div>
 </template>
@@ -202,22 +203,46 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
     }
   }
 
-  private loadNextPage() {
+  private async loadNextPage() {
     if (this.nextPageToken) {
-      this.fetchSongListAsync()
+      await this.fetchSongListAsync()
     }
   }
 
-  private playPlaylist() {
-    this.playTop(this.songList)
+  private isFetching = false
+
+  private async fetchAll(afterFetch?: (songs: Song[]) => void) {
+    if (!this.isFetching) {
+      this.isFetching = true
+      let songListLastSong = this.songList.length - 1
+
+      while (this.nextPageToken) {
+        await this.loadNextPage()
+        afterFetch && afterFetch(this.songList.slice(songListLastSong))
+        songListLastSong = this.songList.length
+      }
+
+      this.isFetching = false
+    }
   }
 
-  private addPlaylistToQueue() {
+  private async playPlaylist() {
+    this.playTop(this.songList)
+    this.fetchAll(this.queueSong)
+  }
+
+  private async addPlaylistToQueue() {
     this.queueSong(this.songList)
+    this.fetchAll(this.queueSong)
   }
 
   private addPlaylistToLibrary() {
     this.addSongsToLibrary(...this.songList)
+    this.fetchAll((songs) => this.addSongsToLibrary(...songs))
+  }
+
+  private onSearchChange() {
+    this.fetchAll()
   }
 }
 </script>

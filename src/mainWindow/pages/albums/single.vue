@@ -135,7 +135,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
   private async fetchAlbumCover() {
     if (this.album) {
       if (!(this.album.album_coverPath_high ?? this.album.album_coverPath_low) && this.album.album_name) {
-        if (vxm.providers.spotifyProvider.loggedIn) {
+        if (vxm.providers.loggedInSpotify) {
           const res = (await vxm.providers.spotifyProvider.searchAlbum(this.album.album_name))[0]
           if (res) {
             this.album.album_coverPath_high = res.album_coverPath_high

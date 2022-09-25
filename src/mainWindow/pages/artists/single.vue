@@ -21,10 +21,12 @@
       :isRemote="isRemote"
       @playAll="playArtist"
       @addToQueue="addArtistToQueue"
+      @addToLibrary="addArtistToLibrary"
       @onOptionalProviderChanged="onArtistProviderChanged"
       :detailsButtonGroup="buttonGroups"
       :optionalProviders="artistSongProviders"
       @onScrollEnd="loadNextPage"
+      @onSearchChange="onSearchChange"
     />
   </div>
 </template>
@@ -79,7 +81,7 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
   get buttonGroups(): SongDetailButtons {
     return {
       enableContainer: true,
-      enableLibraryStore: false
+      enableLibraryStore: true
     }
   }
 
@@ -211,12 +213,35 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     Vue.set(this.loadingMap, 'local', false)
   }
 
+  private isFetching = false
+
+  private async fetchAll(afterFetch?: (songs: Song[]) => void) {
+    if (!this.isFetching) {
+      this.isFetching = true
+      let songListLastSong = this.songList.length - 1
+
+      while (this.nextPageToken) {
+        await this.loadNextPage()
+        afterFetch && afterFetch(this.songList.slice(songListLastSong))
+        songListLastSong = this.songList.length
+      }
+      this.isFetching = false
+    }
+  }
+
   private playArtist() {
     this.playTop(this.songList)
+    this.fetchAll(this.queueSong)
   }
 
   private addArtistToQueue() {
     this.queueSong(this.songList)
+    this.fetchAll(this.queueSong)
+  }
+
+  private addArtistToLibrary() {
+    this.addSongsToLibrary(...this.songList)
+    this.fetchAll((songs) => this.addSongsToLibrary(...songs))
   }
 
   private async fetchExtensionSongs(key: string) {
@@ -244,18 +269,18 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     Vue.set(this.loadingMap, key, false)
   }
 
-  private fetchRemoteProviderByKey(key: string) {
+  private async fetchRemoteProviderByKey(key: string) {
     if (key === vxm.providers.youtubeProvider.key) {
-      this.fetchProviderSonglist(vxm.providers.youtubeProvider)
+      await this.fetchProviderSonglist(vxm.providers.youtubeProvider)
       return
     }
 
     if (key === vxm.providers.spotifyProvider.key) {
-      this.fetchProviderSonglist(vxm.providers.spotifyProvider)
+      await this.fetchProviderSonglist(vxm.providers.spotifyProvider)
       return
     }
 
-    this.fetchExtensionSongs(key)
+    await this.fetchExtensionSongs(key)
   }
 
   private onArtistProviderChanged({ key, checked }: { key: string; checked: boolean }) {
@@ -265,14 +290,18 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     }
   }
 
-  private loadNextPage() {
+  private async loadNextPage() {
     if (this.nextPageToken) {
       for (const [key, checked] of Object.entries(this.activeProviders)) {
         if (checked) {
-          this.fetchRemoteProviderByKey(key)
+          await this.fetchRemoteProviderByKey(key)
         }
       }
     }
+  }
+
+  private onSearchChange() {
+    this.fetchAll()
   }
 }
 </script>

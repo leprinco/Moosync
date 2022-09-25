@@ -91,8 +91,11 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       i18n.locale = active?.key
     }
 
-    window.ThemeUtils.listenLanguageChanged((val) => {
-      i18n.locale = val
+    window.PreferenceUtils.listenPreferenceChanged('system_language', true, (_, value: Checkbox[]) => {
+      const activeLang = value.find((val) => val.enabled)?.key
+      if (activeLang) {
+        i18n.locale = activeLang
+      }
     })
   }
 
@@ -337,8 +340,14 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
   }
 
   private listenThemeChanges() {
-    window.ThemeUtils.listenThemeChanged((theme) => this.setColorsToRoot(theme))
-    window.ThemeUtils.listenSongViewChanged((menu) => (vxm.themes.songView = menu))
+    window.PreferenceUtils.listenPreferenceChanged('activeTheme', true, async () => {
+      const theme = await window.ThemeUtils.getActiveTheme()
+      this.setColorsToRoot(theme)
+    })
+
+    window.PreferenceUtils.listenPreferenceChanged('songView', true, (_, value) => {
+      vxm.themes.songView = value
+    })
   }
 
   private async handleInitialSetup() {

@@ -14,7 +14,6 @@ import { IpcMainEvent, app } from 'electron'
 import { SongDB } from '@/utils/main/db/index'
 import fs from 'fs'
 import { loadPreferences } from '@/utils/main/db/preferences'
-import { notifyRenderer } from '.'
 import { writeBuffer } from '@/utils/main/workers/covers'
 import { access, mkdir } from 'fs/promises'
 
@@ -90,8 +89,6 @@ export class ScannerChannel implements IpcChannelInterface {
   }
 
   private async checkDuplicateAndStore(song: Song, cover: TransferDescriptor<Buffer> | undefined) {
-    notifyRenderer({ id: 'scan-status', message: `Scanned ${song.title}`, type: 'info' })
-
     if (song.hash) {
       const existing = SongDB.getByHash(song.hash)
       if (existing.length === 0) {
@@ -228,7 +225,6 @@ export class ScannerChannel implements IpcChannelInterface {
 
   private async updateArtwork(artist: Artists, cover: string | undefined) {
     const ret: Artists = artist
-    notifyRenderer({ id: 'artwork-status', message: `Found artwork for ${artist.artist_name}`, type: 'info' })
     if (cover) {
       ret.artist_coverPath = cover
     } else {
@@ -335,7 +331,6 @@ export class ScannerChannel implements IpcChannelInterface {
     this.setScanning()
 
     const preferences = loadPreferences()
-    notifyRenderer({ id: 'started-scan', message: 'Starting scanning files', type: 'info' })
 
     if (this.scannerWorker) {
       await Thread.terminate(this.scannerWorker)
@@ -364,8 +359,6 @@ export class ScannerChannel implements IpcChannelInterface {
 
     Thread.terminate(this.scannerWorker)
     this.scannerWorker = undefined
-
-    notifyRenderer({ id: 'completed-scan', message: 'Scanning Completed', type: 'info' })
 
     if (this.isScanQueued()) {
       await this.scanAll(event, request)
