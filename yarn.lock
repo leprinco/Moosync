@@ -7795,7 +7795,7 @@ mdn-data@2.0.14:
 
 "media-controller@git+https://github.com/Moosync/MediaController.git":
   version "0.0.2"
-  resolved "git+https://github.com/Moosync/MediaController.git#b3b0532d454bab711a1f337b215850f70677d9b7"
+  resolved "git+https://github.com/Moosync/MediaController.git#d9e7666ea92264418554cd3c812efec9b6c7d658"
   dependencies:
     bindings "~1.5.0"
     mpris-service "^2.1.2"
