@@ -137,7 +137,7 @@ export default class Sidebar extends mixins(PlayerControls, ImgLoader) {
   border: none
   height: 24px
   margin-top: -12px
-  width: calc(100% - 24px - 18px - 15px)
+  width: calc(100% - 24px - 18px - 15px - 30px)
   position: absolute
   transition: background 0.3s cubic-bezier(0.39, 0.58, 0.57, 1), border-radius 1000ms
   text-align: left
