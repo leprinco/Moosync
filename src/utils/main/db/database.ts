@@ -320,9 +320,9 @@ export class SongDBInstance extends DBUtils {
 
         this.db.updateWithBlackList('allsongs', song, ['_id = ?', song._id], ['_id'])
         this.updateAllSongCounts()
-      } else {
-        this.store(song)
       }
+
+      console.warn('Song with id', song._id, 'does not exist in db')
     }
   }
 
