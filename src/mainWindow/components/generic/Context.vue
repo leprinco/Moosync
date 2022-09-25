@@ -43,7 +43,6 @@ Vue.directive('click-outside', {
   },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   unbind: function (el: any) {
-    console.log('unbinding')
     // Remove Event Listeners
     document.removeEventListener('click', el.__vueClickOutside__)
     el.__vueClickOutside__ = null
