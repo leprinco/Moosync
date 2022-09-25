@@ -42,6 +42,7 @@ import { Player } from '@/utils/ui/players/player'
 import { YoutubePlayer } from '@/utils/ui/players/youtube'
 import { LocalPlayer } from '@/utils/ui/players/local'
 import SyncMixin from '@/utils/ui/mixins/SyncMixin'
+import CacheMixin from '@/utils/ui/mixins/CacheMixin'
 import { vxm } from '@/mainWindow/store'
 import ErrorHandler from '@/utils/ui/mixins/errorHandler'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
@@ -50,7 +51,7 @@ import { InvidiousPlayer } from '../../../../utils/ui/players/invidious'
 import { DashPlayer } from '../../../../utils/ui/players/dash'
 
 @Component({})
-export default class AudioStream extends mixins(SyncMixin, PlayerControls, ErrorHandler) {
+export default class AudioStream extends mixins(SyncMixin, PlayerControls, ErrorHandler, CacheMixin) {
   @Ref('audio') audioElement!: HTMLAudioElement
   @Ref('yt-player') ytAudioElement!: HTMLDivElement
 
@@ -583,24 +584,46 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
     this.preloadStatus = 'PRELOADED'
   }
 
+  private async updateSongURLInDB(song: Song) {
+    const songExists = (
+      await window.SearchUtils.searchSongsByOptions({
+        song: {
+          _id: song._id
+        }
+      })
+    )[0]
+
+    if (songExists) {
+      await window.DBUtils.updateSongs([song])
+    }
+  }
+
   private async setPlaybackURLAndDuration(song: Song) {
-    const res = await this.getPlaybackUrlAndDuration(song)
+    let res: { url?: string; duration: number } | undefined = this.getItem(`url_duration:${song._id}`)
+    console.debug('cache url and duration', res)
+    if (!res) {
+      console.debug('playback url and duration not in cache')
+      res = await this.getPlaybackUrlAndDuration(song)
+    }
+
     console.debug('Got playback url and duration', res)
 
     if (res) {
       // song is a reference to vxm.player.currentSong or vxm.sync.currentSong.
-      // Mutating those properties should also mutate song
+      // Mutating those properties should also mutate song and vice-versa
       if (vxm.player.currentSong && song) {
         song.duration = res.duration
         song.playbackUrl = res.url
 
-        await window.DBUtils.updateSongs([song])
+        this.setItem(`url_duration:${song._id}`, res)
+
+        // Song item will be updated only if it exists in db
+        this.updateSongURLInDB(song)
       }
     }
   }
 
   private async loadAudio(song: Song, loadedState: boolean) {
-    this.unloadAudio()
     console.debug('Loading new song', song)
 
     if (this.isSyncing) {
@@ -613,7 +636,9 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
     const PlayerTypes = this.onPlayerTypesChanged(song.type)
 
     vxm.player.loading = true
-    if (!song.playbackUrl || !song.duration) {
+
+    // Playback url and duration fetching needed only for non-local songs
+    if (PlayerTypes !== 'LOCAL' && (!song.playbackUrl || !song.duration)) {
       // Since fetching playbackURL or duration can be a long running operation
       // Unload previous song
       this.unloadAudio()
