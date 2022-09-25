@@ -65,6 +65,12 @@ export class YTScraper extends CacheHandler {
       albums: [],
       genres: []
     }
+
+    const id = this.isYoutubeURL(title)
+    if (id) {
+      this.getFromLink(id).then((val) => res.songs.splice(0, 0, val))
+    }
+
     try {
       scrapeYTMusic &&
         promises.push(
@@ -368,6 +374,77 @@ export class YTScraper extends CacheHandler {
     return costs[s2.length]
   }
 
+  private isYoutubePlaylistURL(url: string) {
+    if (
+      !!url.match(
+        /^((?:https?:)?\/\/)?((?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/
+      )
+    ) {
+      return new URL(url)?.searchParams?.get('list')
+    }
+  }
+
+  private isYoutubeURL(url: string) {
+    try {
+      return ytdl.getVideoID(url)
+    } catch {
+      // probably not a youtube url
+    }
+  }
+
+  private async getFromLink(id: string): Promise<Song> {
+    const resp = await ytdl.getBasicInfo(id)
+    const videoDetails = resp.videoDetails
+
+    const watchURLCache = this.getCache(`watchURL:${id}`)
+
+    return {
+      _id: `youtube:${videoDetails.videoId}`,
+      title: videoDetails.title,
+      duration: parseInt(videoDetails.lengthSeconds),
+      song_coverPath_high: videoDetails.thumbnails.map((val) => val.url).filter((val) => val)[0],
+      artists: videoDetails.author
+        ? [
+            {
+              artist_id: `youtube-author:${videoDetails.author.id}`,
+              artist_name: videoDetails.author.name,
+              artist_coverPath:
+                videoDetails.author.avatar ??
+                videoDetails.author.thumbnails?.map((val) => val.url).filter((val) => val)[0],
+              artist_extra_info: {
+                youtube: {
+                  channel_id: videoDetails.author.id
+                }
+              }
+            }
+          ]
+        : undefined,
+      playbackUrl: watchURLCache ?? this.findBestFormat(resp),
+      url: videoDetails.video_url,
+      date_added: Date.now(),
+      type: 'YOUTUBE'
+    }
+  }
+
+  private findBestFormat(data: ytdl.videoInfo) {
+    let format
+    try {
+      format = ytdl.chooseFormat(data.formats, {
+        quality: 'highestaudio'
+      })
+    } catch (e) {
+      format = ytdl.chooseFormat(data.formats, {})
+    }
+
+    try {
+      const expiry = parseInt(new URL(format.url).searchParams.get('expire') ?? '0') * 1000
+      expiry > 0 && this.addToCache(`watchURL:${data.videoDetails.videoId}`, format.url, expiry)
+    } catch (e) {
+      console.warn('Failed to add watch URL to cache', format.url)
+    }
+    return format.url
+  }
+
   public async getWatchURL(id: string) {
     const cache = this.getCache(`watchURL:${id}`)
     if (cache) {
@@ -376,23 +453,7 @@ export class YTScraper extends CacheHandler {
 
     try {
       const data = await ytdl.getInfo(id)
-
-      let format
-      try {
-        format = ytdl.chooseFormat(data.formats, {
-          quality: 'highestaudio'
-        })
-      } catch (e) {
-        format = ytdl.chooseFormat(data.formats, {})
-      }
-
-      try {
-        const expiry = parseInt(new URL(format.url).searchParams.get('expire') ?? '0') * 1000
-        expiry > 0 && this.addToCache(`watchURL:${id}`, format.url, expiry)
-      } catch (e) {
-        console.warn('Failed to add watch URL to cache', format.url)
-      }
-      return format.url
+      return this.findBestFormat(data)
     } catch (e) {
       console.error('Failed to fetch video ID', id)
       return ''
