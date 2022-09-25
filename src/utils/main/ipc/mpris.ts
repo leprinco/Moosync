@@ -8,14 +8,14 @@
  */
 
 import { IpcEvents, MprisEvents } from './constants'
-import { ButtonEnum, MediaController, PlaybackStateEnum, PlayerButtons } from 'media-controller'
+import MediaController, { ButtonEnum, PlaybackStateEnum, PlayerButtons } from 'media-controller'
 import { WindowHandler } from '../windowManager'
 import { nativeImage, ThumbarButton } from 'electron'
 import path from 'path'
 
 export class MprisChannel implements IpcChannelInterface {
   name = IpcEvents.MPRIS
-  private controller = new MediaController()
+  private controller = MediaController
 
   private buttonState: MprisRequests.ButtonStatus = {}
 
