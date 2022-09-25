@@ -167,15 +167,25 @@ export class BrowserWindowChannel implements IpcChannelInterface {
 
   private async dragFile(event: Electron.IpcMainEvent, request: IpcRequest<WindowRequests.Path>) {
     let filePath: string = request.params.path
+    let showFileThumb = true
     if (filePath) {
       if (filePath.startsWith('http')) {
-        let destPath = path.join(app.getPath('temp'), path.basename(filePath))
+        let destPath = path.join(app.getPath('temp'))
+
+        try {
+          const parsedURL = new URL(filePath)
+          destPath = path.join(destPath, parsedURL.pathname.substring(parsedURL.pathname.lastIndexOf('/') + 1))
+        } catch (e) {
+          console.error('Not a valid url but proceeding', e)
+          destPath = 'dragFile'
+        }
         if (!path.extname(destPath)) {
           destPath += '.jpg'
         }
 
         await downloadFile(filePath, destPath)
         filePath = destPath
+        showFileThumb = false
       }
 
       if (filePath.startsWith('media')) {
@@ -186,7 +196,7 @@ export class BrowserWindowChannel implements IpcChannelInterface {
 
       event.sender.startDrag({
         file: filePath,
-        icon: path.join(__static, 'logo.png')
+        icon: showFileThumb ? filePath : path.join(__static, 'logo.png')
       })
     }
     event.reply(request.responseChannel)
