@@ -283,7 +283,7 @@ async function getInfo(data: mm.IAudioMetadata, stats: stats): Promise<Song> {
 
   return {
     _id: v4(),
-    title: data.common.title ? data.common.title : path.basename(stats.path).split('.').slice(0, -1).join('.').trim(),
+    title: data.common.title ? data.common.title : path.basename(stats.path, path.extname(stats.path)),
     path: stats.path,
     size: stats.size,
     album: {
