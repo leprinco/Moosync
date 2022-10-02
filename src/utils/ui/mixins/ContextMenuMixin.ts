@@ -236,12 +236,6 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
   private getQueueItemMenu(isRemote: boolean, refreshCallback: () => void, item: Song, itemIndex: number) {
     const items = [
       {
-        label: this.$tc('contextMenu.song.playNow'),
-        handler: () => {
-          this.playTop([item])
-        }
-      },
-      {
         label: this.$tc('contextMenu.playlist.add'),
         children: this.populatePlaylistMenu([item], undefined)
       },
