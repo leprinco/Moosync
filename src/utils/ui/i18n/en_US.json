@@ -53,6 +53,7 @@
     "song": {
       "addFromURL": "Add from URL",
       "playNow": "Play Now",
+      "playNext": "Play Next",
       "addToQueue": "Add To Queue",
       "moveToTop": "Move to top",
       "moveToBottom": "Move to bottom",

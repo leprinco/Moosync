@@ -145,6 +145,12 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
         }
       },
       {
+        label: this.$tc('contextMenu.song.playNext'),
+        handler: () => {
+          this.playNext(item)
+        }
+      },
+      {
         label: this.$tc('contextMenu.song.addToQueue'),
         handler: () => {
           this.queueSong(item)

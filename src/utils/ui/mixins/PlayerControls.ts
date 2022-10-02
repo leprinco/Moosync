@@ -34,9 +34,9 @@ export default class PlayerControls extends Vue {
 
   public async queueSong(songs: Song[]) {
     if (this.isSyncing) {
-      await vxm.sync.pushInQueue({ item: songs, top: false })
+      await vxm.sync.pushInQueue({ item: songs, top: false, skipImmediate: false })
     } else {
-      await vxm.player.pushInQueue({ item: songs, top: false })
+      await vxm.player.pushInQueue({ item: songs, top: false, skipImmediate: false })
     }
 
     this.$toasted.show(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
@@ -44,9 +44,21 @@ export default class PlayerControls extends Vue {
 
   public async playTop(songs: Song[]) {
     if (this.isSyncing) {
-      await vxm.sync.pushInQueue({ item: songs.slice(), top: true })
+      await vxm.sync.pushInQueue({ item: songs.slice(), top: true, skipImmediate: true })
     } else {
-      await vxm.player.pushInQueue({ item: songs.slice(), top: true })
+      await vxm.player.pushInQueue({ item: songs.slice(), top: true, skipImmediate: true })
+    }
+
+    if (!this.isSyncing) vxm.player.playAfterLoad = true
+
+    this.$toasted.show(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
+  }
+
+  public async playNext(songs: Song[]) {
+    if (this.isSyncing) {
+      await vxm.sync.pushInQueue({ item: songs.slice(), top: true, skipImmediate: false })
+    } else {
+      await vxm.player.pushInQueue({ item: songs.slice(), top: true, skipImmediate: false })
     }
 
     if (!this.isSyncing) vxm.player.playAfterLoad = true
