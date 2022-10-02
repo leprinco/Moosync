@@ -53,6 +53,10 @@ export class WindowHandler {
     return getActiveTheme()?.theme.primary ?? '#212121'
   }
 
+  private get shouldEnableDevTools() {
+    return process.env.NODE_ENV !== 'production' || process.env.DEBUG_LOGGING
+  }
+
   private get baseWindowProps(): BrowserWindowConstructorOptions {
     return {
       backgroundColor: this.windowBackgroundColor,
@@ -61,6 +65,7 @@ export class WindowHandler {
       show: false,
       icon: path.join(__static, 'logo.png'),
       webPreferences: {
+        devTools: this.shouldEnableDevTools,
         contextIsolation: true,
         // Use pluginOptions.nodeIntegration, leave this alone
         // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
@@ -211,6 +216,7 @@ export class WindowHandler {
       win.loadURL(this.getWindowURL(isMainWindow))
 
       win.removeMenu()
+      Menu.setApplicationMenu(null)
 
       if (this.isDevelopment) win.webContents.openDevTools()
 
