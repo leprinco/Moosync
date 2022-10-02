@@ -285,8 +285,17 @@ export default class System extends Vue {
       this.minimizeToTrayCheckbox,
       this.hardwareAcceleration,
       this.watchFileChanges,
-      this.useInvidiousCheckbox
+      this.useInvidiousCheckbox,
+      this.enableJukeboxMode
     ]
+  }
+
+  get enableJukeboxMode() {
+    return {
+      key: 'jukebox_mode_toggle',
+      title: this.$tc('settings.system.systemSettings.enableJukeboxMode'),
+      enabled: false
+    }
   }
 
   get useInvidiousCheckbox() {

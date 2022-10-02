@@ -9,24 +9,26 @@
 
 <template>
   <b-row align-v="center" align-h="center" no-gutters>
-    <b-col cols="auto" class="mr-4" v-on:click="prevSongWrapper()">
-      <PrevTrack :disabled="!enableTrackControls" />
-    </b-col>
-    <b-col cols="auto" class="mr-4" v-on:click="toggleRepeat()">
-      <Repeat :filled="repeat" />
-    </b-col>
-    <b-col cols="auto" class="mr-4" v-if="isLoading">
-      <b-spinner label="Loading..."></b-spinner>
-    </b-col>
-    <b-col cols="auto" class="mr-4" v-else v-on:click="togglePlayerState()">
-      <Play :play="playerState === 'PLAYING'" />
-    </b-col>
-    <b-col cols="auto" class="mr-4" v-on:click="nextSongWrapper()">
-      <NextTrack :disabled="!enableTrackControls" />
-    </b-col>
-    <b-col cols="auto" class="shuffle-icon" v-on:click="shuffle()">
-      <Shuffle :filled="true" />
-    </b-col>
+    <template v-if="!isJukeboxModeActive">
+      <b-col cols="auto" class="mr-4" v-on:click="prevSongWrapper()">
+        <PrevTrack :disabled="!enableTrackControls" />
+      </b-col>
+      <b-col cols="auto" class="mr-4" v-on:click="toggleRepeat()">
+        <Repeat :filled="repeat" />
+      </b-col>
+      <b-col cols="auto" class="mr-4" v-if="isLoading">
+        <b-spinner label="Loading..."></b-spinner>
+      </b-col>
+      <b-col cols="auto" class="mr-4" v-else v-on:click="togglePlayerState()">
+        <Play :play="playerState === 'PLAYING'" />
+      </b-col>
+      <b-col cols="auto" class="mr-4" v-on:click="nextSongWrapper()">
+        <NextTrack :disabled="!enableTrackControls" />
+      </b-col>
+      <b-col cols="auto" class="shuffle-icon" v-on:click="shuffle()">
+        <Shuffle :filled="true" />
+      </b-col>
+    </template>
     <b-col cols="4" align-self="center" class="timestamp-container">
       <Timestamp class="timestamp" :duration="duration" :timestamp="timestamp" />
     </b-col>
@@ -44,6 +46,7 @@ import { mixins } from 'vue-class-component'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import { vxm } from '@/mainWindow/store'
 import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 
 @Component({
   components: {
@@ -55,7 +58,7 @@ import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue
     Timestamp
   }
 })
-export default class MusicBar extends mixins(PlayerControls) {
+export default class MusicBar extends mixins(PlayerControls, JukeboxMixin) {
   @Prop({ default: 0 })
   private duration!: number
 

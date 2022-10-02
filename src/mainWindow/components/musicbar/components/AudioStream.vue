@@ -10,8 +10,9 @@
 <template>
   <div class="h-100 w-100">
     <div ref="audioHolder" class="h-100 w-100">
-      <div class="w-100 h-100">
+      <div class="w-100 h-100 position-relative">
         <div class="yt-player" ref="yt-player" id="yt-player"></div>
+        <div class="yt-player-overlay h-100 w-100" v-if="isJukeboxModeActive"></div>
       </div>
       <audio id="dummy-yt-player" />
       <audio ref="audio" preload="auto" crossorigin="anonymous" />
@@ -49,9 +50,10 @@ import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import Vue from 'vue'
 import { InvidiousPlayer } from '../../../../utils/ui/players/invidious'
 import { DashPlayer } from '../../../../utils/ui/players/dash'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 
 @Component({})
-export default class AudioStream extends mixins(SyncMixin, PlayerControls, ErrorHandler, CacheMixin) {
+export default class AudioStream extends mixins(SyncMixin, PlayerControls, ErrorHandler, CacheMixin, JukeboxMixin) {
   @Ref('audio') audioElement!: HTMLAudioElement
   @Ref('yt-player') ytAudioElement!: HTMLDivElement
 
@@ -225,6 +227,11 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
   }
 
   async mounted() {
+    // const player = this.$refs['yt-player-container'] as HTMLIFrameElement
+    // player.addEventListener('click', (e) => {
+    //   console.log(e)
+    // })
+
     await this.setupPlayers()
     this.setupSync()
     this.registerListeners()
@@ -726,8 +733,14 @@ a {
 
 <style lang="sass">
 .yt-player
+  position: absolute
   border-radius: 16px
+  z-index: 1 !important
 
 .dash-player
   width: 0 !important
+
+.yt-player-overlay
+  z-index: 2
+  position: absolute
 </style>

@@ -64,6 +64,7 @@
         <AddToQueue title="Add song to queue" @click.native="onRowDoubleClicked(item)"
       /></b-col>
       <b-col
+        v-if="!isJukeboxModeActive"
         cols="auto"
         align-self="center"
         class="ml-5 mr-3 py-2 ellipsis-icon"
@@ -87,6 +88,7 @@ import SpotifyIcon from '@/icons/SpotifyIcon.vue'
 import AddToQueue from '@/icons/AddToQueueIcon.vue'
 import PlainPlay from '@/icons/AddToLibraryIcon.vue'
 import { vxm } from '@/mainWindow/store'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 
 @Component({
   components: {
@@ -98,7 +100,7 @@ import { vxm } from '@/mainWindow/store'
     AddToQueue
   }
 })
-export default class SongListCompactItem extends mixins(ImgLoader) {
+export default class SongListCompactItem extends mixins(ImgLoader, JukeboxMixin) {
   private formattedDuration = convertDuration
 
   private iconType = ''

@@ -23,7 +23,7 @@
         </b-row>
         <span class="logo-title version" v-else>{{ version }}</span>
       </b-col>
-      <b-col cols="auto" class="buttons-group">
+      <b-col cols="auto" class="buttons-group" v-if="!isJukeboxModeActive">
         <b-row no-gutters>
           <b-col cols="auto">
             <div class="titlebar-buttons minimize-button" @click="onMinimize()">
@@ -91,6 +91,9 @@ import Logo from '@/icons/LogoIcon.vue'
 export default class Sidebar extends Vue {
   @Prop({ default: 'main-window' })
   private windowType!: 'main-window' | 'preference-window'
+
+  @Prop({ default: false })
+  private isJukeboxModeActive!: boolean
 
   private isMaximized = false
   private resizedFinished: NodeJS.Timeout | undefined

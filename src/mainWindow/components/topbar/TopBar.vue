@@ -21,6 +21,14 @@
             <!-- <b-col cols="auto"> <Notifications /> </b-col> -->
             <b-col cols="auto"> <Accounts /></b-col>
             <b-col cols="auto"> <Gear id="settings" class="gear-icon" @click.native="openSettings" /></b-col>
+            <b-col cols="auto">
+              <JukeboxIcon
+                v-if="showJukeboxIcon"
+                :isActive="isJukeboxModeActive"
+                class="jukebox-icon button-grow"
+                @click.native="toggleJukeboxMode"
+              />
+            </b-col>
             <b-col cols="auto"> <Update class="update-icon button-grow" /></b-col>
           </b-row>
         </b-col>
@@ -32,7 +40,7 @@
 <script lang="ts">
 import Navigation from '@/mainWindow/components/topbar/components/Navigation.vue'
 import Search from '@/mainWindow/components/topbar/components/Search.vue'
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop } from 'vue-property-decorator'
 import Accounts from '@/mainWindow/components/topbar/components/Accounts.vue'
 import Notifications from '@/mainWindow/components/topbar/components/Notifications.vue'
 import Refresh from '@/icons/RefreshIcon.vue'
@@ -41,6 +49,10 @@ import Update from '@/mainWindow/components/topbar/components/Update.vue'
 import Gear from '@/icons/GearIcon.vue'
 import { EventBus } from '@/utils/main/ipc/constants'
 import { bus } from '../../main'
+import JukeboxIcon from '@/icons/JukeboxIcon.vue'
+import { vxm } from '@/mainWindow/store'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
+import { mixins } from 'vue-class-component'
 
 @Component({
   components: {
@@ -50,12 +62,15 @@ import { bus } from '../../main'
     Notifications,
     Gear,
     Refresh,
-    Update
+    Update,
+    JukeboxIcon
   }
 })
-export default class TopBar extends Vue {
+export default class TopBar extends mixins(JukeboxMixin) {
   @Prop({ default: false })
   private showRefreshIcon!: boolean
+
+  private showJukeboxIcon = false
 
   private openSettings() {
     window.WindowUtils.openWindow(false)
@@ -63,6 +78,30 @@ export default class TopBar extends Vue {
 
   private refreshPage() {
     bus.$emit(EventBus.REFRESH_PAGE)
+  }
+
+  private async handleJukeboxIcon() {
+    const setJukeboxIconVisibility = (systemPrefs: Checkbox[]) => {
+      this.showJukeboxIcon = systemPrefs.find((val) => val.key === 'jukebox_mode_toggle')?.enabled ?? false
+
+      // Disable jukebox mode if icon isn't supposed to be shown
+      if (!this.showJukeboxIcon) {
+        vxm.themes.jukeboxMode = false
+      }
+    }
+
+    setJukeboxIconVisibility(await window.PreferenceUtils.loadSelective<Checkbox[]>('system', false, []))
+    window.PreferenceUtils.listenPreferenceChanged('system', true, (_, value: Checkbox[]) =>
+      setJukeboxIconVisibility(value)
+    )
+  }
+
+  created() {
+    this.handleJukeboxIcon()
+  }
+
+  private toggleJukeboxMode() {
+    vxm.themes.jukeboxMode = !vxm.themes.jukeboxMode
   }
 }
 </script>
@@ -86,6 +125,10 @@ export default class TopBar extends Vue {
   margin-right: 30px
 
 .refresh-icon
+  height: 22px
+  width: 22px
+
+.jukebox-icon
   height: 22px
   width: 22px
 </style>

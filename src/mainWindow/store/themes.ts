@@ -14,6 +14,7 @@ export class ThemeStore extends VuexModule.With({ namespaced: 'themes' }) {
   private _refreshPage = false
   private _sidebarOpen = true
   private _updateAvailable = false
+  private _jukeboxMode = false
 
   public songSortBy: SongSortOptions = { type: 'date_added', asc: true }
   public playlistSortBy: PlaylistSortOptions = { type: 'name', asc: true }
@@ -51,5 +52,13 @@ export class ThemeStore extends VuexModule.With({ namespaced: 'themes' }) {
 
   set sidebarOpen(val: boolean) {
     this._sidebarOpen = val
+  }
+
+  get jukeboxMode() {
+    return this._jukeboxMode
+  }
+
+  set jukeboxMode(val: boolean) {
+    this._jukeboxMode = val
   }
 }

@@ -13,7 +13,13 @@ export class YTPlayerWrapper implements CustomAudioInstance {
   private pauseAsStop = false
 
   constructor(element: string | HTMLElement) {
-    this.instance = new YTPlayer(element)
+    this.instance = new YTPlayer(element, {
+      modestBranding: true,
+      related: false,
+      annotations: false,
+      keyboard: false,
+      controls: false
+    })
     this.elementIdentifier = element instanceof HTMLElement ? element.id : element
     this.supposedVolume = this.volume
     this.instance.on('playing', () => {

@@ -58,7 +58,7 @@
         </b-col>
         <b-col offset="1" cols="7" class="right-container h-100">
           <div class="h-100" v-if="queueOrder.length > 0">
-            <b-row>
+            <b-row v-if="!isJukeboxModeActive">
               <b-col cols="auto" class="d-flex">
                 <div class="rounded-btn" @click="saveAsPlaylist">Save as playlist</div>
                 <div class="rounded-btn" @click="clear">Clear</div>
@@ -118,6 +118,7 @@ import { EventBus } from '@/utils/main/ipc/constants'
 import SongDetailsCompact from '@/mainWindow/components/songView/components/SongDetailsCompact.vue'
 import { PeerMode } from '@/mainWindow/store/syncState'
 import CrossIcon from '@/icons/CrossIcon.vue'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 
 @Component({
   components: {
@@ -128,7 +129,7 @@ import CrossIcon from '@/icons/CrossIcon.vue'
     CrossIcon
   }
 })
-export default class MusicInfo extends mixins(ImageLoader, ModelHelper) {
+export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxMixin) {
   private hasFrame = false
   private ignoreScroll = false
   private lyrics = ''

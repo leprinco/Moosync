@@ -12,7 +12,8 @@ const persist = [
   'themes.songSortBy',
   'themes.playlistSortBy',
   'themes.entitySortBy',
-  'themes._sidebarOpen'
+  'themes._sidebarOpen',
+  'themes._jukeboxMode'
 ]
 
 export function getProxy<T extends typeof VuexModule>(

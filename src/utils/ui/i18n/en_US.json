@@ -121,7 +121,8 @@
         "minimizeTray": "Minimize to tray on close",
         "hardwareAcceleration": "Use GPU hardware acceleration",
         "watchFileChanges": "Watch music directories for changes",
-        "useInvidious": "Use Invidious instead of Youtube"
+        "useInvidious": "Use Invidious instead of Youtube",
+        "enableJukeboxMode": "Enable toggle for Jukebox mode"
       },
       "systemSettings_tooltip": "Settings which are related to your system",
       "audioSettings": {

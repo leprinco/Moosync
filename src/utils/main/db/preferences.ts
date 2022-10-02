@@ -80,6 +80,7 @@ export function saveSelectivePreference(key: string, value: unknown, isExtension
   }
 
   const listenKey = preferenceListenKeys.find((val) => val.key === key)
+  console.log(preferenceListenKeys, listenKey)
   if (listenKey) {
     getPreferenceChannel().notifyWindow(listenKey.key, value, listenKey.isMainWindow, listenKey.channel)
   }

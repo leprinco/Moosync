@@ -20,6 +20,7 @@
           :value="Math.ceil(timestamp * 1000)"
           :duration="0.1"
           :tooltip="'none'"
+          :disabled="isJukeboxModeActive"
           @change="updateTimestmp"
         />
         <b-container fluid class="d-flex bar-container h-100 pb-2">
@@ -78,6 +79,7 @@ import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 
 @Component({
   components: {
@@ -89,7 +91,7 @@ import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue
     Timestamp
   }
 })
-export default class MusicBar extends mixins(ImgLoader) {
+export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
   private forceSeek = 0
   private PlayerState: PlayerState = 'PAUSED'
   private sliderPosition = false
@@ -166,6 +168,12 @@ export default class MusicBar extends mixins(ImgLoader) {
   }
 }
 </script>
+
+<style lang="sass">
+.vue-slider-disabled
+  opacity: 1 !important
+  cursor: auto !important
+</style>
 
 <style lang="sass" scoped>
 .background

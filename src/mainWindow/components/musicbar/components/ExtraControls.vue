@@ -10,6 +10,7 @@
 <template>
   <b-row align-h="end" align-v="center" no-gutters>
     <b-col
+      v-if="!isJukeboxModeActive"
       cols="auto"
       class="slider-container d-flex"
       :style="{ opacity: `${showVolume ? '1' : ''}`, visibility: `${showVolume ? 'visible' : 'hidden'}` }"
@@ -29,7 +30,7 @@
         v-model="volume"
       />
     </b-col>
-    <b-col cols="auto">
+    <b-col cols="auto" v-if="!isJukeboxModeActive">
       <VolumeIcon
         class="volume-icon align-self-center"
         @click.native="muteToggle"
@@ -52,6 +53,7 @@ import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue
 import { bus } from '@/mainWindow/main'
 import { mixins } from 'vue-class-component'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 
 @Component({
   components: {
@@ -60,7 +62,7 @@ import PlayerControls from '@/utils/ui/mixins/PlayerControls'
     Timestamp
   }
 })
-export default class ExtraControls extends mixins(PlayerControls) {
+export default class ExtraControls extends mixins(PlayerControls, JukeboxMixin) {
   private sliderOpen = false
 
   private volumeIconHover = false

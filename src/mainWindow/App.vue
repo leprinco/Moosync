@@ -10,7 +10,7 @@
 <template>
   <div id="app">
     <ContextMenu />
-    <Titlebar />
+    <Titlebar :isJukeboxModeActive="isJukeboxModeActive" />
     <div class="appContainer">
       <router-view></router-view>
     </div>
@@ -47,6 +47,7 @@ import OAuthModal from './components/modals/OAuthModal.vue'
 import FormModal from './components/modals/FormModal.vue'
 import EntityInfoModal from './components/modals/EntityInfoModal.vue'
 import { i18n } from './plugins/i18n'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 
 @Component({
   components: {
@@ -62,7 +63,7 @@ import { i18n } from './plugins/i18n'
     EntityInfoModal
   }
 })
-export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandlerMixin) {
+export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandlerMixin, JukeboxMixin) {
   async created() {
     this.registerNotifier()
     this.setLanguage()
@@ -100,7 +101,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
   }
 
   private async useInvidious() {
-    const useInvidious = (await window.PreferenceUtils.loadSelective<Checkbox[]>('system', false, []))?.find(
+    const useInvidious = (await window.PreferenceUtils.loadSelective<Checkbox[]>('system', false, [])).find(
       (val) => val.key === 'use_invidious'
     )?.enabled
     vxm.providers.useInvidious = useInvidious ?? false
