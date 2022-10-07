@@ -106,7 +106,9 @@ export abstract class GenericProvider {
   public async *getPlaylistContent(
     id: string,
     invalidateCache?: boolean
-  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {}
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {
+    yield { songs: [] }
+  }
 
   /**
    * Matches playlist link to verify if current provider is suitable for given link
@@ -141,7 +143,9 @@ export abstract class GenericProvider {
    * Gets recommendations
    * @returns recommendations
    */
-  public async *getRecommendations(): AsyncGenerator<Song[]> {}
+  public async *getRecommendations(): AsyncGenerator<Song[]> {
+    yield []
+  }
 
   /**
    * Get songs by artist ID
@@ -150,7 +154,9 @@ export abstract class GenericProvider {
   public async *getArtistSongs(
     artist: Artists,
     nextPageToken?: unknown
-  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {}
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {
+    yield { songs: [] }
+  }
 
   public async searchSongs(term: string): Promise<Song[]> {
     return []
@@ -172,7 +178,9 @@ export abstract class GenericProvider {
     return []
   }
 
-  public async scrobble(song: Song): Promise<void> {}
+  public async scrobble(song: Song): Promise<void> {
+    return
+  }
 
   public abstract provides(): ProviderScopes[]
 }
