@@ -8,11 +8,9 @@
  */
 
 import { AuthFlow, AuthStateEmitter } from '@/utils/ui/oauth/flow'
-import { GenericProvider, cache } from '@/utils/ui/providers/generics/genericProvider'
+import { GenericProvider, cache, ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
 
 import { AuthorizationServiceConfiguration } from '@openid/appauth'
-import { GenericAuth } from './generics/genericAuth'
-import { GenericRecommendation } from './generics/genericRecommendations'
 import axios from 'axios'
 import { once } from 'events'
 import qs from 'qs'
@@ -31,12 +29,21 @@ enum ApiResources {
   SEARCH = 'search'
 }
 
-export class YoutubeProvider extends GenericAuth implements GenericProvider, GenericRecommendation {
+export class YoutubeProvider extends GenericProvider {
   private auth!: AuthFlow
   private _config!: ReturnType<YoutubeProvider['getConfig']>
 
   public get key() {
     return 'youtube'
+  }
+
+  provides(): ProviderScopes[] {
+    return [
+      ProviderScopes.SEARCH,
+      ProviderScopes.PLAYLISTS,
+      ProviderScopes.ARTIST_SONGS,
+      ProviderScopes.RECOMMENDATIONS
+    ]
   }
 
   private getConfig(oauthChannel: string, id: string, secret: string) {

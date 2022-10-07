@@ -8,10 +8,10 @@
  */
 
 import { Component, Vue } from 'vue-property-decorator'
-import { GenericAuth } from '@/utils/ui/providers/generics/genericAuth'
 import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 
 @Component
 export default class AccountsMixin extends Vue {
@@ -32,7 +32,7 @@ export default class AccountsMixin extends Vue {
     username: string | undefined
     bgColor: string
     icon: string
-    provider: GenericAuth
+    provider: GenericProvider
   }[] = [
     {
       name: this.useInvidious ? 'Invidious' : 'Youtube',

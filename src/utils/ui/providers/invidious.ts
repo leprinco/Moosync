@@ -7,10 +7,7 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
-
-import { GenericAuth } from './generics/genericAuth'
-import { GenericRecommendation } from './generics/genericRecommendations'
+import { GenericProvider, ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
 
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
@@ -19,12 +16,16 @@ import { vxm } from '@/mainWindow/store'
 
 const KeytarService = 'MoosyncInvidiousToken'
 
-export class InvidiousProvider extends GenericAuth implements GenericProvider, GenericRecommendation {
+export class InvidiousProvider extends GenericProvider {
   private _token: string | undefined
   private oAuthChannel: string | undefined
 
   public get key() {
     return 'youtube'
+  }
+
+  provides(): ProviderScopes[] {
+    return [ProviderScopes.SEARCH]
   }
 
   public async updateConfig(): Promise<boolean> {

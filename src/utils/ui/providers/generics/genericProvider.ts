@@ -34,14 +34,55 @@ export const cache = setupCache({
   debug: true
 })
 
+export enum ProviderScopes {
+  SEARCH,
+  PLAYLISTS,
+  ARTIST_SONGS,
+  ALBUM_SONGS,
+  RECOMMENDATIONS,
+  SCROBBLES
+}
+
 export abstract class GenericProvider {
+  constructor() {
+    this.updateConfig()
+  }
+
+  public abstract getLoggedIn(): Promise<boolean>
+
+  /**
+   * Login auth handler for provider
+   * @returns Promise returned after login event is completed
+   */
+  public abstract login(): Promise<boolean>
+
+  /**
+   * Sign out handler for provider
+   * @returns Promise returned after sign out event is completed
+   */
+  public abstract signOut(): Promise<void>
+
+  /**
+   * Updates config before calling login
+   * Method can be used to update config last moment before login
+   */
+  public abstract updateConfig(): Promise<boolean>
+
+  /**
+   * Gets user details from the provider
+   * @returns username as string
+   */
+  public abstract getUserDetails(): Promise<string | undefined>
+
   abstract key: string
 
   /**
    * Get user playlists
    * @returns Array of playlist fetched from users profile
    */
-  public abstract getUserPlaylists(invalidateCache?: boolean): Promise<Playlist[]>
+  public async getUserPlaylists(invalidateCache?: boolean): Promise<Playlist[]> {
+    return []
+  }
 
   /**
    * Gets details of single playlist.
@@ -49,61 +90,89 @@ export abstract class GenericProvider {
    * @param id id of playlist
    * @returns Playlist if data is found otherwise undefined
    */
-  public abstract getPlaylistDetails(
+  public async getPlaylistDetails(
     id: string,
     invalidateCache?: boolean,
     nextPageToken?: string
-  ): Promise<Playlist | undefined>
+  ): Promise<Playlist | undefined> {
+    return
+  }
 
   /**
    * Gets songs present in playlist
    * @param id
    * @returns Generator of array {@link Song}
    */
-  public abstract getPlaylistContent(
+  public async *getPlaylistContent(
     id: string,
     invalidateCache?: boolean
-  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }>
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {}
 
   /**
    * Matches playlist link to verify if current provider is suitable for given link
    * @param str link to match
    * @returns true if playlist can be parsed by current provider
    */
-  public abstract matchPlaylist(str: string): boolean
+  public matchPlaylist(str: string): boolean {
+    return false
+  }
 
   /**
    * Gets playback url and duration of song from provider. When song conversion to youtube is rate limited then url and duration fetching can be deferred
    * @param song whose url and duration is to be fetched
    * @returns playback url and duration
    */
-  public abstract getPlaybackUrlAndDuration(
+  public async getPlaybackUrlAndDuration(
     song: Song
-  ): Promise<{ url: string | undefined; duration: number } | undefined>
+  ): Promise<{ url: string | undefined; duration: number } | undefined> {
+    return
+  }
 
   /**
    * Gets details of a song from its url
    * @param url of song
    * @returns {@link Song} details
    */
-  public abstract getSongDetails(url: string, invalidateCache?: boolean): Promise<Song | undefined>
+  public async getSongDetails(url: string, invalidateCache?: boolean): Promise<Song | undefined> {
+    return
+  }
+
+  /**
+   * Gets recommendations
+   * @returns recommendations
+   */
+  public async *getRecommendations(): AsyncGenerator<Song[]> {}
 
   /**
    * Get songs by artist ID
    * @param artist_id ID of artists whose tracks are to be fetched
    */
-  public abstract getArtistSongs(
+  public async *getArtistSongs(
     artist: Artists,
     nextPageToken?: unknown
-  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }>
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {}
 
-  public abstract searchSongs(term: string): Promise<Song[]>
+  public async searchSongs(term: string): Promise<Song[]> {
+    return []
+  }
 
-  public abstract getArtistDetails(artist: Artists, forceFetch?: boolean): Promise<Artists | undefined>
+  public async getArtistDetails(artist: Artists, forceFetch?: boolean): Promise<Artists | undefined> {
+    return
+  }
 
-  public abstract searchArtists(term: string): Promise<Artists[]>
+  public async searchArtists(term: string): Promise<Artists[]> {
+    return []
+  }
 
-  public abstract searchPlaylists(term: string): Promise<Playlist[]>
+  public async searchPlaylists(term: string): Promise<Playlist[]> {
+    return []
+  }
 
-  public abstract searchAlbum(term: string): Promise<Album[]>
+  public async searchAlbum(term: string): Promise<Album[]> {
+    return []
+  }
+
+  public async scrobble(song: Song): Promise<void> {}
+
+  public abstract provides(): ProviderScopes[]
 }

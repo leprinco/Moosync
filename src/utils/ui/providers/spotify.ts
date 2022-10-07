@@ -8,18 +8,15 @@
  */
 
 import { AuthFlow, AuthStateEmitter } from '@/utils/ui/oauth/flow'
-import { GenericProvider, cache } from '@/utils/ui/providers/generics/genericProvider'
+import { GenericProvider, cache, ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
 
 import { AuthorizationServiceConfiguration } from '@openid/appauth'
-import { GenericAuth } from './generics/genericAuth'
-import { GenericRecommendation } from './generics/genericRecommendations'
 import axios from 'axios'
 import { once } from 'events'
 import qs from 'qs'
 import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import { GenericSearch } from './generics/genericSearch'
 
 /**
  * Spotify API base URL
@@ -46,12 +43,22 @@ enum ApiResources {
 /**
  * API Handler for Spotify.
  */
-export class SpotifyProvider extends GenericAuth implements GenericProvider, GenericRecommendation, GenericSearch {
+export class SpotifyProvider extends GenericProvider {
   private auth!: AuthFlow
   private _config!: ReturnType<SpotifyProvider['getConfig']>
 
   public get key() {
     return 'spotify'
+  }
+
+  provides(): ProviderScopes[] {
+    return [
+      ProviderScopes.SEARCH,
+      ProviderScopes.PLAYLISTS,
+      ProviderScopes.ARTIST_SONGS,
+      ProviderScopes.ALBUM_SONGS,
+      ProviderScopes.RECOMMENDATIONS
+    ]
   }
 
   private api = axios.create({

@@ -7,15 +7,13 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { GenericAuth } from './generics/genericAuth'
-import { GenericRecommendation } from './generics/genericRecommendations'
-import { GenericScrobbler } from './generics/genericScrobbler'
 import axios from 'axios'
-import { cache } from '@/utils/ui/providers/generics/genericProvider'
+import { cache, ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
 import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { md5 } from 'hash-wasm'
 import { EventBus } from '@/utils/main/ipc/constants'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 
 const AUTH_BASE_URL = 'https://www.last.fm/api/'
 const API_BASE_URL = 'https://ws.audioscrobbler.com/2.0'
@@ -38,7 +36,7 @@ type authenticatedBody = {
 
 type sessionKey = string
 
-export class LastFMProvider extends GenericAuth implements GenericScrobbler, GenericRecommendation {
+export class LastFMProvider extends GenericProvider {
   private _session: sessionKey | undefined
   private api = axios.create({
     adapter: cache.adapter,
@@ -53,6 +51,10 @@ export class LastFMProvider extends GenericAuth implements GenericScrobbler, Gen
 
   public get key() {
     return 'lastfm'
+  }
+
+  provides(): ProviderScopes[] {
+    return [ProviderScopes.RECOMMENDATIONS, ProviderScopes.SCROBBLES]
   }
 
   private setLoggedInStatus() {
