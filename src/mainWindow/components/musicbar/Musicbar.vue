@@ -102,13 +102,10 @@ export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
 
   private get maxInterval() {
     if (this.currentSong) {
-      console.log(this.currentSong.duration)
       if (isFinite(this.currentSong.duration) && this.currentSong.duration > 0) {
         return Math.ceil((this.currentSong.duration + 1) * 1000)
       }
     }
-
-    console.log('returning 2')
 
     return 2
   }

@@ -25,7 +25,6 @@ export class HLSPlayer extends Player {
 
   load(src?: string, volume?: number, autoplay?: boolean): void {
     if (src) {
-      console.log('playing using hls')
       this.playerInstance.loadSource(src)
       this.playerInstance.attachMedia(this.htmlElement)
 

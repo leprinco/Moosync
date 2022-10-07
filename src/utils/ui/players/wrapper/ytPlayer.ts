@@ -62,7 +62,6 @@ export class YTPlayerWrapper implements CustomAudioInstance {
 
   public async play() {
     this.instance?.play()
-    // console.log(((document.getElementById(this.elementIdentifier) as HTMLIFrameElement).contentWindow as any).ytcfg)
   }
 
   public pause() {

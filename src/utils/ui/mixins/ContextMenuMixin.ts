@@ -312,7 +312,6 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
     let items: { label: string; handler?: () => void }[] = []
     switch (options.type) {
       case 'SONGS':
-        console.log(options.args.isRemote)
         items = this.getSongContextMenu(
           options.args.exclude,
           options.args.refreshCallback,

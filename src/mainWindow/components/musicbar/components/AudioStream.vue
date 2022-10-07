@@ -505,7 +505,6 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
     try {
       const data = await new Promise<{ url: string; duration: number } | undefined>((resolve, reject) => {
         if (song.playbackUrl) {
-          console.log('here')
           const audio = new Audio()
           audio.onloadedmetadata = () => {
             if (song.playbackUrl) resolve({ url: song.playbackUrl, duration: audio.duration })
