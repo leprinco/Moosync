@@ -20,7 +20,12 @@ export default class CacheMixin extends Vue {
   public getItem<T>(key: string): T | undefined {
     const data = this.localStorageInstance.getItem(key)
     if (data) {
-      const parsed = JSON.parse(data) as { value: never; expiry?: number }
+      const parsed = JSON.parse(data, (key, value) => {
+        if (key === 'duration' && value === null) {
+          return Infinity
+        }
+        return value
+      }) as { value: never; expiry?: number }
       if (parsed.expiry && Date.now() > parsed.expiry) {
         return
       }

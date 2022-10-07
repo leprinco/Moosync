@@ -16,7 +16,7 @@ export function arrayDiff<T>(arr1: T[], arr2: T[]) {
 
 export function convertDuration(n: number) {
   if (n) {
-    if (!isFinite(n)) {
+    if (!isFinite(n) || n < 0) {
       return 'Live'
     }
     const tmp = new Date(n * 1000).toISOString().substring(11, 19)

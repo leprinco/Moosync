@@ -13,11 +13,11 @@
       <div class="musicbar h-100">
         <VueSlider
           :min="0"
-          :max="currentSong ? Math.ceil((currentSong.duration + 1) * 1000) : 0"
+          :max="maxInterval"
           class="timeline pl-2 pr-2"
           :interval="1"
           :dotSize="10"
-          :value="Math.ceil(timestamp * 1000)"
+          :value="currentTimestamp"
           :duration="0.1"
           :tooltip="'none'"
           :disabled="isJukeboxModeActive"
@@ -99,6 +99,23 @@ export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
 
   private iconType = ''
   private iconURL = ''
+
+  private get maxInterval() {
+    if (this.currentSong) {
+      console.log(this.currentSong.duration)
+      if (isFinite(this.currentSong.duration) && this.currentSong.duration > 0) {
+        return Math.ceil((this.currentSong.duration + 1) * 1000)
+      }
+    }
+
+    console.log('returning 2')
+
+    return 2
+  }
+
+  private get currentTimestamp() {
+    return Math.min(Math.ceil(this.timestamp * 1000), this.maxInterval)
+  }
 
   private async getIconType() {
     this.iconURL = ''

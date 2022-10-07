@@ -17,6 +17,7 @@
       <audio id="dummy-yt-player" />
       <audio ref="audio" preload="auto" crossorigin="anonymous" />
       <video ref="dash-player" class="dash-player" crossorigin="anonymous"></video>
+      <video ref="hls-player" class="hls-player" crossorigin="anonymous"></video>
     </div>
   </div>
 </template>
@@ -51,11 +52,21 @@ import Vue from 'vue'
 import { InvidiousPlayer } from '../../../../utils/ui/players/invidious'
 import { DashPlayer } from '../../../../utils/ui/players/dash'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
+import { HLSPlayer } from '@/utils/ui/players/hls'
 
 @Component({})
 export default class AudioStream extends mixins(SyncMixin, PlayerControls, ErrorHandler, CacheMixin, JukeboxMixin) {
-  @Ref('audio') audioElement!: HTMLAudioElement
-  @Ref('yt-player') ytAudioElement!: HTMLDivElement
+  @Ref('audio')
+  private audioElement!: HTMLAudioElement
+
+  @Ref('yt-player')
+  private ytAudioElement!: HTMLDivElement
+
+  @Ref('dash-player')
+  private dashPlayerDiv!: HTMLVideoElement
+
+  @Ref('hls-player')
+  private hlsPlayerDiv!: HTMLVideoElement
 
   @Prop({ default: '' })
   roomID!: string
@@ -86,6 +97,11 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
    * Instance of Dash player
    */
   private dashPlayer!: DashPlayer
+
+  /**
+   * Instance of HLS player
+   */
+  private hlsPlayer!: HLSPlayer
 
   /**
    * Holds type of player which is current active
@@ -141,7 +157,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
     this.ignoreStateChange = false
   }
 
-  private parsePlayerTypes(type: PlayerTypes): 'LOCAL' | 'YOUTUBE' | 'DASH' {
+  private parsePlayerTypes(type: PlayerTypes): 'LOCAL' | 'YOUTUBE' | 'DASH' | 'HLS' {
     switch (type) {
       case 'LOCAL':
       case 'URL':
@@ -152,10 +168,12 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
         return 'YOUTUBE'
       case 'DASH':
         return 'DASH'
+      case 'HLS':
+        return 'HLS'
     }
   }
 
-  private getAudioPlayer(parsedType: 'LOCAL' | 'YOUTUBE' | 'DASH'): Player {
+  private getAudioPlayer(parsedType: 'LOCAL' | 'YOUTUBE' | 'DASH' | 'HLS'): Player {
     switch (parsedType) {
       case 'LOCAL':
         return this.localPlayer
@@ -163,6 +181,8 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
         return this.ytPlayer
       case 'DASH':
         return this.dashPlayer
+      case 'HLS':
+        return this.hlsPlayer
     }
   }
 
@@ -171,7 +191,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
    * This method is responsible of detaching old player
    * and setting new player as active
    */
-  private onPlayerTypesChanged(newType: PlayerTypes): 'LOCAL' | 'YOUTUBE' | 'DASH' {
+  private onPlayerTypesChanged(newType: PlayerTypes): PlayerTypes {
     const parsedType = this.parsePlayerTypes(newType)
     if (this.activePlayerTypes !== parsedType) {
       console.debug('Changing player type to', newType)
@@ -194,7 +214,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
 
     this.showYTPlayer = this.useEmbed && this.activePlayerTypes === 'YOUTUBE' ? 2 : 0
 
-    return parsedType
+    return newType
   }
 
   /**
@@ -227,20 +247,12 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
   }
 
   async mounted() {
-    // const player = this.$refs['yt-player-container'] as HTMLIFrameElement
-    // player.addEventListener('click', (e) => {
-    //   console.log(e)
-    // })
-
     await this.setupPlayers()
     this.setupSync()
     this.registerListeners()
 
     if (this.currentSong) this.loadAudio(this.currentSong, true)
   }
-
-  @Ref('dash-player')
-  private dashPlayerDiv!: HTMLVideoElement
 
   private useEmbed = true
 
@@ -251,6 +263,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
     return new Promise<void>((resolve) => {
       this.localPlayer = new LocalPlayer(this.audioElement)
       this.dashPlayer = new DashPlayer(this.dashPlayerDiv)
+      this.hlsPlayer = new HLSPlayer(this.hlsPlayerDiv)
       this.activePlayer = this.localPlayer
       this.activePlayerTypes = 'LOCAL'
       vxm.providers.$watch(
@@ -484,7 +497,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
         packageName: song.providerExtension
       })
 
-      if (data) {
+      if (data && data[song.providerExtension]) {
         return data[song.providerExtension] ?? undefined
       }
     }
@@ -492,6 +505,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
     try {
       const data = await new Promise<{ url: string; duration: number } | undefined>((resolve, reject) => {
         if (song.playbackUrl) {
+          console.log('here')
           const audio = new Audio()
           audio.onloadedmetadata = () => {
             if (song.playbackUrl) resolve({ url: song.playbackUrl, duration: audio.duration })
@@ -505,7 +519,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
       })
       return data
     } catch (e) {
-      console.error('Failed to get duration for url', song.playbackUrl)
+      console.error('Failed to get duration for url', song.playbackUrl, e)
     }
   }
 
@@ -604,16 +618,17 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
   }
 
   private async setPlaybackURLAndDuration(song: Song) {
-    let res: { url?: string; duration: number } | undefined = this.getItem(`url_duration:${song._id}`)
+    let res: { url?: string; duration?: number } | undefined = this.getItem(`url_duration:${song._id}`)
     console.debug('cache url and duration', res)
+
     if (!res) {
-      console.debug('playback url and duration not in cache')
+      console.debug('playback url and duration not in cache or missing')
       res = await this.getPlaybackUrlAndDuration(song)
     }
 
     console.debug('Got playback url and duration', res)
 
-    if (res) {
+    if (res && res.duration) {
       // song is a reference to vxm.player.currentSong or vxm.sync.currentSong.
       // Mutating those properties should also mutate song and vice-versa
       if (vxm.player.currentSong && song) {
