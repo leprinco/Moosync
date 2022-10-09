@@ -19,8 +19,12 @@
               <Refresh @click.native="refreshPage" class="refresh-icon button-grow" />
             </b-col>
             <!-- <b-col cols="auto"> <Notifications /> </b-col> -->
-            <b-col cols="auto"> <Accounts /></b-col>
-            <b-col cols="auto"> <Gear id="settings" class="gear-icon" @click.native="openSettings" /></b-col>
+            <b-col v-if="!isJukeboxModeActive" cols="auto">
+              <Accounts />
+            </b-col>
+            <b-col v-if="!isJukeboxModeActive" cols="auto">
+              <Gear id="settings" class="gear-icon" @click.native="openSettings" />
+            </b-col>
             <b-col cols="auto">
               <JukeboxIcon
                 v-if="showJukeboxIcon"
@@ -29,7 +33,7 @@
                 @click.native="toggleJukeboxMode"
               />
             </b-col>
-            <b-col cols="auto"> <Update class="update-icon button-grow" /></b-col>
+            <b-col cols="auto" v-if="showUpdateIcon"> <Update class="update-icon button-grow" /></b-col>
           </b-row>
         </b-col>
       </b-row>
@@ -71,6 +75,10 @@ export default class TopBar extends mixins(JukeboxMixin) {
   private showRefreshIcon!: boolean
 
   private showJukeboxIcon = false
+
+  private get showUpdateIcon() {
+    return vxm.themes.isUpdateAvailable
+  }
 
   private openSettings() {
     window.WindowUtils.openWindow(false)
