@@ -15,9 +15,10 @@ import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import { bus } from '@/mainWindow/main'
 import { mixins } from 'vue-class-component'
 import { vxm } from '@/mainWindow/store'
+import JukeboxMixin from './JukeboxMixin'
 
 @Component
-export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong) {
+export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong, JukeboxMixin) {
   get playlists() {
     return vxm.playlist.playlists
   }
@@ -400,6 +401,8 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
   }
 
   private emitMenu(event: Event, items: { label: string; handler?: () => void }[]) {
-    bus.$emit(EventBus.SHOW_CONTEXT, event, items)
+    if (!this.isJukeboxModeActive) {
+      bus.$emit(EventBus.SHOW_CONTEXT, event, items)
+    }
   }
 }
