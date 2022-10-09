@@ -70,7 +70,7 @@
     <b-row no-gutters class="flex-fill mt-2">
       <b-col>
         <div v-if="buttonGroup.enableContainer" class="button-group d-flex">
-          <PlainPlay :title="$t('buttons.playSingle', { title })" @click.native="playAll" />
+          <PlainPlay v-if="!isJukeboxModeActive" :title="$t('buttons.playSingle', { title })" @click.native="playAll" />
           <AddToQueue :title="$t('buttons.addToQueue', { title })" @click.native="addToQueue" />
           <AddToLibrary
             :title="$t('buttons.addToLibrary', { title })"
@@ -95,6 +95,7 @@ import PlainPlay from '@/icons/PlainPlayIcon.vue'
 import AddToLibrary from '@/icons/AddToLibraryIcon.vue'
 import AddToQueue from '@/icons/AddToQueueIcon.vue'
 import PinIcon from '@/icons/PinIcon.vue'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 
 @Component({
   components: {
@@ -105,7 +106,7 @@ import PinIcon from '@/icons/PinIcon.vue'
     PinIcon
   }
 })
-export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin) {
+export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, JukeboxMixin) {
   @Prop({ default: null })
   private currentSong!: Song | null | undefined
 
