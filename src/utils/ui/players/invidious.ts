@@ -6,13 +6,22 @@ export class InvidiousPlayer extends LocalPlayer {
   private customLoadEventEmitter = new EventEmitter()
   private lastAutoPlay = false
 
-  load(src?: string, volume?: number, autoplay?: boolean): void {
+  async load(src?: string, volume?: number, autoplay?: boolean) {
     this.customLoadEventEmitter.emit('loading')
-    this.fetchPlaybackURL(src).then((data) => {
+    let playbackURL = await this.fetchPlaybackURL(src)
+    if (playbackURL) {
+      const shouldProxy =
+        (await window.PreferenceUtils.loadSelective<Checkbox[]>('invidious'))?.find((val) => val.key === 'always_proxy')
+          ?.enabled ?? true
+
+      if (shouldProxy) {
+        playbackURL = await this.proxyVideoOnInvidious(playbackURL)
+      }
+
       this.customLoadEventEmitter.emit('loaded')
       this.lastAutoPlay = autoplay ?? this.lastAutoPlay
-      super.load(data, volume, this.lastAutoPlay)
-    })
+      super.load(playbackURL, volume, this.lastAutoPlay)
+    }
   }
 
   private async fetchPlaybackURL(str: string | undefined) {
@@ -30,6 +39,17 @@ export class InvidiousPlayer extends LocalPlayer {
     }
   }
 
+  private async proxyVideoOnInvidious(src: string) {
+    const baseUrl = new URL((await window.PreferenceUtils.loadSelective<string>('invidious_instance')) ?? '')
+    const currentSrc = new URL(src)
+
+    if (baseUrl.host && baseUrl.host !== currentSrc.host) {
+      currentSrc.host = new URL(baseUrl).host
+    }
+
+    return currentSrc.toString()
+  }
+
   protected listenOnLoad(callback: () => void): void {
     this.customLoadEventEmitter.on('loaded', callback)
     super.listenOnLoad(callback)
@@ -44,13 +64,8 @@ export class InvidiousPlayer extends LocalPlayer {
     this.playerInstance.onerror = async (event, source, line, col, err) => {
       try {
         this.customLoadEventEmitter.emit('loading')
-        const baseUrl = new URL((await window.PreferenceUtils.loadSelective<string>('invidious_instance')) ?? '')
-        const currentSrc = new URL(((event as ErrorEvent)?.target as HTMLAudioElement)?.src)
-
-        if (baseUrl.host && baseUrl.host !== currentSrc.host) {
-          currentSrc.host = new URL(baseUrl).host
-          this.load(currentSrc.toString())
-        }
+        const newUrl = await this.proxyVideoOnInvidious(((event as ErrorEvent)?.target as HTMLAudioElement)?.src)
+        this.load(newUrl)
       } catch (e) {
         console.error(e)
       }

@@ -132,7 +132,12 @@
         "useEmbeds": "Use Youtube embeds for playing audio from Youtube"
       },
       "audioSettings_tooltip": "Settings which are related audio playback",
-      "invidious": "Invidious Instance",
+      "invidious": {
+        "url": "Invidious Instance",
+        "options": "Advanced Invidious options",
+        "options_tooltip": "Options to fine control Invidious playback",
+        "always_proxy": "Always play audio from Invidious proxy instead of Google video"
+      },
       "invidiousUrlUnsupported": "This url does not support Invidious API",
       "invidious_tooltip": "Invidious instance to use instead of youtube",
       "restartApp": "Restart Moosync",

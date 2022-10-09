@@ -143,14 +143,19 @@ export class InvidiousProvider extends GenericProvider {
         artists: [
           {
             artist_id: `youtube-author:${s.authorId}`,
-            artist_name: s.author
+            artist_name: s.author,
+            artist_extra_info: {
+              youtube: {
+                channel_id: s.authorId
+              }
+            }
           }
         ],
         date_added: Date.now(),
         song_coverPath_high: s.videoThumbnails?.find((val) => val.quality.includes('maxres'))?.url,
         song_coverPath_low: s.videoThumbnails?.find((val) => val.quality.includes('medium'))?.url,
         url: s.videoId,
-        playbackUrl: '',
+        playbackUrl: s.videoId,
         invidiousPlaybackUrl: stream?.url ?? '',
         type: 'YOUTUBE'
       })

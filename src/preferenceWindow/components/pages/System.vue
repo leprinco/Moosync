@@ -38,15 +38,23 @@
             class="mt-4"
             prefKey="invidious_instance"
             :datalist="invidiousInstances"
-            :title="$t('settings.system.invidious')"
+            :title="$t('settings.system.invidious.url')"
             :tooltip="$t('settings.system.invidious_tooltip')"
             :onValueChange="onInvidiousInstanceChange"
             :onValueFetch="onInvidiousInstanceChange"
           />
 
-          <b-col v-if="showInvidiousField"
-            ><div class="invidious-details">{{ invidiousDetails }}</div></b-col
-          >
+          <b-col v-if="showInvidiousField">
+            <div class="invidious-details">{{ invidiousDetails }}</div>
+            <CheckboxGroup
+              :title="$t('settings.system.invidious.options')"
+              class="mt-4"
+              :tooltip="$t('settings.system.invidious.options_tooltip')"
+              :isExtension="false"
+              :defaultValue="invidiousAdvancedCheckboxValues"
+              prefKey="invidious"
+            />
+          </b-col>
 
           <b-row v-if="showRestartButton">
             <b-col cols="auto">
@@ -258,6 +266,16 @@ export default class System extends Vue {
 
   private defaultSystemSettings: SystemSettings[] = []
   private defaultAudioSettings: Checkbox[] = []
+
+  get invidiousAdvancedCheckboxValues(): Checkbox[] {
+    return [
+      {
+        key: 'always_proxy',
+        title: this.$tc('settings.system.invidious.always_proxy'),
+        enabled: true
+      }
+    ]
+  }
 
   get audioCheckboxValues(): Checkbox[] {
     return [
