@@ -37,6 +37,12 @@ if (process.platform !== 'darwin') {
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
+if (isDevelopment) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+  app.commandLine.appendSwitch('ignore-certificate-errors')
+  app.commandLine.appendSwitch('allow-insecure-localhost', 'true')
+}
+
 nativeTheme.themeSource = 'dark'
 
 overrideConsole()
@@ -83,9 +89,11 @@ function interceptHttp() {
       (details.url.startsWith('https://i.ytimg.com') ||
         ((useInvidious || !useEmbeds) && details.url.includes('.googlevideo.com')))
     ) {
+      delete headers['Access-Control-Allow-Origin']
+      delete headers['access-control-allow-origin']
       headers = {
         ...headers,
-        'access-control-allow-origin': '*'
+        'Access-Control-Allow-Origin': '*'
       }
     }
 
