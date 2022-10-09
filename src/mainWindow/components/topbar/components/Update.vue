@@ -17,7 +17,6 @@
 import UpdateIcon from '@/icons/UpdateIcon.vue'
 
 import { Component, Vue } from 'vue-property-decorator'
-import { vxm } from '@/mainWindow/store'
 import ConfirmationModal from '@/commonComponents/ConfirmationModal.vue'
 
 @Component({
@@ -26,11 +25,7 @@ import ConfirmationModal from '@/commonComponents/ConfirmationModal.vue'
     ConfirmationModal
   }
 })
-export default class TopBar extends Vue {
-  get showIcon() {
-    return vxm.themes.isUpdateAvailable
-  }
-
+export default class Update extends Vue {
   private confirmUpdate() {
     this.$bvModal.show('updateConfirmationModal')
   }
