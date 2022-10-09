@@ -103,6 +103,20 @@ export function loadSelectivePreference<T>(key?: string, isExtension = false, de
   return defaultValue
 }
 
+export function loadSelectiveArrayPreference<T>(key: string, defaultValue?: T): T | undefined {
+  try {
+    const parentKey = key.substring(0, key.lastIndexOf('.'))
+    const childKey = key.substring(key.lastIndexOf('.') + 1)
+    const pref: { key: string }[] = store.get(`prefs.${parentKey}`)
+    if (pref) {
+      return pref.find((val) => val.key === childKey) as T
+    }
+  } catch (e) {
+    console.error(e)
+  }
+  return defaultValue
+}
+
 /**
  * Removes selective preference inside "prefs"
  * @param key key to remove inside prefs

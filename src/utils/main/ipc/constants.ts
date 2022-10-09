@@ -52,6 +52,7 @@ export enum SearchEvents {
 export enum PreferenceEvents {
   SAVE_SELECTIVE_PREFERENCES = 'saveSelectivePreferences',
   LOAD_SELECTIVE_PREFERENCES = 'loadSelectivePreferences',
+  LOAD_SELECTIVE_ARRAY = 'loadSelectiveArray',
   PREFERENCE_REFRESH = 'preferenceRefresh',
   SET_THEME = 'setTheme',
   GET_THEME = 'getTheme',

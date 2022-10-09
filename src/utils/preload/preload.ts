@@ -112,6 +112,12 @@ contextBridge.exposeInMainWorld('PreferenceUtils', {
       params: { key, isExtension, defaultValue }
     }),
 
+  loadSelectiveArrayItem: <T>(key: string, defaultValue?: T) =>
+    ipcRendererHolder.send<PreferenceRequests.Load>(IpcEvents.PREFERENCES, {
+      type: PreferenceEvents.LOAD_SELECTIVE_ARRAY,
+      params: { key, isExtension: false, defaultValue }
+    }),
+
   notifyPreferenceChanged: (key: string, value: unknown) =>
     ipcRendererHolder.send<PreferenceRequests.PreferenceChange>(IpcEvents.PREFERENCES, {
       type: PreferenceEvents.PREFERENCE_REFRESH,

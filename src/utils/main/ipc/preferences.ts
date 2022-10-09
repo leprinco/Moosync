@@ -9,6 +9,7 @@
 
 import { IpcEvents, PreferenceEvents } from './constants'
 import {
+  loadSelectiveArrayPreference,
   loadSelectivePreference,
   onPreferenceChanged,
   removeSelectivePreference,
@@ -41,6 +42,9 @@ export class PreferenceChannel implements IpcChannelInterface {
         break
       case PreferenceEvents.LOAD_SELECTIVE_PREFERENCES:
         this.loadSelective(event, request as IpcRequest<PreferenceRequests.Load>)
+        break
+      case PreferenceEvents.LOAD_SELECTIVE_ARRAY:
+        this.loadSelectiveArrayItem(event, request as IpcRequest<PreferenceRequests.Load>)
         break
       case PreferenceEvents.PREFERENCE_REFRESH:
         this.onPreferenceChanged(event, request as IpcRequest<PreferenceRequests.PreferenceChange>)
@@ -92,6 +96,16 @@ export class PreferenceChannel implements IpcChannelInterface {
       event.reply(
         request.responseChannel,
         loadSelectivePreference(request.params.key, request.params.isExtension, request.params.defaultValue)
+      )
+    }
+    event.reply(request.responseChannel, request.params.defaultValue)
+  }
+
+  private loadSelectiveArrayItem(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.Load>) {
+    if (request.params.key) {
+      event.reply(
+        request.responseChannel,
+        loadSelectiveArrayPreference(request.params.key, request.params.defaultValue)
       )
     }
     event.reply(request.responseChannel, request.params.defaultValue)

@@ -101,9 +101,9 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
   }
 
   private async useInvidious() {
-    const useInvidious = (await window.PreferenceUtils.loadSelective<Checkbox[]>('system', false, [])).find(
-      (val) => val.key === 'use_invidious'
-    )?.enabled
+    const useInvidious = (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('system.use_invidious'))
+      ?.enabled
+
     vxm.providers.useInvidious = useInvidious ?? false
   }
 

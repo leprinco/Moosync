@@ -266,17 +266,19 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
       this.hlsPlayer = new HLSPlayer(this.hlsPlayerDiv)
       this.activePlayer = this.localPlayer
       this.activePlayerTypes = 'LOCAL'
+
+      // useInvidious might be set after setupPlayer, so we watch it change
       vxm.providers.$watch(
         'useInvidious',
         async (val) => {
+          this.ytPlayer?.stop()
+          this.ytPlayer?.removeAllListeners()
+
           if (val) {
             this.ytPlayer = new InvidiousPlayer(this.audioElement)
           } else {
             this.useEmbed =
-              (await window.PreferenceUtils.loadSelective<Checkbox[]>('audio'))?.find(
-                (val) => val.key === 'youtube_embeds'
-              )?.enabled ?? true
-
+              (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('audio.youtube_embeds'))?.enabled ?? true
             this.ytPlayer = new YoutubePlayer(this.ytAudioElement, this.useEmbed)
           }
 

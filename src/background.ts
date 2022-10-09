@@ -18,18 +18,14 @@ import path, { resolve } from 'path'
 import { oauthHandler } from '@/utils/main/oauth/handler'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import { getExtensionHostChannel, registerIpcChannels } from '@/utils/main/ipc'
-import {
-  setInitialPreferences,
-  loadPreferences,
-  shouldWatchFileChanges,
-  loadSelectivePreference
-} from './utils/main/db/preferences'
+import { setInitialPreferences, loadPreferences, shouldWatchFileChanges } from './utils/main/db/preferences'
 import { setupScanTask } from '@/utils/main/scheduler/index'
 import { setupDefaultThemes, setupSystemThemes } from './utils/main/themes/preferences'
 import { logger } from './utils/main/logger/index'
 import { ToadScheduler } from 'toad-scheduler'
 import { setupUpdateCheckTask } from '@/utils/main/scheduler/index'
 import pie from 'puppeteer-in-electron'
+import { loadSelectiveArrayPreference } from './utils/main/db/preferences'
 
 if (process.platform !== 'darwin') {
   app.commandLine.appendSwitch('disable-features', 'HardwareMediaKeyHandling,MediaSessionService')
@@ -76,10 +72,8 @@ function interceptHttp() {
   // So to display them and export them, we spoof the request here
   // This should pose any security risk as such since we're only doing it for youtube trusted urls
 
-  const useInvidious =
-    loadSelectivePreference<Checkbox[]>('system')?.find((val) => val.key === 'use_invidious')?.enabled ?? false
-  const useEmbeds =
-    loadSelectivePreference<Checkbox[]>('audio')?.find((val) => val.key === 'youtube_embeds')?.enabled ?? true
+  const useInvidious = loadSelectiveArrayPreference<Checkbox>('system.use_invidious')?.enabled ?? false
+  const useEmbeds = loadSelectiveArrayPreference<Checkbox>('audio.youtube_embeds')?.enabled ?? true
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     let headers: { [key: string]: string | string[] } = { ...details.responseHeaders }
