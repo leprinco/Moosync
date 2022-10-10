@@ -194,6 +194,10 @@ declare namespace SearchRequests {
     authorization: string | undefined
     invalidateCache: boolean
   }
+
+  interface PlayCount {
+    songIds: string[]
+  }
 }
 
 declare namespace SongRequests {

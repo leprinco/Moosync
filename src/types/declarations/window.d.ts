@@ -124,6 +124,8 @@ interface searchUtils {
     authorization: string | undefined,
     invalidateCache = false
   ) => Promise<InvidiousResponses.ResponseType<K> | undefined>
+
+  getPlayCount: (...songIds: string[]) => Promise<Record<string, number>>
 }
 
 /**
