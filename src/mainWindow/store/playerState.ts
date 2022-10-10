@@ -284,4 +284,17 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
     const newIndex = this.songQueue.order.findIndex((val) => val.songID === this.currentSong?._id)
     this.songQueue.index = newIndex
   }
+
+  @mutation
+  private setPlayCounts(playCounts: Record<string, number>) {
+    for (const key of Object.keys(this.songQueue.data)) {
+      this.songQueue.data[key].playCount = playCounts[key] ?? 0
+    }
+  }
+
+  @action
+  async updatePlayCounts() {
+    const playCounts = await window.SearchUtils.getPlayCount(...Object.keys(this.queueData))
+    this.setPlayCounts(playCounts)
+  }
 }

@@ -88,8 +88,11 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
   }
 
   private watchQueueSort() {
-    vxm.themes.$watch('queueSortBy', (newVal?: SongSortOptions) => {
+    vxm.themes.$watch('queueSortBy', async (newVal?: SongSortOptions) => {
       if (newVal) {
+        if (newVal.type === 'playCount') {
+          await vxm.player.updatePlayCounts()
+        }
         vxm.player.sortQueue(sortSongListFn(newVal))
       }
     })
