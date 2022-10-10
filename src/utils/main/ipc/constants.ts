@@ -46,7 +46,8 @@ export enum SearchEvents {
   SCRAPE_LYRICS = 'scrapeLyrics',
   REQUEST_INVIDIOUS = 'requestInvidious',
   GET_YT_PLAYLIST = 'getYTPlaylist',
-  GET_YT_PLAYLIST_CONTENT = 'getYTPlaylistContent'
+  GET_YT_PLAYLIST_CONTENT = 'getYTPlaylistContent',
+  GET_PLAY_COUNT = 'getPlayCount'
 }
 
 export enum PreferenceEvents {

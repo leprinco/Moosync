@@ -41,7 +41,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop, Watch } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import ModelHelper from '@/utils/ui/mixins/ModelHelper'
@@ -91,6 +91,18 @@ export default class AllSongs extends mixins(
     let songList = this.songList.filter((val) => !!val.title.match(new RegExp(this.searchText, 'i')))
     songList = vxm.themes.songSortBy && sortSongList(songList, vxm.themes.songSortBy)
     return songList
+  }
+
+  @Watch('songList', { immediate: true })
+  private async onSongListChanged(newVal: Song[], oldVal: Song[]) {
+    const difference = newVal.filter((x) => {
+      return (oldVal ?? []).findIndex((val) => val._id === x._id) === -1
+    })
+
+    const playCounts = await window.SearchUtils.getPlayCount(...difference.map((val) => val._id))
+    for (const song of difference) {
+      this.$set(song, 'playCount', playCounts[song._id] ?? 0)
+    }
   }
 
   private get songView() {

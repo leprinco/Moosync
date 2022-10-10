@@ -60,6 +60,9 @@ export class SearchChannel implements IpcChannelInterface {
       case SearchEvents.REQUEST_INVIDIOUS:
         this.requestInvidious(event, request as IpcRequest<SearchRequests.InvidiousRequest>)
         break
+      case SearchEvents.GET_PLAY_COUNT:
+        this.getPlayCount(event, request as IpcRequest<SearchRequests.PlayCount>)
+        break
     }
   }
 
@@ -186,6 +189,14 @@ export class SearchChannel implements IpcChannelInterface {
         request.params.invalidateCache
       )
       event.reply(request.responseChannel, resp)
+    }
+    event.reply(request.responseChannel)
+  }
+
+  private getPlayCount(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.PlayCount>) {
+    if (request.params.songIds) {
+      const data = SongDB.getPlayCount(...request.params.songIds)
+      event.reply(request.responseChannel, data)
     }
     event.reply(request.responseChannel)
   }

@@ -1106,4 +1106,13 @@ export class SongDBInstance extends DBUtils {
       this.db.update('analytics', { play_count: playCount + 1 }, { song_id })
     })()
   }
+
+  public getPlayCount(...song_id: string[]) {
+    const where = song_id.map((val) => `'${val}'`).join(', ')
+    const res = this.db.query<{ song_id: string; play_count: number }>(
+      `SELECT song_id, play_count FROM analytics WHERE song_id in (${where})`
+    )
+    console.log(Object.assign({}, ...res.map((val) => ({ [val.song_id]: val.play_count }))))
+    return Object.assign({}, ...res.map((val) => ({ [val.song_id]: val.play_count })))
+  }
 }

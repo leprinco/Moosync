@@ -286,6 +286,12 @@ contextBridge.exposeInMainWorld('SearchUtils', {
     ipcRendererHolder.send<SearchRequests.InvidiousRequest>(IpcEvents.SEARCH, {
       type: SearchEvents.REQUEST_INVIDIOUS,
       params: { resource, search, authorization, invalidateCache }
+    }),
+
+  getPlayCount: (...songIds: string[]) =>
+    ipcRendererHolder.send<SearchRequests.PlayCount>(IpcEvents.SEARCH, {
+      type: SearchEvents.GET_PLAY_COUNT,
+      params: { songIds }
     })
 })
 
