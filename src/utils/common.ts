@@ -52,8 +52,8 @@ function sortAsc(first: unknown, second: unknown) {
   return 0
 }
 
-export function sortSongList(songList: Song[], options: SongSortOptions): Song[] {
-  return songList.sort((a, b) => {
+export function sortSongListFn(options: SongSortOptions) {
+  const fn = (a: Song, b: Song) => {
     const field: keyof Song = options.type as keyof Song
     const first: unknown = a[field]
     const second: unknown = b[field]
@@ -67,7 +67,13 @@ export function sortSongList(songList: Song[], options: SongSortOptions): Song[]
     }
 
     return 0
-  })
+  }
+
+  return fn
+}
+
+export function sortSongList(songList: Song[], options: SongSortOptions): Song[] {
+  return songList.sort(sortSongListFn(options))
 }
 
 export async function downloadFile(url: string, dest: string) {

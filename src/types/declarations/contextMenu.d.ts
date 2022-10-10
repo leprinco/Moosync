@@ -45,6 +45,7 @@ type ContextMenuArgs =
         refreshCallback: () => void
         song: Song
         songIndex: number
+        sortOptions: Optional<Sort<SongSortOptions>, 'current'>
       }
     }
   | {

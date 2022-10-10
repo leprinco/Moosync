@@ -81,6 +81,7 @@ export default class PlayerControls extends Vue {
   }
 
   public shuffle() {
+    vxm.themes.queueSortBy = undefined
     vxm.player.shuffle()
     this.$toasted.show('Shuffled', {
       duration: 1000

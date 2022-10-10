@@ -152,6 +152,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
 
   private onDragEnd() {
     this.ignoreScroll = true
+    vxm.themes.queueSortBy = undefined
   }
 
   private scrollToActive() {

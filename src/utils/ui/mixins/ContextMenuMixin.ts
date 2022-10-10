@@ -27,30 +27,30 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     await window.DBUtils.addToPlaylist(playlist_id, ...songs)
   }
 
-  private getSongSortByMenu(sort: Sort<SongSortOptions>) {
+  private getSongSortByMenu(sort: Optional<Sort<SongSortOptions>, 'current'>) {
     const menu: MenuItem[] = [
       {
         label: 'Sort by',
         children: [
           {
             label: `${this.$tc('contextMenu.sort.name')} ${
-              sort.current.type === 'title' ? (sort.current.asc ? '▲' : '▼') : ''
+              sort.current?.type === 'title' ? (sort.current.asc ? '▲' : '▼') : ''
             }`,
-            handler: () => sort.callback({ type: 'title', asc: sort.current.type === 'title' && !sort.current.asc })
+            handler: () => sort.callback({ type: 'title', asc: sort.current?.type === 'title' && !sort.current.asc })
           },
           {
             label: `${this.$tc('contextMenu.sort.dateAdded')} ${
-              sort.current.type === 'date_added' ? (sort.current.asc ? '▲' : '▼') : ''
+              sort.current?.type === 'date_added' ? (sort.current.asc ? '▲' : '▼') : ''
             }`,
             handler: () =>
-              sort.callback({ type: 'date_added', asc: sort.current.type === 'date_added' && !sort.current.asc })
+              sort.callback({ type: 'date_added', asc: sort.current?.type === 'date_added' && !sort.current.asc })
           },
           {
             label: `${this.$tc('contextMenu.sort.playCount')} ${
-              sort.current.type === 'playCount' ? (sort.current.asc ? '▲' : '▼') : ''
+              sort.current?.type === 'playCount' ? (sort.current.asc ? '▲' : '▼') : ''
             }`,
             handler: () =>
-              sort.callback({ type: 'playCount', asc: sort.current.type === 'playCount' && !sort.current.asc })
+              sort.callback({ type: 'playCount', asc: sort.current?.type === 'playCount' && !sort.current.asc })
           }
         ]
       }
@@ -241,7 +241,13 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     return items
   }
 
-  private getQueueItemMenu(isRemote: boolean, refreshCallback: () => void, item: Song, itemIndex: number) {
+  private getQueueItemMenu(
+    isRemote: boolean,
+    refreshCallback: () => void,
+    item: Song,
+    itemIndex: number,
+    sort: Optional<Sort<SongSortOptions>, 'current'>
+  ) {
     const items = [
       {
         label: this.$tc('contextMenu.playlist.add'),
@@ -266,7 +272,8 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
             this.setSongIndex(itemIndex, value)
           })
         }
-      }
+      },
+      ...this.getSongSortByMenu(sort)
     ]
 
     items.push({
@@ -347,7 +354,8 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
           options.args.isRemote,
           options.args.refreshCallback,
           options.args.song,
-          options.args.songIndex
+          options.args.songIndex,
+          options.args.sortOptions
         )
         break
       case 'ENTITY_SORT':

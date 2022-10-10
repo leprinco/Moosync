@@ -48,6 +48,7 @@ import FormModal from './components/modals/FormModal.vue'
 import EntityInfoModal from './components/modals/EntityInfoModal.vue'
 import { i18n } from './plugins/i18n'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
+import { sortSongListFn } from '@/utils/common'
 
 @Component({
   components: {
@@ -71,6 +72,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     this.listenExtensionEvents()
     this.listenExtensionRequests()
     this.useInvidious()
+    this.watchQueueSort()
 
     this.themeStore = vxm.themes
   }
@@ -83,6 +85,14 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     this.registerFileDragListener()
     this.handleInitialSetup()
     this.checkUpdate()
+  }
+
+  private watchQueueSort() {
+    vxm.themes.$watch('queueSortBy', (newVal?: SongSortOptions) => {
+      if (newVal) {
+        vxm.player.sortQueue(sortSongListFn(newVal))
+      }
+    })
   }
 
   private async setLanguage() {

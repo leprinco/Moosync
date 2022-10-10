@@ -277,4 +277,11 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
       if (newIndex <= this.songQueue.index) this.songQueue.index += 1
     }
   }
+
+  @mutation
+  sortQueue(sortfn: (a: Song, b: Song) => number) {
+    this.songQueue.order.sort((a, b) => sortfn(this.songQueue.data[a.songID], this.songQueue.data[b.songID]))
+    const newIndex = this.songQueue.order.findIndex((val) => val.songID === this.currentSong?._id)
+    this.songQueue.index = newIndex
+  }
 }

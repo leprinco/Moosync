@@ -152,6 +152,10 @@ export default class MusicInfo extends mixins(ImgLoader, PlayerControls, Context
     this.removeFromQueue(this.index)
   }
 
+  private sortQueue(options: SongSortOptions) {
+    vxm.themes.queueSortBy = options
+  }
+
   private getItemContextMenu(event: Event) {
     this.getContextMenu(event, {
       type: 'QUEUE_ITEM',
@@ -159,7 +163,11 @@ export default class MusicInfo extends mixins(ImgLoader, PlayerControls, Context
         isRemote: this.song.type === 'YOUTUBE' || this.song.type === 'SPOTIFY',
         song: this.song,
         songIndex: this.index,
-        refreshCallback: () => this.removeSong()
+        refreshCallback: () => this.removeSong(),
+        sortOptions: {
+          callback: this.sortQueue,
+          current: vxm.themes.queueSortBy
+        }
       }
     })
   }
