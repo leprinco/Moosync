@@ -114,6 +114,8 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
    */
   private isFirst = true
 
+  private playersInitialized = false
+
   /**
    * True if vuex state change is not to be reflected on active player
    * When player is paused or played from an external source, the onStateChange event triggers
@@ -248,6 +250,8 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
 
   async mounted() {
     await this.setupPlayers()
+    this.playersInitialized = true
+
     this.setupSync()
     this.registerListeners()
 
@@ -303,6 +307,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
     vxm.player.playAfterLoad = true
     if (this.repeat && this.currentSong) {
       // Re load entire audio instead of setting current time to 0
+      this.lastLoadedSong = undefined
       this.loadAudio(this.currentSong, false)
     } else {
       this.nextSong()
@@ -634,7 +639,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
       // Mutating those properties should also mutate song and vice-versa
       if (vxm.player.currentSong && song) {
         song.duration = res.duration
-        song.playbackUrl = res.url
+        this.$set(song, 'playbackUrl', res.url)
 
         this.setItem(`url_duration:${song._id}`, res)
 
@@ -644,8 +649,12 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
     }
   }
 
+  private lastLoadedSong?: Song
+
   private async loadAudio(song: Song, loadedState: boolean) {
-    console.debug('Loading new song', song)
+    if (!this.playersInitialized) {
+      return
+    }
 
     if (this.isSyncing) {
       const tmp = await this.getLocalSong(song._id)
@@ -653,6 +662,13 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
         song = tmp
       }
     }
+
+    if (song._id === this.lastLoadedSong?._id) {
+      return
+    }
+    this.lastLoadedSong = song
+
+    console.debug('Loading new song', song)
 
     const PlayerTypes = this.onPlayerTypesChanged(song.type)
 
