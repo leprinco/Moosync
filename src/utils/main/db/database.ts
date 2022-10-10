@@ -445,14 +445,6 @@ export class SongDBInstance extends DBUtils {
   public getSongByOptions(options?: SongAPIOptions, exclude?: string[]): Song[] {
     const { where, args } = this.populateWhereQuery(options)
 
-    console.log(`SELECT ${this.getSelectClause()}, ${this.addGroupConcatClause()} FROM allsongs
-      ${this.addLeftJoinClause(undefined, 'allsongs')}
-        ${where}
-        ${this.addExcludeWhereClause(args.length === 0, exclude)} GROUP BY allsongs._id ${this.addOrderClause(
-      options?.sortBy,
-      args.length > 0
-    )}`)
-
     const songs: marshaledSong[] = this.db.query(
       `SELECT ${this.getSelectClause()}, ${this.addGroupConcatClause()} FROM allsongs
       ${this.addLeftJoinClause(undefined, 'allsongs')}
@@ -1097,7 +1089,6 @@ export class SongDBInstance extends DBUtils {
   public incrementPlayCount(song_id: string) {
     this.db.transaction(() => {
       let playCount = this.db.queryFirstCell<number>(`SELECT play_count FROM analytics WHERE song_id = ?`, song_id)
-      console.log('in transaction', playCount)
       if (!playCount) {
         this.db.insert('analytics', { id: v4(), song_id, play_count: 0 })
         playCount = 0
@@ -1112,7 +1103,6 @@ export class SongDBInstance extends DBUtils {
     const res = this.db.query<{ song_id: string; play_count: number }>(
       `SELECT song_id, play_count FROM analytics WHERE song_id in (${where})`
     )
-    console.log(Object.assign({}, ...res.map((val) => ({ [val.song_id]: val.play_count }))))
     return Object.assign({}, ...res.map((val) => ({ [val.song_id]: val.play_count })))
   }
 }

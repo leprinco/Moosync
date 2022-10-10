@@ -13,7 +13,6 @@ export class InvidiousPlayer extends LocalPlayer {
       const shouldProxy = (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('invidious.always_proxy'))
         ?.enabled
 
-      console.log(shouldProxy)
       if (shouldProxy ?? true) {
         playbackURL = await this.proxyVideoOnInvidious(playbackURL)
       }

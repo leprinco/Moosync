@@ -162,7 +162,6 @@ export class SongsChannel implements IpcChannelInterface {
   }
 
   private incrementPlayCount(event: Electron.IpcMainEvent, request: IpcRequest<SongRequests.PlayCount>) {
-    console.log('incrementing play count')
     if (request.params.song_id) {
       SongDB.incrementPlayCount(request.params.song_id)
     }
