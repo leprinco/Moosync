@@ -231,8 +231,7 @@ export const migrations = [
   CREATE TABLE analytics (
     id VARCHAR(36) PRIMARY KEY,
     song_id VARCHAR(36),
-    play_count INTEGER,
-    FOREIGN KEY(song_id) REFERENCES allsongs(_id)
+    play_count INTEGER
   );
 
   -- Down
