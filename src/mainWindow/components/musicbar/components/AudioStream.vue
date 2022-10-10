@@ -670,6 +670,9 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
 
     console.debug('Loading new song', song)
 
+    // Increment play count for song
+    window.DBUtils.incrementPlayCount(song._id)
+
     const PlayerTypes = this.onPlayerTypesChanged(song.type)
 
     vxm.player.loading = true
