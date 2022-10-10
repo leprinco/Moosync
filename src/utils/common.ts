@@ -40,17 +40,29 @@ export function getVersion(verS: string) {
   return 0
 }
 
+function isEmpty(val: unknown) {
+  return typeof val === 'undefined' || val === null
+}
+
+function sortAsc(first: unknown, second: unknown) {
+  if (typeof first === 'string' && typeof second === 'string') return first.localeCompare(second)
+
+  if (typeof first === 'number' && typeof second === 'number') return first - second
+
+  return 0
+}
+
 export function sortSongList(songList: Song[], options: SongSortOptions): Song[] {
   return songList.sort((a, b) => {
     const field: keyof Song = options.type as keyof Song
-    const first = a[field]
-    const second = b[field]
+    const first: unknown = a[field]
+    const second: unknown = b[field]
 
-    if (first && second) {
+    if (!isEmpty(first) && !isEmpty(second)) {
       if (!options.asc) {
-        return second.toString().localeCompare(first.toString())
+        return sortAsc(second, first)
       } else {
-        return first.toString().localeCompare(second.toString())
+        return sortAsc(first, second)
       }
     }
 

@@ -77,6 +77,7 @@ interface Song {
   providerExtension?: string
   icon?: string
   type: PlayerTypes
+  playCount?: number
 }
 
 interface SearchableSong {

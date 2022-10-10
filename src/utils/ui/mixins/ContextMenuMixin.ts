@@ -44,6 +44,13 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
             }`,
             handler: () =>
               sort.callback({ type: 'date_added', asc: sort.current.type === 'date_added' && !sort.current.asc })
+          },
+          {
+            label: `${this.$tc('contextMenu.sort.playCount')} ${
+              sort.current.type === 'playCount' ? (sort.current.asc ? '▲' : '▼') : ''
+            }`,
+            handler: () =>
+              sort.callback({ type: 'playCount', asc: sort.current.type === 'playCount' && !sort.current.asc })
           }
         ]
       }

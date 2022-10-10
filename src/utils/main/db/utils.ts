@@ -69,7 +69,8 @@ export class DBUtils {
       icon: dbSong.icon,
       date_added: dbSong.date_added,
       playbackUrl: dbSong.playbackUrl,
-      providerExtension: dbSong.provider_extension
+      providerExtension: dbSong.provider_extension,
+      playCount: dbSong.play_count ?? 0
     }
   }
 
@@ -108,7 +109,8 @@ export class DBUtils {
   protected batchUnmarshal(marshaled: marshaledSong[], fetchArtists: (artistIds: string[]) => Artists[]) {
     const unmarshaled: Song[] = []
     for (const m of marshaled) {
-      unmarshaled.push(this.unMarshalSong(m, fetchArtists))
+      const um = this.unMarshalSong(m, fetchArtists)
+      unmarshaled.push(um)
     }
     return unmarshaled
   }
@@ -163,6 +165,13 @@ export class DBUtils {
     return ''
   }
 
+  private leftJoinAnalytics(exclude_table?: string) {
+    if (exclude_table !== 'analytics') {
+      return ` LEFT JOIN analytics ON allsongs._id = analytics.song_id`
+    }
+    return ''
+  }
+
   private leftJoinCommon(tableName: string, rowName: string, bridgeTable?: string) {
     return ` LEFT JOIN ${tableName} ON ${bridgeTable}.${rowName} = ${tableName}.${rowName}_id`
   }
@@ -174,6 +183,7 @@ export class DBUtils {
       this.leftJoinArtists(exclude_table) +
       this.leftJoinGenre(exclude_table) +
       this.leftJoinPLaylists(exclude_table) +
+      this.leftJoinAnalytics(exclude_table) +
       this.leftJoinCommon('albums', 'album', 'album_bridge') +
       this.leftJoinCommon('artists', 'artist', 'artists_bridge') +
       this.leftJoinCommon('genre', 'genre', 'genre_bridge') +
@@ -186,6 +196,6 @@ export class DBUtils {
   }
 
   protected getSelectClause() {
-    return `allsongs._id, allsongs.path, allsongs.size, allsongs.title, allsongs.song_coverPath_high, allsongs.song_coverPath_low, allsongs.date, allsongs.date_added, allsongs.year, allsongs.lyrics, allsongs.bitrate, allsongs.codec, allsongs.container, allsongs.duration, allsongs.sampleRate, allsongs.hash, allsongs.type, allsongs.url, allsongs.icon, allsongs.playbackUrl, allsongs.provider_extension, albums.album_id, albums.album_name, albums.album_coverPath_high, albums.album_coverPath_low, albums.album_song_count, albums.year as album_year, albums.album_extra_info`
+    return `allsongs._id, allsongs.path, allsongs.size, allsongs.title, allsongs.song_coverPath_high, allsongs.song_coverPath_low, allsongs.date, allsongs.date_added, allsongs.year, allsongs.lyrics, allsongs.bitrate, allsongs.codec, allsongs.container, allsongs.duration, allsongs.sampleRate, allsongs.hash, allsongs.type, allsongs.url, allsongs.icon, allsongs.playbackUrl, allsongs.provider_extension, albums.album_id, albums.album_name, albums.album_coverPath_high, albums.album_coverPath_low, albums.album_song_count, albums.year as album_year, albums.album_extra_info, analytics.play_count`
   }
 }

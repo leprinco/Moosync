@@ -222,6 +222,10 @@ declare namespace SongRequests {
     id: string
     lyrics: string
   }
+
+  interface PlayCount {
+    song_id: string
+  }
 }
 
 declare namespace StoreRequests {

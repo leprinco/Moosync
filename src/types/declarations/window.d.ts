@@ -57,6 +57,8 @@ interface DBUtils {
   exportPlaylist: (playlistID: string) => Promise<void>
 
   updateLyrics: (id: string, lyrics: string) => Promise<void>
+
+  incrementPlayCount: (song_id: string) => Promise<void>
 }
 
 /**

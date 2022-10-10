@@ -48,6 +48,9 @@ export class SongsChannel implements IpcChannelInterface {
       case SongEvents.UPDATE_LYRICS:
         this.updateLyrics(event, request as IpcRequest<SongRequests.Lyrics>)
         break
+      case SongEvents.INCREMENT_PLAY_COUNT:
+        this.incrementPlayCount(event, request as IpcRequest<SongRequests.PlayCount>)
+        break
     }
   }
 
@@ -154,6 +157,14 @@ export class SongsChannel implements IpcChannelInterface {
   private updateLyrics(event: Electron.IpcMainEvent, request: IpcRequest<SongRequests.Lyrics>) {
     if (request.params && request.params.lyrics && request.params.id) {
       SongDB.updateSongLyrics(request.params.id, request.params.lyrics)
+    }
+    event.reply(request.responseChannel)
+  }
+
+  private incrementPlayCount(event: Electron.IpcMainEvent, request: IpcRequest<SongRequests.PlayCount>) {
+    console.log('incrementing play count')
+    if (request.params.song_id) {
+      SongDB.incrementPlayCount(request.params.song_id)
     }
     event.reply(request.responseChannel)
   }

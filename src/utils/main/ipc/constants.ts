@@ -153,7 +153,9 @@ export enum SongEvents {
   SAVE_IMAGE_TO_FILE = 'saveImageToFile',
   AUDIO_EXISTS = 'fileExists',
   IMAGE_EXISTS = 'imageExists',
-  GOT_FILE_PATH = 'gotSongPath'
+  GOT_FILE_PATH = 'gotSongPath',
+
+  INCREMENT_PLAY_COUNT = 'incrementPlayCount'
 }
 
 export enum LoggerEvents {

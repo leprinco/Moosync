@@ -72,7 +72,7 @@ type ContextMenuArgs =
       }
     }
 
-type SongSortOptions = { type: 'title' | 'date_added'; asc: boolean }
+type SongSortOptions = { type: 'title' | 'date_added' | 'playCount'; asc: boolean }
 type PlaylistSortOptions = { type: 'name' | 'provider'; asc: boolean }
 type NormalSortOptions = { type: 'name'; asc: boolean }
 

@@ -409,9 +409,29 @@ export class SongDBInstance extends DBUtils {
     return { where: '', args: [] }
   }
 
+  private getSortByTable(sortBy: SongSortOptions) {
+    switch (sortBy.type) {
+      case 'playCount':
+        return 'analytics'
+      default:
+        return 'allsongs'
+    }
+  }
+
+  private getSortByColumn(sortBy: SongSortOptions) {
+    switch (sortBy.type) {
+      case 'playCount':
+        return 'play_count'
+      default:
+        return sortBy.type
+    }
+  }
+
   private addOrderClause(sortBy?: SongSortOptions, noCase = false) {
     if (sortBy) {
-      return `ORDER BY allsongs.${sortBy.type} ${noCase ? 'COLLATE NOCASE' : ''} ${sortBy.asc ? 'ASC' : 'DESC'}`
+      return `ORDER BY ${this.getSortByTable(sortBy)}.${this.getSortByColumn(sortBy)} ${
+        noCase ? 'COLLATE NOCASE' : ''
+      } ${sortBy.asc ? 'ASC' : 'DESC'}`
     }
     return ''
   }
@@ -424,6 +444,14 @@ export class SongDBInstance extends DBUtils {
    */
   public getSongByOptions(options?: SongAPIOptions, exclude?: string[]): Song[] {
     const { where, args } = this.populateWhereQuery(options)
+
+    console.log(`SELECT ${this.getSelectClause()}, ${this.addGroupConcatClause()} FROM allsongs
+      ${this.addLeftJoinClause(undefined, 'allsongs')}
+        ${where}
+        ${this.addExcludeWhereClause(args.length === 0, exclude)} GROUP BY allsongs._id ${this.addOrderClause(
+      options?.sortBy,
+      args.length > 0
+    )}`)
 
     const songs: marshaledSong[] = this.db.query(
       `SELECT ${this.getSelectClause()}, ${this.addGroupConcatClause()} FROM allsongs
@@ -1060,5 +1088,22 @@ export class SongDBInstance extends DBUtils {
     }
 
     return false
+  }
+
+  /* ============================= 
+                Analytics
+     ============================= */
+
+  public incrementPlayCount(song_id: string) {
+    this.db.transaction(() => {
+      let playCount = this.db.queryFirstCell<number>(`SELECT play_count FROM analytics WHERE song_id = ?`, song_id)
+      console.log('in transaction', playCount)
+      if (!playCount) {
+        this.db.insert('analytics', { id: v4(), song_id, play_count: 0 })
+        playCount = 0
+      }
+
+      this.db.update('analytics', { play_count: playCount + 1 }, { song_id })
+    })()
   }
 }

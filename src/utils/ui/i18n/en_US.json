@@ -41,7 +41,8 @@
     "sort": {
       "name": "Name",
       "dateAdded": "Date added",
-      "provider": "Provider"
+      "provider": "Provider",
+      "playCount": "Play count"
     },
     "playlist": {
       "new": "Create Playlist",

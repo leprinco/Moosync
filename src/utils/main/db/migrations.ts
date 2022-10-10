@@ -223,5 +223,18 @@ export const migrations = [
   ALTER TABLE albums ADD album_extra_info TEXT;
 
   -- Down
+  `,
+
+  // 10-10-2022
+  `
+  -- Up
+  CREATE TABLE analytics (
+    id VARCHAR(36) PRIMARY KEY,
+    song_id VARCHAR(36),
+    play_count INTEGER,
+    FOREIGN KEY(song_id) REFERENCES allsongs(_id)
+  );
+
+  -- Down
   `
 ]

@@ -301,6 +301,8 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
           return
         }
 
+        window.DBUtils.incrementPlayCount(newVal._id)
+
         window.ExtensionUtils.sendEvent({
           type: 'songChanged',
           data: [newVal]
