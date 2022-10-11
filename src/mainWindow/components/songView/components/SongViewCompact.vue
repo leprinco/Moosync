@@ -14,6 +14,7 @@
         :defaultDetails="defaultDetails"
         :buttonGroup="detailsButtonGroup"
         :currentSong="currentSong"
+        :isLoading="isLoading"
         v-on="$listeners"
       />
     </b-col>

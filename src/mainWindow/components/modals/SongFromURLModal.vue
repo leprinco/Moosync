@@ -21,6 +21,10 @@
               @error="handleImageError"
               referrerPolicy="no-referrer"
             ></b-img>
+
+            <div v-if="isLoading" class="loading-spinner d-flex justify-content-center">
+              <b-spinner class="align-self-center" />
+            </div>
           </b-col>
           <b-col cols="9">
             <b-row no-gutters class="song-url-details">
@@ -89,6 +93,8 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong) {
   private songTitle = ''
   private songArtist = ''
 
+  private isLoading = false
+
   private refreshCallback?: () => void
 
   private handleImageError() {
@@ -98,6 +104,8 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong) {
   private isLoggedIn = false
 
   private async parseURL(url: string) {
+    this.isLoading = true
+
     this.forceEmptyImg = false
     this.parsedSong =
       (await vxm.providers.youtubeProvider.getSongDetails(url)) ??
@@ -113,6 +121,8 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong) {
       this.songTitle = ''
       this.songArtist = ''
     }
+
+    this.isLoading = false
   }
 
   private async parseFromExtension(url: string): Promise<Song | undefined> {
@@ -184,7 +194,7 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong) {
     bus.$on(EventBus.SHOW_SONG_FROM_URL_MODAL, (refreshCallback: () => void) => {
       this.refreshCallback = refreshCallback
       this.forceEmptyImg = false
-      this.isLoggedIn = vxm.providers.youtubeProvider.loggedIn && vxm.providers.spotifyProvider.loggedIn
+      this.isLoggedIn = vxm.providers.loggedInYoutube && vxm.providers.loggedInSpotify
       this.$bvModal.show(this.id)
     })
   }
@@ -309,4 +319,13 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong) {
 
 .warning
   color: #EB2525
+
+.loading-spinner
+  position: absolute
+  left:  0
+  top: 0
+  width: 100%
+  height: 100%
+  background: rgba(0, 0, 0, 0.4)
+  border-radius: 16px
 </style>

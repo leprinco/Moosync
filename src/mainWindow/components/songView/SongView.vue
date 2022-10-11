@@ -21,6 +21,7 @@
         :defaultDetails="defaultDetails"
         :detailsButtonGroup="detailsButtonGroup"
         :optionalProviders="optionalProviders"
+        :isLoading="isLoading"
         @onItemsChanged="onOptionalProviderChanged"
         @onRowDoubleClicked="queueSong([arguments[0]])"
         @onRowContext="onSongContextMenu"

@@ -31,6 +31,10 @@
                 <SongDefault class="albumart w-100" v-if="!computedImg" />
               </transition>
 
+              <div v-if="isLoading" class="loading-spinner d-flex justify-content-center">
+                <b-spinner class="align-self-center" />
+              </div>
+
               <div v-if="cardHoverText" :class="`hoverText ${pinHoverText ? 'visible-always' : ''}`">
                 <PinIcon
                   :filled="pinHoverText"
@@ -141,6 +145,9 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, Juk
 
   @Prop({ default: 0 })
   private isShowLyricsActive!: number
+
+  @Prop({ default: false })
+  private isLoading!: boolean
 
   private handleImageError() {
     this.forceShowDefaultImage = true
@@ -310,4 +317,15 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, Juk
   font-weight: 400
   font-size: 17px
   cursor: pointer
+
+.loading-spinner
+  position: absolute
+  left:  0
+  top: 0
+  width: 100%
+  height: 100%
+  background: rgba(0, 0, 0, 0.4)
+  border-radius: 16px
+  span
+    color: white
 </style>

@@ -21,6 +21,10 @@
               @error="handleImageError"
               referrerPolicy="no-referrer"
             ></b-img>
+
+            <div v-if="isLoading" class="loading-spinner d-flex justify-content-center">
+              <b-spinner class="align-self-center" />
+            </div>
           </b-col>
           <b-col cols="9">
             <b-row no-gutters class="playlist-url-details">
@@ -103,6 +107,8 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
   private songList: Song[] = []
   private playlist: Playlist | null = null
 
+  private isLoading = false
+
   private handleImageError() {
     this.forceEmptyImg = true
   }
@@ -116,6 +122,8 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
   }
 
   private async parseURL(url: string) {
+    this.isLoading = true
+
     // let generator
     this.songList = []
     this.playlist = null
@@ -167,6 +175,8 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
 
       this.songList.push(...data.songs)
     }
+
+    this.isLoading = false
   }
 
   private handleClick(index: number) {
@@ -297,4 +307,13 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
 .scroller
   margin-right: -10px
   margin-left: -10px
+
+.loading-spinner
+  position: absolute
+  left:  0
+  top: 0
+  width: 100%
+  height: 100%
+  background: rgba(0, 0, 0, 0.4)
+  border-radius: 16px
 </style>
