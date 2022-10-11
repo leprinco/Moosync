@@ -235,5 +235,13 @@ export const migrations = [
   );
 
   -- Down
+  `,
+
+  // 10-11/2022
+  `
+  -- Up
+  ALTER TABLE playlists ADD extension TEXT;
+
+  -- Down
   `
 ]

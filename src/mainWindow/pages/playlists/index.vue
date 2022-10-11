@@ -114,7 +114,8 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin) {
         for (const p of (data[key] as PlaylistReturnType).playlists) {
           playlists.push({
             ...p,
-            icon: (p.icon && 'media://' + p.icon) ?? (icon && 'media://' + icon)
+            icon: (p.icon && 'media://' + p.icon) ?? (icon && 'media://' + icon),
+            extension: key
           })
         }
       }
@@ -150,6 +151,14 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin) {
     )
 
     await Promise.all(promises)
+
+    // Set icon for playlists which are provided by extensions have
+    for (const p of this.allPlaylists) {
+      if (p.extension && !p.icon) {
+        const icon = await window.ExtensionUtils.getExtensionIcon(p.extension)
+        this.$set(p, 'icon', icon && 'media://' + icon)
+      }
+    }
   }
 
   private setSort(options: PlaylistSortOptions) {

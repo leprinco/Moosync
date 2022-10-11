@@ -52,7 +52,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
 
   private isLoading = false
 
-  private playlist: ExtendedPlaylist | null = null
+  private playlist: Playlist | null = null
 
   get buttonGroups(): SongDetailButtons {
     return {
@@ -190,9 +190,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
 
   private async fetchSongListAsync(invalidateCache = false) {
     if (this.playlist) {
-      if (!this.isRemote()) {
-        return this.fetchLocalSongList()
-      }
+      await this.fetchLocalSongList()
 
       if (!this.isExtension) {
         if (this.isYoutube) return this.fetchYoutube(invalidateCache)

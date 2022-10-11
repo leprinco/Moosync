@@ -58,7 +58,7 @@ export default class PlayerControls extends Vue {
     }
   }
 
-  public gotoPlaylist(playlist: ExtendedPlaylist) {
+  public gotoPlaylist(playlist: Playlist) {
     try {
       this.$router.push({
         name: 'playlists-single',

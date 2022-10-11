@@ -949,7 +949,8 @@ export class SongDBInstance extends DBUtils {
       playlist_desc: playlist.playlist_desc,
       playlist_id: id,
       playlist_song_count: playlist.playlist_song_count ?? 0,
-      playlist_coverPath: playlist.playlist_coverPath
+      playlist_coverPath: playlist.playlist_coverPath,
+      extension
     })
     return id
   }
