@@ -208,7 +208,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
 
   private getPlaylistContextMenu(playlist: ExtendedPlaylist, callback?: () => void) {
     const items = []
-    if (!playlist.isRemote && !playlist.extension) {
+    if (!playlist.isRemote) {
       items.push({
         label: this.$tc('contextMenu.playlist.remove'),
         handler: () => {

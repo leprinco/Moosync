@@ -115,6 +115,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin) {
           playlists.push({
             ...p,
             icon: (p.icon && 'media://' + p.icon) ?? (icon && 'media://' + icon),
+            isRemote: true,
             extension: key
           })
         }
