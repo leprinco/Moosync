@@ -177,7 +177,7 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
     if (this.playlist) {
       const playlistId = await window.DBUtils.createPlaylist(this.playlist)
 
-      await window.DBUtils.addToPlaylist(playlistId, ...this.songList)
+      if (!this.playlist.extension) await window.DBUtils.addToPlaylist(playlistId, ...this.songList)
 
       this.$toasted.show(`Added ${this.playlist.playlist_name} to library`)
 
