@@ -98,7 +98,6 @@ export class MprisChannel implements IpcChannelInterface {
       this.buttonStatusCallbacks.forEach((val) => {
         val(this.buttonState)
       })
-      this.setWindowToolbar()
     }
 
     event.reply(request.responseChannel)
@@ -111,7 +110,6 @@ export class MprisChannel implements IpcChannelInterface {
     this.buttonStatusCallbacks.forEach((val) => {
       val(this.buttonState)
     })
-    this.setWindowToolbar()
   }
 
   public onButtonPressed(button: ValueOf<typeof ButtonEnum>) {
@@ -120,48 +118,6 @@ export class MprisChannel implements IpcChannelInterface {
 
   private setOnButtonPressed() {
     this.controller.setButtonPressCallback(this.onButtonPressed.bind(this))
-  }
-
-  private setWindowToolbar() {
-    const window = WindowHandler.getWindow(true)
-
-    if (window) {
-      const buttons: ThumbarButton[] = []
-
-      if (this.buttonState.prev) {
-        buttons.push({
-          icon: nativeImage.createFromPath(path.join(__static, 'prev_track.png')),
-          click: () => this.onButtonPressed(ButtonEnum.Previous),
-          tooltip: 'Previous track'
-        })
-      }
-
-      if (this.buttonState.play) {
-        buttons.push({
-          icon: nativeImage.createFromPath(path.join(__static, 'play.png')),
-          click: () => this.onButtonPressed(ButtonEnum.Play),
-          tooltip: 'Play'
-        })
-      }
-
-      if (this.buttonState.pause) {
-        buttons.push({
-          icon: nativeImage.createFromPath(path.join(__static, 'pause.png')),
-          click: () => this.onButtonPressed(ButtonEnum.Pause),
-          tooltip: 'Pause'
-        })
-      }
-
-      if (this.buttonState.next) {
-        buttons.push({
-          icon: nativeImage.createFromPath(path.join(__static, 'next_track.png')),
-          click: () => this.onButtonPressed(ButtonEnum.Previous),
-          tooltip: 'Next track'
-        })
-      }
-
-      window.setThumbarButtons(buttons)
-    }
   }
 
   public onButtonStatusChange(callback: (buttons: PlayerButtons) => void) {

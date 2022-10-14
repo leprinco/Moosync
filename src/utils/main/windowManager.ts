@@ -7,7 +7,7 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { BrowserWindow, Menu, Tray, app, dialog, protocol, webFrameMain } from 'electron'
+import { BrowserWindow, Menu, Tray, app, dialog, protocol, webFrameMain, ThumbarButton, nativeImage } from 'electron'
 import { SongEvents, WindowEvents } from './ipc/constants'
 import { getWindowSize, setWindowSize, loadPreferences } from './db/preferences'
 
@@ -29,6 +29,7 @@ export class WindowHandler {
   private static preferenceWindow: number
 
   private trayHandler = new TrayHandler()
+  private windowToolbarButtonsHandler = new WindowToolbarButtonsHandler()
   private isDevelopment = process.env.NODE_ENV !== 'production'
   private _isMainWindowMounted = true
   private pathQueue: string[] = []
@@ -313,6 +314,10 @@ export class WindowHandler {
         callback({ cancel: true })
       }
     )
+
+    getMprisChannel().onButtonStatusChange((buttons) =>
+      this.windowToolbarButtonsHandler.setWindowToolbar(window, buttons)
+    )
   }
 
   public minimizeWindow(isMainWindow = true) {
@@ -451,6 +456,46 @@ export class WindowHandler {
 class AppExitHandler {
   public static _isQuitting = false
   public static _minimizeToTray = true
+}
+
+class WindowToolbarButtonsHandler {
+  setWindowToolbar(window: BrowserWindow, buttonState: PlayerButtons) {
+    const buttons: ThumbarButton[] = []
+
+    if (buttonState.prev) {
+      buttons.push({
+        icon: nativeImage.createFromPath(path.join(__static, 'prev_track.png')),
+        click: () => getMprisChannel().onButtonPressed(ButtonEnum.Previous),
+        tooltip: 'Previous track'
+      })
+    }
+
+    if (buttonState.play) {
+      buttons.push({
+        icon: nativeImage.createFromPath(path.join(__static, 'play.png')),
+        click: () => getMprisChannel().onButtonPressed(ButtonEnum.Play),
+        tooltip: 'Play'
+      })
+    }
+
+    if (buttonState.pause) {
+      buttons.push({
+        icon: nativeImage.createFromPath(path.join(__static, 'pause.png')),
+        click: () => getMprisChannel().onButtonPressed(ButtonEnum.Pause),
+        tooltip: 'Pause'
+      })
+    }
+
+    if (buttonState.next) {
+      buttons.push({
+        icon: nativeImage.createFromPath(path.join(__static, 'next_track.png')),
+        click: () => getMprisChannel().onButtonPressed(ButtonEnum.Next),
+        tooltip: 'Next track'
+      })
+    }
+
+    window.setThumbarButtons(buttons)
+  }
 }
 
 class TrayHandler {
