@@ -38,13 +38,15 @@ import { vxm } from '@/mainWindow/store'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import Vue from 'vue'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { GenericProvider, ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
 
 @Component({
   components: {
     SongView
   }
 })
-export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerControls, RemoteSong) {
+export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerControls, RemoteSong, ProviderMixin) {
   private album: Album | null = null
   private songList: Song[] = []
   private optionalSongList: Record<string, string[]> = {}
@@ -73,14 +75,19 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     return false
   }
 
+  private fetchAlbumProviders() {
+    const providers = this.getProvidersByScope(ProviderScopes.ALBUM_SONGS)
+    return providers.map((val) => ({
+      key: val.key,
+      title: val.Title
+    }))
+  }
+
+  // TODO: Separate pageToken for each provider
+  private nextPageToken?: unknown
+
   private get albumSongProviders(): TabCarouselItem[] {
-    return [
-      {
-        key: vxm.providers.spotifyProvider.key,
-        title: this.$tc('providers.spotify')
-      },
-      ...this.extensionAlbumSongProviders
-    ]
+    return [...this.fetchAlbumProviders(), ...this.extensionAlbumSongProviders]
   }
 
   get buttonGroups(): SongDetailButtons {
@@ -135,19 +142,22 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
   private async fetchAlbumCover() {
     if (this.album) {
       if (!(this.album.album_coverPath_high ?? this.album.album_coverPath_low) && this.album.album_name) {
-        if (vxm.providers.loggedInSpotify) {
-          const res = (await vxm.providers.spotifyProvider.searchAlbum(this.album.album_name))[0]
+        const providers = this.getProvidersByScope(ProviderScopes.SEARCH_ALBUM)
+        for (const p of providers) {
+          const res = (await p.searchAlbum(this.album.album_name))[0]
           if (res) {
             this.album.album_coverPath_high = res.album_coverPath_high
             this.album.album_coverPath_low = res.album_coverPath_low
-          }
 
-          window.DBUtils.updateAlbum({
-            ...this.album,
-            album_coverPath_high: res.album_coverPath_high,
-            album_coverPath_low: res.album_coverPath_low,
-            album_extra_info: res.album_extra_info
-          })
+            window.DBUtils.updateAlbum({
+              ...this.album,
+              album_coverPath_high: res.album_coverPath_high,
+              album_coverPath_low: res.album_coverPath_low,
+              album_extra_info: res.album_extra_info
+            })
+
+            return
+          }
         }
       }
     }
@@ -213,29 +223,34 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     Vue.set(this.loadingMap, key, false)
   }
 
-  private async fetchSpotifySongs() {
-    Vue.set(this.loadingMap, vxm.providers.spotifyProvider.key, true)
+  private async fetchProviderSongs(provider: GenericProvider) {
+    Vue.set(this.loadingMap, provider.key, true)
     if (this.album) {
-      for await (const s of vxm.providers.spotifyProvider.getAlbumSongs(this.album)) {
-        if (!this.songList.find((val) => val._id === s._id)) {
-          this.songList.push(s)
+      for await (const items of provider.getAlbumSongs(this.album)) {
+        this.nextPageToken = items.nextPageToken
 
-          if (!this.optionalSongList[vxm.providers.spotifyProvider.key]) {
-            this.optionalSongList[vxm.providers.spotifyProvider.key] = []
+        for (const s of items.songs) {
+          if (!this.songList.find((val) => val._id === s._id)) {
+            this.songList.push(s)
+
+            if (!this.optionalSongList[provider.key]) {
+              this.optionalSongList[provider.key] = []
+            }
+
+            this.optionalSongList[provider.key].push(s._id)
           }
-
-          this.optionalSongList[vxm.providers.spotifyProvider.key].push(s._id)
         }
       }
     }
-    Vue.set(this.loadingMap, vxm.providers.spotifyProvider.key, false)
+    Vue.set(this.loadingMap, provider.key, false)
   }
 
   private onAlbumProviderChanged({ key, checked }: { key: string; checked: boolean }) {
     Vue.set(this.activeProviders, key, checked)
     if (checked) {
-      if (key === vxm.providers.spotifyProvider.key) {
-        this.fetchSpotifySongs()
+      const provider = this.getProviderByKey(key)
+      if (provider) {
+        this.fetchProviderSongs(provider)
         return
       }
       this.fetchExtensionSongs(key)

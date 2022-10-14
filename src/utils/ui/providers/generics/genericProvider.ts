@@ -40,7 +40,11 @@ export enum ProviderScopes {
   ARTIST_SONGS,
   ALBUM_SONGS,
   RECOMMENDATIONS,
-  SCROBBLES
+  SCROBBLES,
+  PLAYLIST_FROM_URL,
+  SONG_FROM_URL,
+  SEARCH_ALBUM,
+  SEARCH_ARTIST
 }
 
 export abstract class GenericProvider {
@@ -119,6 +123,10 @@ export abstract class GenericProvider {
     return false
   }
 
+  public matchSongUrl(str: string): boolean {
+    return false
+  }
+
   /**
    * Gets playback url and duration of song from provider. When song conversion to youtube is rate limited then url and duration fetching can be deferred
    * @param song whose url and duration is to be fetched
@@ -158,6 +166,13 @@ export abstract class GenericProvider {
     yield { songs: [] }
   }
 
+  public async *getAlbumSongs(
+    album: Album,
+    nextPageToken?: unknown
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {
+    yield { songs: [] }
+  }
+
   public async searchSongs(term: string): Promise<Song[]> {
     return []
   }
@@ -183,4 +198,7 @@ export abstract class GenericProvider {
   }
 
   public abstract provides(): ProviderScopes[]
+  public abstract get Title(): string
+  public abstract get BgColor(): string
+  public abstract get IconComponent(): string
 }

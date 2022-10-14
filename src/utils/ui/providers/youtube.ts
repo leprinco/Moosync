@@ -42,7 +42,9 @@ export class YoutubeProvider extends GenericProvider {
       ProviderScopes.SEARCH,
       ProviderScopes.PLAYLISTS,
       ProviderScopes.ARTIST_SONGS,
-      ProviderScopes.RECOMMENDATIONS
+      ProviderScopes.RECOMMENDATIONS,
+      ProviderScopes.PLAYLIST_FROM_URL,
+      ProviderScopes.SONG_FROM_URL
     ]
   }
 
@@ -432,7 +434,7 @@ export class YoutubeProvider extends GenericProvider {
     return window.SearchUtils.searchYT(term, undefined, false, false, true)
   }
 
-  private matchSongURL(url: string) {
+  public matchSongURL(url: string) {
     return url.match(
       /^((?:https?:)?\/\/)?((?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/
     )
@@ -687,5 +689,17 @@ export class YoutubeProvider extends GenericProvider {
 
   public async searchAlbum(): Promise<Album[]> {
     return []
+  }
+
+  public get Title(): string {
+    return 'Youtube'
+  }
+
+  public get BgColor(): string {
+    return '#E62017'
+  }
+
+  public get IconComponent(): string {
+    return 'YoutubeIcon'
   }
 }

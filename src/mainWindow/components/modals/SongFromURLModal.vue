@@ -75,6 +75,8 @@ import { v4 } from 'uuid'
 import { mixins } from 'vue-class-component'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
 
 @Component({
   components: {
@@ -82,7 +84,7 @@ import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
     InputGroup
   }
 })
-export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong) {
+export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong, ProviderMixin) {
   @Prop({ default: 'SongFromURL' })
   private id!: string
 
@@ -107,12 +109,17 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong) {
     this.isLoading = true
 
     this.forceEmptyImg = false
-    this.parsedSong =
-      (await vxm.providers.youtubeProvider.getSongDetails(url)) ??
-      (await vxm.providers.spotifyProvider.getSongDetails(url)) ??
-      (await this.parseFromExtension(url)) ??
-      (await this.parseStream(url)) ??
-      null
+
+    const providers = this.getProvidersByScope(ProviderScopes.SONG_FROM_URL)
+    for (const p of providers) {
+      if (p.matchSongUrl(url)) {
+        this.parsedSong = await p.getSongDetails(url)
+        if (this.parsedSong) {
+          break
+        }
+      }
+    }
+    this.parsedSong = this.parsedSong ?? (await this.parseFromExtension(url)) ?? (await this.parseStream(url)) ?? null
 
     if (this.parsedSong) {
       this.songTitle = this.parsedSong.title ?? ''

@@ -66,7 +66,6 @@ import Toggle from '@/icons/ToggleIcon.vue'
 import Rooms from '@/icons/RoomsIcon.vue'
 import Explore from '@/icons/ExploreIcon.vue'
 import Queue from '@/icons/QueueIcon.vue'
-import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 
 @Component({
@@ -98,7 +97,7 @@ export default class Sidebar extends Vue {
   }
 
   private get showExplore() {
-    return vxm.providers.loggedInSpotify || vxm.providers.loggedInYoutube || vxm.providers.loggedInLastFM
+    return true
   }
 
   get navigationTabs() {

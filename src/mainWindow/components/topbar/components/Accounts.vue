@@ -14,14 +14,14 @@
       <div class="buttons">
         <IconButton
           v-for="p in providers"
-          :key="`${p.name}-${p.username}`"
-          :bgColor="p.bgColor"
-          :hoverText="p.provider.loggedIn ? 'Sign out' : p.name"
+          :key="`${p.provider.Title}-${p.username}`"
+          :bgColor="p.provider.BgColor"
+          :hoverText="p.provider.loggedIn ? 'Sign out' : p.provider.Title"
           :title="p.username ? p.username : 'Connect'"
-          @click.native="handleClick(p.name)"
+          @click.native="handleClick(p)"
         >
           <template slot="icon">
-            <component :is="p.icon" />
+            <component :is="p.provider.IconComponent" />
           </template>
         </IconButton>
 
@@ -67,7 +67,7 @@ import InvidiousIcon from '@/icons/InvidiousIcon.vue'
   }
 })
 export default class TopBar extends mixins(AccountsMixin) {
-  protected activeSignout: Providers | null = null
+  protected activeSignout: Provider | null = null
 
   async mounted() {
     this.signoutMethod = this.showSignoutModal
@@ -75,18 +75,16 @@ export default class TopBar extends mixins(AccountsMixin) {
 
   protected async signout() {
     if (this.activeSignout) {
-      const p = this.getProvider(this.activeSignout)
+      if (this.activeSignout) {
+        this.activeSignout.provider.signOut()
 
-      if (p) {
-        p.provider.signOut()
-
-        this.$set(p, 'username', '')
+        this.$set(this.activeSignout, 'username', '')
         this.activeSignout = null
       }
     }
   }
 
-  protected showSignoutModal(signout: Providers) {
+  protected showSignoutModal(signout: Provider) {
     this.activeSignout = signout
     this.$bvModal.show('signoutModal')
   }

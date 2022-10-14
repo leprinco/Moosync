@@ -82,7 +82,6 @@ import { Component, Prop } from 'vue-property-decorator'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import { vxm } from '@/mainWindow/store'
 import { mixins } from 'vue-class-component'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import SingleSearchResult from '@/mainWindow/components/generic/SingleSearchResult.vue'
@@ -90,6 +89,8 @@ import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import InputGroup from '../generic/InputGroup.vue'
 import { v4 } from 'uuid'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
 
 @Component({
   components: {
@@ -98,7 +99,7 @@ import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
     SingleSearchResult
   }
 })
-export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoader, RemoteSong) {
+export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoader, RemoteSong, ProviderMixin) {
   @Prop({ default: 'PlaylistFromURL' })
   private id!: string
 
@@ -124,27 +125,19 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
   private async parseURL(url: string) {
     this.isLoading = true
 
-    // let generator
     this.songList = []
     this.playlist = null
 
     if (url.startsWith('http')) {
-      if (vxm.providers.youtubeProvider.matchPlaylist(url)) {
-        this.playlist = (await vxm.providers.youtubeProvider.getPlaylistDetails(url)) ?? null
-        // generator = vxm.providers.youtubeProvider.getPlaylistContent(url, true)
+      const providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_FROM_URL)
+      for (const p of providers) {
+        if (p.matchPlaylist(url)) {
+          this.playlist = (await p.getPlaylistDetails(url)) ?? null
+          if (this.playlist) {
+            return
+          }
+        }
       }
-
-      if (vxm.providers.spotifyProvider.matchPlaylist(url)) {
-        this.playlist = (await vxm.providers.spotifyProvider.getPlaylistDetails(url)) ?? null
-        // generator = vxm.providers.spotifyProvider.getPlaylistContent(url, true)
-      }
-
-      // if (generator) {
-      //   for await (const items of generator) {
-      //     this.songList.push(...items)
-      //   }
-      //   return
-      // }
 
       const res = await window.ExtensionUtils.sendEvent({
         type: 'requestedPlaylistFromURL',

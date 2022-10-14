@@ -324,4 +324,16 @@ export class LastFMProvider extends GenericProvider {
       }
     }
   }
+
+  public get Title(): string {
+    return 'LastFM'
+  }
+
+  public get BgColor(): string {
+    return '#BA0000'
+  }
+
+  public get IconComponent(): string {
+    return 'LastFMIcon'
+  }
 }

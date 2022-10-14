@@ -38,16 +38,17 @@ import SongView from '@/mainWindow/components/songView/SongView.vue'
 import { mixins } from 'vue-class-component'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import { vxm } from '@/mainWindow/store'
-import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
+import { GenericProvider, ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import Vue from 'vue'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 
 @Component({
   components: {
     SongView
   }
 })
-export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSong) {
+export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSong, ProviderMixin) {
   private songList: Song[] = []
   private optionalSongList: Record<string, string[]> = {}
   private artist: Artists | null = null
@@ -60,18 +61,16 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     local: true
   }
 
+  private fetchProviders() {
+    const providers = this.getProvidersByScope(ProviderScopes.ARTIST_SONGS)
+    return providers.map((val) => ({
+      title: val.Title,
+      key: val.key
+    }))
+  }
+
   private get artistSongProviders(): TabCarouselItem[] {
-    return [
-      {
-        title: this.$tc('providers.youtube'),
-        key: vxm.providers.youtubeProvider.key
-      },
-      {
-        title: this.$tc('providers.spotify'),
-        key: vxm.providers.spotifyProvider.key
-      },
-      ...this.extensionArtistSongProviders
-    ]
+    return [...this.fetchProviders(), ...this.extensionArtistSongProviders]
   }
 
   get isLoading() {
@@ -270,13 +269,9 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
   }
 
   private async fetchRemoteProviderByKey(key: string) {
-    if (key === vxm.providers.youtubeProvider.key) {
-      await this.fetchProviderSonglist(vxm.providers.youtubeProvider)
-      return
-    }
-
-    if (key === vxm.providers.spotifyProvider.key) {
-      await this.fetchProviderSonglist(vxm.providers.spotifyProvider)
+    const provider = this.getProviderByKey(key)
+    if (provider) {
+      await this.fetchProviderSonglist(provider)
       return
     }
 

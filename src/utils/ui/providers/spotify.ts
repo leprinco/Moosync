@@ -57,7 +57,11 @@ export class SpotifyProvider extends GenericProvider {
       ProviderScopes.PLAYLISTS,
       ProviderScopes.ARTIST_SONGS,
       ProviderScopes.ALBUM_SONGS,
-      ProviderScopes.RECOMMENDATIONS
+      ProviderScopes.RECOMMENDATIONS,
+      ProviderScopes.PLAYLIST_FROM_URL,
+      ProviderScopes.SONG_FROM_URL,
+      ProviderScopes.SEARCH_ALBUM,
+      ProviderScopes.SEARCH_ARTIST
     ]
   }
 
@@ -417,7 +421,7 @@ export class SpotifyProvider extends GenericProvider {
     }
   }
 
-  private matchSongURL(url: string) {
+  public matchSongURL(url: string) {
     return url.match(/^(https:\/\/open.spotify.com\/track\/|spotify:track:)([a-zA-Z0-9]+)(.*)$/)
   }
 
@@ -853,7 +857,7 @@ export class SpotifyProvider extends GenericProvider {
     return albums
   }
 
-  public async *getAlbumSongs(album: Album) {
+  public async *getAlbumSongs(album: Album): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
     if (await this.getLoggedIn()) {
       if (album.album_name) {
         let albumId = album.album_extra_info?.spotify?.album_id
@@ -871,10 +875,22 @@ export class SpotifyProvider extends GenericProvider {
           })
 
           for await (const s of this._getAlbumSongs(albumDets)) {
-            yield s
+            yield { songs: [s] }
           }
         }
       }
     }
+  }
+
+  public get Title(): string {
+    return 'Spotify'
+  }
+
+  public get BgColor(): string {
+    return '#1ED760'
+  }
+
+  public get IconComponent(): string {
+    return 'SpotifyIcon'
   }
 }

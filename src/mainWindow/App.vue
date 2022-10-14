@@ -49,6 +49,8 @@ import EntityInfoModal from './components/modals/EntityInfoModal.vue'
 import { i18n } from './plugins/i18n'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import { sortSongListFn } from '@/utils/common'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
 
 @Component({
   components: {
@@ -64,7 +66,7 @@ import { sortSongListFn } from '@/utils/common'
     EntityInfoModal
   }
 })
-export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandlerMixin, JukeboxMixin) {
+export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandlerMixin, JukeboxMixin, ProviderMixin) {
   async created() {
     this.registerNotifier()
     this.setLanguage()
@@ -319,7 +321,9 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
           data: [newVal]
         })
 
-        vxm.providers.lastfmProvider.scrobble(newVal)
+        this.getProvidersByScope(ProviderScopes.SCROBBLES).forEach((val) => {
+          val.scrobble(newVal)
+        })
       },
       { deep: true, immediate: true }
     )

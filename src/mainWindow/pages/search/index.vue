@@ -89,7 +89,7 @@
 import { vxm } from '@/mainWindow/store'
 import { Component, Vue, Watch } from 'vue-property-decorator'
 import TabCarousel from '@/mainWindow/components/generic/TabCarousel.vue'
-import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
+import { GenericProvider, ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
 import SongListCompactItem from '@/mainWindow/components/songView/components/SongListCompactItem.vue'
 import CardView from '@/mainWindow/components/generic/CardView.vue'
 import ArtistDefault from '@/icons/ArtistDefaultIcon.vue'
@@ -101,6 +101,7 @@ import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import SongListMixin from '@/utils/ui/mixins/SongListMixin'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 
 @Component({
   components: {
@@ -113,7 +114,13 @@ import RouterPushes from '@/utils/ui/mixins/RouterPushes'
     GenreDefault
   }
 })
-export default class SearchPage extends mixins(PlayerControls, SongListMixin, ContextMenuMixin, RouterPushes) {
+export default class SearchPage extends mixins(
+  PlayerControls,
+  SongListMixin,
+  ContextMenuMixin,
+  RouterPushes,
+  ProviderMixin
+) {
   private optionalProviders: TabCarouselItem[] = []
   private activeProvider = ''
   private activeSubcategory: keyof SearchResult = 'songs'
@@ -139,7 +146,7 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
     } else if (this.activeProvider === vxm.providers.spotifyProvider.key && !vxm.providers.loggedInSpotify) {
       return 'Login to Spotify to use this feature'
     } else if (this.activeProvider !== 'local') {
-      return 'You might need to login with the extension to use this feature'
+      return 'Nothing found'
     }
 
     return 'Nothing found'
@@ -169,22 +176,16 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
     }
   }
 
+  private fetchProviders() {
+    const providers = this.getProvidersByScope(ProviderScopes.SEARCH)
+    return providers.map((val) => ({
+      title: val.Title,
+      key: val.key
+    }))
+  }
+
   private get searchItems(): TabCarouselItem[] {
-    return [
-      {
-        title: 'Local',
-        key: 'local'
-      },
-      {
-        title: 'Youtube',
-        key: vxm.providers.youtubeProvider.key
-      },
-      {
-        title: 'Spotify',
-        key: vxm.providers.spotifyProvider.key
-      },
-      ...this.optionalProviders
-    ]
+    return [...this.fetchProviders(), ...this.optionalProviders]
   }
 
   private get subCategories(): TabCarouselItem[] {
@@ -286,8 +287,14 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
   @Watch('searchTerm', { immediate: true })
   private onSearchTermChanged() {
     this.fetchLocalSongList()
-    this.fetchProviderSongList(vxm.providers.youtubeProvider)
-    this.fetchProviderSongList(vxm.providers.spotifyProvider)
+
+    for (const p of this.searchItems) {
+      const provider = this.getProviderByKey(p.key)
+      if (provider) {
+        this.fetchProviderSongList(provider)
+      }
+    }
+
     this.fetchExtensionSongList()
   }
 

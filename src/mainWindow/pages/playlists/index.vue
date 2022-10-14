@@ -69,6 +69,8 @@ import DeleteModal from '../../../commonComponents/ConfirmationModal.vue'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
 import PlusIcon from '@/icons/PlusIcon.vue'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
 
 @Component({
   components: {
@@ -80,7 +82,7 @@ import PlusIcon from '@/icons/PlusIcon.vue'
     PlusIcon
   }
 })
-export default class Playlists extends mixins(RouterPushes, ContextMenuMixin) {
+export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, ProviderMixin) {
   @Prop({ default: () => () => undefined })
   private enableRefresh!: () => void
 
@@ -132,24 +134,13 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin) {
     this.allPlaylists = [...localPlaylists]
 
     const promises: Promise<unknown>[] = []
-    promises.push(
-      vxm.providers.youtubeProvider
-        .getUserPlaylists(invalidateCache)
-        .then((data) => this.allPlaylists.push(...data))
-        .then(this.sort)
-    )
-    promises.push(
-      vxm.providers.spotifyProvider
-        .getUserPlaylists(invalidateCache)
-        .then((data) => this.allPlaylists.push(...data))
-        .then(this.sort)
-    )
 
-    promises.push(
-      this.fetchPlaylistsFromExtension(invalidateCache)
-        .then((data) => this.allPlaylists.push(...data))
-        .then(this.sort)
-    )
+    const providers = this.getProvidersByScope(ProviderScopes.PLAYLISTS)
+    for (const p of providers) {
+      promises.push(p.getUserPlaylists(invalidateCache).then(this.pushPlaylistToList).then(this.sort))
+    }
+
+    promises.push(this.fetchPlaylistsFromExtension(invalidateCache).then(this.pushPlaylistToList).then(this.sort))
 
     await Promise.all(promises)
 
@@ -158,6 +149,14 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin) {
       if (p.extension && !p.icon) {
         const icon = await window.ExtensionUtils.getExtensionIcon(p.extension)
         this.$set(p, 'icon', icon && 'media://' + icon)
+      }
+    }
+  }
+
+  private pushPlaylistToList(playlists: Playlist[]) {
+    for (const p of playlists) {
+      if (this.allPlaylists.findIndex((val) => val.playlist_id === p.playlist_id) === -1) {
+        this.allPlaylists.push(p)
       }
     }
   }

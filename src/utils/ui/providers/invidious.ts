@@ -25,7 +25,7 @@ export class InvidiousProvider extends GenericProvider {
   }
 
   provides(): ProviderScopes[] {
-    return [ProviderScopes.SEARCH]
+    return [ProviderScopes.SEARCH, ProviderScopes.PLAYLIST_FROM_URL, ProviderScopes.SONG_FROM_URL]
   }
 
   public async updateConfig(): Promise<boolean> {
@@ -271,5 +271,17 @@ export class InvidiousProvider extends GenericProvider {
 
   public async searchAlbum(term: string): Promise<Album[]> {
     return []
+  }
+
+  public get Title(): string {
+    return 'Invidious'
+  }
+
+  public get BgColor(): string {
+    return '#00B6F0'
+  }
+
+  public get IconComponent(): string {
+    return 'InvidiousIcon'
   }
 }

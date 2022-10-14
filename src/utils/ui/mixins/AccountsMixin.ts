@@ -7,19 +7,21 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component, Vue } from 'vue-property-decorator'
+import { Component } from 'vue-property-decorator'
 import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
+import { ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
+import { mixins } from 'vue-class-component'
+import ProviderMixin from './ProviderMixin'
 
 @Component
-export default class AccountsMixin extends Vue {
-  private _signoutProvider?: (provider: Providers) => void
+export default class AccountsMixin extends mixins(ProviderMixin) {
+  private _signoutProvider?: (provider: Provider) => void
 
   protected extraAccounts: StrippedAccountDetails[] = []
 
-  set signoutMethod(signout: ((provider: Providers) => void) | undefined) {
+  set signoutMethod(signout: ((provider: Provider) => void) | undefined) {
     this._signoutProvider = signout
   }
 
@@ -27,100 +29,56 @@ export default class AccountsMixin extends Vue {
     return this._signoutProvider
   }
 
-  protected providers: {
-    name: Providers
-    username: string | undefined
-    bgColor: string
-    icon: string
-    provider: GenericProvider
-  }[] = [
-    {
-      name: this.useInvidious ? 'Invidious' : 'Youtube',
-      bgColor: this.useInvidious ? '#00B6F0' : '#E62017',
+  protected fetchProviders() {
+    const p = this.getProvidersByScope()
+    return p.map((val) => ({
       username: '',
-      icon: this.useInvidious ? 'InvidiousIcon' : 'YoutubeIcon',
-      provider: this.youtube
-    },
-    {
-      name: 'Spotify',
-      bgColor: '#1ED760',
-      username: '',
-      icon: 'SpotifyIcon',
-      provider: this.spotify
-    },
-    {
-      name: 'LastFM',
-      bgColor: '#BA0000',
-      username: '',
-      icon: 'LastFMIcon',
-      provider: this.lastFm
+      provider: val
+    }))
+  }
+
+  protected providers = this.fetchProviders()
+
+  protected async getUserDetails(provider: Provider) {
+    const username = await provider?.provider.getUserDetails()
+    this.$set(provider, 'username', username)
+    if (!provider.username) {
+      provider.provider.signOut()
     }
-  ]
-
-  private get useInvidious() {
-    return vxm.providers.useInvidious
   }
 
-  protected getProvider(provider: Providers) {
-    return this.providers.find((val) => val.name === provider)
-  }
-
-  protected async getUserDetails(provider: Providers) {
-    const p = this.getProvider(provider)
-    if (p) {
-      const username = await p?.provider.getUserDetails()
-      this.$set(p, 'username', username)
-      if (!p.username) {
-        p.provider.signOut()
+  protected async handleClick(provider: Provider) {
+    if (!(await provider.provider.getLoggedIn())) {
+      const success = await provider.provider.updateConfig()
+      if (!success) {
+        window.WindowUtils.openWindow(false, { page: 'system' })
+        return
       }
+      return this.login(provider)
     }
+    this._signoutProvider && this._signoutProvider(provider)
   }
 
-  protected async handleClick(provider: Providers) {
-    const p = this.getProvider(provider)
-    if (p) {
-      if (!(await p.provider.getLoggedIn())) {
-        const success = await p.provider.updateConfig()
-        if (!success) {
-          window.WindowUtils.openWindow(false, { page: 'system' })
-          return
+  protected async login(provider: Provider) {
+    if (await provider.provider.login()) {
+      try {
+        await this.getUserDetails(provider)
+        bus.$emit(EventBus.REFRESH_USERNAMES, provider)
+
+        if (vxm.player.currentSong) {
+          const providerScopes = provider.provider.provides()
+          if (providerScopes.includes(ProviderScopes.SCROBBLES)) {
+            provider.provider.scrobble(vxm.player.currentSong)
+          }
         }
-        return this.login(provider)
+      } catch (e) {
+        console.error(e)
+        await provider.provider.signOut()
       }
-      this._signoutProvider && this._signoutProvider(provider)
+
+      // Side-effect to set logged-in variable
+      await provider.provider.getLoggedIn()
     }
-  }
-
-  protected async login(provider: Providers) {
-    const p = this.getProvider(provider)
-    if (p) {
-      if (await p.provider.login()) {
-        try {
-          await this.getUserDetails(p.name)
-          bus.$emit(EventBus.REFRESH_USERNAMES, provider)
-
-          if (p.name === 'LastFM') this.lastFm.scrobble(vxm.player.currentSong)
-        } catch (e) {
-          console.error(e)
-          await p.provider.signOut()
-        }
-
-        // Side-effect to set logged-in variable
-        await p.provider.getLoggedIn()
-      }
-    }
-  }
-
-  get youtube() {
-    return vxm.providers.youtubeProvider
-  }
-
-  get spotify() {
-    return vxm.providers.spotifyProvider
-  }
-
-  get lastFm() {
-    return vxm.providers.lastfmProvider
   }
 
   protected handleExtensionAccountClick(id: string) {
@@ -133,19 +91,21 @@ export default class AccountsMixin extends Vue {
   }
 
   async mounted() {
-    this.getUserDetails('Youtube')
-    this.getUserDetails('Spotify')
-    this.getUserDetails('LastFM')
+    this.providers.forEach((val) => {
+      this.getUserDetails(val)
+    })
 
-    vxm.providers.$watch(
-      'useInvidious',
-      (val) => {
-        this.getUserDetails(val ? 'Invidious' : 'Youtube')
-      },
-      { immediate: true, deep: false }
-    )
+    // TODO: Wait for useInvidious to be set
 
-    bus.$on(EventBus.REFRESH_USERNAMES, (provider: Providers) => {
+    // vxm.providers.$watch(
+    //   'useInvidious',
+    //   (val) => {
+    //     this.getUserDetails(vxm.providers.youtubeProvider)
+    //   },
+    //   { immediate: true, deep: false }
+    // )
+
+    bus.$on(EventBus.REFRESH_USERNAMES, (provider: Provider) => {
       this.getUserDetails(provider)
     })
 

@@ -11,10 +11,10 @@
   <div class="h-100 w-100 parent">
     <b-container class="recommendations-container" fluid>
       <b-row no-gutters class="page-title">{{ $t('pages.explore') }}</b-row>
-      <b-row v-for="p of providers" :key="p.title">
+      <b-row v-for="p of providers" :key="p.provider.Title">
         <b-col v-if="p.list.length > 0">
           <b-row class="mt-3">
-            <b-col class="provider-title">Hot from {{ p.title }}</b-col>
+            <b-col class="provider-title">Hot from {{ p.provider.Title }}</b-col>
           </b-row>
           <b-row class="slider-row">
             <b-col>
@@ -44,10 +44,10 @@ import { Component } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
-import { vxm } from '@/mainWindow/store'
 import CardView from '../../components/generic/CardView.vue'
 import CardCarousel from '../../components/generic/CardCarousel.vue'
-import { GenericRecommendation } from '@/utils/ui/providers/generics/genericRecommendations'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
 
 @Component({
   components: {
@@ -55,29 +55,21 @@ import { GenericRecommendation } from '@/utils/ui/providers/generics/genericReco
     CardCarousel
   }
 })
-export default class Albums extends mixins(RouterPushes, ContextMenuMixin) {
-  private providers: { [key: string]: { title: string; list: Song[]; provider: GenericRecommendation } } = {
-    youtube: {
-      title: this.$tc('providers.youtube'),
+export default class Albums extends mixins(RouterPushes, ContextMenuMixin, ProviderMixin) {
+  private providers = this.fetchProviders()
+
+  private fetchProviders() {
+    const providers = this.getProvidersByScope(ProviderScopes.RECOMMENDATIONS)
+    return providers.map((val) => ({
       list: [],
-      provider: vxm.providers.youtubeProvider
-    },
-    spotify: {
-      title: this.$tc('providers.spotify'),
-      list: [],
-      provider: vxm.providers.spotifyProvider
-    },
-    lastfm: {
-      title: this.$tc('providers.lastfm'),
-      list: [],
-      provider: vxm.providers.lastfmProvider
-    }
+      provider: val
+    }))
   }
 
   private extensionResults: { packageName: string; providerName: string; songs: Song[] }[] = []
 
   mounted() {
-    for (const val of Object.values(this.providers)) {
+    for (const val of this.providers) {
       this.getResults(val.provider.getRecommendations(), val.list)
     }
 
