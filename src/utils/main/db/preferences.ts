@@ -16,6 +16,7 @@ import { setMinimizeToTray } from '@/utils/main/windowManager'
 import { watch } from 'fs/promises'
 import { setLogLevel } from '../logger/utils'
 import log from 'loglevel'
+import { isEmpty } from '@/utils/common'
 
 type MusicPaths = { path: string; enabled: boolean }
 
@@ -25,7 +26,10 @@ const defaultPreferences: Preferences = {
   thumbnailPath: path.join(app.getPath('appData'), app.getName(), '.thumbnails'),
   artworkPath: path.join(app.getPath('appData'), app.getName(), '.thumbnails'),
   youtubeAlt: [],
+  youtubeOptions: [],
+  invidious: [],
   system: [],
+  audio: [],
   zoomFactor: '100',
   themes: {}
 }
@@ -226,20 +230,16 @@ export function setupScanWatcher(dirs: MusicPaths[]) {
  */
 function validatePrefs(prefs: Preferences): Preferences {
   if (prefs) {
-    if (!prefs.musicPaths) {
-      prefs.musicPaths = defaultPreferences.musicPaths
+    for (const [key, value] of Object.entries(defaultPreferences)) {
+      if (isEmpty(prefs[key as keyof Preferences])) {
+        prefs[key as keyof Preferences] = value as never
+      }
     }
 
-    if (!prefs.thumbnailPath) {
-      prefs.thumbnailPath = defaultPreferences.thumbnailPath
-    }
-
-    if (!prefs.artworkPath) {
-      prefs.artworkPath = defaultPreferences.artworkPath
-    }
+    return prefs
   }
 
-  return prefs
+  return defaultPreferences
 }
 
 /**
@@ -282,17 +282,4 @@ export function setPreferenceListenKey(key: string, isMainWindow = false) {
   const channel = `${key}:mainWindow:${isMainWindow}`
   preferenceListenKeys.push({ key, isMainWindow, channel })
   return channel
-}
-
-function migratePreferences() {
-  const prefs = loadPreferences()
-
-  const useInvidiousIndex = prefs.system.findIndex((val) => val.key === 'use_invidious')
-  const useInvidiousVal = prefs.system[useInvidiousIndex]
-  if (useInvidiousIndex !== -1) {
-    prefs.system.splice(useInvidiousIndex, 1)
-    prefs.youtubeAlt.push(useInvidiousVal)
-  }
-
-  savePreferences(prefs)
 }

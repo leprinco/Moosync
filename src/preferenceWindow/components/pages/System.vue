@@ -28,8 +28,6 @@
             :tooltip="$t('settings.system.audioSettings_tooltip')"
             :isExtension="false"
             :defaultValue="audioCheckboxValues"
-            :onValueChange="onAudioPrefChange"
-            :onValueFetch="onAudioPrefFetch"
             prefKey="audio"
           />
 
@@ -51,7 +49,7 @@
               :tooltip="$t('settings.system.youtubeAlternative.youtube.options_tooltip')"
               :isExtension="false"
               :defaultValue="youtubeAdvancedCheckboxValues"
-              prefKey="youtube"
+              prefKey="youtubeOptions"
             />
           </b-col>
 
@@ -90,8 +88,6 @@
               :datalist="pipedInstances"
               :title="$t('settings.system.youtubeAlternative.piped.url')"
               :tooltip="$t('settings.system.youtubeAlternative.piped.url_tooltip')"
-              :onValueChange="onPipedInstanceChange"
-              :onValueFetch="onPipedInstanceChange"
             />
           </b-col>
 
@@ -259,7 +255,6 @@ export default class System extends Vue {
   private invidiousDetails = ''
 
   private pipedInstances: string[] = []
-  private pipedDetails = ''
 
   private async onInvidiousInstanceChange() {
     try {
@@ -277,10 +272,6 @@ export default class System extends Vue {
     } catch (e) {
       this.invidiousDetails = this.$tc('settings.system.invidiousUrlUnsupported')
     }
-  }
-
-  private async onPipedInstanceChange(val: string) {
-    this.pipedDetails = `Piped instance: ${val}`
   }
 
   private get languageDropdown() {
@@ -335,7 +326,6 @@ export default class System extends Vue {
   }
 
   private defaultSystemSettings: SystemSettings[] = []
-  private defaultAudioSettings: Checkbox[] = []
   private defaultYoutubeAlts: Checkbox[] = []
 
   get invidiousAdvancedCheckboxValues(): Checkbox[] {
@@ -461,18 +451,6 @@ export default class System extends Vue {
 
   private closeModal() {
     this.$bvModal.hide('spotify-automate-modal')
-  }
-
-  private onAudioPrefFetch(value: SystemSettings[]) {
-    this.defaultAudioSettings = JSON.parse(JSON.stringify(value))
-  }
-
-  private onAudioPrefChange(value: Checkbox[]) {
-    for (let i = 0; i < value.length; i++) {
-      if (value[i].key === 'youtube_embeds') {
-        this.showRestartButton = this.defaultAudioSettings[i].enabled !== value[i].enabled
-      }
-    }
   }
 
   private onSystemPrefFetch(value: SystemSettings[]) {

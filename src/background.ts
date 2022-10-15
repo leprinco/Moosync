@@ -73,7 +73,7 @@ function interceptHttp() {
   // This should pose any security risk as such since we're only doing it for youtube trusted urls
 
   const useInvidious = loadSelectiveArrayPreference<Checkbox>('youtubeAlt.use_invidious')?.enabled ?? false
-  const useEmbeds = loadSelectiveArrayPreference<Checkbox>('audio.youtube_embeds')?.enabled ?? true
+  const useEmbeds = loadSelectiveArrayPreference<Checkbox>('youtube.youtube_embeds')?.enabled ?? true
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
     let headers: { [key: string]: string | string[] } = { ...details.responseHeaders }

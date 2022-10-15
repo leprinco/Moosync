@@ -19,6 +19,13 @@ interface Preferences {
   thumbnailPath: string
   artworkPath: string
   youtubeAlt: Checkbox[]
+  youtubeOptions: Checkbox[]
+  youtube?: {
+    client_id?: string
+    client_secret?: string
+  }
+  invidious: Checkbox[]
+  audio: Checkbox[]
   system: SystemSettings[]
   themes: { [key: string]: ThemeDetails }
   zoomFactor: string
