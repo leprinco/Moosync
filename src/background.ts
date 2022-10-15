@@ -67,28 +67,34 @@ if (!app.requestSingleInstanceLock() && !isDevelopment) {
   app.on('second-instance', handleSecondInstance)
 }
 
+function forceAllowCors(headers: Record<string, string[]>) {
+  delete headers['Access-Control-Allow-Origin']
+  delete headers['access-control-allow-origin']
+  headers = {
+    ...headers,
+    'Access-Control-Allow-Origin': ['*']
+  }
+
+  return headers
+}
+
 function interceptHttp() {
   // Youtube images don't have a CORS header set [Access-Control-Allow-Origin]
   // So to display them and export them, we spoof the request here
   // This should pose any security risk as such since we're only doing it for youtube trusted urls
 
   const useInvidious = loadSelectiveArrayPreference<Checkbox>('youtubeAlt.use_invidious')?.enabled ?? false
-  const useEmbeds = loadSelectiveArrayPreference<Checkbox>('youtube.youtube_embeds')?.enabled ?? true
+  const useEmbeds = loadSelectiveArrayPreference<Checkbox>('youtubeOptions.youtube_embeds')?.enabled ?? true
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    let headers: { [key: string]: string | string[] } = { ...details.responseHeaders }
+    let headers = { ...details.responseHeaders }
 
     if (
       details.url.startsWith('https') &&
       (details.url.startsWith('https://i.ytimg.com') ||
         ((useInvidious || !useEmbeds) && details.url.includes('.googlevideo.com')))
     ) {
-      delete headers['Access-Control-Allow-Origin']
-      delete headers['access-control-allow-origin']
-      headers = {
-        ...headers,
-        'Access-Control-Allow-Origin': '*'
-      }
+      headers = forceAllowCors(headers)
     }
 
     callback({

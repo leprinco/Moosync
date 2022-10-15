@@ -264,7 +264,9 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
 
   private async setupYoutubePlayer() {
     this.useEmbed =
-      (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('youtube.youtube_embeds'))?.enabled ?? true
+      (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('youtubeOptions.youtube_embeds'))?.enabled ?? true
+
+    console.log(this.useEmbed)
     return new YoutubePlayer(this.ytAudioElement, this.useEmbed)
   }
 
