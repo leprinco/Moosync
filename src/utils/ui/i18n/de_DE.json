@@ -122,23 +122,15 @@
         "minimizeTray": "Beim Schließen in den Tray minimieren",
         "hardwareAcceleration": "GPU-Hardware-Beschleunigung verwenden",
         "watchFileChanges": "Musikverzeichnisse für Änderungen ansehen",
-        "useInvidious": "Invidious statt Youtube verwenden",
         "enableJukeboxMode": "Enable toggle for Jukebox mode"
       },
       "systemSettings_tooltip": "Einstellungen, die sich auf Ihr System beziehen",
       "audioSettings": {
         "title": "Audio-Einstellungen",
         "gaplessPlayback": "Nutze eine lückenlose Wiedergabe wo immer möglich",
-        "sponsorBlock": "SponsorBlock verwenden, um automatisch zum hervorgehobenen Teil des Youtube-Liedes zu springen",
-        "useEmbeds": "Youtube-Einbettungen zum Abspielen von Audio von Youtube verwenden"
+        "sponsorBlock": "SponsorBlock verwenden, um automatisch zum hervorgehobenen Teil des Youtube-Liedes zu springen"
       },
       "audioSettings_tooltip": "Zugehörige Audio-Wiedergabe",
-      "invidious": {
-        "url": "Invidious Instance",
-        "options": "Advanced Invidious options",
-        "options_tooltip": "Options to fine control Invidious playback",
-        "always_proxy": "Always play audio from Invidious proxy instead of Google video"
-      },
       "invidiousUrlUnsupported": "Diese URL unterstützt keine Invidious API",
       "invidious_tooltip": "Unheilvolle Instanz anstelle von youtube",
       "restartApp": "Moosync neu starten",
@@ -165,8 +157,34 @@
         "client_id": "LastFM Api Key",
         "client_secret": "LastFM Client Secret"
       },
+      "youtubeAlternative": {
+        "title": "Youtube Alternative services",
+        "useYoutube": "Use default Youtube services",
+        "useInvidious": "Use Invidious services",
+        "usePiped": "Use Piped services",
+        "piped": {
+          "url": "Piped Instance",
+          "url_tooltip": "URL of Piped instance to use"
+        },
+        "invidious": {
+          "url": "Invidious Instance",
+          "url_tooltip": "URL of Invidious instance to use",
+          "options": "Advanced Invidious options",
+          "options_tooltip": "Options to fine control Invidious playback",
+          "always_proxy": "Always play audio from Invidious proxy instead of Google video"
+        },
+        "youtube": {
+          "options": "Advanced Youtube options",
+          "options_tooltip": "Options to fine control Youtube playback",
+          "useEmbeds": "Use Youtube embeds for playing audio from Youtube"
+        }
+      },
       "language": "Language",
-      "language_tooltip": "Change the language of the interface"
+      "language_tooltip": "Change the language of the interface",
+      "clearPreferences": "Reset to default",
+      "clear_preferences_title": "Reset to default?",
+      "clear_preferences": "Are you sure you want to reset everything to default?",
+      "clear_preferences_button": "Confirm"
     },
     "logs": {
       "logSettings": "Log-Einstellungen",
