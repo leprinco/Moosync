@@ -261,40 +261,20 @@ export class SpotifyProvider extends GenericProvider {
   }
 
   public async spotifyToYoutube(item: Song) {
-    if (vxm.providers.loggedInYoutube) {
-      const res = await vxm.providers.youtubeProvider.searchSongs(
-        `${item.artists?.map((val) => val.artist_name ?? '').join(', ') ?? ''} ${item.title}`,
-        1
-      )
-      console.debug(
-        'Found',
-        res[0]?.title,
-        '-',
-        res[0]?.url,
-        'for spotify song',
-        item.artists?.map((val) => val.artist_name).join(', '),
-        item.title
-      )
-      if (res.length > 0) return res[0]
-    }
-
-    const ytItem = await window.SearchUtils.searchYT(
-      item.title,
-      item.artists?.map((val) => val.artist_name ?? ''),
-      false,
-      false,
-      true
+    const res = await vxm.providers.youtubeProvider.searchSongs(
+      `${item.artists?.map((val) => val.artist_name ?? '').join(', ') ?? ''} ${item.title}`,
+      1
     )
     console.debug(
       'Found',
-      ytItem.songs[0]?.title,
+      res[0]?.title,
       '-',
-      ytItem.songs[0]?.url,
+      res[0]?.url,
       'for spotify song',
-      item.artists,
+      item.artists?.map((val) => val.artist_name).join(', '),
       item.title
     )
-    if (ytItem.songs.length > 0) return ytItem.songs[0]
+    if (res.length > 0) return res[0]
   }
 
   private parseSong(track: SpotifyResponses.PlaylistItems.Track): Song {
@@ -355,7 +335,6 @@ export class SpotifyProvider extends GenericProvider {
     if (id) {
       const validRefreshToken = await this.auth?.hasValidRefreshToken()
       if ((await this.getLoggedIn()) || validRefreshToken) {
-        let isNext = false
         const limit = id === 'saved-tracks' ? 50 : 100
         const parsed: Song[] = []
 
@@ -387,7 +366,6 @@ export class SpotifyProvider extends GenericProvider {
         }
         const items = await this.parsePlaylistItems(resp.items)
         parsed.push(...items)
-        isNext = !!resp.next
         if (resp.next) {
           nextOffset += limit
         }
@@ -897,7 +875,7 @@ export class SpotifyProvider extends GenericProvider {
   }
 
   public get BgColor(): string {
-    return '#1ED760'
+    return '#07C330'
   }
 
   public get IconComponent(): string {

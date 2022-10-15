@@ -73,6 +73,13 @@ export default class AutoFillEditText extends Mixins(ExtensionPreferenceMixin) {
   background-color: var(--tertiary)
   border: none
   color: var(--textPrimary)
+  -webkit-background-clip: text !important
   &:focus
     box-shadow: none
+  &:-internal-autofill-selected
+    -webkit-box-shadow: 0 0 0px 1000px var(--tertiary) inset
+    -webkit-text-fill-color: var(--textPrimary)
+    background-color: var(--tertiary) !important
+    color: var(--textPrimary) !important
+    appearance: auto !important
 </style>

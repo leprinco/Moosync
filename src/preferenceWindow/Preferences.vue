@@ -70,7 +70,7 @@ export default class App extends mixins(ThemeHandler) {
   }
 
   private async getLanguage() {
-    const langs = await window.PreferenceUtils.loadSelective<CheckboxValue>('system_language')
+    const langs = await window.PreferenceUtils.loadSelective<Checkbox[]>('system_language')
     const active = (langs ?? []).find((val) => val.enabled)
     if (active) {
       i18n.locale = active?.key

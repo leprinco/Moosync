@@ -52,4 +52,13 @@ export default class ProviderMixin extends Vue {
   onProvidersChanged(callback: () => void) {
     vxm.providers.$watch('_extensionProviders', callback)
   }
+
+  getAllProviders() {
+    return [
+      vxm.providers.youtubeProvider,
+      vxm.providers.spotifyProvider,
+      vxm.providers.lastfmProvider,
+      ...vxm.providers.extensionProviders
+    ]
+  }
 }

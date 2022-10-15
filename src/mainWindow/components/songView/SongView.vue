@@ -219,7 +219,7 @@ export default class AllSongs extends mixins(
 
   private onScroll(e: MouseEvent) {
     const { scrollTop, clientHeight, scrollHeight } = e.target as HTMLDivElement
-    if (scrollTop + clientHeight >= scrollHeight) {
+    if (scrollTop + clientHeight >= scrollHeight - 1) {
       this.$emit('onScrollEnd')
     }
   }

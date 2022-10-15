@@ -88,11 +88,7 @@ export abstract class GenericProvider {
    * @param id id of playlist
    * @returns Playlist if data is found otherwise undefined
    */
-  public async getPlaylistDetails(
-    url: string,
-    invalidateCache?: boolean,
-    nextPageToken?: string
-  ): Promise<Playlist | undefined> {
+  public async getPlaylistDetails(url: string, invalidateCache?: boolean): Promise<Playlist | undefined> {
     return
   }
 

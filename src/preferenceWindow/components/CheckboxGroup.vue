@@ -42,9 +42,9 @@ export default class CheckboxGroup extends Mixins(ExtensionPreferenceMixin) {
   private tooltip!: string
 
   private toggleCheck(index: number) {
-    ;(this.value as CheckboxValue)[index].enabled = (
+    ;(this.value as Checkbox[])[index].enabled = (
       document.getElementById(
-        `checkbox-${this.packageName}-${(this.value as CheckboxValue)[index].key}`
+        `checkbox-${this.packageName}-${(this.value as Checkbox[])[index].key}`
       ) as HTMLInputElement
     ).checked
     this.onInputChange()

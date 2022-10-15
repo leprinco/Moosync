@@ -88,8 +88,8 @@ export class SearchChannel implements IpcChannelInterface {
   private async searchYT(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.SearchYT>) {
     if (request.params && request.params.title) {
       try {
-        const useInvidious =
-          loadSelectivePreference<SystemSettings[]>('system', false, [])?.find((val) => val.key === 'use_invidious')
+        const youtubeAlt =
+          loadSelectivePreference<Checkbox[]>('youtubeAlt', false, [])?.find((val) => val.key === 'use_invidious')
             ?.enabled ?? false
 
         let data: SearchResult = {
@@ -99,7 +99,7 @@ export class SearchChannel implements IpcChannelInterface {
           albums: [],
           genres: []
         }
-        if (!useInvidious) {
+        if (!youtubeAlt) {
           data = await this.ytScraper.searchTerm(
             request.params.title,
             request.params.artists,

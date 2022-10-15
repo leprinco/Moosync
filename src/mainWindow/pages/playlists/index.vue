@@ -95,7 +95,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   }
 
   private getIconBgColor(playlist: Playlist) {
-    for (const p of this.providers) {
+    for (const p of this.getAllProviders()) {
       if (p.matchEntityId(playlist.playlist_id)) {
         return p.BgColor
       }

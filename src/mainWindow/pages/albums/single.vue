@@ -85,7 +85,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
   // TODO: Separate pageToken for each provider
   private nextPageToken?: unknown
 
-  private albumSongProviders(): TabCarouselItem[] {
+  private get albumSongProviders(): TabCarouselItem[] {
     return this.fetchProviders()
   }
 

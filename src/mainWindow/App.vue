@@ -51,6 +51,7 @@ import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import { sortSongListFn } from '@/utils/common'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
+import { YoutubeAlts } from './store/providers'
 
 @Component({
   components: {
@@ -74,7 +75,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     this.listenThemeChanges()
     this.listenExtensionEvents()
     this.listenExtensionRequests()
-    this.useInvidious()
+    this.setYoutubeAlt()
     this.watchQueueSort()
 
     this.themeStore = vxm.themes
@@ -107,7 +108,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
   }
 
   private async setLanguage() {
-    const langs = await window.PreferenceUtils.loadSelective<CheckboxValue>('system_language')
+    const langs = await window.PreferenceUtils.loadSelective<Checkbox[]>('system_language')
     const active = (langs ?? []).find((val) => val.enabled)
     if (active) {
       i18n.locale = active?.key
@@ -121,11 +122,23 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     })
   }
 
-  private async useInvidious() {
-    const useInvidious = (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('system.use_invidious'))
-      ?.enabled
-
-    vxm.providers.useInvidious = useInvidious ?? false
+  private async setYoutubeAlt() {
+    const youtubeAlt = await window.PreferenceUtils.loadSelective<Checkbox[]>('youtubeAlt')
+    for (const val of youtubeAlt) {
+      if (val.enabled) {
+        switch (val.key) {
+          case 'use_youtube':
+            vxm.providers.youtubeAlt = YoutubeAlts.YOUTUBE
+            break
+          case 'use_invidious':
+            vxm.providers.youtubeAlt = YoutubeAlts.INVIDIOUS
+            break
+          case 'use_piped':
+            vxm.providers.youtubeAlt = YoutubeAlts.PIPED
+            break
+        }
+      }
+    }
   }
 
   private checkUpdate() {

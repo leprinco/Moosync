@@ -38,25 +38,24 @@ export default class Dropdown extends Mixins(ExtensionPreferenceMixin) {
   @Prop()
   private tooltip!: string
 
-  private activeItem: CheckboxValue[0] | null = null
+  private activeItem: Checkbox[][0] | null = null
 
   private get activeTitle() {
     return this.activeItem?.title ?? ''
   }
 
   private get filteredDropdownList() {
-    return ((this.value as CheckboxValue) ?? this.defaultValue).filter((val) => !val.enabled)
+    return ((this.value as Checkbox[]) ?? this.defaultValue).filter((val) => !val.enabled)
   }
 
   created() {
     this.postFetch = () => {
-      this.activeItem =
-        (this.value as CheckboxValue)?.find((val) => val.enabled) ?? (this.defaultValue as CheckboxValue)[0]
+      this.activeItem = (this.value as Checkbox[])?.find((val) => val.enabled) ?? (this.defaultValue as Checkbox[])[0]
     }
   }
 
-  private setSelectedItem(item: CheckboxValue[0]) {
-    for (const i of this.value as CheckboxValue) {
+  private setSelectedItem(item: Checkbox) {
+    for (const i of this.value as Checkbox[]) {
       if (i.key === item.key) {
         i.enabled = true
         this.activeItem = i
