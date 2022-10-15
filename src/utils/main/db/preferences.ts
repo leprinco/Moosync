@@ -17,6 +17,7 @@ import { watch } from 'fs/promises'
 import { setLogLevel } from '../logger/utils'
 import log from 'loglevel'
 import { isEmpty } from '@/utils/common'
+import { defaultKeybinds } from '@/utils/commonConstants'
 
 type MusicPaths = { path: string; enabled: boolean }
 
@@ -31,7 +32,10 @@ const defaultPreferences: Preferences = {
   system: [],
   audio: [],
   zoomFactor: '100',
-  themes: {}
+  themes: {},
+  activeTheme: 'default',
+  hotkeys: defaultKeybinds,
+  logs: []
 }
 
 let ac: AbortController
@@ -282,4 +286,16 @@ export function setPreferenceListenKey(key: string, isMainWindow = false) {
   const channel = `${key}:mainWindow:${isMainWindow}`
   preferenceListenKeys.push({ key, isMainWindow, channel })
   return channel
+}
+
+export function resetPrefsToDefault() {
+  const prefs = loadPreferences()
+  for (const [key, value] of Object.entries(defaultPreferences)) {
+    prefs[key as keyof Preferences] = value as never
+  }
+
+  prefs.isFirstLaunch = false
+
+  savePreferences(prefs)
+  setInitialPreferences()
 }

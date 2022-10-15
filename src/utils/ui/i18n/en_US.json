@@ -180,7 +180,11 @@
         }
       },
       "language": "Language",
-      "language_tooltip": "Change the language of the interface"
+      "language_tooltip": "Change the language of the interface",
+      "clearPreferences": "Reset to default",
+      "clear_preferences_title": "Reset to default?",
+      "clear_preferences": "Are you sure you want to reset everything to default?",
+      "clear_preferences_button": "Confirm"
     },
     "logs": {
       "logSettings": "Log Settings",

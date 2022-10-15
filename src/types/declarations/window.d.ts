@@ -195,6 +195,7 @@ interface preferenceUtils {
     isMainWindow: boolean,
     callback: (key: string, value: never) => void
   ) => Promise<void>
+  resetToDefault: () => Promise<void>
 }
 
 /**

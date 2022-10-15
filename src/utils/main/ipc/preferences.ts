@@ -13,6 +13,7 @@ import {
   loadSelectivePreference,
   onPreferenceChanged,
   removeSelectivePreference,
+  resetPrefsToDefault,
   saveSelectivePreference,
   setPreferenceListenKey
 } from '../db/preferences'
@@ -75,6 +76,10 @@ export class PreferenceChannel implements IpcChannelInterface {
         break
       case PreferenceEvents.LISTEN_PREFERENCE:
         this.setListenKey(event, request as IpcRequest<PreferenceRequests.ListenKey>)
+        break
+      case PreferenceEvents.RESET_TO_DEFAULT:
+        this.resetToDefault(event, request)
+        break
     }
   }
 
@@ -200,5 +205,10 @@ export class PreferenceChannel implements IpcChannelInterface {
       const channel = setPreferenceListenKey(request.params.key, request.params.isMainWindow)
       event.reply(request.responseChannel, channel)
     }
+  }
+
+  private resetToDefault(event: Electron.IpcMainEvent, request: IpcRequest) {
+    resetPrefsToDefault()
+    event.reply(request.responseChannel)
   }
 }

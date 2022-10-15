@@ -25,10 +25,20 @@ interface Preferences {
     client_secret?: string
   }
   invidious: Checkbox[]
+  invidious_instance?: string
+  spotify?: {
+    client_id?: string
+    client_secret?: string
+  }
+  piped_instance?: string
+  system_language?: Checkbox[]
   audio: Checkbox[]
   system: SystemSettings[]
   themes: { [key: string]: ThemeDetails }
+  activeTheme: string
+  hotkeys: HotkeyPair[]
   zoomFactor: string
+  logs: Checkbox[]
 }
 
 type HotkeyPair = {

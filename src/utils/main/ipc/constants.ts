@@ -67,7 +67,8 @@ export enum PreferenceEvents {
   SONG_VIEW_REFRESH = 'songViewRefresh',
   SET_LANGUAGE = 'setLanguage',
   LANGUAGE_REFRESH = 'languageRefresh',
-  LISTEN_PREFERENCE = 'listenPreference'
+  LISTEN_PREFERENCE = 'listenPreference',
+  RESET_TO_DEFAULT = 'resetToDefault'
 }
 
 export enum WindowEvents {

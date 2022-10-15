@@ -140,7 +140,12 @@ contextBridge.exposeInMainWorld('PreferenceUtils', {
       .then((channel) => {
         ipcRendererHolder.on(channel as string, callback)
       })
-  }
+  },
+  resetToDefault: () =>
+    ipcRendererHolder.send(IpcEvents.PREFERENCES, {
+      type: PreferenceEvents.RESET_TO_DEFAULT,
+      params: undefined
+    })
 })
 
 contextBridge.exposeInMainWorld('Store', {

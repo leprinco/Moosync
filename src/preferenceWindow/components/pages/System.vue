@@ -8,7 +8,7 @@
 -->
 
 <template>
-  <div class="w-100 h-100">
+  <div class="w-100 h-100" :key="refreshPage">
     <b-container fluid>
       <b-row no-gutters class="w-100">
         <div class="path-selector w-100">
@@ -179,6 +179,10 @@
             prefKey="system_language"
             :onValueChange="onLanguageChanged"
           />
+
+          <b-button class="delete-button mt-4" @click="showClearPreferencesDisclaimer">{{
+            $t('settings.system.clearPreferences')
+          }}</b-button>
         </div>
       </b-row>
     </b-container>
@@ -203,7 +207,29 @@
           </b-col>
         </b-row>
       </b-container>
-      <CrossIcon @click.native="closeModal" class="close-icon button-grow" />
+      <CrossIcon @click.native="closeSpotifyAutomateModal" class="close-icon button-grow" />
+    </b-modal>
+
+    <b-modal no-close-on-backdrop centered size="md" id="clear-preferences-modal" hide-footer hide-header>
+      <b-container class="response-container">
+        <b-row no-gutters class="d-flex">
+          <b-col class="title" cols="auto">{{ $t('settings.system.clear_preferences_title') }}</b-col>
+        </b-row>
+        <b-row>
+          <b-col class="mt-4 waiting">{{ $t('settings.system.clear_preferences') }}</b-col>
+        </b-row>
+        <b-row>
+          <b-col class="d-flex justify-content-center">
+            <div
+              @click="clearPreferences"
+              class="delete-button button-grow mt-4 d-flex justify-content-center align-items-center"
+            >
+              {{ $t('settings.system.clear_preferences_button') }}
+            </div>
+          </b-col>
+        </b-row>
+      </b-container>
+      <CrossIcon @click.native="closeClearPreferencesModal" class="close-icon button-grow" />
     </b-modal>
   </div>
 </template>
@@ -449,7 +475,7 @@ export default class System extends Vue {
     window.WindowUtils.openExternal('https://moosync.app/wiki/integrations#enabling-youtube-integration')
   }
 
-  private closeModal() {
+  private closeSpotifyAutomateModal() {
     this.$bvModal.hide('spotify-automate-modal')
   }
 
@@ -479,7 +505,6 @@ export default class System extends Vue {
       this.showPipedField = value.find((val) => val.key === 'use_piped')?.enabled ?? false
 
       for (const val of value) {
-        console.log(this.defaultYoutubeAlts.find((val1) => val1.key === val.key))
         if (val.enabled !== this.defaultYoutubeAlts.find((val1) => val1.key === val.key)?.enabled) {
           this.showRestartButton = true
           break
@@ -515,7 +540,7 @@ export default class System extends Vue {
 
   private async openSpotifyAutomation() {
     const data = await window.WindowUtils.automateSpotify()
-    this.closeModal()
+    this.closeSpotifyAutomateModal()
 
     if (data) {
       window.PreferenceUtils.saveSelective('spotify.client_id', data.clientID, false)
@@ -528,6 +553,22 @@ export default class System extends Vue {
 
   private async onZoomUpdate() {
     await window.WindowUtils.updateZoom()
+  }
+
+  private refreshPage = false
+  private showClearPreferencesDisclaimer() {
+    this.$bvModal.show('clear-preferences-modal')
+  }
+
+  private async clearPreferences() {
+    await window.PreferenceUtils.resetToDefault()
+    this.closeClearPreferencesModal()
+    this.refreshPage = !this.refreshPage
+    window.location.reload()
+  }
+
+  private closeClearPreferencesModal() {
+    this.$bvModal.hide('clear-preferences-modal')
   }
 
   created() {
@@ -544,7 +585,7 @@ export default class System extends Vue {
 .title
   text-align: left
 
-.create-button
+.create-button, .delete-button
   font-size: 16px
   font-weight: 400
   color: var(--textInverse)
@@ -555,6 +596,11 @@ export default class System extends Vue {
   padding: 6px 20px 6px 20px
   margin-top: 30px
   border: 0
+
+
+.delete-button
+  background-color: #db2626
+  color: white
 
 .close-icon
   position: absolute
