@@ -72,7 +72,7 @@ function interceptHttp() {
   // So to display them and export them, we spoof the request here
   // This should pose any security risk as such since we're only doing it for youtube trusted urls
 
-  const useInvidious = loadSelectiveArrayPreference<Checkbox>('system.use_invidious')?.enabled ?? false
+  const useInvidious = loadSelectiveArrayPreference<Checkbox>('youtubeAlt.use_invidious')?.enabled ?? false
   const useEmbeds = loadSelectiveArrayPreference<Checkbox>('audio.youtube_embeds')?.enabled ?? true
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {

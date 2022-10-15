@@ -134,7 +134,7 @@ export default class SearchPage extends mixins(
 
   private get noResultsReason() {
     if (this.activeProvider === vxm.providers.youtubeProvider.key) {
-      if (vxm.providers.useInvidious) {
+      if (vxm.providers.youtubeAlt) {
         if (this.activeSubcategory !== 'songs') {
           return 'Searching artists, playlists and albums is currently not supported using Invidious'
         }

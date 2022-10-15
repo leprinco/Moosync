@@ -53,6 +53,8 @@ import { InvidiousPlayer } from '../../../../utils/ui/players/invidious'
 import { DashPlayer } from '../../../../utils/ui/players/dash'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import { HLSPlayer } from '@/utils/ui/players/hls'
+import { YoutubeAlts } from '@/mainWindow/store/providers'
+import { PipedPlayer } from '@/utils/ui/players/piped'
 
 @Component({})
 export default class AudioStream extends mixins(SyncMixin, PlayerControls, ErrorHandler, CacheMixin, JukeboxMixin) {
@@ -86,7 +88,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
   /**
    * Instance of youtube embed player
    */
-  private ytPlayer!: YoutubePlayer | InvidiousPlayer
+  private ytPlayer!: YoutubePlayer | InvidiousPlayer | PipedPlayer
 
   /**
    * Instance of Local html audio tag player
@@ -260,6 +262,12 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
 
   private useEmbed = true
 
+  private async setupYoutubePlayer() {
+    this.useEmbed =
+      (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('audio.youtube_embeds'))?.enabled ?? true
+    return new YoutubePlayer(this.ytAudioElement, this.useEmbed)
+  }
+
   /**
    * Initial setup for all players
    */
@@ -271,19 +279,23 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
       this.activePlayer = this.localPlayer
       this.activePlayerTypes = 'LOCAL'
 
-      // useInvidious might be set after setupPlayer, so we watch it change
+      // youtubeAlt might be set after setupPlayer, so we watch it change
       vxm.providers.$watch(
-        'useInvidious',
-        async (val) => {
+        'youtubeAlt',
+        async (val: YoutubeAlts) => {
           this.ytPlayer?.stop()
           this.ytPlayer?.removeAllListeners()
 
-          if (val) {
-            this.ytPlayer = new InvidiousPlayer(this.audioElement)
-          } else {
-            this.useEmbed =
-              (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('audio.youtube_embeds'))?.enabled ?? true
-            this.ytPlayer = new YoutubePlayer(this.ytAudioElement, this.useEmbed)
+          switch (val) {
+            case YoutubeAlts.YOUTUBE:
+              this.ytPlayer = await this.setupYoutubePlayer()
+              break
+            case YoutubeAlts.INVIDIOUS:
+              this.ytPlayer = new InvidiousPlayer(this.audioElement)
+              break
+            case YoutubeAlts.PIPED:
+              this.ytPlayer = new PipedPlayer(this.audioElement)
+              break
           }
 
           resolve()
@@ -670,6 +682,8 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
 
     console.debug('Loading new song', song)
 
+    this.unloadAudio()
+
     // Increment play count for song
     window.DBUtils.incrementPlayCount(song._id)
 
@@ -679,10 +693,6 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
 
     // Playback url and duration fetching needed only for non-local songs
     if (PlayerTypes !== 'LOCAL' && (!song.playbackUrl || !song.duration)) {
-      // Since fetching playbackURL or duration can be a long running operation
-      // Unload previous song
-      this.unloadAudio()
-
       console.debug('PlaybackUrl or Duration empty for', song._id)
       await this.setPlaybackURLAndDuration(song)
     }

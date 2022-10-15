@@ -13,17 +13,12 @@ type songMenu = 'compact' | 'classic'
 
 type SystemSettings = Checkbox
 
-type CheckboxValue = {
-  key: string
-  title: string
-  enabled: boolean
-}[]
-
 interface Preferences {
   isFirstLaunch: boolean
   musicPaths: togglePaths
   thumbnailPath: string
   artworkPath: string
+  youtubeAlt: Checkbox[]
   system: SystemSettings[]
   themes: { [key: string]: ThemeDetails }
   zoomFactor: string

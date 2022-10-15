@@ -33,27 +33,69 @@
             prefKey="audio"
           />
 
-          <AutoFillEditText
-            v-if="showInvidiousField"
+          <RadioCheckbox
+            :title="$t('settings.system.youtubeAlternative.title')"
             class="mt-4"
-            prefKey="invidious_instance"
-            :datalist="invidiousInstances"
-            :title="$t('settings.system.invidious.url')"
-            :tooltip="$t('settings.system.invidious_tooltip')"
-            :onValueChange="onInvidiousInstanceChange"
-            :onValueFetch="onInvidiousInstanceChange"
+            :tooltip="$t('settings.system.youtubeAlternative.tooltip')"
+            :isExtension="false"
+            :defaultValue="youtubeAlternativeCheckboxValues"
+            :onValueChange="onYoutubeAlternativesChanged"
+            :onValueFetch="onYoutubeAlternativesFetched"
+            prefKey="youtubeAlt"
           />
 
+          <b-col v-if="showYoutubeField">
+            <CheckboxGroup
+              :title="$t('settings.system.youtubeAlternative.youtube.advanced')"
+              class="mt-4"
+              :tooltip="$t('settings.system.youtubeAlternative.youtube.advanced_tooltip')"
+              :isExtension="false"
+              :defaultValue="youtubeAdvancedCheckboxValues"
+              prefKey="youtube"
+            />
+          </b-col>
+
           <b-col v-if="showInvidiousField">
+            <AutoFillEditText
+              class="mt-4"
+              prefKey="invidious_instance"
+              :datalist="invidiousInstances"
+              :title="$t('settings.youtubeAlternative.invidious.url')"
+              :tooltip="$t('settings.youtubeAlternative.invidious_tooltip')"
+              :onValueChange="onInvidiousInstanceChange"
+              :onValueFetch="onInvidiousInstanceChange"
+            />
+
             <div class="invidious-details">{{ invidiousDetails }}</div>
             <CheckboxGroup
-              :title="$t('settings.system.invidious.options')"
+              :title="$t('settings.system.youtubeAlternative.invidious.options')"
               class="mt-4"
-              :tooltip="$t('settings.system.invidious.options_tooltip')"
+              :tooltip="$t('settings.system.youtubeAlternative.invidious.options_tooltip')"
               :isExtension="false"
               :defaultValue="invidiousAdvancedCheckboxValues"
               prefKey="invidious"
             />
+          </b-col>
+
+          <b-col v-if="showPipedField">
+            <AutoFillEditText
+              class="mt-4"
+              prefKey="piped_instance"
+              :datalist="pipedInstances"
+              :title="$t('settings.system.youtubeAlternative.piped.url')"
+              :tooltip="$t('settings.system.youtubeAlternative.piped.url_tooltip')"
+              :onValueChange="onPipedInstanceChange"
+              :onValueFetch="onPipedInstanceChange"
+            />
+            <div class="invidious-details">{{ pipedDetails }}</div>
+            <!-- <CheckboxGroup
+              :title="$t('settings.system.youtubeAlternative.piped.options')"
+              class="mt-4"
+              :tooltip="$t('settings.system.youtubeAlternative.piped.options_tooltip')"
+              :isExtension="false"
+              :defaultValue="pipedAdvancedCheckboxValues"
+              prefKey="piped"
+            /> -->
           </b-col>
 
           <b-row v-if="showRestartButton">
@@ -194,10 +236,12 @@ import { InvidiousApiResources } from '@/utils/commonConstants'
 import Dropdown from '../Dropdown.vue'
 import { messages } from '@/utils/ui/i18n'
 import { i18n } from '@/preferenceWindow/plugins/i18n'
+import RadioCheckbox from '../RadioCheckbox.vue'
 
 @Component({
   components: {
     CheckboxGroup,
+    RadioCheckbox,
     EditText,
     PreferenceHeader,
     AutoFillEditText,
@@ -211,9 +255,14 @@ export default class System extends Vue {
   private showSpotifyButton = false
   private showRestartButton = false
   private showInvidiousField = false
+  private showYoutubeField = false
+  private showPipedField = false
 
   private invidiousInstances: string[] = []
   private invidiousDetails = ''
+
+  private pipedInstances: string[] = []
+  private pipedDetails = ''
 
   private async onInvidiousInstanceChange() {
     try {
@@ -233,6 +282,10 @@ export default class System extends Vue {
     }
   }
 
+  private async onPipedInstanceChange(val: string) {
+    this.pipedDetails = `Piped instance: ${val}`
+  }
+
   private get languageDropdown() {
     const items = new Intl.DisplayNames(['en'], {
       type: 'language'
@@ -248,7 +301,7 @@ export default class System extends Vue {
     return languages
   }
 
-  private onLanguageChanged(key: CheckboxValue) {
+  private onLanguageChanged(key: Checkbox[]) {
     const active = key.find((val) => val.enabled) ?? this.languageDropdown[0]
     console.debug('changing locale to', active.key)
     i18n.locale = active.key
@@ -264,8 +317,33 @@ export default class System extends Vue {
     }
   }
 
+  private async fetchPipedInstances() {
+    const resp = await (
+      await fetch('https://raw.githubusercontent.com/wiki/TeamPiped/Piped-Frontend/Instances.md')
+    ).text()
+    let skipped = 0
+    const lines = resp.split('\n')
+    console.log(lines)
+    this.pipedInstances = lines
+      .map((line) => {
+        const split = line.split('|')
+        console.log(split.length)
+        if (split.length === 5) {
+          if (skipped < 2) {
+            skipped++
+            return
+          }
+          return split[1].trim()
+        }
+      })
+      .filter((instance) => instance?.length ?? 0 > 0) as string[]
+
+    console.log(this.pipedInstances)
+  }
+
   private defaultSystemSettings: SystemSettings[] = []
   private defaultAudioSettings: Checkbox[] = []
+  private defaultYoutubeAlts: Checkbox[] = []
 
   get invidiousAdvancedCheckboxValues(): Checkbox[] {
     return [
@@ -288,11 +366,34 @@ export default class System extends Vue {
         key: 'sponsorblock',
         title: this.$tc('settings.system.audioSettings.sponsorBlock'),
         enabled: false
+      }
+    ]
+  }
+
+  get youtubeAdvancedCheckboxValues() {
+    return {
+      key: 'youtube_embeds',
+      title: this.$tc('settings.system.audioSettings.useEmbeds'),
+      enabled: true
+    }
+  }
+
+  get youtubeAlternativeCheckboxValues(): Checkbox[] {
+    return [
+      {
+        key: 'use_youtube',
+        title: this.$tc('settings.system.youtubeAlternative.useYoutube'),
+        enabled: true
       },
       {
-        key: 'youtube_embeds',
-        title: this.$tc('settings.system.audioSettings.useEmbeds'),
-        enabled: true
+        key: 'use_invidious',
+        title: this.$tc('settings.system.youtubeAlternative.youtubeAlt'),
+        enabled: false
+      },
+      {
+        key: 'use_piped',
+        title: this.$tc('settings.system.youtubeAlternative.usePiped'),
+        enabled: false
       }
     ]
   }
@@ -303,7 +404,6 @@ export default class System extends Vue {
       this.minimizeToTrayCheckbox,
       this.hardwareAcceleration,
       this.watchFileChanges,
-      this.useInvidiousCheckbox,
       this.enableJukeboxMode
     ]
   }
@@ -312,14 +412,6 @@ export default class System extends Vue {
     return {
       key: 'jukebox_mode_toggle',
       title: this.$tc('settings.system.systemSettings.enableJukeboxMode'),
-      enabled: false
-    }
-  }
-
-  get useInvidiousCheckbox() {
-    return {
-      key: 'use_invidious',
-      title: this.$tc('settings.system.systemSettings.useInvidious'),
       enabled: false
     }
   }
@@ -390,16 +482,12 @@ export default class System extends Vue {
 
   private onSystemPrefFetch(value: SystemSettings[]) {
     this.defaultSystemSettings = JSON.parse(JSON.stringify(value))
-    this.showInvidiousField = value.find((val) => val.key === 'use_invidious')?.enabled ?? false
   }
 
   private onSystemPrefChange(value: SystemSettings[]) {
     if (Array.isArray(value)) {
       for (let i = 0; i < value.length; i++) {
-        if (value[i].key === 'hardwareAcceleration' || value[i].key === 'use_invidious') {
-          if (value[i].key === 'use_invidious') {
-            this.showInvidiousField = value[i].enabled
-          }
+        if (value[i].key === 'hardwareAcceleration') {
           if (this.defaultSystemSettings[i]?.enabled !== value[i].enabled) {
             this.showRestartButton = true
             break
@@ -409,6 +497,30 @@ export default class System extends Vue {
         }
       }
     }
+  }
+
+  private onYoutubeAlternativesChanged(value: Checkbox[]) {
+    if (Array.isArray(value)) {
+      this.showYoutubeField = value.find((val) => val.key === 'use_youtube')?.enabled ?? false
+      this.showInvidiousField = value.find((val) => val.key === 'use_invidious')?.enabled ?? false
+      this.showPipedField = value.find((val) => val.key === 'use_piped')?.enabled ?? false
+
+      for (const val of value) {
+        if (val.enabled !== this.defaultYoutubeAlts.find((val) => val.key)?.enabled) {
+          this.showRestartButton = true
+          break
+        } else {
+          this.showRestartButton = false
+        }
+      }
+    }
+  }
+
+  private onYoutubeAlternativesFetched(value: Checkbox[]) {
+    this.defaultYoutubeAlts = JSON.parse(JSON.stringify(value))
+    this.showYoutubeField = value.find((val) => val.key === 'use_youtube')?.enabled ?? false
+    this.showInvidiousField = value.find((val) => val.key === 'use_invidious')?.enabled ?? false
+    this.showPipedField = value.find((val) => val.key === 'use_piped')?.enabled ?? false
   }
 
   private async restartApp() {
@@ -446,6 +558,7 @@ export default class System extends Vue {
 
   created() {
     this.fetchInvidiousInstances()
+    this.fetchPipedInstances()
   }
 }
 </script>

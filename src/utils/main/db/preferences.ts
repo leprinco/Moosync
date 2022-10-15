@@ -24,6 +24,7 @@ const defaultPreferences: Preferences = {
   musicPaths: [{ path: getDefaultMusicPaths(), enabled: true }],
   thumbnailPath: path.join(app.getPath('appData'), app.getName(), '.thumbnails'),
   artworkPath: path.join(app.getPath('appData'), app.getName(), '.thumbnails'),
+  youtubeAlt: [],
   system: [],
   zoomFactor: '100',
   themes: {}
@@ -73,7 +74,7 @@ export function getWindowSize(windowName: string, defaultValue: { width: number;
  * @param [isExtension] true if preference is of an extension. false otherwise
  */
 export function saveSelectivePreference(key: string, value: unknown, isExtension = false, notify = false) {
-  if (value !== undefined || value !== null) {
+  if (typeof value !== 'undefined' && value !== null) {
     store.set(`prefs.${isExtension ? 'extension.' : ''}${key}`, value)
   } else {
     store.delete(`prefs.${isExtension ? 'extension.' : ''}${key}` as unknown as 'prefs')
@@ -281,4 +282,17 @@ export function setPreferenceListenKey(key: string, isMainWindow = false) {
   const channel = `${key}:mainWindow:${isMainWindow}`
   preferenceListenKeys.push({ key, isMainWindow, channel })
   return channel
+}
+
+function migratePreferences() {
+  const prefs = loadPreferences()
+
+  const useInvidiousIndex = prefs.system.findIndex((val) => val.key === 'use_invidious')
+  const useInvidiousVal = prefs.system[useInvidiousIndex]
+  if (useInvidiousIndex !== -1) {
+    prefs.system.splice(useInvidiousIndex, 1)
+    prefs.youtubeAlt.push(useInvidiousVal)
+  }
+
+  savePreferences(prefs)
 }
