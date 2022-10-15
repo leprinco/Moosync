@@ -418,6 +418,6 @@ export class PipedProvider extends GenericProvider {
   }
 
   public get IconComponent(): string {
-    return 'InvidiousIcon'
+    return 'PipedIcon'
   }
 }

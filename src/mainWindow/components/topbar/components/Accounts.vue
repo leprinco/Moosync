@@ -33,7 +33,12 @@
         </div>
       </div>
     </b-popover>
-    <ConfirmationModal keyword="signout from" :itemName="activeSignout" id="signoutModal" @confirm="signout" />
+    <ConfirmationModal
+      keyword="signout from"
+      :itemName="activeSignout ? activeSignout.provider.Title : ''"
+      id="signoutModal"
+      @confirm="signout"
+    />
   </div>
 </template>
 <script lang="ts">
@@ -47,6 +52,7 @@ import ConfirmationModal from '@/commonComponents/ConfirmationModal.vue'
 import { mixins } from 'vue-class-component'
 import AccountsMixin from '@/utils/ui/mixins/AccountsMixin'
 import InvidiousIcon from '@/icons/InvidiousIcon.vue'
+import PipedIcon from '@/icons/PipedIcon.vue'
 import { vxm } from '@/mainWindow/store'
 
 @Component({
@@ -56,6 +62,7 @@ import { vxm } from '@/mainWindow/store'
     InvidiousIcon,
     SpotifyIcon,
     LastFMIcon,
+    PipedIcon,
     Person,
     ConfirmationModal
   }
@@ -83,7 +90,7 @@ export default class TopBar extends mixins(AccountsMixin) {
       if (this.activeSignout) {
         this.activeSignout.provider.signOut()
 
-        this.$set(this.activeSignout, 'username', '')
+        this.$set(this.activeSignout, 'username', (await this.activeSignout.provider.getUserDetails()) ?? '')
         this.activeSignout = null
       }
     }

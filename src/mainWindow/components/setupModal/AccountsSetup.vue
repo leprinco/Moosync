@@ -49,7 +49,12 @@
         <b-button @click="next" class="create-button">Close</b-button>
       </b-col>
     </b-row>
-    <ConfirmationModal keyword="signout from" :itemName="activeSignout" id="signoutSetupModal" @confirm="signout" />
+    <ConfirmationModal
+      keyword="signout from"
+      :itemName="activeSignout.provider.Title"
+      id="signoutSetupModal"
+      @confirm="signout"
+    />
   </b-container>
 </template>
 
@@ -75,7 +80,7 @@ import ConfirmationModal from '../../../commonComponents/ConfirmationModal.vue'
   }
 })
 export default class AccountsSetup extends mixins(AccountsMixin) {
-  protected activeSignout: Providers | null = null
+  protected activeSignout: Provider | null = null
 
   async mounted() {
     this.signoutMethod = this.showSignoutModal
@@ -91,18 +96,16 @@ export default class AccountsSetup extends mixins(AccountsMixin) {
 
   protected async signout() {
     if (this.activeSignout) {
-      const p = this.getProvider(this.activeSignout)
+      if (this.activeSignout.provider) {
+        await this.activeSignout.provider.signOut()
 
-      if (p) {
-        p.provider.signOut()
-
-        this.$set(p, 'username', '')
+        this.$set(this.activeSignout, 'username', (await this.activeSignout.provider.getUserDetails()) ?? '')
         this.activeSignout = null
       }
     }
   }
 
-  protected showSignoutModal(signout: Providers) {
+  protected showSignoutModal(signout: Provider) {
     this.activeSignout = signout
     this.$bvModal.show('signoutSetupModal')
   }
