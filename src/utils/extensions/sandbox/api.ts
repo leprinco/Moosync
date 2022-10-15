@@ -21,10 +21,6 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
   private contextMenuMap: ExtendedExtensionContextMenuItems<ContextMenuTypes>[] = []
 
   private accountsMap: AccountDetails[] = []
-  private searchProvider: string | undefined
-  private artistSongProvider: string | undefined
-  private albumSongProvider: string | undefined
-  private playlistProvider: string | undefined
 
   constructor(packageName: string) {
     this.packageName = packageName
@@ -222,35 +218,19 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
   }
 
   public registerSearchProvider(title: string) {
-    this.searchProvider = title
-  }
-
-  public _getSearchProvider() {
-    return this.searchProvider
+    console.warn('Deprecated API, please update the extension')
   }
 
   public registerArtistSongProvider(title: string) {
-    this.artistSongProvider = title
-  }
-
-  public _getArtistSongProvider() {
-    return this.artistSongProvider
+    console.warn('Deprecated API, please update the extension')
   }
 
   public registerAlbumSongProvider(title: string) {
-    this.albumSongProvider = title
-  }
-
-  public _getAlbumSongProvider() {
-    return this.albumSongProvider
+    console.warn('Deprecated API, please update the extension')
   }
 
   private registerPlaylistProvider() {
-    this.playlistProvider = this.packageName
-  }
-
-  public _getPlaylistProvider() {
-    return this.playlistProvider
+    console.warn('Deprecated API, please update the extension')
   }
 
   public setArtistEditableInfo(artist_id: string, object: Record<string, string>) {
@@ -259,6 +239,10 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
 
   public setAlbumEditableInfo(album_id: string, object: Record<string, string>) {
     return sendAsync<void>(this.packageName, 'set-album-editable-info', { album_id, object })
+  }
+
+  public _isEventCallbackRegistered(key: string) {
+    return !!this.eventCallbackMap[key]
   }
 }
 

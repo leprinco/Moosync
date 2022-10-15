@@ -38,10 +38,11 @@ import SongView from '@/mainWindow/components/songView/SongView.vue'
 import { mixins } from 'vue-class-component'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import { vxm } from '@/mainWindow/store'
-import { GenericProvider, ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import Vue from 'vue'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 @Component({
   components: {
@@ -52,8 +53,6 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
   private songList: Song[] = []
   private optionalSongList: Record<string, string[]> = {}
   private artist: Artists | null = null
-
-  private extensionArtistSongProviders: TabCarouselItem[] = []
 
   private loadingMap: Record<string, boolean> = {}
 
@@ -70,7 +69,7 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
   }
 
   private get artistSongProviders(): TabCarouselItem[] {
-    return [...this.fetchProviders(), ...this.extensionArtistSongProviders]
+    return this.fetchProviders()
   }
 
   get isLoading() {
@@ -130,19 +129,7 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     }
   }
 
-  private async fetchExtensionArtistSongProviders() {
-    const exts = await window.ExtensionUtils.getRegisteredArtistSongProviders()
-    if (exts) {
-      for (const [key, title] of Object.entries(exts)) {
-        if (title) {
-          this.extensionArtistSongProviders.push({ key, title })
-        }
-      }
-    }
-  }
-
   created() {
-    this.fetchExtensionArtistSongProviders()
     this.onArtistChange()
   }
 
@@ -243,39 +230,12 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     this.fetchAll((songs) => this.addSongsToLibrary(...songs))
   }
 
-  private async fetchExtensionSongs(key: string) {
-    Vue.set(this.loadingMap, key, true)
-    if (this.artist) {
-      const data = await window.ExtensionUtils.sendEvent({
-        type: 'requestedArtistSongs',
-        data: [this.artist],
-        packageName: key
-      })
-
-      if (data && data[key]) {
-        for (const s of data[key].songs) {
-          if (!this.songList.find((val) => val._id === s._id)) {
-            this.songList.push(s)
-
-            if (!this.optionalSongList[key]) {
-              this.optionalSongList[key] = []
-            }
-            this.optionalSongList[key].push(s._id)
-          }
-        }
-      }
-    }
-    Vue.set(this.loadingMap, key, false)
-  }
-
   private async fetchRemoteProviderByKey(key: string) {
     const provider = this.getProviderByKey(key)
     if (provider) {
       await this.fetchProviderSonglist(provider)
       return
     }
-
-    await this.fetchExtensionSongs(key)
   }
 
   private onArtistProviderChanged({ key, checked }: { key: string; checked: boolean }) {

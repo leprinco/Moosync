@@ -7,11 +7,11 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { GenericProvider, ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import { InvidiousApiResources } from '@/utils/commonConstants'
+import { InvidiousApiResources, ProviderScopes } from '@/utils/commonConstants'
 import { vxm } from '@/mainWindow/store'
 
 const KeytarService = 'MoosyncInvidiousToken'
@@ -25,7 +25,12 @@ export class InvidiousProvider extends GenericProvider {
   }
 
   provides(): ProviderScopes[] {
-    return [ProviderScopes.SEARCH, ProviderScopes.PLAYLIST_FROM_URL, ProviderScopes.SONG_FROM_URL]
+    return [
+      ProviderScopes.SEARCH,
+      ProviderScopes.PLAYLIST_FROM_URL,
+      ProviderScopes.SONG_FROM_URL,
+      ProviderScopes.PLAYLIST_SONGS
+    ]
   }
 
   public async updateConfig(): Promise<boolean> {
@@ -283,5 +288,22 @@ export class InvidiousProvider extends GenericProvider {
 
   public get IconComponent(): string {
     return 'InvidiousIcon'
+  }
+
+  public matchEntityId(id: string): boolean {
+    return id.startsWith('youtube:')
+  }
+
+  public sanitizeId(id: string, type: 'SONG' | 'PLAYLIST' | 'ALBUM' | 'ARTIST'): string {
+    switch (type) {
+      case 'SONG':
+        return id.replace('youtube:', '')
+      case 'PLAYLIST':
+        return id.replace('youtube-playlist:', '')
+      case 'ALBUM':
+        return id
+      case 'ARTIST':
+        return id.replace('youtube-author:', '')
+    }
   }
 }

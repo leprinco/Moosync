@@ -196,28 +196,20 @@ class MainRequestGenerator {
     return this.sendAsync<void>('set-log-level', { level })
   }
 
-  public async getAccounts() {
-    return this.sendAsync<Record<string, StrippedAccountDetails[]>>('get-accounts')
+  public async getAccounts(packageName: string) {
+    return this.sendAsync<Record<string, StrippedAccountDetails[]>>('get-accounts', { packageName })
   }
 
   public async performAccountLogin(packageName: string, accountId: string, loginStatus: boolean) {
     return this.sendAsync<void>('perform-account-login', { packageName, accountId, loginStatus })
   }
 
-  public async getSearchProviders() {
-    return this.sendAsync<Record<string, string>>('get-search-providers')
+  public async getDisplayName(packageName: string) {
+    return this.sendAsync<void>('get-display-name', { packageName })
   }
 
-  public async getArtistSongProviders() {
-    return this.sendAsync<Record<string, string>>('get-artist-songs-providers')
-  }
-
-  public async getPlaylistProviders() {
-    return this.sendAsync<Record<string, string>>('get-playlist-providers')
-  }
-
-  public async getAlbumSongProviders() {
-    return this.sendAsync<Record<string, string>>('get-album-songs-providers')
+  public async getProviderScopes(packageName: string) {
+    return this.sendAsync<Record<string, string>>('get-extension-provider-scopes', { packageName })
   }
 
   public async sendContextMenuItemClicked(

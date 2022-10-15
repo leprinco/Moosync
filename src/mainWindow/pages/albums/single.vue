@@ -39,7 +39,8 @@ import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import Vue from 'vue'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
-import { GenericProvider, ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 @Component({
   components: {
@@ -50,8 +51,6 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
   private album: Album | null = null
   private songList: Song[] = []
   private optionalSongList: Record<string, string[]> = {}
-
-  private extensionAlbumSongProviders: TabCarouselItem[] = []
 
   private loadingMap: Record<string, boolean> = {}
 
@@ -75,7 +74,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     return false
   }
 
-  private fetchAlbumProviders() {
+  private fetchProviders() {
     const providers = this.getProvidersByScope(ProviderScopes.ALBUM_SONGS)
     return providers.map((val) => ({
       key: val.key,
@@ -86,8 +85,8 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
   // TODO: Separate pageToken for each provider
   private nextPageToken?: unknown
 
-  private get albumSongProviders(): TabCarouselItem[] {
-    return [...this.fetchAlbumProviders(), ...this.extensionAlbumSongProviders]
+  private albumSongProviders(): TabCarouselItem[] {
+    return this.fetchProviders()
   }
 
   get buttonGroups(): SongDetailButtons {
@@ -124,8 +123,9 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
   async created() {
     this.fetchAlbum()
     this.fetchAlbumCover()
-    this.fetchExtensionAlbumSongProviders()
     this.fetchSongList()
+
+    this.onProvidersChanged(() => this.fetchAlbumCover())
   }
 
   private fetchAlbum() {
@@ -187,46 +187,10 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     this.queueSong(this.songList)
   }
 
-  private async fetchExtensionAlbumSongProviders() {
-    const exts = await window.ExtensionUtils.getRegisteredAlbumSongProviders()
-    if (exts) {
-      for (const [key, title] of Object.entries(exts)) {
-        if (title) {
-          this.extensionAlbumSongProviders.push({ key, title })
-        }
-      }
-    }
-  }
-
-  private async fetchExtensionSongs(key: string) {
-    Vue.set(this.loadingMap, key, true)
-    if (this.album) {
-      const data = await window.ExtensionUtils.sendEvent({
-        type: 'requestedAlbumSongs',
-        data: [this.album],
-        packageName: key
-      })
-
-      if (data && data[key]) {
-        for (const s of data[key].songs) {
-          if (!this.songList.find((val) => val._id === s._id)) {
-            this.songList.push(s)
-
-            if (!this.optionalSongList[key]) {
-              this.optionalSongList[key] = []
-            }
-            this.optionalSongList[key].push(s._id)
-          }
-        }
-      }
-    }
-    Vue.set(this.loadingMap, key, false)
-  }
-
   private async fetchProviderSongs(provider: GenericProvider) {
     Vue.set(this.loadingMap, provider.key, true)
     if (this.album) {
-      for await (const items of provider.getAlbumSongs(this.album)) {
+      for await (const items of provider.getAlbumSongs(this.album, this.nextPageToken)) {
         this.nextPageToken = items.nextPageToken
 
         for (const s of items.songs) {
@@ -253,7 +217,6 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
         this.fetchProviderSongs(provider)
         return
       }
-      this.fetchExtensionSongs(key)
     }
   }
 }

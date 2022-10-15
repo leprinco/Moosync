@@ -197,10 +197,8 @@ export enum ExtensionHostEvents {
   GET_REGISTERED_ACCOUNTS = 'getRegisteredAccounts',
   PERFORM_ACCOUNT_LOGIN = 'performAccountLogin',
   ON_EXTENSIONS_CHANGED = 'onExtensionsChanged',
-  GET_REGISTERED_SEARCH_PROVIDERS = 'getRegisteredSearchProviders',
-  GET_REGISTERED_ARTIST_SONG_PROVIDERS = 'getRegisteredArtistSongProviders',
-  GET_REGISTERED_PLAYLIST_PROVIDERS = 'getRegisteredPlaylistProviders',
-  GET_REGISTERED_ALBUM_SONG_PROVIDERS = 'getRegisteredAlbumSongProviders'
+  GET_EXTENSION_PROVIDER_SCOPES = 'getExtensionProviderScopes',
+  GET_DISPLAY_NAME = 'getDisplayName'
 }
 
 export enum ServiceProviderEvents {
@@ -228,7 +226,7 @@ export enum EventBus {
   SHOW_OAUTH_MODAL = 'show-oauth-modal',
   HIDE_OAUTH_MODAL = 'hide-oauth-modal',
   SHOW_FORM_MODAL = 'show-form-modal',
-  REFRESH_USERNAMES = 'refresh-usernames',
+  REFRESH_ACCOUNTS = 'refresh-accounts',
   REFRESH_PAGE = 'refresh-page',
   REFRESH_LYRICS = 'refresh-lyrics'
 }

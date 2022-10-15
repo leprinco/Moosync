@@ -12,6 +12,7 @@ import { AbstractExtensionManager, ExtensionManager } from '@/utils/extensions/s
 
 import { getVersion } from '@/utils/common'
 import { providerFetchRequests } from '../constants'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 type CombinedSongsType = SongsReturnType | PlaylistAndSongsReturnType | RecommendationsReturnType
 
@@ -95,8 +96,8 @@ export class ExtensionHandler {
     }
   }
 
-  public getExtensionAccounts() {
-    const ext = this.extensionManager.getExtensions()
+  public getExtensionAccounts(packageName?: string) {
+    const ext = this.extensionManager.getExtensions({ packageName })
     const accountMap: { [key: string]: AccountDetails[] } = {}
     for (const e of ext) {
       accountMap[e.packageName] = e.global.api._getAccountDetails()
@@ -105,33 +106,62 @@ export class ExtensionHandler {
     return accountMap
   }
 
-  private getFetchMethod(type: providerFetchRequests): keyof ExtendedExtensionAPI {
-    switch (type) {
-      case 'get-artist-songs-providers':
-        return '_getArtistSongProvider'
-      case 'get-album-songs-providers':
-        return '_getAlbumSongProvider'
-      case 'get-playlist-providers':
-        return '_getPlaylistProvider'
-      case 'get-search-providers':
-        return '_getSearchProvider'
+  public getDisplayName(packageName: string) {
+    const ext = this.extensionManager.getExtensions({ packageName })
+    for (const e of ext) {
+      return e.name
     }
   }
 
-  public getProviderExtensions(type: providerFetchRequests) {
-    const method = this.getFetchMethod(type)
-    const map: { [key: string]: string } = {}
+  public extensionProvides(packageName?: string): Record<string, ProviderScopes[]> {
+    const providesMap: Record<string, ProviderScopes[]> = {}
 
-    if (method) {
-      const ext = this.extensionManager.getExtensions()
-      for (const e of ext) {
-        if (typeof e.global.api[method] === 'function') {
-          const provider = (e.global.api[method] as () => string)()
-          if (provider) map[e.packageName] = provider
-        }
+    const exts = this.extensionManager.getExtensions({ packageName })
+    for (const e of exts) {
+      if (!providesMap[e.packageName]) {
+        providesMap[e.packageName] = []
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedSearchResult')) {
+        providesMap[e.packageName].push(ProviderScopes.SEARCH)
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedAlbumSongs')) {
+        providesMap[e.packageName].push(ProviderScopes.ALBUM_SONGS)
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedArtistSongs')) {
+        providesMap[e.packageName].push(ProviderScopes.ARTIST_SONGS)
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedPlaylists')) {
+        providesMap[e.packageName].push(ProviderScopes.PLAYLISTS)
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedPlaylistSongs')) {
+        providesMap[e.packageName].push(ProviderScopes.PLAYLIST_SONGS)
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedPlaylistFromURL')) {
+        providesMap[e.packageName].push(ProviderScopes.PLAYLIST_FROM_URL)
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedSongFromURL')) {
+        providesMap[e.packageName].push(ProviderScopes.SONG_FROM_URL)
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedRecommendations')) {
+        providesMap[e.packageName].push(ProviderScopes.RECOMMENDATIONS)
       }
     }
-    return map
+
+    return providesMap
+  }
+
+  public handleProviderRequests(type: providerFetchRequests, packageName: string) {
+    if (type === 'get-extension-provider-scopes') {
+      return this.extensionProvides(packageName)
+    }
   }
 
   public async performExtensionAccountLogin(packageName: string, accountId: string, loginStatus: boolean) {

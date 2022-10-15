@@ -47,7 +47,7 @@ import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import CardView from '../../components/generic/CardView.vue'
 import CardCarousel from '../../components/generic/CardCarousel.vue'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
-import { ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 @Component({
   components: {
@@ -56,7 +56,9 @@ import { ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
   }
 })
 export default class Albums extends mixins(RouterPushes, ContextMenuMixin, ProviderMixin) {
-  private providers = this.fetchProviders()
+  private get providers() {
+    return this.fetchProviders()
+  }
 
   private fetchProviders() {
     const providers = this.getProvidersByScope(ProviderScopes.RECOMMENDATIONS)

@@ -392,9 +392,9 @@ type ExtraExtensionEventData<T extends ExtraExtensionEventTypes> = T extends 're
   : T extends 'customRequest'
   ? [url: string]
   : T extends 'requestedSongFromURL'
-  ? [url: string]
+  ? [url: string, invalidateCache: boolean]
   : T extends 'requestedPlaylistFromURL'
-  ? [url: string]
+  ? [url: string, invalidateCache: boolean]
   : T extends 'requestedSearchResult'
   ? [term: string]
   : T extends 'requestedLyrics'
@@ -714,9 +714,6 @@ interface extensionAPI {
   /**
    * Event fired when user searches a term in search page
    * Callback should return a providerName and result songs or undefined
-   * 
-   * Requires extension to be registered as a provider using {@link registerSearchProvider}
-
    */
   on(eventName: 'requestedSearchResult', callback: (term: string) => Promise<SearchReturnType | void>): void
 
@@ -735,16 +732,12 @@ interface extensionAPI {
   /**
    * Event fired when songs by a particular artist are requested
    * Callback should return parsed songs or undefined
-   *
-   * Requires extension to be registered as a provider using {@link registerArtistSongProvider}
    */
   on(eventName: 'requestedArtistSongs', callback: (artist: Artists) => Promise<SongsReturnType | void>)
 
   /**
    * Event fired when songs by a particular album are requested
    * Callback should return parsed songs or undefined
-   *
-   * Requires extension to be registered as a provider using {@link registerAlbumSongProvider}
    */
   on(eventName: 'requestedAlbumSongs', callback: (album: Album) => Promise<SongsReturnType | void>)
 
@@ -823,30 +816,6 @@ interface extensionAPI {
    * @param type type of toast. Usually denotes color
    */
   showToast(message: string, duration?: number, type?: 'success' | 'info' | 'error' | 'default')
-
-  /**
-   * Register extension as provider of search results. 'requestedSearchResult' can be
-   * listened after calling this method.
-   *
-   * @param title Title to show in search page
-   */
-  registerSearchProvider(title: string): void
-
-  /**
-   * Register extension as provider of artist songs. 'requestedArtistSongs' can be
-   * listened after calling this method
-   *
-   * @param title Title to show in artists page
-   */
-  registerArtistSongProvider(title: string): void
-
-  /**
-   * Register extension as provider of album songs. 'requestedAlbumSongs' can be
-   * listened after calling this method
-   *
-   * @param title Title to show in albums page
-   */
-  registerAlbumSongProvider(title: string): void
 
   /**
    * Set extra info for an artist. This info is editable by the user using "Show info" context menu

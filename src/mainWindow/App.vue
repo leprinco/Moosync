@@ -50,7 +50,7 @@ import { i18n } from './plugins/i18n'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import { sortSongListFn } from '@/utils/common'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
-import { ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 @Component({
   components: {
@@ -68,6 +68,7 @@ import { ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
 })
 export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandlerMixin, JukeboxMixin, ProviderMixin) {
   async created() {
+    this.fetchProviderExtensions()
     this.registerNotifier()
     this.setLanguage()
     this.listenThemeChanges()
@@ -87,6 +88,11 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     this.registerFileDragListener()
     this.handleInitialSetup()
     this.checkUpdate()
+  }
+
+  private fetchProviderExtensions() {
+    vxm.providers.fetchExtensionProviders()
+    window.ExtensionUtils.listenExtensionsChanged(() => vxm.providers.fetchExtensionProviders())
   }
 
   private watchQueueSort() {

@@ -70,7 +70,7 @@ import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
 import PlusIcon from '@/icons/PlusIcon.vue'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
-import { ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 @Component({
   components: {
@@ -90,41 +90,16 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
 
   private playlistInAction: Playlist | undefined
 
-  private getIconBgColor(playlist: Playlist) {
-    if (playlist.playlist_id?.startsWith('youtube')) {
-      return '#E62017'
-    }
-
-    if (playlist.playlist_id?.startsWith('spotify')) {
-      return '#07C330'
-    }
+  private get providers() {
+    return this.getProvidersByScope(ProviderScopes.PLAYLISTS)
   }
 
-  private async fetchPlaylistsFromExtension(invalidateCache: boolean) {
-    const playlists: ExtendedPlaylist[] = []
-
-    const providers = await window.ExtensionUtils.getRegisteredPlaylistProviders()
-    for (const key of Object.keys(providers)) {
-      const data = await window.ExtensionUtils.sendEvent({
-        type: 'requestedPlaylists',
-        data: [invalidateCache],
-        packageName: key
-      })
-
-      if (data && data[key]) {
-        const icon = await window.ExtensionUtils.getExtensionIcon(key)
-        for (const p of (data[key] as PlaylistReturnType).playlists) {
-          playlists.push({
-            ...p,
-            icon: (p.icon && 'media://' + p.icon) ?? (icon && 'media://' + icon),
-            isRemote: true,
-            extension: key
-          })
-        }
+  private getIconBgColor(playlist: Playlist) {
+    for (const p of this.providers) {
+      if (p.matchEntityId(playlist.playlist_id)) {
+        return p.BgColor
       }
     }
-
-    return playlists
   }
 
   private async getPlaylists(invalidateCache = false) {
@@ -135,22 +110,11 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
 
     const promises: Promise<unknown>[] = []
 
-    const providers = this.getProvidersByScope(ProviderScopes.PLAYLISTS)
-    for (const p of providers) {
+    for (const p of this.providers) {
       promises.push(p.getUserPlaylists(invalidateCache).then(this.pushPlaylistToList).then(this.sort))
     }
 
-    promises.push(this.fetchPlaylistsFromExtension(invalidateCache).then(this.pushPlaylistToList).then(this.sort))
-
     await Promise.all(promises)
-
-    // Set icon for playlists which are provided by extensions have
-    for (const p of this.allPlaylists) {
-      if (p.extension && !p.icon) {
-        const icon = await window.ExtensionUtils.getExtensionIcon(p.extension)
-        this.$set(p, 'icon', icon && 'media://' + icon)
-      }
-    }
   }
 
   private pushPlaylistToList(playlists: Playlist[]) {

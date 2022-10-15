@@ -127,3 +127,17 @@ export const defaultKeybinds: HotkeyPair[] = [
     value: HotkeyEvents.QUEUE_CLOSE
   }
 ]
+
+export enum ProviderScopes {
+  SEARCH,
+  PLAYLISTS,
+  PLAYLIST_SONGS,
+  ARTIST_SONGS,
+  ALBUM_SONGS,
+  RECOMMENDATIONS,
+  SCROBBLES,
+  PLAYLIST_FROM_URL,
+  SONG_FROM_URL,
+  SEARCH_ALBUM,
+  SEARCH_ARTIST
+}

@@ -90,7 +90,7 @@ import InputGroup from '../generic/InputGroup.vue'
 import { v4 } from 'uuid'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
-import { ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 @Component({
   components: {
@@ -135,23 +135,6 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
           this.playlist = (await p.getPlaylistDetails(url)) ?? null
           if (this.playlist) {
             return
-          }
-        }
-      }
-
-      const res = await window.ExtensionUtils.sendEvent({
-        type: 'requestedPlaylistFromURL',
-        data: [url]
-      })
-
-      if (res) {
-        for (const val of Object.values(res)) {
-          if (val) {
-            if (val.playlist) {
-              this.playlist = val.playlist
-              this.songList.push(...val.songs)
-              break
-            }
           }
         }
       }

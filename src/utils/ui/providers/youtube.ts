@@ -8,7 +8,7 @@
  */
 
 import { AuthFlow, AuthStateEmitter } from '@/utils/ui/oauth/flow'
-import { GenericProvider, cache, ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
+import { GenericProvider, cache } from '@/utils/ui/providers/generics/genericProvider'
 
 import { AuthorizationServiceConfiguration } from '@openid/appauth'
 import axios from 'axios'
@@ -18,6 +18,7 @@ import { vxm } from '../../../mainWindow/store/index'
 import { parseISO8601Duration } from '@/utils/common'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 const BASE_URL = 'https://youtube.googleapis.com/youtube/v3/'
 
@@ -41,6 +42,7 @@ export class YoutubeProvider extends GenericProvider {
     return [
       ProviderScopes.SEARCH,
       ProviderScopes.PLAYLISTS,
+      ProviderScopes.PLAYLIST_SONGS,
       ProviderScopes.ARTIST_SONGS,
       ProviderScopes.RECOMMENDATIONS,
       ProviderScopes.PLAYLIST_FROM_URL,
@@ -276,7 +278,7 @@ export class YoutubeProvider extends GenericProvider {
         const parsed = await this.parsePlaylistItems(resp.items, invalidateCache)
         yield { songs: parsed, nextPageToken: resp.nextPageToken }
       } else {
-        yield window.SearchUtils.getYTPlaylistContent(id, nextPageToken as any)
+        yield window.SearchUtils.getYTPlaylistContent(id, nextPageToken as never)
       }
     }
     return
@@ -551,7 +553,7 @@ export class YoutubeProvider extends GenericProvider {
       }
     } else {
       if (channelId) {
-        yield await window.SearchUtils.getYTPlaylistContent(channelId, nextPageToken as any)
+        yield await window.SearchUtils.getYTPlaylistContent(channelId, nextPageToken as never)
       } else {
         const resp = await window.SearchUtils.searchYT(`${artist.artist_name}`)
         if (resp.artists?.length > 0 && resp.artists[0].artist_extra_info?.youtube?.channel_id) {
@@ -701,5 +703,22 @@ export class YoutubeProvider extends GenericProvider {
 
   public get IconComponent(): string {
     return 'YoutubeIcon'
+  }
+
+  public matchEntityId(id: string): boolean {
+    return id.startsWith('youtube:') || id.startsWith('youtube-playlist:') || id.startsWith('youtube-author:')
+  }
+
+  public sanitizeId(id: string, type: 'SONG' | 'PLAYLIST' | 'ALBUM' | 'ARTIST'): string {
+    switch (type) {
+      case 'SONG':
+        return id.replace('youtube:', '')
+      case 'PLAYLIST':
+        return id.replace('youtube-playlist:', '')
+      case 'ALBUM':
+        return id
+      case 'ARTIST':
+        return id.replace('youtube-author:', '')
+    }
   }
 }

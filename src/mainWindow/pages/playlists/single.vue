@@ -38,13 +38,16 @@ import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { ProviderScopes } from '@/utils/commonConstants'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 
 @Component({
   components: {
     SongView
   }
 })
-export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
+export default class SinglePlaylistView extends mixins(ContextMenuMixin, ProviderMixin) {
   @Prop({ default: () => () => undefined })
   private enableRefresh!: () => void
 
@@ -52,7 +55,17 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
 
   private isLoading = false
 
-  private playlist: Playlist | null = null
+  private providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_SONGS)
+
+  private getPlaylistOwnerProvider() {
+    if (this.playlist?.playlist_id) {
+      for (const p of this.providers) {
+        if (p.matchEntityId(this.playlist?.playlist_id)) {
+          return p
+        }
+      }
+    }
+  }
 
   get buttonGroups(): SongDetailButtons {
     return {
@@ -86,8 +99,6 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
   }
 
   private async refresh(invalidateCache = false) {
-    this.fetchPlaylist()
-
     this.nextPageToken = undefined
     this.songList = []
     await this.fetchSongListAsync(invalidateCache)
@@ -108,8 +119,8 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
     })
   }
 
-  private fetchPlaylist() {
-    this.playlist = {
+  private get playlist() {
+    return {
       playlist_id: this.$route.query.playlist_id as string,
       playlist_name: this.$route.query.playlist_name as string,
       playlist_coverPath: this.$route.query.playlist_coverPath as string,
@@ -122,22 +133,24 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
   private async fetchLocalSongList() {
     this.isLoading = true
     if (this.playlist) {
-      this.songList = await window.SearchUtils.searchSongsByOptions({
+      const songs = await window.SearchUtils.searchSongsByOptions({
         playlist: {
           playlist_id: this.playlist.playlist_id as string
         },
         sortBy: vxm.themes.songSortBy
       })
+
+      this.songList.push(...songs.filter((val) => this.songList.findIndex((val2) => val2._id === val._id) === -1))
     }
     this.isLoading = false
   }
 
   private nextPageToken?: unknown
 
-  private async fetchYoutube(invalidateCache = false) {
+  private async fetchProvider(provider: GenericProvider, invalidateCache = false) {
     this.isLoading = true
-    const generator = vxm.providers.youtubeProvider.getPlaylistContent(
-      (this.$route.query.id as string)?.replace('youtube-playlist:', ''),
+    const generator = provider.getPlaylistContent(
+      provider.sanitizeId(this.playlist.playlist_id, 'PLAYLIST'),
       invalidateCache,
       this.nextPageToken
     )
@@ -148,42 +161,6 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
         this.nextPageToken = items.nextPageToken
       }
     }
-    this.isLoading = false
-  }
-
-  private async fetchSpotify(invalidateCache = false) {
-    this.isLoading = true
-    const generator = vxm.providers.spotifyProvider.getPlaylistContent(
-      (this.$route.query.id as string)?.replace('spotify-playlist:', ''),
-      invalidateCache
-    )
-
-    if (generator) {
-      for await (const items of generator) {
-        this.songList.push(...items.songs)
-        this.nextPageToken = items.nextPageToken
-      }
-    }
-
-    this.isLoading = false
-  }
-
-  private async fetchExtension(invalidateCache = false) {
-    this.isLoading = true
-    const extension = this.playlist?.extension
-    const playlistId = this.playlist?.playlist_id
-
-    if (playlistId && extension) {
-      const data = await window.ExtensionUtils.sendEvent({
-        type: 'requestedPlaylistSongs',
-        data: [playlistId, invalidateCache],
-        packageName: extension
-      })
-
-      if (data && data[extension]) {
-        this.songList.push(...(data[extension] as SongsReturnType).songs)
-      }
-    }
 
     this.isLoading = false
   }
@@ -192,11 +169,10 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
     if (this.playlist) {
       await this.fetchLocalSongList()
 
-      if (!this.isExtension) {
-        if (this.isYoutube) return this.fetchYoutube(invalidateCache)
-        else if (this.isSpotify) return this.fetchSpotify(invalidateCache)
-      } else {
-        return this.fetchExtension(invalidateCache)
+      const owner = this.getPlaylistOwnerProvider()
+
+      if (owner) {
+        await this.fetchProvider(owner, invalidateCache)
       }
     }
   }

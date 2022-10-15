@@ -565,14 +565,25 @@ contextBridge.exposeInMainWorld('ExtensionUtils', {
   listenExtInstallStatus: (callback: (data: ExtInstallStatus) => void) =>
     ipcRendererHolder.on(ExtensionHostEvents.EXT_INSTALL_STATUS, callback),
 
-  getRegisteredAccounts: () =>
-    ipcRendererHolder.send(IpcEvents.EXTENSION_HOST, {
+  getRegisteredAccounts: (packageName: string) =>
+    ipcRendererHolder.send<ExtensionHostRequests.ProviderScopes>(IpcEvents.EXTENSION_HOST, {
       type: ExtensionHostEvents.GET_REGISTERED_ACCOUNTS,
-      params: undefined
+      params: { packageName }
     }),
 
-  listenAccountRegistered: (callback: (details: AccountDetails) => void) => {
-    ipcRendererHolder.on(ExtensionHostEvents.ON_ACCOUNT_REGISTERED, callback)
+  listenAccountRegistered: (
+    callback: (details: { packageName: string; data: StrippedAccountDetails }) => void,
+    packageName: string
+  ) => {
+    ipcRendererHolder.on(ExtensionHostEvents.ON_ACCOUNT_REGISTERED, (details: Parameters<typeof callback>[0]) => {
+      if (packageName) {
+        if (details.packageName === packageName) {
+          callback(details)
+        }
+      } else {
+        callback(details)
+      }
+    })
   },
 
   performAccountLogin: (packageName: string, accountId: string, login: boolean) =>
@@ -584,28 +595,16 @@ contextBridge.exposeInMainWorld('ExtensionUtils', {
   listenExtensionsChanged: (callback: () => void) =>
     ipcRendererHolder.on(ExtensionHostEvents.ON_EXTENSIONS_CHANGED, callback),
 
-  getRegisteredSearchProviders: () =>
-    ipcRendererHolder.send(IpcEvents.EXTENSION_HOST, {
-      type: ExtensionHostEvents.GET_REGISTERED_SEARCH_PROVIDERS,
-      params: undefined
+  getExtensionProviderScopes: (packageName: string) =>
+    ipcRendererHolder.send<ExtensionHostRequests.ProviderScopes>(IpcEvents.EXTENSION_HOST, {
+      type: ExtensionHostEvents.GET_EXTENSION_PROVIDER_SCOPES,
+      params: { packageName }
     }),
 
-  getRegisteredArtistSongProviders: () =>
-    ipcRendererHolder.send(IpcEvents.EXTENSION_HOST, {
-      type: ExtensionHostEvents.GET_REGISTERED_ARTIST_SONG_PROVIDERS,
-      params: undefined
-    }),
-
-  getRegisteredAlbumSongProviders: () =>
-    ipcRendererHolder.send(IpcEvents.EXTENSION_HOST, {
-      type: ExtensionHostEvents.GET_REGISTERED_ALBUM_SONG_PROVIDERS,
-      params: undefined
-    }),
-
-  getRegisteredPlaylistProviders: () =>
-    ipcRendererHolder.send(IpcEvents.EXTENSION_HOST, {
-      type: ExtensionHostEvents.GET_REGISTERED_PLAYLIST_PROVIDERS,
-      params: undefined
+  getExtensionDisplayName: (packageName: string) =>
+    ipcRendererHolder.send<ExtensionHostRequests.ProviderScopes>(IpcEvents.EXTENSION_HOST, {
+      type: ExtensionHostEvents.GET_DISPLAY_NAME,
+      params: { packageName }
     })
 })
 

@@ -76,7 +76,7 @@ import { mixins } from 'vue-class-component'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
-import { ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 @Component({
   components: {
@@ -119,7 +119,6 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong, Prov
         }
       }
     }
-    this.parsedSong = this.parsedSong ?? (await this.parseFromExtension(url)) ?? (await this.parseStream(url)) ?? null
 
     if (this.parsedSong) {
       this.songTitle = this.parsedSong.title ?? ''
@@ -130,21 +129,6 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong, Prov
     }
 
     this.isLoading = false
-  }
-
-  private async parseFromExtension(url: string): Promise<Song | undefined> {
-    const res = await window.ExtensionUtils.sendEvent({
-      type: 'requestedSongFromURL',
-      data: [url]
-    })
-
-    if (res) {
-      for (const value of Object.values(res)) {
-        if (value && value.song) {
-          return value.song
-        }
-      }
-    }
   }
 
   private async parseStream(url: string): Promise<Song | undefined> {

@@ -63,6 +63,10 @@ declare namespace ExtensionHostRequests {
     accountId: string
     login: boolean
   }
+
+  interface ProviderScopes {
+    packageName: string
+  }
 }
 
 declare namespace LoggerRequests {

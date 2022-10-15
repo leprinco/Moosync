@@ -282,14 +282,17 @@ interface extensionUtils {
     packageName: string,
     arg: ExtensionContextMenuHandlerArgs<ContextMenuTypes>
   ) => Promise<void>
-  getRegisteredAccounts: () => Promise<{ [key: string]: StrippedAccountDetails[] }>
-  listenAccountRegistered: (callback: (details: { packageName: string; data: StrippedAccountDetails }) => void) => void
+  getRegisteredAccounts: (packageName: string) => Promise<{ [key: string]: StrippedAccountDetails[] }>
+  listenAccountRegistered: (
+    callback: (details: { packageName: string; data: StrippedAccountDetails }) => void,
+    packageName?: string
+  ) => void
   performAccountLogin: (packageName: string, accountId: string, login: boolean) => Promise<void>
   listenExtensionsChanged: (callback: () => void) => void
-  getRegisteredSearchProviders: () => Promise<Record<string, string>>
-  getRegisteredArtistSongProviders: () => Promise<Record<string, string>>
-  getRegisteredPlaylistProviders: () => Promise<Record<string, string>>
-  getRegisteredAlbumSongProviders: () => Promise<Record<string, string>>
+  getExtensionProviderScopes: (
+    packageName: string
+  ) => Promise<Record<string, import('@/utils/commonConstants').ProviderScopes[]>>
+  getExtensionDisplayName: (packageName: string) => Promise<string>
 }
 
 /**

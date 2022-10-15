@@ -131,7 +131,7 @@ class MainRequestHandler {
   }
 
   public parseProviderRequest(message: providerFetchRequestMessage) {
-    this.sendToMain(message.channel, this.handler.getProviderExtensions(message.type))
+    this.sendToMain(message.channel, this.handler.handleProviderRequests(message.type, message.data.packageName))
   }
 
   public parseRequest(message: mainRequestMessage) {
@@ -197,7 +197,7 @@ class MainRequestHandler {
     }
 
     if (message.type === 'get-accounts') {
-      const items = this.handler.getExtensionAccounts()
+      const items = this.handler.getExtensionAccounts(message.data?.packageName)
       this.sendToMain(message.channel, items)
       return
     }
@@ -208,6 +208,11 @@ class MainRequestHandler {
         .then((val) => this.sendToMain(message.channel, val))
 
       return
+    }
+
+    if (message.type === 'get-display-name') {
+      const name = this.handler.getDisplayName(message.data.packageName)
+      this.sendToMain(message.channel, name)
     }
   }
 

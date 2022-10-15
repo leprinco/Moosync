@@ -7,8 +7,11 @@
  *  See LICENSE in the project root for license information.
  */
 
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import localforage from 'localforage'
 import { setupCache } from 'axios-cache-adapter'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 type Config = {
   store: {
@@ -34,22 +37,13 @@ export const cache = setupCache({
   debug: true
 })
 
-export enum ProviderScopes {
-  SEARCH,
-  PLAYLISTS,
-  ARTIST_SONGS,
-  ALBUM_SONGS,
-  RECOMMENDATIONS,
-  SCROBBLES,
-  PLAYLIST_FROM_URL,
-  SONG_FROM_URL,
-  SEARCH_ALBUM,
-  SEARCH_ARTIST
-}
-
 export abstract class GenericProvider {
   constructor() {
     this.updateConfig()
+  }
+
+  public get canLogin() {
+    return true
   }
 
   public abstract getLoggedIn(): Promise<boolean>
@@ -95,7 +89,7 @@ export abstract class GenericProvider {
    * @returns Playlist if data is found otherwise undefined
    */
   public async getPlaylistDetails(
-    id: string,
+    url: string,
     invalidateCache?: boolean,
     nextPageToken?: string
   ): Promise<Playlist | undefined> {
@@ -109,7 +103,8 @@ export abstract class GenericProvider {
    */
   public async *getPlaylistContent(
     id: string,
-    invalidateCache?: boolean
+    invalidateCache?: boolean,
+    nextPageToken?: unknown
   ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {
     yield { songs: [] }
   }
@@ -196,6 +191,9 @@ export abstract class GenericProvider {
   public async scrobble(song: Song): Promise<void> {
     return
   }
+
+  public abstract matchEntityId(id: string): boolean
+  public abstract sanitizeId(id: string, type: 'SONG' | 'PLAYLIST' | 'ALBUM' | 'ARTIST'): string
 
   public abstract provides(): ProviderScopes[]
   public abstract get Title(): string

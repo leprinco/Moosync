@@ -124,10 +124,7 @@ interface ExtendedExtensionAPI extends extensionAPI {
   ) => Promise<ExtraExtensionEventReturnType<T> | undefined>
   _getContextMenuItems: () => ExtendedExtensionContextMenuItems<ContextMenuTypes>[]
   _getAccountDetails: () => AccountDetails[]
-  _getSearchProvider: () => string | undefined
-  _getArtistSongProvider: () => string | undefined
-  _getAlbumSongProvider: () => string | undefined
-  _getPlaylistProvider: () => string | undefined
+  _isEventCallbackRegistered: (key: ExtraExtensionEventTypes) => boolean
 }
 
 interface ExtensionItem extends ExtensionDetails {

@@ -11,10 +11,10 @@
   <div class="w-100 h-100">
     <b-container fluid class="h-100 w-100 search-container">
       <TabCarousel
-        :items="searchItems"
+        :items="providers"
         :showExtraSongListActions="false"
         :singleSelectMode="true"
-        :defaultSelected="searchItems[0].key"
+        :defaultSelected="providers[0].key"
         :showBackgroundOnSelect="true"
         @onItemsChanged="onProviderChanged"
       />
@@ -89,7 +89,7 @@
 import { vxm } from '@/mainWindow/store'
 import { Component, Vue, Watch } from 'vue-property-decorator'
 import TabCarousel from '@/mainWindow/components/generic/TabCarousel.vue'
-import { GenericProvider, ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 import SongListCompactItem from '@/mainWindow/components/songView/components/SongListCompactItem.vue'
 import CardView from '@/mainWindow/components/generic/CardView.vue'
 import ArtistDefault from '@/icons/ArtistDefaultIcon.vue'
@@ -102,6 +102,7 @@ import SongListMixin from '@/utils/ui/mixins/SongListMixin'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 @Component({
   components: {
@@ -121,7 +122,6 @@ export default class SearchPage extends mixins(
   RouterPushes,
   ProviderMixin
 ) {
-  private optionalProviders: TabCarouselItem[] = []
   private activeProvider = ''
   private activeSubcategory: keyof SearchResult = 'songs'
   private oldSubcategory = this.activeSubcategory
@@ -184,8 +184,8 @@ export default class SearchPage extends mixins(
     }))
   }
 
-  private get searchItems(): TabCarouselItem[] {
-    return [...this.fetchProviders(), ...this.optionalProviders]
+  private get providers() {
+    return this.fetchProviders()
   }
 
   private get subCategories(): TabCarouselItem[] {
@@ -288,14 +288,13 @@ export default class SearchPage extends mixins(
   private onSearchTermChanged() {
     this.fetchLocalSongList()
 
-    for (const p of this.searchItems) {
+    for (const p of this.providers) {
       const provider = this.getProviderByKey(p.key)
+      console.log('found provider', provider)
       if (provider) {
         this.fetchProviderSongList(provider)
       }
     }
-
-    this.fetchExtensionSongList()
   }
 
   private async fetchLocalSongList() {
@@ -315,29 +314,6 @@ export default class SearchPage extends mixins(
       genres: []
     })
     Vue.set(this.fetchMap, provider.key, false)
-  }
-
-  private async fetchExtensionSongList() {
-    for (const p of this.optionalProviders) {
-      Vue.set(this.fetchMap, p.key, true)
-
-      window.ExtensionUtils.sendEvent({
-        type: 'requestedSearchResult',
-        data: [this.searchTerm],
-        packageName: p.key
-      }).then((data) => {
-        if (data && data[p.key]) {
-          Vue.set(this.results, p.key, {
-            songs: data[p.key]?.songs,
-            artists: data[p.key]?.artists,
-            playlists: data[p.key]?.playlists,
-            albums: data[p.key]?.albums,
-            genre: []
-          })
-        }
-        Vue.set(this.fetchMap, p.key, false)
-      })
-    }
   }
 
   private onProviderChanged({ key, checked }: { key: string; checked: boolean }) {
@@ -361,18 +337,6 @@ export default class SearchPage extends mixins(
         this.transitionExitActiveClass = 'animate__slideOutRight'
       }
     }
-  }
-
-  private async fetchSearchProviders() {
-    const providers = await window.ExtensionUtils.getRegisteredSearchProviders()
-    for (const [key, value] of Object.entries(providers)) {
-      this.optionalProviders.push({ title: value, key })
-    }
-    await this.fetchExtensionSongList()
-  }
-
-  mounted() {
-    this.fetchSearchProviders()
   }
 
   private onRowContext(event: PointerEvent, item: Song) {

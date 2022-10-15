@@ -8,7 +8,7 @@
  */
 
 import { AuthFlow, AuthStateEmitter } from '@/utils/ui/oauth/flow'
-import { GenericProvider, cache, ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
+import { GenericProvider, cache } from '@/utils/ui/providers/generics/genericProvider'
 
 import { AuthorizationServiceConfiguration } from '@openid/appauth'
 import axios from 'axios'
@@ -17,6 +17,7 @@ import qs from 'qs'
 import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 /**
  * Spotify API base URL
@@ -52,17 +53,20 @@ export class SpotifyProvider extends GenericProvider {
   }
 
   provides(): ProviderScopes[] {
-    return [
-      ProviderScopes.SEARCH,
-      ProviderScopes.PLAYLISTS,
-      ProviderScopes.ARTIST_SONGS,
-      ProviderScopes.ALBUM_SONGS,
-      ProviderScopes.RECOMMENDATIONS,
-      ProviderScopes.PLAYLIST_FROM_URL,
-      ProviderScopes.SONG_FROM_URL,
-      ProviderScopes.SEARCH_ALBUM,
-      ProviderScopes.SEARCH_ARTIST
-    ]
+    if (vxm.providers.loggedInSpotify)
+      return [
+        ProviderScopes.SEARCH,
+        ProviderScopes.PLAYLISTS,
+        ProviderScopes.PLAYLIST_SONGS,
+        ProviderScopes.ARTIST_SONGS,
+        ProviderScopes.ALBUM_SONGS,
+        ProviderScopes.RECOMMENDATIONS,
+        ProviderScopes.PLAYLIST_FROM_URL,
+        ProviderScopes.SONG_FROM_URL,
+        ProviderScopes.SEARCH_ALBUM,
+        ProviderScopes.SEARCH_ARTIST
+      ]
+    else return []
   }
 
   private api = axios.create({
@@ -342,52 +346,57 @@ export class SpotifyProvider extends GenericProvider {
   public async *getPlaylistContent(
     str: string,
     invalidateCache = false,
-    nextPageToken?: string
-  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
+    nextPageToken?: number
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: number }> {
     const id: string | undefined = this.getIDFromURL(str)
+
+    let nextOffset = nextPageToken ?? 0
 
     if (id) {
       const validRefreshToken = await this.auth?.hasValidRefreshToken()
       if ((await this.getLoggedIn()) || validRefreshToken) {
-        let nextOffset = 0
         let isNext = false
         const limit = id === 'saved-tracks' ? 50 : 100
         const parsed: Song[] = []
-        do {
-          let resp: SpotifyResponses.PlaylistItems.PlaylistItems
 
-          if (id === 'saved-tracks') {
-            resp = await this.populateRequest(
-              ApiResources.LIKED_SONGS,
-              {
-                params: {
-                  limit,
-                  offset: nextOffset
-                }
-              },
-              invalidateCache
-            )
-          } else {
-            resp = await this.populateRequest(
-              ApiResources.PLAYLIST_ITEMS,
-              {
-                params: {
-                  playlist_id: id,
-                  limit,
-                  offset: nextOffset
-                }
-              },
-              invalidateCache
-            )
-          }
-          const items = await this.parsePlaylistItems(resp.items)
-          parsed.push(...items)
-          isNext = !!resp.next
-          if (resp.next) {
-            nextOffset += limit
-          }
+        let resp: SpotifyResponses.PlaylistItems.PlaylistItems
+
+        if (id === 'saved-tracks') {
+          resp = await this.populateRequest(
+            ApiResources.LIKED_SONGS,
+            {
+              params: {
+                limit,
+                offset: nextOffset
+              }
+            },
+            invalidateCache
+          )
+        } else {
+          resp = await this.populateRequest(
+            ApiResources.PLAYLIST_ITEMS,
+            {
+              params: {
+                playlist_id: id,
+                limit,
+                offset: nextOffset
+              }
+            },
+            invalidateCache
+          )
+        }
+        const items = await this.parsePlaylistItems(resp.items)
+        parsed.push(...items)
+        isNext = !!resp.next
+        if (resp.next) {
+          nextOffset += limit
+        }
+
+        if (nextOffset === 0) {
           yield { songs: items }
-        } while (isNext)
+        } else {
+          yield { songs: items, nextPageToken: nextOffset }
+        }
       }
     }
     return
@@ -719,6 +728,7 @@ export class SpotifyProvider extends GenericProvider {
 
       if (!artist_id && artist.artist_name) {
         const resp = await this.correctArtist(artist)
+        console.log('corrected artist', resp)
         if (resp) {
           artist_id = resp.artist_extra_info?.spotify?.artist_id
         }
@@ -892,5 +902,27 @@ export class SpotifyProvider extends GenericProvider {
 
   public get IconComponent(): string {
     return 'SpotifyIcon'
+  }
+
+  public matchEntityId(id: string): boolean {
+    return (
+      id.startsWith('spotify:') ||
+      id.startsWith('spotify-playlist:') ||
+      id.startsWith('spotify-author:') ||
+      id.startsWith('spotify-album')
+    )
+  }
+
+  public sanitizeId(id: string, type: 'SONG' | 'PLAYLIST' | 'ALBUM' | 'ARTIST'): string {
+    switch (type) {
+      case 'SONG':
+        return id.replace('spotify:', '')
+      case 'PLAYLIST':
+        return id.replace('spotify-playlist:', '')
+      case 'ALBUM':
+        return id.replace('spotify-album:', '')
+      case 'ARTIST':
+        return id.replace('spotify-author:', '')
+    }
   }
 }

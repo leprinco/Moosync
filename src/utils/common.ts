@@ -40,7 +40,7 @@ export function getVersion(verS: string) {
   return 0
 }
 
-function isEmpty(val: unknown) {
+export function isEmpty(val: unknown) {
   return typeof val === 'undefined' || val === null
 }
 

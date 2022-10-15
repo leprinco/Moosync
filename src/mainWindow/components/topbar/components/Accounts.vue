@@ -21,20 +21,12 @@
           @click.native="handleClick(p)"
         >
           <template slot="icon">
-            <component :is="p.provider.IconComponent" />
-          </template>
-        </IconButton>
-
-        <IconButton
-          v-for="a in extraAccounts"
-          :key="a.id"
-          :bgColor="a.bgColor"
-          :hoverText="a.loggedIn ? 'Sign out' : a.name"
-          :title="a.username ? a.username : 'Connect'"
-          @click.native="handleExtensionAccountClick(a.id)"
-        >
-          <template slot="icon">
-            <inline-svg class="provider-icon" v-if="a.icon.endsWith('svg')" :src="a.icon" />
+            <component v-if="isIconComponent(p.provider.IconComponent)" :is="p.provider.IconComponent" />
+            <inline-svg
+              class="provider-icon"
+              v-else-if="p.provider.IconComponent.endsWith('svg')"
+              :src="`media://${p.provider.IconComponent}`"
+            />
             <img v-else referrerPolicy="no-referrer" :src="a.icon" alt="provider icon" class="provider-icon" />
           </template>
         </IconButton>
@@ -54,6 +46,7 @@ import ConfirmationModal from '@/commonComponents/ConfirmationModal.vue'
 import { mixins } from 'vue-class-component'
 import AccountsMixin from '@/utils/ui/mixins/AccountsMixin'
 import InvidiousIcon from '@/icons/InvidiousIcon.vue'
+import { vxm } from '@/mainWindow/store'
 
 @Component({
   components: {
@@ -68,6 +61,17 @@ import InvidiousIcon from '@/icons/InvidiousIcon.vue'
 })
 export default class TopBar extends mixins(AccountsMixin) {
   protected activeSignout: Provider | null = null
+
+  private isIconComponent(src: string) {
+    switch (src) {
+      case vxm.providers.youtubeProvider.IconComponent:
+      case vxm.providers.spotifyProvider.IconComponent:
+      case vxm.providers.lastfmProvider.IconComponent:
+        return true
+      default:
+        return false
+    }
+  }
 
   async mounted() {
     this.signoutMethod = this.showSignoutModal

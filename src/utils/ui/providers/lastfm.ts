@@ -8,12 +8,13 @@
  */
 
 import axios from 'axios'
-import { cache, ProviderScopes } from '@/utils/ui/providers/generics/genericProvider'
+import { cache } from '@/utils/ui/providers/generics/genericProvider'
 import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { md5 } from 'hash-wasm'
 import { EventBus } from '@/utils/main/ipc/constants'
 import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 const AUTH_BASE_URL = 'https://www.last.fm/api/'
 const API_BASE_URL = 'https://ws.audioscrobbler.com/2.0'
@@ -335,5 +336,13 @@ export class LastFMProvider extends GenericProvider {
 
   public get IconComponent(): string {
     return 'LastFMIcon'
+  }
+
+  public matchEntityId(id: string): boolean {
+    return id.startsWith('lastfm:')
+  }
+
+  public sanitizeId(id: string, type: 'SONG' | 'PLAYLIST' | 'ALBUM' | 'ARTIST'): string {
+    return id.replace('lastfm:', '')
   }
 }

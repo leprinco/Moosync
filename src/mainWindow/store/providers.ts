@@ -12,12 +12,15 @@ import { SpotifyProvider } from '../../utils/ui/providers/spotify'
 import { VuexModule } from './module'
 import { YoutubeProvider } from '@/utils/ui/providers/youtube'
 import { InvidiousProvider } from '@/utils/ui/providers/invidious'
+import { action, mutation } from 'vuex-class-component'
+import { ExtensionProvider } from '@/utils/ui/providers/extensionWrapper'
 
 export class ProviderStore extends VuexModule.With({ namespaced: 'providers' }) {
   public spotifyProvider = new SpotifyProvider()
   public lastfmProvider = new LastFMProvider()
   public _youtubeProvider = new YoutubeProvider()
   public _invidiousProvider = new InvidiousProvider()
+  public _extensionProviders: ExtensionProvider[] = []
 
   private _loggedInYoutube = false
   private _loggedInSpotify = false
@@ -63,5 +66,27 @@ export class ProviderStore extends VuexModule.With({ namespaced: 'providers' }) 
 
   set loggedInLastFM(val: boolean) {
     this._loggedInLastFM = val
+  }
+
+  get extensionProviders() {
+    return this._extensionProviders
+  }
+
+  @mutation
+  addExtensionProvider(provider: ExtensionProvider) {
+    if (this._extensionProviders.findIndex((val) => val.key === provider.key) === -1) {
+      this._extensionProviders.push(provider)
+    }
+  }
+
+  @action
+  async fetchExtensionProviders() {
+    const extensions = await window.ExtensionUtils.getAllExtensions()
+    for (const e of extensions) {
+      const scopes = (await window.ExtensionUtils.getExtensionProviderScopes(e.packageName))[e.packageName]
+      if (scopes.length > 0) {
+        this.addExtensionProvider(new ExtensionProvider(e.packageName, scopes))
+      }
+    }
   }
 }
