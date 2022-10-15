@@ -41,7 +41,8 @@
     "sort": {
       "name": "Όνομα",
       "dateAdded": "Ημερομηνία προσθήκης",
-      "provider": "Πάροχος"
+      "provider": "Πάροχος",
+      "playCount": "Play count"
     },
     "playlist": {
       "new": "Δημιουργία Λίστας",
@@ -53,6 +54,7 @@
     "song": {
       "addFromURL": "Προσθήκη από URL",
       "playNow": "Αναπαραγωγή Τώρα",
+      "playNext": "Play Next",
       "addToQueue": "Προσθήκη Στην Ουρά",
       "moveToTop": "Μετακίνηση στην κορυφή",
       "moveToBottom": "Μετακίνηση στο κάτω μέρος",
@@ -120,7 +122,8 @@
         "minimizeTray": "Ελαχιστοποίηση στο δίσκο κατά το κλείσιμο",
         "hardwareAcceleration": "Χρήση επιτάχυνσης υλικού GPU",
         "watchFileChanges": "Παρακολουθήστε τους καταλόγους μουσικής για αλλαγές",
-        "useInvidious": "Χρήση Invidious αντί για το Youtube"
+        "useInvidious": "Χρήση Invidious αντί για το Youtube",
+        "enableJukeboxMode": "Enable toggle for Jukebox mode"
       },
       "systemSettings_tooltip": "Ρυθμίσεις που σχετίζονται με το σύστημά σας",
       "audioSettings": {
@@ -130,7 +133,12 @@
         "useEmbeds": "Χρήση ενσωμάτωσης Youtube για αναπαραγωγή ήχου από το Youtube"
       },
       "audioSettings_tooltip": "Ρυθμίσεις που σχετίζονται με αναπαραγωγή ήχου",
-      "invidious": "Invidious Instance",
+      "invidious": {
+        "url": "Invidious Instance",
+        "options": "Advanced Invidious options",
+        "options_tooltip": "Options to fine control Invidious playback",
+        "always_proxy": "Always play audio from Invidious proxy instead of Google video"
+      },
       "invidiousUrlUnsupported": "Αυτή η διεύθυνση URL δεν υποστηρίζει Invidious API",
       "invidious_tooltip": "Invidious instance to use instead of youtube",
       "restartApp": "Επανεκκίνηση Moosync",
@@ -149,7 +157,9 @@
       },
       "youtube": {
         "client_id": "Youtube Client ID",
-        "client_secret": "Μυστικό Πελάτη Youtube"
+        "client_secret": "Μυστικό Πελάτη Youtube",
+        "client_id_tooltip": "Youtube client ID required to login to Youtube. Click to know more",
+        "client_secret_tooltip": "Youtube client Secret required to login to Youtube. Click to know more"
       },
       "lastfm": {
         "client_id": "LastFM Api Key",

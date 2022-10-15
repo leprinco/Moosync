@@ -41,7 +41,8 @@
     "sort": {
       "name": "नाम",
       "dateAdded": "तारीख संकलित हुई",
-      "provider": "प्रदाता"
+      "provider": "प्रदाता",
+      "playCount": "Play count"
     },
     "playlist": {
       "new": "प्लेलिस्ट बनाएँ",
@@ -53,6 +54,7 @@
     "song": {
       "addFromURL": "यूआरएल से जोड़ें",
       "playNow": "प्ले करें",
+      "playNext": "Play Next",
       "addToQueue": "सूची में जोड़े",
       "moveToTop": "शीर्ष पर जाएं",
       "moveToBottom": "नीचे ले जाएँ",
@@ -120,7 +122,8 @@
         "minimizeTray": "Minimize to tray on close",
         "hardwareAcceleration": "Use GPU hardware acceleration",
         "watchFileChanges": "Watch music directories for changes",
-        "useInvidious": "Use Invidious instead of Youtube"
+        "useInvidious": "Use Invidious instead of Youtube",
+        "enableJukeboxMode": "Enable toggle for Jukebox mode"
       },
       "systemSettings_tooltip": "Settings which are related to your system",
       "audioSettings": {
@@ -130,7 +133,12 @@
         "useEmbeds": "Use Youtube embeds for playing audio from Youtube"
       },
       "audioSettings_tooltip": "Settings which are related audio playback",
-      "invidious": "Invidious Instance",
+      "invidious": {
+        "url": "Invidious Instance",
+        "options": "Advanced Invidious options",
+        "options_tooltip": "Options to fine control Invidious playback",
+        "always_proxy": "Always play audio from Invidious proxy instead of Google video"
+      },
       "invidiousUrlUnsupported": "This url does not support Invidious API",
       "invidious_tooltip": "Invidious instance to use instead of youtube",
       "restartApp": "Restart Moosync",
@@ -149,7 +157,9 @@
       },
       "youtube": {
         "client_id": "Youtube Client ID",
-        "client_secret": "Youtube Client Secret"
+        "client_secret": "Youtube Client Secret",
+        "client_id_tooltip": "Youtube client ID required to login to Youtube. Click to know more",
+        "client_secret_tooltip": "Youtube client Secret required to login to Youtube. Click to know more"
       },
       "lastfm": {
         "client_id": "LastFM Api Key",

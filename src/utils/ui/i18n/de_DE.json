@@ -41,7 +41,8 @@
     "sort": {
       "name": "Name",
       "dateAdded": "Hinzugefügt am",
-      "provider": "Anbieter"
+      "provider": "Anbieter",
+      "playCount": "Play count"
     },
     "playlist": {
       "new": "Playlist erstellen",
@@ -53,6 +54,7 @@
     "song": {
       "addFromURL": "Von URL hinzufügen",
       "playNow": "Jetzt spielen",
+      "playNext": "Play Next",
       "addToQueue": "Zur Warteschlange hinzufügen",
       "moveToTop": "Nach oben",
       "moveToBottom": "Nach unten",
@@ -120,7 +122,8 @@
         "minimizeTray": "Beim Schließen in den Tray minimieren",
         "hardwareAcceleration": "GPU-Hardware-Beschleunigung verwenden",
         "watchFileChanges": "Musikverzeichnisse für Änderungen ansehen",
-        "useInvidious": "Invidious statt Youtube verwenden"
+        "useInvidious": "Invidious statt Youtube verwenden",
+        "enableJukeboxMode": "Enable toggle for Jukebox mode"
       },
       "systemSettings_tooltip": "Einstellungen, die sich auf Ihr System beziehen",
       "audioSettings": {
@@ -130,7 +133,12 @@
         "useEmbeds": "Youtube-Einbettungen zum Abspielen von Audio von Youtube verwenden"
       },
       "audioSettings_tooltip": "Zugehörige Audio-Wiedergabe",
-      "invidious": "Invidiöse Instanz",
+      "invidious": {
+        "url": "Invidious Instance",
+        "options": "Advanced Invidious options",
+        "options_tooltip": "Options to fine control Invidious playback",
+        "always_proxy": "Always play audio from Invidious proxy instead of Google video"
+      },
       "invidiousUrlUnsupported": "Diese URL unterstützt keine Invidious API",
       "invidious_tooltip": "Unheilvolle Instanz anstelle von youtube",
       "restartApp": "Moosync neu starten",
@@ -149,7 +157,9 @@
       },
       "youtube": {
         "client_id": "Youtube Client ID",
-        "client_secret": "Youtube Client Geheimnis"
+        "client_secret": "Youtube Client Geheimnis",
+        "client_id_tooltip": "Youtube client ID required to login to Youtube. Click to know more",
+        "client_secret_tooltip": "Youtube client Secret required to login to Youtube. Click to know more"
       },
       "lastfm": {
         "client_id": "LastFM Api Key",
