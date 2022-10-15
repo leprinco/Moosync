@@ -12,24 +12,25 @@
     <Person id="account" class="accounts-icon" />
     <b-popover :target="`account`" placement="bottom" triggers="click blur" custom-class="accounts-popover">
       <div class="buttons">
-        <IconButton
-          v-for="p in providers"
-          :key="`${p.provider.Title}-${p.username}`"
-          :bgColor="p.provider.BgColor"
-          :hoverText="p.provider.loggedIn ? 'Sign out' : p.provider.Title"
-          :title="p.username ? p.username : 'Connect'"
-          @click.native="handleClick(p)"
-        >
-          <template slot="icon">
-            <component v-if="isIconComponent(p.provider.IconComponent)" :is="p.provider.IconComponent" />
-            <inline-svg
-              class="provider-icon"
-              v-else-if="p.provider.IconComponent.endsWith('svg')"
-              :src="`media://${p.provider.IconComponent}`"
-            />
-            <img v-else referrerPolicy="no-referrer" :src="a.icon" alt="provider icon" class="provider-icon" />
-          </template>
-        </IconButton>
+        <div v-for="p in providers" :key="`${p.provider.Title}-${p.username}`">
+          <IconButton
+            v-if="p.provider.canLogin"
+            :bgColor="p.provider.BgColor"
+            :hoverText="p.provider.loggedIn ? 'Sign out' : p.provider.Title"
+            :title="p.username ? p.username : 'Connect'"
+            @click.native="handleClick(p)"
+          >
+            <template slot="icon">
+              <component v-if="isIconComponent(p.provider.IconComponent)" :is="p.provider.IconComponent" />
+              <inline-svg
+                class="provider-icon"
+                v-else-if="p.provider.IconComponent.endsWith('svg')"
+                :src="`media://${p.provider.IconComponent}`"
+              />
+              <img v-else referrerPolicy="no-referrer" :src="a.icon" alt="provider icon" class="provider-icon" />
+            </template>
+          </IconButton>
+        </div>
       </div>
     </b-popover>
     <ConfirmationModal keyword="signout from" :itemName="activeSignout" id="signoutModal" @confirm="signout" />

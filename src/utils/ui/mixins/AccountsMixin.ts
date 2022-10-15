@@ -27,24 +27,22 @@ export default class AccountsMixin extends mixins(ProviderMixin) {
     return this._signoutProvider
   }
 
-  protected fetchProviders() {
+  protected fetchProviders(): Provider[] {
     const p = this.getProvidersByScope()
-    return p
-      .filter((val) => val.canLogin)
-      .map((val) => ({
-        username: '',
-        provider: val
-      }))
+    return p.map((val) => ({
+      username: '',
+      provider: val
+    }))
   }
 
-  protected providers = this.fetchProviders()
+  protected providers: Provider[] = this.fetchProviders()
 
   protected async getUserDetails(provider: Provider) {
     const username = await provider?.provider.getUserDetails()
     this.$set(provider, 'username', username)
-    if (!provider.username) {
-      provider.provider.signOut()
-    }
+    // if (!provider.username) {
+    //   provider.provider.signOut()
+    // }
   }
 
   protected async handleClick(provider: Provider) {
@@ -81,22 +79,23 @@ export default class AccountsMixin extends mixins(ProviderMixin) {
   }
 
   async mounted() {
-    this.providers.forEach((val) => {
-      this.getUserDetails(val)
-    })
+    vxm.providers.$watch(
+      'youtubeAlt',
+      () => {
+        this.providers.forEach((val) => {
+          this.getUserDetails(val)
+        })
+      },
+      { immediate: true, deep: false }
+    )
 
-    // TODO: Wait for useInvidious to be set
-
-    // vxm.providers.$watch(
-    //   'useInvidious',
-    //   (val) => {
-    //     this.getUserDetails(vxm.providers.youtubeProvider)
-    //   },
-    //   { immediate: true, deep: false }
-    // )
-
-    bus.$on(EventBus.REFRESH_ACCOUNTS, () => {
-      this.providers = this.fetchProviders()
+    bus.$on(EventBus.REFRESH_ACCOUNTS, (providerKey?: string) => {
+      if (providerKey) {
+        const provider = this.providers.find((val) => val.provider.key === providerKey)
+        if (provider) {
+          this.getUserDetails(provider)
+        }
+      }
     })
   }
 }

@@ -184,6 +184,14 @@ export class InvidiousProvider extends GenericProvider {
     }
   }
 
+  public getVideoIdFromURL(url: string) {
+    try {
+      return new URL(url)?.searchParams?.get('v') ?? undefined
+    } catch (e) {
+      console.debug('Tried parsing', url, 'as invidious Video but failed')
+    }
+  }
+
   public async *getPlaylistContent(
     str: string,
     invalidateCache = false

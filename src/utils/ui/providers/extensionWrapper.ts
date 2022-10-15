@@ -40,7 +40,7 @@ export class ExtensionProvider extends GenericProvider {
     this._username = details.username
     this._accountId = details.id
 
-    bus.$emit(EventBus.REFRESH_ACCOUNTS)
+    bus.$emit(EventBus.REFRESH_ACCOUNTS, this.key)
   }
 
   public get canLogin() {
@@ -69,7 +69,6 @@ export class ExtensionProvider extends GenericProvider {
   }
 
   public matchEntityId(id: string): boolean {
-    console.log(id, id.startsWith(`${this.key}:`), this.key)
     return id.startsWith(`${this.key}:`)
   }
 

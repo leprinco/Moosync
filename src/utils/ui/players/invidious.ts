@@ -26,7 +26,6 @@ export class InvidiousPlayer extends LocalPlayer {
         errorTries = 0
       }
 
-      console.log(playbackURL)
       super.load(playbackURL, volume, this.lastAutoPlay)
     }
   }
