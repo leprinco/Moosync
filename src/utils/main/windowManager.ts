@@ -29,7 +29,6 @@ export class WindowHandler {
   private static preferenceWindow: number
 
   private trayHandler = new TrayHandler()
-  private windowToolbarButtonsHandler = new WindowToolbarButtonsHandler()
   private isDevelopment = process.env.NODE_ENV !== 'production'
   private _isMainWindowMounted = true
   private pathQueue: string[] = []
@@ -315,9 +314,7 @@ export class WindowHandler {
       }
     )
 
-    getMprisChannel().onButtonStatusChange((buttons) =>
-      this.windowToolbarButtonsHandler.setWindowToolbar(window, buttons)
-    )
+    getMprisChannel().onButtonStatusChange((buttons) => WindowToolbarButtonsHandler.setWindowToolbar(window, buttons))
   }
 
   public minimizeWindow(isMainWindow = true) {
@@ -459,7 +456,7 @@ class AppExitHandler {
 }
 
 class WindowToolbarButtonsHandler {
-  setWindowToolbar(window: BrowserWindow, buttonState: PlayerButtons) {
+  static setWindowToolbar(window: BrowserWindow, buttonState: PlayerButtons) {
     const buttons: ThumbarButton[] = []
 
     if (buttonState.prev) {
