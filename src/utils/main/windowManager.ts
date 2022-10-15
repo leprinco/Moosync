@@ -314,7 +314,9 @@ export class WindowHandler {
       }
     )
 
-    getMprisChannel().onButtonStatusChange((buttons) => WindowToolbarButtonsHandler.setWindowToolbar(window, buttons))
+    if (isMainWindow) {
+      getMprisChannel().onButtonStatusChange((buttons) => WindowToolbarButtonsHandler.setWindowToolbar(window, buttons))
+    }
   }
 
   public minimizeWindow(isMainWindow = true) {
@@ -491,7 +493,9 @@ class WindowToolbarButtonsHandler {
       })
     }
 
-    window.setThumbarButtons(buttons)
+    if (!window.isDestroyed()) {
+      window.setThumbarButtons(buttons)
+    }
   }
 }
 
