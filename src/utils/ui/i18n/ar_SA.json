@@ -41,7 +41,8 @@
     "sort": {
       "name": "الاسم",
       "dateAdded": "تاريخ الإضافة",
-      "provider": "موفر"
+      "provider": "موفر",
+      "playCount": "Play count"
     },
     "playlist": {
       "new": "إنشاء قائمة تشغيل",
@@ -53,6 +54,7 @@
     "song": {
       "addFromURL": "إضافة من عنوان URL",
       "playNow": "تشغيل الآن",
+      "playNext": "Play Next",
       "addToQueue": "إضافة إلى قائمة الانتظار",
       "moveToTop": "الانتقال إلى الأعلى",
       "moveToBottom": "الانتقال إلى الأسفل",
@@ -120,7 +122,8 @@
         "minimizeTray": "تصغير إلى غلق",
         "hardwareAcceleration": "استخدام تسارع أجهزة GPU",
         "watchFileChanges": "مشاهدة أدلة الموسيقى للتغييرات",
-        "useInvidious": "استخدام دعوة بدلاً من يوتيوب"
+        "useInvidious": "استخدام دعوة بدلاً من يوتيوب",
+        "enableJukeboxMode": "Enable toggle for Jukebox mode"
       },
       "systemSettings_tooltip": "الإعدادات المرتبطة بالنظام الخاص بك",
       "audioSettings": {
@@ -130,7 +133,12 @@
         "useEmbeds": "استخدام تضمين اليوتيوب لتشغيل الصوت من يوتيوب"
       },
       "audioSettings_tooltip": "الإعدادات ذات الصلة بتشغيل الصوت",
-      "invidious": "المثيل المشجّع",
+      "invidious": {
+        "url": "Invidious Instance",
+        "options": "Advanced Invidious options",
+        "options_tooltip": "Options to fine control Invidious playback",
+        "always_proxy": "Always play audio from Invidious proxy instead of Google video"
+      },
       "invidiousUrlUnsupported": "عنوان URL هذا لا يدعم API المدعو",
       "invidious_tooltip": "مثال دعوي لاستخدام بدلا من يوتيوب",
       "restartApp": "إعادة تشغيل موسينك",
@@ -149,7 +157,9 @@
       },
       "youtube": {
         "client_id": "معرف عميل اليوتيوب",
-        "client_secret": "سر عميل اليوتيوب"
+        "client_secret": "سر عميل اليوتيوب",
+        "client_id_tooltip": "Youtube client ID required to login to Youtube. Click to know more",
+        "client_secret_tooltip": "Youtube client Secret required to login to Youtube. Click to know more"
       },
       "lastfm": {
         "client_id": "LastFM Api Key",
