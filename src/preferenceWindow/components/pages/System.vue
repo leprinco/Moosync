@@ -46,9 +46,9 @@
 
           <b-col v-if="showYoutubeField">
             <CheckboxGroup
-              :title="$t('settings.system.youtubeAlternative.youtube.advanced')"
+              :title="$t('settings.system.youtubeAlternative.youtube.options')"
               class="mt-4"
-              :tooltip="$t('settings.system.youtubeAlternative.youtube.advanced_tooltip')"
+              :tooltip="$t('settings.system.youtubeAlternative.youtube.options_tooltip')"
               :isExtension="false"
               :defaultValue="youtubeAdvancedCheckboxValues"
               prefKey="youtube"
@@ -60,13 +60,19 @@
               class="mt-4"
               prefKey="invidious_instance"
               :datalist="invidiousInstances"
-              :title="$t('settings.youtubeAlternative.invidious.url')"
-              :tooltip="$t('settings.youtubeAlternative.invidious_tooltip')"
+              :title="$t('settings.system.youtubeAlternative.invidious.url')"
+              :tooltip="$t('settings.system.youtubeAlternative.invidious.url_tooltip')"
               :onValueChange="onInvidiousInstanceChange"
               :onValueFetch="onInvidiousInstanceChange"
             />
 
-            <div class="invidious-details">{{ invidiousDetails }}</div>
+            <b-container class="invidious-details">
+              <b-row>
+                <b-col>
+                  {{ invidiousDetails }}
+                </b-col>
+              </b-row>
+            </b-container>
             <CheckboxGroup
               :title="$t('settings.system.youtubeAlternative.invidious.options')"
               class="mt-4"
@@ -87,15 +93,6 @@
               :onValueChange="onPipedInstanceChange"
               :onValueFetch="onPipedInstanceChange"
             />
-            <div class="invidious-details">{{ pipedDetails }}</div>
-            <!-- <CheckboxGroup
-              :title="$t('settings.system.youtubeAlternative.piped.options')"
-              class="mt-4"
-              :tooltip="$t('settings.system.youtubeAlternative.piped.options_tooltip')"
-              :isExtension="false"
-              :defaultValue="pipedAdvancedCheckboxValues"
-              prefKey="piped"
-            /> -->
           </b-col>
 
           <b-row v-if="showRestartButton">
@@ -323,11 +320,9 @@ export default class System extends Vue {
     ).text()
     let skipped = 0
     const lines = resp.split('\n')
-    console.log(lines)
     this.pipedInstances = lines
       .map((line) => {
         const split = line.split('|')
-        console.log(split.length)
         if (split.length === 5) {
           if (skipped < 2) {
             skipped++
@@ -337,8 +332,6 @@ export default class System extends Vue {
         }
       })
       .filter((instance) => instance?.length ?? 0 > 0) as string[]
-
-    console.log(this.pipedInstances)
   }
 
   private defaultSystemSettings: SystemSettings[] = []
@@ -349,7 +342,7 @@ export default class System extends Vue {
     return [
       {
         key: 'always_proxy',
-        title: this.$tc('settings.system.invidious.always_proxy'),
+        title: this.$tc('settings.system.youtubeAlternative.invidious.always_proxy'),
         enabled: true
       }
     ]
@@ -371,11 +364,13 @@ export default class System extends Vue {
   }
 
   get youtubeAdvancedCheckboxValues() {
-    return {
-      key: 'youtube_embeds',
-      title: this.$tc('settings.system.audioSettings.useEmbeds'),
-      enabled: true
-    }
+    return [
+      {
+        key: 'youtube_embeds',
+        title: this.$tc('settings.system.youtubeAlternative.youtube.useEmbeds'),
+        enabled: true
+      }
+    ]
   }
 
   get youtubeAlternativeCheckboxValues(): Checkbox[] {
@@ -387,7 +382,7 @@ export default class System extends Vue {
       },
       {
         key: 'use_invidious',
-        title: this.$tc('settings.system.youtubeAlternative.youtubeAlt'),
+        title: this.$tc('settings.system.youtubeAlternative.useInvidious'),
         enabled: false
       },
       {
@@ -506,7 +501,8 @@ export default class System extends Vue {
       this.showPipedField = value.find((val) => val.key === 'use_piped')?.enabled ?? false
 
       for (const val of value) {
-        if (val.enabled !== this.defaultYoutubeAlts.find((val) => val.key)?.enabled) {
+        console.log(this.defaultYoutubeAlts.find((val1) => val1.key === val.key))
+        if (val.enabled !== this.defaultYoutubeAlts.find((val1) => val1.key === val.key)?.enabled) {
           this.showRestartButton = true
           break
         } else {
