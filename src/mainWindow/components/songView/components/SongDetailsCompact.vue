@@ -81,6 +81,7 @@
             @click.native="addToLibrary"
             v-if="buttonGroup.enableLibraryStore"
           />
+          <RandomIcon v-if="buttonGroup.playRandom" :title="$t('buttons.playRandom')" @click.native="playRandom" />
         </div>
       </b-col>
     </b-row>
@@ -99,6 +100,7 @@ import PlainPlay from '@/icons/PlainPlayIcon.vue'
 import AddToLibrary from '@/icons/AddToLibraryIcon.vue'
 import AddToQueue from '@/icons/AddToQueueIcon.vue'
 import PinIcon from '@/icons/PinIcon.vue'
+import RandomIcon from '@/icons/RandomIcon.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 
 @Component({
@@ -107,7 +109,8 @@ import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
     PlainPlay,
     AddToLibrary,
     AddToQueue,
-    PinIcon
+    PinIcon,
+    RandomIcon
   }
 })
 export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, JukeboxMixin) {
@@ -217,6 +220,10 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, Juk
   private onShowLyricsClicked() {
     this.pinHoverText = true
     this.$emit('toggleLyrics')
+  }
+
+  private playRandom() {
+    this.$emit('playRandom')
   }
 }
 </script>

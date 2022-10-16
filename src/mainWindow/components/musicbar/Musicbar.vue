@@ -20,7 +20,7 @@
           :value="currentTimestamp"
           :duration="0.1"
           :tooltip="'none'"
-          :disabled="isJukeboxModeActive"
+          :disabled="disableSeekbar"
           @change="updateTimestmp"
         />
         <b-container fluid class="d-flex bar-container h-100 pb-2">
@@ -99,6 +99,12 @@ export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
 
   private iconType = ''
   private iconURL = ''
+
+  private get disableSeekbar() {
+    return (
+      this.isJukeboxModeActive || !isFinite(this.currentSong?.duration ?? 0) || (this.currentSong?.duration ?? 0) < 0
+    )
+  }
 
   private get maxInterval() {
     if (this.currentSong) {

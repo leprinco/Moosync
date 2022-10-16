@@ -69,7 +69,8 @@ export default class SongViewClassic extends mixins(ImgLoader, ModelHelper) {
     default: () => {
       return {
         enableContainer: false,
-        enableLibraryStore: false
+        enableLibraryStore: false,
+        playRandom: false
       }
     }
   })

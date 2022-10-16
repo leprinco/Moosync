@@ -35,6 +35,7 @@
         @addToLibrary="addToLibrary"
         @onSortClicked="showSortMenu"
         @onSearchChange="onSearchChange"
+        @playRandom="playRandom"
         @scroll="onScroll"
       ></component>
     </transition>
@@ -51,7 +52,7 @@ import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import { vxm } from '@/mainWindow/store'
 import SongViewClassic from '@/mainWindow/components/songView/components/SongViewClassic.vue'
 import SongViewCompact from '@/mainWindow/components/songView/components/SongViewCompact.vue'
-import { arrayDiff, sortSongList } from '@/utils/common'
+import { arrayDiff, sortSongList, getRandomFromArray } from '@/utils/common'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 
@@ -126,7 +127,8 @@ export default class AllSongs extends mixins(
     default: () => {
       return {
         enableContainer: false,
-        enableLibraryStore: false
+        enableLibraryStore: false,
+        playRandom: false
       }
     }
   })
@@ -206,6 +208,12 @@ export default class AllSongs extends mixins(
       return
     }
     this.$emit('addToLibrary')
+  }
+
+  private playRandom() {
+    const randomSongs = getRandomFromArray(this.songList, 100)
+    this.queueSong(randomSongs)
+    this.$emit('playRandom')
   }
 
   private onOptionalProviderChanged(...args: unknown[]) {

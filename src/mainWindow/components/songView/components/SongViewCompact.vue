@@ -63,7 +63,8 @@ export default class SongViewCompact extends mixins(PlayerControls, RemoteSong, 
     default: () => {
       return {
         enableContainer: false,
-        enableLibraryStore: false
+        enableLibraryStore: false,
+        playRandom: false
       }
     }
   })

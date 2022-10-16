@@ -70,7 +70,8 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   get buttonGroups(): SongDetailButtons {
     return {
       enableContainer: true,
-      enableLibraryStore: !!this.isRemote()
+      enableLibraryStore: !!this.isRemote(),
+      playRandom: this.songList.length > 150
     }
   }
 

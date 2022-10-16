@@ -92,7 +92,8 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
   get buttonGroups(): SongDetailButtons {
     return {
       enableContainer: true,
-      enableLibraryStore: false
+      enableLibraryStore: false,
+      playRandom: this.songList.length > 150
     }
   }
 
