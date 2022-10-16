@@ -149,6 +149,7 @@ export class WindowHandler {
     try {
       const requester = redirectUrl.startsWith('https') ? https : http
       const parsedRedirect = new URL(redirectUrl)
+
       const options: http.RequestOptions = {
         host: parsedRedirect.host,
         hostname: parsedRedirect.hostname,
@@ -158,6 +159,9 @@ export class WindowHandler {
         headers: requestHeaders,
         method
       }
+
+      console.debug('parsed Redirect URL', options)
+
       const req = requester.request(options, callback)
       req.on('error', console.error)
       req.end()
