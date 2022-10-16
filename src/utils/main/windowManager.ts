@@ -7,7 +7,18 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { BrowserWindow, Menu, Tray, app, dialog, protocol, webFrameMain, ThumbarButton, nativeImage } from 'electron'
+import {
+  BrowserWindow,
+  Menu,
+  Tray,
+  app,
+  dialog,
+  protocol,
+  webFrameMain,
+  ThumbarButton,
+  nativeImage,
+  net
+} from 'electron'
 import { SongEvents, WindowEvents } from './ipc/constants'
 import { getWindowSize, setWindowSize, loadPreferences } from './db/preferences'
 
@@ -144,26 +155,23 @@ export class WindowHandler {
     redirectUrl: string,
     requestHeaders: Record<string, string>,
     method: string,
-    callback: (response: NodeJS.ReadableStream) => void
+    callback: (response: Electron.ProtocolResponse | NodeJS.ReadableStream) => void
   ) {
     try {
-      const requester = redirectUrl.startsWith('https') ? https : http
-      const parsedRedirect = new URL(redirectUrl)
-
-      const options: http.RequestOptions = {
-        host: parsedRedirect.host,
-        hostname: parsedRedirect.hostname,
-        protocol: parsedRedirect.protocol,
-        port: parsedRedirect.port,
-        path: parsedRedirect.pathname + parsedRedirect.search,
-        headers: requestHeaders,
-        method
+      const req = net.request(redirectUrl)
+      for (const [key, val] of Object.entries(requestHeaders)) {
+        req.setHeader(key, val)
       }
 
-      console.debug('parsed Redirect URL', options)
+      req.on('response', (res) => {
+        callback({
+          headers: res.headers,
+          statusCode: res.statusCode,
+          mimeType: res.headers['content-type'] as string,
+          data: res as unknown as NodeJS.ReadableStream
+        })
+      })
 
-      const req = requester.request(options, callback)
-      req.on('error', console.error)
       req.end()
     } catch (e) {
       console.error('Failed to forward redirect stream', e)
@@ -190,6 +198,7 @@ export class WindowHandler {
 
           const respData = (data[extensionPackageName] as CustomRequestReturnType).data
           const mimeType = (data[extensionPackageName] as CustomRequestReturnType).mimeType
+
           if (respData && mimeType) {
             callback({
               statusCode: 200,
