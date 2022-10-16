@@ -65,6 +65,11 @@
                   @click.native="addToLibrary"
                   v-if="buttonGroup.enableLibraryStore"
                 />
+                <RandomIcon
+                  v-if="buttonGroup.playRandom"
+                  :title="$t('buttons.playRandom')"
+                  @click.native="playRandom"
+                />
               </div>
             </b-col>
           </b-row>
@@ -174,6 +179,10 @@ export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileM
 
   private addToLibrary() {
     this.$emit('addToLibrary')
+  }
+
+  private playRandom() {
+    this.$emit('playRandom')
   }
 }
 </script>
