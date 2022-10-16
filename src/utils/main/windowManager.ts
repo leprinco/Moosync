@@ -23,6 +23,7 @@ import https from 'https'
 import { Readable } from 'stream'
 import { getMprisChannel } from './ipc/index'
 import { ButtonEnum, PlayerButtons } from 'media-controller'
+import http from 'http'
 
 export class WindowHandler {
   private static mainWindow: number
@@ -139,6 +140,32 @@ export class WindowHandler {
     })
   }
 
+  private forwardRedirectStream(
+    redirectUrl: string,
+    requestHeaders: Record<string, string>,
+    method: string,
+    callback: (response: NodeJS.ReadableStream) => void
+  ) {
+    try {
+      const requester = redirectUrl.startsWith('https') ? https : http
+      const parsedRedirect = new URL(redirectUrl)
+      const options: http.RequestOptions = {
+        host: parsedRedirect.host,
+        hostname: parsedRedirect.hostname,
+        protocol: parsedRedirect.protocol,
+        port: parsedRedirect.port,
+        path: parsedRedirect.pathname + parsedRedirect.search,
+        headers: requestHeaders,
+        method
+      }
+      const req = requester.request(options, callback)
+      req.on('error', console.error)
+      req.end()
+    } catch (e) {
+      console.error('Failed to forward redirect stream', e)
+    }
+  }
+
   public registerExtensionProtocol() {
     protocol.registerStreamProtocol('extension', async (request, callback) => {
       const extensionPackageName = new URL(request.url).hostname
@@ -153,7 +180,7 @@ export class WindowHandler {
         if (data[extensionPackageName]) {
           const redirectUrl = (data[extensionPackageName] as CustomRequestReturnType).redirectUrl
           if (redirectUrl) {
-            https.get(redirectUrl, callback)
+            this.forwardRedirectStream(redirectUrl, request.headers, request.method, callback)
             return
           }
 
@@ -256,12 +283,6 @@ export class WindowHandler {
     // Stop extension Host
     await getExtensionHostChannel().closeExtensionHost()
     SongDB.close()
-  }
-
-  public createScrapeWindow() {
-    return new BrowserWindow({
-      show: false
-    })
   }
 
   private handleWindowShow(window: BrowserWindow) {

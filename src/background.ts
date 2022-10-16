@@ -186,7 +186,13 @@ function registerProtocols() {
   protocol.registerSchemesAsPrivileged([
     { scheme: 'moosync', privileges: { secure: true, standard: true } },
     { scheme: 'media', privileges: { corsEnabled: true, supportFetchAPI: true } },
-    { scheme: 'extension', privileges: { supportFetchAPI: true } }
+    {
+      scheme: 'extension',
+      privileges: {
+        supportFetchAPI: true,
+        stream: true
+      }
+    }
   ])
 }
 
