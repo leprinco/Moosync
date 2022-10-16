@@ -111,7 +111,7 @@ export const defaultKeybinds: HotkeyPair[] = [
     value: HotkeyEvents.RELOAD_PAGE
   },
   {
-    key: [['Control', 'ShiftLeft', 'KeyI']],
+    key: [['ControlLeft', 'ShiftLeft', 'KeyI']],
     value: HotkeyEvents.DEVTOOLS_TOGGLE
   },
   {
