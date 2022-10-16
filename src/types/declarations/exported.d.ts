@@ -518,11 +518,13 @@ interface utils {
    * Helper function that returns extra info stored by this extension only
    */
   getAlbumExtraInfo(album: Album): Record<string, string> | undefined
+
+  readonly packageName: string
+  readonly customRequestBaseUrl: string
 }
 
 interface extensionAPI {
   utils: utils
-  packageName: string
 
   /**
    * Get songs from database filtered by provided options

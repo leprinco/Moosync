@@ -11,7 +11,7 @@ import { extensionRequests } from '../constants'
 import crypto from 'crypto'
 
 export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
-  packageName: string
+  private packageName: string
   player: PlayerControls
   utils: Utils
 
@@ -247,10 +247,10 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
 }
 
 class Utils implements utils {
-  private packageName: string
+  private _packageName: string
 
   constructor(packageName: string) {
-    this.packageName = packageName
+    this._packageName = packageName
   }
 
   public getArtistExtraInfo(artist: Artists) {
@@ -261,6 +261,14 @@ class Utils implements utils {
   public getAlbumExtraInfo(album: Album) {
     if (album?.album_extra_info?.extensions)
       return album?.album_extra_info?.extensions[this.packageName] as Record<string, string>
+  }
+
+  public get packageName(): string {
+    return this._packageName
+  }
+
+  public get customRequestBaseUrl() {
+    return `extension://${this.packageName}`
   }
 }
 
