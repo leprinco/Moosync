@@ -141,3 +141,5 @@ export enum ProviderScopes {
   SEARCH_ALBUM,
   SEARCH_ARTIST
 }
+
+export const FAVORITES_PLAYLIST_ID = 'favorites_playlist'

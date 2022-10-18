@@ -245,10 +245,11 @@ export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
   .slider
     display: none
 
-@media only screen and (max-width : 480px)
+@media only screen and (max-width : 640px)
   .details-col
     display: none
 
+@media only screen and (max-width : 565px)
   .extra-col
     display: none
 </style>

@@ -70,7 +70,7 @@ import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
 import PlusIcon from '@/icons/PlusIcon.vue'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
-import { ProviderScopes } from '@/utils/commonConstants'
+import { FAVORITES_PLAYLIST_ID, ProviderScopes } from '@/utils/commonConstants'
 
 @Component({
   components: {
@@ -110,18 +110,28 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
     this.localPlaylists.splice(0, this.localPlaylists.length)
     this.remotePlaylists.splice(0, this.remotePlaylists.length)
 
-    const localPlaylists = await window.SearchUtils.searchEntityByOptions<Playlist>({
-      playlist: true
-    })
-    this.localPlaylists.push(...localPlaylists)
-
     const promises: Promise<unknown>[] = []
+
+    await this.getLocalPlaylists()
 
     for (const p of this.providers) {
       promises.push(p.getUserPlaylists(invalidateCache).then(this.pushPlaylistToList).then(this.sort))
     }
 
     await Promise.all(promises)
+  }
+
+  private async getLocalPlaylists() {
+    const localPlaylists = await window.SearchUtils.searchEntityByOptions<Playlist>({
+      playlist: true
+    })
+
+    const favPlaylist = localPlaylists.find((val) => val.playlist_id === FAVORITES_PLAYLIST_ID)
+    if (favPlaylist && !favPlaylist.playlist_coverPath) {
+      console.log(process.env.BASE_URL)
+      favPlaylist.playlist_coverPath = `static://fav_icon.svg`
+    }
+    this.localPlaylists.push(...localPlaylists)
   }
 
   private async pushPlaylistToList(playlists: Playlist[]) {

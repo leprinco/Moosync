@@ -10,26 +10,29 @@
 <template>
   <b-row align-v="center" align-h="center" no-gutters>
     <template v-if="!isJukeboxModeActive">
-      <b-col cols="auto" class="mr-4" v-on:click="prevSongWrapper()">
+      <b-col class="col-button" @click="prevSongWrapper()">
         <PrevTrack :disabled="!enableTrackControls" />
       </b-col>
-      <b-col cols="auto" class="mr-4" v-on:click="toggleRepeat()">
+      <b-col class="col-button" @click="toggleRepeat()">
         <Repeat :filled="repeat" />
       </b-col>
-      <b-col cols="auto" class="mr-4" v-if="isLoading">
+      <b-col class="col-play-button" v-if="isLoading">
         <b-spinner label="Loading..."></b-spinner>
       </b-col>
-      <b-col cols="auto" class="mr-4" v-else v-on:click="togglePlayerState()">
+      <b-col class="col-play-button" v-else v-on:click="togglePlayerState()">
         <Play :play="playerState === 'PLAYING'" />
       </b-col>
-      <b-col cols="auto" class="mr-4" v-on:click="nextSongWrapper()">
+      <b-col class="col-button" @click="nextSongWrapper()">
         <NextTrack :disabled="!enableTrackControls" />
       </b-col>
-      <b-col cols="auto" class="shuffle-icon" v-on:click="shuffle()">
+      <b-col class="col-button" @click="shuffle()">
         <Shuffle :filled="true" />
       </b-col>
+      <b-col class="col-button mr-1" @click="favoriteSong">
+        <FavIcon :filled="isFavorite" />
+      </b-col>
     </template>
-    <b-col cols="4" align-self="center" class="timestamp-container">
+    <b-col cols="5" md="3" align-self="center" class="timestamp-container">
       <Timestamp class="timestamp" :duration="duration" :timestamp="timestamp" />
     </b-col>
   </b-row>
@@ -41,12 +44,14 @@ import PrevTrack from '@/icons/PrevTrackIcon.vue'
 import NextTrack from '@/icons/NextTrackIcon.vue'
 import Play from '@/icons/PlayIcon.vue'
 import Repeat from '@/icons/RepeatIcon.vue'
+import FavIcon from '@/icons/FavIcon.vue'
 import Shuffle from '@/icons/ShuffleIcon.vue'
 import { mixins } from 'vue-class-component'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import { vxm } from '@/mainWindow/store'
 import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
+import { FAVORITES_PLAYLIST_ID } from '@/utils/commonConstants'
 
 @Component({
   components: {
@@ -55,7 +60,8 @@ import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
     Play,
     Repeat,
     Shuffle,
-    Timestamp
+    Timestamp,
+    FavIcon
   }
 })
 export default class MusicBar extends mixins(PlayerControls, JukeboxMixin) {
@@ -81,6 +87,39 @@ export default class MusicBar extends mixins(PlayerControls, JukeboxMixin) {
     if (this.enableTrackControls) this.prevSong()
   }
 
+  private isFavorite = false
+
+  created() {
+    console.log('creating')
+    vxm.player.$watch(
+      'currentSong',
+      async (song?: Song) => {
+        if (song) {
+          const s = await window.SearchUtils.searchSongsByOptions({
+            song: {
+              _id: song._id
+            },
+            playlist: {
+              playlist_id: FAVORITES_PLAYLIST_ID
+            },
+            inclusive: true
+          })
+
+          this.isFavorite = s.length > 0
+        }
+      },
+      { immediate: true, deep: false }
+    )
+  }
+
+  private async favoriteSong() {
+    console.log('here')
+    if (vxm.player.currentSong) {
+      await window.DBUtils.addToPlaylist(FAVORITES_PLAYLIST_ID, vxm.player.currentSong)
+      this.isFavorite = true
+    }
+  }
+
   get isLoading() {
     return vxm.player.loading
   }
@@ -94,8 +133,14 @@ export default class MusicBar extends mixins(PlayerControls, JukeboxMixin) {
 .timestamp-container
   display: block
 
-.shuffle-icon
+.fav-icon
   margin-right: 1.5rem
+
+.col-button
+  max-width: calc(26px + 1.5rem)
+
+.col-play-button
+  max-width: calc(42px + 1.5rem)
 
 @media only screen and (max-width : 800px)
   .timestamp-container

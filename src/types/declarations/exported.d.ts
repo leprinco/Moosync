@@ -254,10 +254,12 @@ interface SongAPIOptions {
    *
    * Eg. If song.title is 'aaa' and album.album_name is 'bbb'
    *
-   * In this scenario if inclusive is false, then all tracks having title as 'aaa'
+   * In this scenario if inclusive is true, then all tracks having title as 'aaa'
    * AND album_name as 'bbb' will be returned
    *
    * If inclusive is false then songs having title as 'aaa' OR album_name as 'bbb' will be returned
+   *
+   * False by default
    */
   inclusive?: boolean
 }
