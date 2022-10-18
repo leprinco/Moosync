@@ -115,6 +115,16 @@ export class ExtensionHostChannel implements IpcChannelInterface {
       for (const s of songs) {
         await SongDB.removeSong(s._id)
       }
+
+      const playlists = SongDB.getEntityByOptions<Playlist>({
+        playlist: {
+          extension: request.params.packageName
+        }
+      })
+
+      for (const p of playlists) {
+        await SongDB.removePlaylist(p.playlist_id)
+      }
     }
     event.reply(request.responseChannel)
   }

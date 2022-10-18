@@ -70,6 +70,7 @@
                 @click.native="onCardClick(entity)"
                 :title="entity[entityTitleField]"
                 :imgSrc="entity[entityImageField]"
+                @CardContextMenu="onCardContextMenu(arguments[0], entity)"
               >
                 <template #defaultCover> <component :is="defaultCoverComponent" /></template>
               </CardView>
@@ -290,7 +291,6 @@ export default class SearchPage extends mixins(
 
     for (const p of this.providers) {
       const provider = this.getProviderByKey(p.key)
-      console.log('found provider', provider)
       if (provider) {
         this.fetchProviderSongList(provider)
       }
@@ -359,6 +359,19 @@ export default class SearchPage extends mixins(
         break
       case 'genres':
         this.gotoGenre(item as Genre)
+        break
+    }
+  }
+
+  private onCardContextMenu(event: PointerEvent, item: typeof this.currentEntityList[0]) {
+    switch (this.activeSubcategory) {
+      case 'playlists':
+        this.getContextMenu(event, {
+          type: 'PLAYLIST',
+          args: { playlist: item as Playlist, isRemote: this.activeProvider !== 'local' }
+        })
+        break
+      default:
         break
     }
   }

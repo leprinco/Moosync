@@ -216,8 +216,7 @@ export class SpotifyProvider extends GenericProvider {
         playlist_id: `spotify-playlist:${i.id}`,
         playlist_name: i.name,
         playlist_coverPath: i.images[0] ? i.images[0].url : '',
-        playlist_song_count: i.tracks.total,
-        isRemote: true
+        playlist_song_count: i.tracks.total
       })
     }
     return parsed
@@ -235,8 +234,7 @@ export class SpotifyProvider extends GenericProvider {
       playlists.push({
         playlist_id: 'spotify-playlist:saved-tracks',
         playlist_name: 'Liked Songs',
-        playlist_coverPath: 'https://t.scdn.co/images/3099b3803ad9496896c43f22fe9be8c4.png',
-        isRemote: true
+        playlist_coverPath: 'https://t.scdn.co/images/3099b3803ad9496896c43f22fe9be8c4.png'
       })
       while (hasNext) {
         const resp = await this.populateRequest(

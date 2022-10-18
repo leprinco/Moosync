@@ -102,7 +102,6 @@ export class ExtensionProvider extends GenericProvider {
         playlists.push({
           ...p,
           icon: (p.icon && 'media://' + p.icon) ?? (icon && 'media://' + icon),
-          isRemote: true,
           extension: this.key
         })
       }

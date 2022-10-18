@@ -943,14 +943,17 @@ export class SongDBInstance extends DBUtils {
    * @returns playlist id after creation
    */
   public createPlaylist(playlist: Partial<Playlist>, extension?: string): string {
-    const id = `${extension ? extension + ':' : ''}${playlist.playlist_id ?? v4()}`
+    const id = `${extension && !playlist.playlist_id?.startsWith(`${extension}:`) ? extension + ':' : ''}${
+      playlist.playlist_id ?? v4()
+    }`
     this.db.insert('playlists', {
       playlist_name: playlist.playlist_name ?? 'New Playlist',
       playlist_desc: playlist.playlist_desc,
       playlist_id: id,
       playlist_song_count: playlist.playlist_song_count ?? 0,
       playlist_coverPath: playlist.playlist_coverPath,
-      extension
+      extension,
+      icon: playlist.icon
     })
     return id
   }

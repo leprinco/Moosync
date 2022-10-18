@@ -86,7 +86,11 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   @Prop({ default: () => () => undefined })
   private enableRefresh!: () => void
 
-  private allPlaylists: ExtendedPlaylist[] = []
+  private get allPlaylists(): ExtendedPlaylist[] {
+    return [...this.localPlaylists, ...this.remotePlaylists]
+  }
+  private localPlaylists: ExtendedPlaylist[] = []
+  private remotePlaylists: ExtendedPlaylist[] = []
 
   private playlistInAction: Playlist | undefined
 
@@ -103,10 +107,13 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   }
 
   private async getPlaylists(invalidateCache = false) {
+    this.localPlaylists.splice(0, this.localPlaylists.length)
+    this.remotePlaylists.splice(0, this.remotePlaylists.length)
+
     const localPlaylists = await window.SearchUtils.searchEntityByOptions<Playlist>({
       playlist: true
     })
-    this.allPlaylists = [...localPlaylists]
+    this.localPlaylists.push(...localPlaylists)
 
     const promises: Promise<unknown>[] = []
 
@@ -117,10 +124,13 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
     await Promise.all(promises)
   }
 
-  private pushPlaylistToList(playlists: Playlist[]) {
+  private async pushPlaylistToList(playlists: Playlist[]) {
     for (const p of playlists) {
       if (this.allPlaylists.findIndex((val) => val.playlist_id === p.playlist_id) === -1) {
-        this.allPlaylists.push(p)
+        if (p.extension && !p.icon) {
+          p.icon = await window.ExtensionUtils.getExtensionIcon(p.extension)
+        }
+        this.remotePlaylists.push(p)
       }
     }
   }
@@ -189,7 +199,11 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
     this.playlistInAction = playlist
     this.getContextMenu(event, {
       type: 'PLAYLIST',
-      args: { playlist: playlist, deleteCallback: () => this.$bvModal.show('playlistDeleteModal') }
+      args: {
+        playlist: playlist,
+        isRemote: !this.localPlaylists.includes(playlist),
+        deleteCallback: () => this.$bvModal.show('playlistDeleteModal')
+      }
     })
   }
 }

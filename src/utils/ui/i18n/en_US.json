@@ -50,7 +50,8 @@
       "remove": "Remove playlist",
       "export": "Export playlist",
       "add": "Add To Playlist",
-      "addFromURL": "Add Playlist from URL"
+      "addFromURL": "Add Playlist from URL",
+      "save": "Add To Library"
     },
     "song": {
       "addFromURL": "Add from URL",

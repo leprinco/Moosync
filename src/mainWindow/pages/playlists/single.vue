@@ -54,6 +54,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   private songList: Song[] = []
 
   private isLoading = false
+  private isAddedInLibrary = false
 
   private providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_SONGS)
 
@@ -70,7 +71,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   get buttonGroups(): SongDetailButtons {
     return {
       enableContainer: true,
-      enableLibraryStore: !!this.isRemote(),
+      enableLibraryStore: this.isRemote() && !this.isAddedInLibrary,
       playRandom: this.songList.length > 150
     }
   }
@@ -96,7 +97,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   }
 
   private isRemote() {
-    return this.isYoutube || this.isSpotify || this.isExtension
+    return !!(this.isYoutube || this.isSpotify || this.isExtension)
   }
 
   private async refresh(invalidateCache = false) {
@@ -105,7 +106,12 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
     await this.fetchSongListAsync(invalidateCache)
   }
 
-  created() {
+  async created() {
+    this.isAddedInLibrary = !!(
+      await window.SearchUtils.searchEntityByOptions<Playlist>({
+        playlist: { playlist_id: this.playlist.playlist_id }
+      })
+    )[0]
     this.refresh()
   }
 
@@ -212,8 +218,8 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   }
 
   private addPlaylistToLibrary() {
-    this.addSongsToLibrary(...this.songList)
-    this.fetchAll((songs) => this.addSongsToLibrary(...songs))
+    window.DBUtils.createPlaylist(this.playlist)
+    this.$toasted.show(`Added ${this.playlist.playlist_name} to library`)
   }
 
   private onSearchChange() {

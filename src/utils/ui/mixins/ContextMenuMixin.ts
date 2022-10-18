@@ -206,13 +206,13 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     return items
   }
 
-  private getPlaylistContextMenu(playlist: ExtendedPlaylist, callback?: () => void) {
+  private getPlaylistContextMenu(playlist: ExtendedPlaylist, isRemote: boolean, deleteCallback?: () => void) {
     const items = []
-    if (!playlist.isRemote) {
+    if (!isRemote) {
       items.push({
         label: this.$tc('contextMenu.playlist.remove'),
         handler: () => {
-          callback && callback()
+          deleteCallback && deleteCallback()
         }
       })
 
@@ -224,7 +224,16 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       })
 
       items.push(this.getEntityInfoMenu(playlist))
+    } else {
+      items.push({
+        label: this.$tc('contextMenu.playlist.save'),
+        handler: async () => {
+          await window.DBUtils.createPlaylist(playlist)
+          this.$toasted.show(`Added ${playlist.playlist_name} to library`)
+        }
+      })
     }
+
     return items
   }
 
@@ -338,7 +347,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
         items = this.getGeneralSongsContextMenu(options.args.refreshCallback, options.args.sortOptions)
         break
       case 'PLAYLIST':
-        items = this.getPlaylistContextMenu(options.args.playlist, options.args.deleteCallback)
+        items = this.getPlaylistContextMenu(options.args.playlist, options.args.isRemote, options.args.deleteCallback)
         break
       case 'ALBUM':
         items = this.getAlbumContextMenu(options.args.album)
