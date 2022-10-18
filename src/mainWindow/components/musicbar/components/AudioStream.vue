@@ -216,7 +216,8 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
       this.analyserNode = undefined
     }
 
-    this.showYTPlayer = this.useEmbed && this.activePlayerTypes === 'YOUTUBE' ? 2 : 0
+    this.showYTPlayer =
+      this.useEmbed && vxm.providers.youtubeAlt === YoutubeAlts.YOUTUBE && this.activePlayerTypes === 'YOUTUBE' ? 2 : 0
 
     return newType
   }
