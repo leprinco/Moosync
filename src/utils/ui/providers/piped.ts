@@ -402,9 +402,13 @@ export class PipedProvider extends GenericProvider {
     }
 
     if (videoId) {
-      const resp = await this.populateRequest(PipedResources.STREAM_DETAILS, {
-        videoId
-      })
+      const resp = await this.populateRequest(
+        PipedResources.STREAM_DETAILS,
+        {
+          videoId
+        },
+        true
+      )
 
       if (resp) {
         const stream = this.getHighestBitrateAudioStream(resp.audioStreams)
