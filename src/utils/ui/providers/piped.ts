@@ -154,27 +154,31 @@ export class PipedProvider extends GenericProvider {
     const songList: Song[] = []
 
     for (const v of videos) {
-      songList.push({
-        _id: `youtube:${this.getIdFromURL(v.url)}`,
-        title: v.title,
-        artists: [
-          {
-            artist_id: `youtube-author:${this.getChannelIdFromUploaderUrl(v.uploaderUrl)}`,
-            artist_name: v.uploaderName,
-            artist_coverPath: v.uploaderAvatar,
-            artist_extra_info: {
-              youtube: {
-                channel_id: this.getChannelIdFromUploaderUrl(v.uploaderUrl)
-              }
-            }
-          }
-        ],
-        song_coverPath_high: v.thumbnail,
-        duration: v.duration,
-        playbackUrl: this.getIdFromURL(v.url),
-        date_added: Date.now(),
-        type: 'YOUTUBE'
-      })
+      if (v.url) {
+        songList.push({
+          _id: `youtube:${this.getIdFromURL(v.url)}`,
+          title: v.title,
+          artists: v.uploaderUrl
+            ? [
+                {
+                  artist_id: `youtube-author:${this.getChannelIdFromUploaderUrl(v.uploaderUrl)}`,
+                  artist_name: v.uploaderName,
+                  artist_coverPath: v.uploaderAvatar,
+                  artist_extra_info: {
+                    youtube: {
+                      channel_id: this.getChannelIdFromUploaderUrl(v.uploaderUrl)
+                    }
+                  }
+                }
+              ]
+            : [],
+          song_coverPath_high: v.thumbnail,
+          duration: v.duration,
+          playbackUrl: this.getIdFromURL(v.url),
+          date_added: Date.now(),
+          type: 'YOUTUBE'
+        })
+      }
     }
 
     return songList
