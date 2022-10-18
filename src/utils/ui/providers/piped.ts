@@ -244,7 +244,7 @@ export class PipedProvider extends GenericProvider {
   public async searchPlaylists(term: string): Promise<Playlist[]> {
     const resp = await this.populateRequest(PipedResources.SEARCH, {
       q: term,
-      filter: 'music_playlists'
+      filter: 'playlists'
     })
 
     if (resp && resp.items) {

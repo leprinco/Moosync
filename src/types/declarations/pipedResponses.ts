@@ -18,7 +18,7 @@ declare namespace PipedResponses {
     STREAM_DETAILS = 'streams/${video_id}'
   }
 
-  type SearchFilters = 'music_songs' | 'channels' | 'music_playlists' | 'music_albums'
+  type SearchFilters = 'music_songs' | 'channels' | 'playlists' | 'music_albums'
 
   type PlaylistDetailsRequest = {
     playlistId: string
@@ -86,7 +86,7 @@ declare namespace PipedResponses {
         ? VideoDetails
         : T extends 'channels'
         ? ChannelDetails
-        : T extends 'music_playlists'
+        : T extends 'playlists'
         ? PlaylistDetails
         : T extends 'music_albums'
         ? AlbumDetails
@@ -189,7 +189,7 @@ declare namespace PipedResponses {
 
   type SearchObject<
     T extends PipedResources,
-    K extends 'music_songs' | 'channels' | 'music_playlists' | 'music_albums'
+    K extends 'music_songs' | 'channels' | 'playlists' | 'music_albums'
   > = T extends PipedResources.SEARCH
     ? SearchRequest<K>
     : T extends PipedResources.PLAYLIST_DETAILS | PipedResources.PLAYLIST_DETAILS_NEXT
