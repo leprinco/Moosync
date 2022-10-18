@@ -158,7 +158,30 @@ export default class ExtraControls extends mixins(PlayerControls, JukeboxMixin) 
 .test
   min-width: 0
 
+@media only screen and (max-width : 565px)
+
+
 @media only screen and (max-width : 800px)
   .expand-icon
     display: none
+
+  .slider-container
+    right: -232px !important
+
+@media only screen and (max-width : 992px)
+  .slider-container
+    right: -200px
+    bottom: 85px
+    height: 40px
+    width: 175px
+    max-width: 175px
+    position: absolute
+    background: var(--tertiary)
+    border-radius: 16px
+    padding-left: 15px !important
+    transform: rotate(-90deg)
+    transform-origin: 0px 88px
+    transition: opacity 0.2s ease-in-out
+    z-index: 9999
+    opacity: 0
 </style>
