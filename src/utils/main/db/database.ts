@@ -513,7 +513,7 @@ export class SongDBInstance extends DBUtils {
 
     let query = `SELECT * FROM `
     let where = `WHERE `
-    const args = []
+    const args: string[] = []
     let orderBy
     for (const [key, value] of Object.entries(options)) {
       const tableName = this.getTableByProperty(key as EntityKeys<T>)
@@ -526,7 +526,7 @@ export class SongDBInstance extends DBUtils {
         }
 
         if (typeof value === 'object') {
-          const data = options[key as never]
+          const data: Record<string, string> = options[key as never]
           if (data) {
             for (const [innerKey, innerValue] of Object.entries(data)) {
               where += `${addANDorOR()} ${innerKey} LIKE ?`
@@ -537,7 +537,12 @@ export class SongDBInstance extends DBUtils {
         }
       }
     }
-    let ret = this.db.query<T>(`${query} ${args.length > 0 ? where : ''} ORDER BY ${orderBy} ASC`, ...args) ?? []
+
+    let ret =
+      this.db.query<T>(
+        `${query} ${args.length > 0 ? where : ''} ORDER BY ${orderBy} ASC`,
+        ...args.map((val) => val.replaceAll(' ', '%'))
+      ) ?? []
     if ('artist' in options) {
       ret = ret.map((val) => {
         if ('artist_extra_info' in val && typeof val.artist_extra_info === 'string') {
