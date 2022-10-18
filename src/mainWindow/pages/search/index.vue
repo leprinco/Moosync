@@ -178,11 +178,21 @@ export default class SearchPage extends mixins(
   }
 
   private fetchProviders() {
+    const parsedProviders: { title: string; key: string }[] = []
+    parsedProviders.push({
+      title: 'Local',
+      key: 'local'
+    })
+
     const providers = this.getProvidersByScope(ProviderScopes.SEARCH)
-    return providers.map((val) => ({
-      title: val.Title,
-      key: val.key
-    }))
+    parsedProviders.push(
+      ...providers.map((val) => ({
+        title: val.Title,
+        key: val.key
+      }))
+    )
+
+    return parsedProviders
   }
 
   private get providers() {
