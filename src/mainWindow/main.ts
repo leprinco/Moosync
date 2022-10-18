@@ -67,6 +67,11 @@ function registerLogger() {
   Vue.config.errorHandler = (err) => {
     console.error(err)
   }
+
+  window.onunhandledrejection = (ev) => {
+    const message = ev.reason.message ?? JSON.stringify(ev.reason) ?? ev.reason
+    window.LoggerUtils.error('Uncaught in promise', message)
+  }
 }
 
 registerLogger()
