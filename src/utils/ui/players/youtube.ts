@@ -25,7 +25,6 @@ export class YoutubePlayer extends LocalPlayer {
   private currentSegments: Segment[] = []
 
   constructor(playerInstance: HTMLDivElement, useEmbed = true) {
-    console.log(useEmbed)
     if (useEmbed) {
       super(new YTPlayerWrapper(playerInstance))
     } else {

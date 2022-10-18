@@ -179,7 +179,6 @@ export class ExtensionProvider extends GenericProvider {
       return cache[property]
     }
 
-    console.log('sending search request')
     const resp = await this.sendExtensionEventRequest('requestedSearchResult', [term])
     this.setLastSearchResult(term, resp)
 
@@ -187,7 +186,6 @@ export class ExtensionProvider extends GenericProvider {
   }
 
   public async searchSongs(term: string): Promise<Song[]> {
-    console.log('searching song')
     return await this.splitSearch(term, 'songs')
   }
 

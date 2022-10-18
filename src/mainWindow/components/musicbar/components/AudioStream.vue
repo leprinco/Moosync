@@ -267,7 +267,6 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
     this.useEmbed =
       (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('youtubeOptions.youtube_embeds'))?.enabled ?? true
 
-    console.log(this.useEmbed)
     return new YoutubePlayer(this.ytAudioElement, this.useEmbed)
   }
 
@@ -289,7 +288,6 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
           this.ytPlayer?.stop()
           this.ytPlayer?.removeAllListeners()
 
-          console.log('youtube alt', val)
           switch (val) {
             case YoutubeAlts.YOUTUBE:
               this.ytPlayer = await this.setupYoutubePlayer()
@@ -722,8 +720,6 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
 
       this.activePlayer?.load(song.playbackUrl, this.volume, vxm.player.playAfterLoad || this.playerState !== 'PAUSED')
     }
-
-    console.log(this.activePlayer)
 
     vxm.player.playAfterLoad = false
 

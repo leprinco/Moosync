@@ -128,7 +128,6 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
 
     const favPlaylist = localPlaylists.find((val) => val.playlist_id === FAVORITES_PLAYLIST_ID)
     if (favPlaylist && !favPlaylist.playlist_coverPath) {
-      console.log(process.env.BASE_URL)
       favPlaylist.playlist_coverPath = `static://fav_icon.svg`
     }
     this.localPlaylists.push(...localPlaylists)

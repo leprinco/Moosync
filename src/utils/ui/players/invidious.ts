@@ -42,7 +42,6 @@ export class InvidiousPlayer extends LocalPlayer {
           `https://www.youtube.com/watch?v=${str}`
         )
         if (resp && resp.invidiousPlaybackUrl) {
-          console.log('got response', resp)
           return resp.invidiousPlaybackUrl
         }
       } else {

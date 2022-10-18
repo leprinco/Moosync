@@ -90,7 +90,6 @@ export default class MusicBar extends mixins(PlayerControls, JukeboxMixin) {
   private isFavorite = false
 
   created() {
-    console.log('creating')
     vxm.player.$watch(
       'currentSong',
       async (song?: Song) => {
@@ -113,7 +112,6 @@ export default class MusicBar extends mixins(PlayerControls, JukeboxMixin) {
   }
 
   private async favoriteSong() {
-    console.log('here')
     if (vxm.player.currentSong) {
       await window.DBUtils.addToPlaylist(FAVORITES_PLAYLIST_ID, vxm.player.currentSong)
       this.isFavorite = true

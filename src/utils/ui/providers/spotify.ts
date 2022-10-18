@@ -704,7 +704,6 @@ export class SpotifyProvider extends GenericProvider {
 
       if (!artist_id && artist.artist_name) {
         const resp = await this.correctArtist(artist)
-        console.log('corrected artist', resp)
         if (resp) {
           artist_id = resp.artist_extra_info?.spotify?.artist_id
         }
