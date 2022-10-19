@@ -31,7 +31,7 @@ import PreferenceHeader from './PreferenceHeader.vue'
     PreferenceHeader
   }
 })
-export default class Dropdown extends Mixins(ExtensionPreferenceMixin) {
+export default class Dropdown extends Mixins<ExtensionPreferenceMixin<Checkbox[]>>(ExtensionPreferenceMixin) {
   @Prop()
   private title!: string
 
@@ -45,25 +45,27 @@ export default class Dropdown extends Mixins(ExtensionPreferenceMixin) {
   }
 
   private get filteredDropdownList() {
-    return ((this.value as Checkbox[]) ?? this.defaultValue).filter((val) => !val.enabled)
+    return (this.value ?? this.defaultValue).filter((val) => !val.enabled)
   }
 
   created() {
     this.postFetch = () => {
-      this.activeItem = (this.value as Checkbox[])?.find((val) => val.enabled) ?? (this.defaultValue as Checkbox[])[0]
+      this.activeItem = this.value?.find((val) => val.enabled) ?? (this.defaultValue as Checkbox[])[0]
     }
   }
 
   private setSelectedItem(item: Checkbox) {
-    for (const i of this.value as Checkbox[]) {
-      if (i.key === item.key) {
-        i.enabled = true
-        this.activeItem = i
-      } else {
-        i.enabled = false
+    if (this.value) {
+      for (const i of this.value) {
+        if (i.key === item.key) {
+          i.enabled = true
+          this.activeItem = i
+        } else {
+          i.enabled = false
+        }
       }
+      this.onInputChange()
     }
-    this.onInputChange()
   }
 }
 </script>

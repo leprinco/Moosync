@@ -562,9 +562,7 @@ export default class System extends Vue {
 
   private async clearPreferences() {
     await window.PreferenceUtils.resetToDefault()
-    this.closeClearPreferencesModal()
-    this.refreshPage = !this.refreshPage
-    window.location.reload()
+    await this.restartApp()
   }
 
   private closeClearPreferencesModal() {

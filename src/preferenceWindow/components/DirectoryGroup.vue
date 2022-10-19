@@ -77,7 +77,9 @@ import RefreshIcon from '@/icons/RefreshIcon.vue'
     RefreshIcon
   }
 })
-export default class DirectoryGroup extends Mixins(ExtensionPreferenceMixin) {
+export default class DirectoryGroup extends Mixins<ExtensionPreferenceMixin<DirectoryGroupValue>>(
+  ExtensionPreferenceMixin
+) {
   @Prop({ default: 5 })
   private height!: number
 
@@ -97,8 +99,8 @@ export default class DirectoryGroup extends Mixins(ExtensionPreferenceMixin) {
   private tooltip!: string
 
   private togglePath(index: number) {
-    if (index >= 0) {
-      const path = (this.value as DirectoryGroupValue)[index]
+    if (this.value && index >= 0) {
+      const path = this.value[index]
       ;(this.value as DirectoryGroupValue)[index].enabled = (
         document.getElementById(`path-${this.packageName}-${path.path}`) as HTMLInputElement
       ).checked
@@ -111,17 +113,17 @@ export default class DirectoryGroup extends Mixins(ExtensionPreferenceMixin) {
   }
 
   private removePath(index: number) {
-    if (index >= 0) {
-      ;(this.value as DirectoryGroupValue).splice(index, 1)
+    if (this.value && index >= 0) {
+      this.value.splice(index, 1)
       this.onInputChange()
     }
   }
 
   private openFileBrowser() {
     window.WindowUtils.openFileBrowser(this.isMainWindow, false).then((data) => {
-      if (!data.canceled) {
+      if (!data.canceled && this.value) {
         for (const path of data.filePaths) {
-          ;(this.value as DirectoryGroupValue).push({ path, enabled: true })
+          this.value.push({ path, enabled: true })
         }
         this.onInputChange()
       }

@@ -40,7 +40,7 @@ import { ExtensionPreferenceMixin } from '../mixins/extensionPreferenceMixin'
     PreferenceHeader
   }
 })
-export default class EditText extends Mixins(ExtensionPreferenceMixin) {
+export default class EditText extends Mixins<ExtensionPreferenceMixin<string>>(ExtensionPreferenceMixin) {
   @Prop()
   private title!: string
 

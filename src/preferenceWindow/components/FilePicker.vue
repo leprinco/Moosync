@@ -32,7 +32,7 @@ import FolderIcon from '@/icons/FolderIcon.vue'
 @Component({
   components: { PreferenceHeader, FolderIcon }
 })
-export default class FilePicker extends Mixins(ExtensionPreferenceMixin) {
+export default class FilePicker extends Mixins<ExtensionPreferenceMixin<string>>(ExtensionPreferenceMixin) {
   @Prop()
   private title!: string
 

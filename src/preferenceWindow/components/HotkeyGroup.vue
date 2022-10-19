@@ -61,47 +61,53 @@ import CrossIcon from '@/icons/CrossIcon.vue'
     CrossIcon
   }
 })
-export default class HotkeyGroup extends Mixins(ExtensionPreferenceMixin) {
+export default class HotkeyGroup extends Mixins<ExtensionPreferenceMixin<HotkeyPair[]>>(ExtensionPreferenceMixin) {
   constructor() {
     super()
     this.shouldMergeDefaultValues = false
   }
 
   private get definedActions() {
-    return this.value as HotkeyPair[]
+    return this.value
   }
 
   private getActiveTitle(index: number) {
-    return HotKeyEventsExtras[(this.value as HotkeyPair[])[index]?.value ?? 0].title
+    if (this.value) {
+      return HotKeyEventsExtras[this.value[index]?.value ?? 0].title
+    }
+  }
+
+  private getHotkeyValue() {
+    return Object.values(HotkeyEvents).filter(
+      (key) => typeof key === 'number' && this.value?.findIndex((val) => val.value === key) === -1
+    ) as HotkeyEvents[]
   }
 
   private getFilteredDropdownList() {
-    return Object.values(HotkeyEvents)
-      .filter(
-        (key) => typeof key === 'number' && (this.value as HotkeyPair[]).findIndex((val) => val.value === key) === -1
-      )
-      .map((val) => {
-        return { title: HotKeyEventsExtras[val as HotkeyEvents].title, key: val }
-      })
+    return this.getHotkeyValue().map((val: HotkeyEvents) => {
+      return { title: HotKeyEventsExtras[val].title, key: val }
+    })
   }
 
   private getKeybind(index: number) {
-    const combo = (this.value as HotkeyPair[])[index]?.key?.at(0) ?? []
-    return combo.length > 0 ? combo.map((val) => this.sanitizeKeys(val)).join(' + ') : 'Unassigned'
+    if (this.value) {
+      const combo = this.value[index]?.key?.at(0) ?? []
+      return combo.length > 0 ? combo.map((val) => this.sanitizeKeys(val)).join(' + ') : 'Unassigned'
+    }
   }
 
   private setSelectedAction(index: number, item: HotkeyEvents) {
-    ;(this.value as HotkeyPair[]).splice(index, 1, {
-      key: (this.value as HotkeyPair[])[index].key,
+    this.value?.splice(index, 1, {
+      key: this.value[index].key,
       value: item
     })
     this.onInputChange()
   }
 
   private setSelectedKeybind(index: number, combo: HotkeyPair['key']) {
-    ;(this.value as HotkeyPair[]).splice(index, 1, {
+    this.value?.splice(index, 1, {
       key: combo,
-      value: (this.value as HotkeyPair[])[index].value
+      value: this.value[index].value
     })
     this.onInputChange()
   }
@@ -187,12 +193,12 @@ export default class HotkeyGroup extends Mixins(ExtensionPreferenceMixin) {
   }
 
   private removeKeybind(index: number) {
-    ;(this.value as HotkeyPair[]).splice(index, 1)
+    this.value?.splice(index, 1)
     this.onInputChange()
   }
 
   private addKeybind() {
-    ;(this.value as HotkeyPair[]).push({
+    this.value?.push({
       key: [],
       value: 0
     })

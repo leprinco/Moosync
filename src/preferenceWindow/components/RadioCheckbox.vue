@@ -30,7 +30,7 @@ import PreferenceHeader from './PreferenceHeader.vue'
     PreferenceHeader
   }
 })
-export default class RadioCheckbox extends Mixins(ExtensionPreferenceMixin) {
+export default class RadioCheckbox extends Mixins<ExtensionPreferenceMixin<Checkbox[]>>(ExtensionPreferenceMixin) {
   @Prop()
   private title!: string
 
@@ -41,9 +41,17 @@ export default class RadioCheckbox extends Mixins(ExtensionPreferenceMixin) {
 
   mounted() {
     this.postFetch = () => {
-      for (let i = 0; i < (this.value as Checkbox[]).length; i++) {
-        if ((this.value as Checkbox[])[i].enabled) {
-          this.activeKey = [(this.value as Checkbox[])[i].key]
+      this.value = this.defaultValue.map((val) => {
+        return {
+          title: val.title,
+          key: val.key,
+          enabled: this.value?.find((val2) => val.key === val2.key)?.enabled ?? val.enabled
+        }
+      })
+
+      for (let i = 0; i < this.value.length; i++) {
+        if (this.value[i].enabled) {
+          this.activeKey = [this.value[i].key]
           break
         }
       }
@@ -51,9 +59,11 @@ export default class RadioCheckbox extends Mixins(ExtensionPreferenceMixin) {
   }
 
   private toggleCheck(key: string) {
-    ;(this.value as Checkbox[]).forEach((val) => {
-      val.enabled = val.key === key
-    })
+    if (this.value) {
+      this.value.forEach((val) => {
+        val.enabled = val.key === key
+      })
+    }
 
     this.activeKey = [key]
     this.onInputChange()

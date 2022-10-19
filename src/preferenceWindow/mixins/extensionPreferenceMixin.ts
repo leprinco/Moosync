@@ -12,9 +12,9 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 import { v1 } from 'uuid'
 
 @Component
-export class ExtensionPreferenceMixin extends Vue {
+export class ExtensionPreferenceMixin<T> extends Vue {
   @Prop({ default: '' })
-  public defaultValue!: unknown
+  public defaultValue!: T
 
   @Prop()
   public prefKey?: string
@@ -36,7 +36,7 @@ export class ExtensionPreferenceMixin extends Vue {
 
   protected shouldMergeDefaultValues = true
 
-  public value: unknown = ''
+  public value: T | null = null
 
   public loading = false
 
@@ -56,22 +56,22 @@ export class ExtensionPreferenceMixin extends Vue {
       this.loading = true
       ;(this.type === 'password'
         ? window.Store.getSecure(this.prefKey)
-        : window.PreferenceUtils.loadSelective(this.prefKey, this.isExtension)
+        : window.PreferenceUtils.loadSelective<T>(this.prefKey, this.isExtension)
       )
         .then((val) => {
           if (this.type === 'password') {
             val = val && JSON.parse(val as string)
           }
 
-          if (typeof val === 'object' && typeof this.defaultValue === 'object' && this.shouldMergeDefaultValues) {
-            if (Array.isArray(this.defaultValue)) {
-              this.value = Object.assign([], this.defaultValue, val)
-            } else {
-              this.value = Object.assign({}, this.defaultValue, val)
-            }
-          } else {
-            this.value = val ?? this.defaultValue
-          }
+          // if (typeof val === 'object' && typeof this.defaultValue === 'object' && this.shouldMergeDefaultValues) {
+          //   if (Array.isArray(this.defaultValue)) {
+          //     this.value = Object.assign([], this.defaultValue, val)
+          //   } else {
+          //     this.value = Object.assign({}, this.defaultValue, val)
+          //   }
+          // } else {
+          this.value = (val ?? this.defaultValue) as T
+          // }
         })
         .then(() => (this.loading = false))
         .then(() => this.postFetch && this.postFetch())

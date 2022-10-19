@@ -289,13 +289,5 @@ export function setPreferenceListenKey(key: string, isMainWindow = false) {
 }
 
 export function resetPrefsToDefault() {
-  const prefs = loadPreferences()
-  for (const [key, value] of Object.entries(defaultPreferences)) {
-    prefs[key as keyof Preferences] = value as never
-  }
-
-  prefs.isFirstLaunch = false
-
-  savePreferences(prefs)
-  setInitialPreferences()
+  store.clear()
 }
