@@ -503,10 +503,6 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
   private async getPlaybackUrlAndDuration(
     song: Song
   ): Promise<{ url: string | undefined; duration: number } | undefined> {
-    if (song.type === 'YOUTUBE') {
-      return vxm.providers.youtubeProvider.getPlaybackUrlAndDuration(song)
-    }
-
     if (song.type === 'SPOTIFY') {
       return vxm.providers.spotifyProvider.getPlaybackUrlAndDuration(song)
     }

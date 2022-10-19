@@ -204,10 +204,6 @@ export class InvidiousProvider extends GenericProvider {
     yield { songs: this.parsePlaylistItems(resp?.videos ?? []) }
   }
 
-  public async getPlaybackUrlAndDuration(song: InvidiousSong) {
-    if (song.url) return { url: song.invidiousPlaybackUrl ?? song.url, duration: song.duration }
-  }
-
   public async getPlaylistDetails(url: string, invalidateCache = false) {
     const playlist_id = this.getIDFromURL(url)
     if (playlist_id) {

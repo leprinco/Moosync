@@ -263,11 +263,12 @@ export class SpotifyProvider extends GenericProvider {
       `${item.artists?.map((val) => val.artist_name ?? '').join(', ') ?? ''} ${item.title}`,
       1
     )
+
     console.debug(
       'Found',
       res[0]?.title,
       '-',
-      res[0]?.url,
+      res[0]?.playbackUrl,
       'for spotify song',
       item.artists?.map((val) => val.artist_name).join(', '),
       item.title
@@ -381,7 +382,7 @@ export class SpotifyProvider extends GenericProvider {
   public async getPlaybackUrlAndDuration(song: Song) {
     const ytItem = await this.spotifyToYoutube(song)
     if (ytItem) {
-      return { url: ytItem.url, duration: ytItem.duration ?? 0 }
+      return { url: ytItem.playbackUrl ?? ytItem.url, duration: ytItem.duration ?? 0 }
     }
   }
 
@@ -428,7 +429,7 @@ export class SpotifyProvider extends GenericProvider {
           const song = this.parseSong(resp)
           const yt = await this.spotifyToYoutube(song)
           if (yt) {
-            song.playbackUrl = yt.url
+            song.playbackUrl = yt.playbackUrl
             return song
           } else {
             console.error("Couldn't find song on youtube")

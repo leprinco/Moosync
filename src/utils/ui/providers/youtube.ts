@@ -286,7 +286,7 @@ export class YoutubeProvider extends GenericProvider {
   private async parseVideo(items: { item: YoutubeResponses.VideoDetails.Item; date?: string }[]) {
     const songs: Song[] = []
     for (const v of items) {
-      if (songs.findIndex((value) => value._id === v.item.id) === -1)
+      if (v.item.id && songs.findIndex((value) => value._id === v.item.id) === -1)
         songs.push({
           _id: `youtube:${v.item.id}`,
           title: v.item.snippet.title,
@@ -318,6 +318,7 @@ export class YoutubeProvider extends GenericProvider {
           date_added: Date.parse(v.date ?? ''),
           duration: parseISO8601Duration(v.item.contentDetails.duration),
           url: v.item.id,
+          playbackUrl: v.item.id,
           type: 'YOUTUBE'
         })
     }
@@ -354,10 +355,6 @@ export class YoutubeProvider extends GenericProvider {
       }
     }
     return []
-  }
-
-  public async getPlaybackUrlAndDuration(song: Song) {
-    if (song.url) return { url: song.url, duration: song.duration }
   }
 
   public async getPlaylistDetails(url: string, invalidateCache = false) {

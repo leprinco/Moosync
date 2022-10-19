@@ -174,6 +174,7 @@ export class PipedProvider extends GenericProvider {
             : [],
           song_coverPath_high: v.thumbnail,
           duration: v.duration,
+          url: this.getIdFromURL(v.url),
           playbackUrl: this.getIdFromURL(v.url),
           date_added: Date.now(),
           type: 'YOUTUBE'
