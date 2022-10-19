@@ -10,7 +10,7 @@
 <template>
   <div class="w-100 h-100">
     <div class="mb-3">
-      <CheckboxGroup prefKey="logs" :title="$t('settings.logs.logSettings')" :defaultValue="logSettings" />
+      <CheckboxGroup key="logs" :title="$t('settings.logs.logSettings')" :defaultValue="logSettings" />
     </div>
     <div class="logger-bg">
       <b-container fluid class="controls w-100 d-flex">

@@ -35,19 +35,19 @@
             :title="$t('settings.paths.songDirectories')"
             :tooltip="$t('settings.paths.songDirectories_tooltip')"
             :defaultValue="[]"
-            prefKey="musicPaths"
+            key="musicPaths"
             @refresh="forceRescan"
           />
           <FilePicker
             :title="$t('settings.paths.artworkPath')"
             :tooltip="$t('settings.paths.artworkPath_tooltip')"
-            prefKey="artworkPath"
+            key="artworkPath"
             class="mt-5"
           />
           <FilePicker
             :title="$t('settings.paths.thumbnailPath')"
             :tooltip="$t('settings.paths.thumbnailPath_tooltip')"
-            prefKey="thumbnailPath"
+            key="thumbnailPath"
             class="mt-5"
           />
         </div>

@@ -49,7 +49,7 @@
                 v-if="isComponentExists(pref.type)"
                 :title="pref.title"
                 :tooltip="pref.description"
-                :prefKey="`${ext.packageName}.${pref.key}`"
+                :key="`${ext.packageName}.${pref.key}`"
                 :defaultValue="pref.default ? pref.default : pref.items"
                 :isExtension="true"
                 :packageName="ext.packageName"

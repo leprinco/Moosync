@@ -20,7 +20,7 @@
           :height="4"
           :defaultValue="[]"
           :isMainWindow="true"
-          prefKey="musicPaths"
+          key="musicPaths"
         />
       </b-col>
     </b-row>

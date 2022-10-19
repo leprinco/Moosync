@@ -98,6 +98,12 @@ export default class DirectoryGroup extends Mixins<ExtensionPreferenceMixin<Dire
   @Prop()
   private tooltip!: string
 
+  created() {
+    this.postFetch = () => {
+      console.log(this.value)
+    }
+  }
+
   private togglePath(index: number) {
     if (this.value && index >= 0) {
       const path = this.value[index]
