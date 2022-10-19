@@ -19,7 +19,7 @@
             :defaultValue="systemCheckboxValues"
             :onValueChange="onSystemPrefChange"
             :onValueFetch="onSystemPrefFetch"
-            prefKey="system"
+            key="system"
           />
 
           <b-col v-if="showJukeboxField">
@@ -27,7 +27,7 @@
               class="mt-5 mb-3"
               :isExtension="false"
               :title="$t('settings.system.jukebox.pin')"
-              prefKey="jukebox_pin"
+              key="jukebox_pin"
               :tooltip="$t('settings.system.jukebox.pin_tooltip')"
               defaultValue=""
               maxValue="6"
@@ -42,7 +42,7 @@
             :tooltip="$t('settings.system.audioSettings_tooltip')"
             :isExtension="false"
             :defaultValue="audioCheckboxValues"
-            prefKey="audio"
+            key="audio"
           />
 
           <RadioCheckbox
@@ -53,7 +53,7 @@
             :defaultValue="youtubeAlternativeCheckboxValues"
             :onValueChange="onYoutubeAlternativesChanged"
             :onValueFetch="onYoutubeAlternativesFetched"
-            prefKey="youtubeAlt"
+            key="youtubeAlt"
           />
 
           <b-col v-if="showYoutubeField">
@@ -63,14 +63,14 @@
               :tooltip="$t('settings.system.youtubeAlternative.youtube.options_tooltip')"
               :isExtension="false"
               :defaultValue="youtubeAdvancedCheckboxValues"
-              prefKey="youtubeOptions"
+              key="youtubeOptions"
             />
           </b-col>
 
           <b-col v-if="showInvidiousField">
             <AutoFillEditText
               class="mt-4"
-              prefKey="invidious_instance"
+              key="invidious_instance"
               :datalist="invidiousInstances"
               :title="$t('settings.system.youtubeAlternative.invidious.url')"
               :tooltip="$t('settings.system.youtubeAlternative.invidious.url_tooltip')"
@@ -91,14 +91,14 @@
               :tooltip="$t('settings.system.youtubeAlternative.invidious.options_tooltip')"
               :isExtension="false"
               :defaultValue="invidiousAdvancedCheckboxValues"
-              prefKey="invidious"
+              key="invidious"
             />
           </b-col>
 
           <b-col v-if="showPipedField">
             <AutoFillEditText
               class="mt-4"
-              prefKey="piped_instance"
+              key="piped_instance"
               :datalist="pipedInstances"
               :title="$t('settings.system.youtubeAlternative.piped.url')"
               :tooltip="$t('settings.system.youtubeAlternative.piped.url_tooltip')"
@@ -115,7 +115,7 @@
             class="mt-5 mb-3"
             :isExtension="false"
             :title="$t('settings.system.zoom')"
-            prefKey="zoomFactor"
+            key="zoomFactor"
             :tooltip="$t('settings.system.zoom_tooltip')"
             :onValueChange="onZoomUpdate"
             defaultValue="100"
@@ -126,10 +126,9 @@
             class="mt-5 mb-3"
             :isExtension="false"
             :title="$t('settings.system.spotify.client_id')"
-            prefKey="spotify.client_id"
+            key="spotify.client_id"
             :tooltip="$t('settings.system.spotify.client_id_tooltip')"
             @tooltipClick="openSpotifyHelp"
-            :key="spotifyIDKey"
             :onValueFetch="onSpotifyValueFetch"
             :onValueChange="onSpotifyValueFetch"
           />
@@ -137,9 +136,8 @@
             :isExtension="false"
             :tooltip="$t('settings.system.spotify.client_secret_tooltip')"
             :title="$t('settings.system.spotify.client_secret')"
-            prefKey="spotify.client_secret"
+            key="spotify.client_secret"
             @tooltipClick="openSpotifyHelp"
-            :key="spotifySecretKey"
             :onValueFetch="onSpotifyValueFetch"
             :onValueChange="onSpotifyValueFetch"
           />
@@ -159,7 +157,7 @@
             :title="$t('settings.system.youtube.client_id')"
             :tooltip="$t('settings.system.youtube.client_id_tooltip')"
             @tooltipClick="openYoutubeHelp"
-            prefKey="youtube.client_id"
+            key="youtube.client_id"
           />
           <EditText
             v-if="!youtubeEnvExists"
@@ -167,7 +165,7 @@
             :title="$t('settings.system.youtube.client_secret')"
             :tooltip="$t('settings.system.youtube.client_secret_tooltip')"
             @tooltipClick="openYoutubeHelp"
-            prefKey="youtube.client_secret"
+            key="youtube.client_secret"
           />
 
           <EditText
@@ -175,14 +173,14 @@
             class="mt-5 mb-3"
             :isExtension="false"
             :title="$t('settings.system.lastfm.client_id')"
-            prefKey="lastfm.client_id"
+            key="lastfm.client_id"
           />
 
           <EditText
             v-if="!lastfmEnvExists"
             :isExtension="false"
             :title="$t('settings.system.lastfm.client_secret')"
-            prefKey="lastfm.client_secret"
+            key="lastfm.client_secret"
           />
 
           <Dropdown
@@ -190,7 +188,7 @@
             :defaultValue="languageDropdown"
             :title="$t('settings.system.language')"
             :tooltip="$t('settings.system.language_tooltip')"
-            prefKey="system_language"
+            key="system_language"
             :onValueChange="onLanguageChanged"
           />
 
@@ -283,8 +281,6 @@ import RadioCheckbox from '../RadioCheckbox.vue'
   }
 })
 export default class System extends Vue {
-  private spotifyIDKey = 10
-  private spotifySecretKey = 100
   private showSpotifyButton = false
   private showRestartButton = false
   private showInvidiousField = false
@@ -566,9 +562,6 @@ export default class System extends Vue {
     if (data) {
       window.PreferenceUtils.saveSelective('spotify.client_id', data.clientID, false)
       window.PreferenceUtils.saveSelective('spotify.client_secret', data.clientSecret, false)
-
-      this.spotifyIDKey += 1
-      this.spotifySecretKey += 1
     }
   }
 

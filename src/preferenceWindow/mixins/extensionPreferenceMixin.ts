@@ -16,7 +16,6 @@ export class ExtensionPreferenceMixin<T> extends Vue {
   @Prop({ default: '' })
   public defaultValue!: T
 
-  @Prop()
   public prefKey?: string
 
   @Prop({ default: false })
@@ -42,8 +41,8 @@ export class ExtensionPreferenceMixin<T> extends Vue {
 
   protected postFetch: (() => void) | undefined
 
-  private onValueChanged() {
-    this.onValueChange && this.onValueChange(this.value)
+  created() {
+    this.prefKey = this.$vnode.key?.toString()
   }
 
   mounted() {
