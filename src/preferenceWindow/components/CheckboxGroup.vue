@@ -43,14 +43,16 @@ export default class CheckboxGroup extends Mixins<ExtensionPreferenceMixin<Check
   @Prop()
   private tooltip!: string
 
-  postFetch = () => {
-    this.value = this.defaultValue.map((val) => {
-      return {
-        title: val.title,
-        key: val.key,
-        enabled: this.getCheckboxEnabled(val.key)
-      }
-    })
+  created() {
+    this.postFetch = () => {
+      this.value = this.defaultValue.map((val) => {
+        return {
+          title: val.title,
+          key: val.key,
+          enabled: this.getCheckboxEnabled(val.key)
+        }
+      })
+    }
   }
 
   private toggleCheck(key: string) {
