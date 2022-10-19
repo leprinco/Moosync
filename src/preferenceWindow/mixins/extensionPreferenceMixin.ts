@@ -51,6 +51,18 @@ export class ExtensionPreferenceMixin<T> extends Vue {
     this.registerPreferenceListener()
   }
 
+  private isValueEmpty(value: unknown) {
+    if (typeof value === 'undefined') return true
+
+    if (typeof value === 'object') {
+      if (value === null) return true
+      if (Array.isArray(value)) return value.length === 0
+      else return Object.keys(value).length === 0
+    }
+
+    return false
+  }
+
   private fetch() {
     if (this.prefKey) {
       this.loading = true
@@ -58,9 +70,7 @@ export class ExtensionPreferenceMixin<T> extends Vue {
         ? window.Store.getSecure(this.prefKey)
         : window.PreferenceUtils.loadSelective<T>(this.prefKey, this.isExtension)
       )
-        .then((val) => {
-          this.value = (val ?? this.defaultValue) as T
-        })
+        .then((val) => (this.value = (this.isValueEmpty(val) ? this.defaultValue : val) as T))
         .then(() => (this.loading = false))
         .then(() => this.postFetch && this.postFetch())
         .then(() => this.onValueFetch && this.onValueFetch(this.value))
