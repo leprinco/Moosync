@@ -644,6 +644,16 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
     if (!res) {
       console.debug('playback url and duration not in cache or missing')
       res = await this.getPlaybackUrlAndDuration(song)
+    } else {
+      if (!song.playbackUrl && !res.url) {
+        console.debug('playback url missing from cache entry, trying to re-fetch')
+        res = await this.getPlaybackUrlAndDuration(song)
+      }
+
+      if (!song.duration && !res?.duration) {
+        console.debug('duration missing from cache entry, trying to re-fetch')
+        res = await this.getPlaybackUrlAndDuration(song)
+      }
     }
 
     console.debug('Got playback url and duration', res)
