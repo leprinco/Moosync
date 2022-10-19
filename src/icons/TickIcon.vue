@@ -1,7 +1,7 @@
 <template>
-  <svg viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg viewBox="0 0 12 9" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
-      d="M7.25 0.75L0.75 7.25M0.75 0.75L7.25 7.25"
+      d="M0.75 4.75L4.25 8.25L11.25 0.75"
       :stroke="color"
       stroke-width="1.5"
       stroke-linecap="round"
@@ -15,7 +15,7 @@ import Vue from 'vue'
 import { Component, Prop } from 'vue-property-decorator'
 
 @Component({})
-export default class CrossIcon extends Vue {
+export default class TickIcon extends Vue {
   @Prop({ default: 'var(--textPrimary)' })
   private color!: string
 }

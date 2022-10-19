@@ -108,8 +108,25 @@ export default class TopBar extends mixins(JukeboxMixin) {
     this.handleJukeboxIcon()
   }
 
-  private toggleJukeboxMode() {
-    vxm.themes.jukeboxMode = !vxm.themes.jukeboxMode
+  private async toggleJukeboxMode() {
+    if (vxm.themes.jukeboxMode) {
+      const pin = await window.Store.getSecure('jukebox_pin')
+      if (pin) {
+        bus.$emit(EventBus.SHOW_PIN_ENTRY_MODAL, pin.length, (input: string) => {
+          if (pin === input) {
+            vxm.themes.jukeboxMode = false
+            return true
+          }
+
+          return false
+        })
+        return
+      }
+      vxm.themes.jukeboxMode = false
+      return
+    }
+
+    vxm.themes.jukeboxMode = true
   }
 }
 </script>

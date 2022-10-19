@@ -225,6 +225,7 @@ export enum EventBus {
   SHOW_SONG_INFO_MODAL = 'show-song-info-modal',
   SHOW_ENTITY_INFO_MODAL = 'show-entity-info-modal',
   SHOW_OAUTH_MODAL = 'show-oauth-modal',
+  SHOW_PIN_ENTRY_MODAL = 'show-pin-entry-modal',
   HIDE_OAUTH_MODAL = 'hide-oauth-modal',
   SHOW_FORM_MODAL = 'show-form-modal',
   REFRESH_ACCOUNTS = 'refresh-accounts',

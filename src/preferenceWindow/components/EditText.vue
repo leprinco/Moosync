@@ -19,8 +19,9 @@
             v-model="value"
             id="ext-input"
             class="ext-input"
-            :debounce="debounce"
+            :debounce="maxValue ? 0 : debounce"
             @update="onInputChange"
+            :formatter="formatVal"
           />
         </b-col>
         <b-col cols="auto" class="mr-4"></b-col>
@@ -50,8 +51,26 @@ export default class EditText extends Mixins<ExtensionPreferenceMixin<string>>(E
   @Prop({ default: 500 })
   private debounce!: number
 
+  @Prop({ default: null })
+  private maxValue!: number | null
+
+  @Prop({ default: false })
+  private onlyNumber!: boolean
+
   private emitTooltipClick() {
     this.$emit('tooltipClick')
+  }
+
+  private formatVal(input: string) {
+    let ret = input
+    if (this.maxValue) {
+      ret = ret.substring(0, this.maxValue)
+    }
+
+    if (this.onlyNumber) {
+      ret = ret.replace(/\D/g, '')
+    }
+    return ret
   }
 }
 </script>

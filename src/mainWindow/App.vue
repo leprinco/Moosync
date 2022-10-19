@@ -22,6 +22,7 @@
     <OAuthModal />
     <FormModal />
     <EntityInfoModal />
+    <PinEntryModal />
   </div>
 </template>
 
@@ -52,6 +53,7 @@ import { sortSongListFn } from '@/utils/common'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
 import { YoutubeAlts } from './store/providers'
+import PinEntryModal from './components/modals/PinEntryModal.vue'
 
 @Component({
   components: {
@@ -64,7 +66,8 @@ import { YoutubeAlts } from './store/providers'
     SongInfoModal,
     OAuthModal,
     FormModal,
-    EntityInfoModal
+    EntityInfoModal,
+    PinEntryModal
   }
 })
 export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandlerMixin, JukeboxMixin, ProviderMixin) {

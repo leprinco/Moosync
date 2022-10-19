@@ -22,6 +22,20 @@
             prefKey="system"
           />
 
+          <b-col v-if="showJukeboxField">
+            <EditText
+              class="mt-5 mb-3"
+              :isExtension="false"
+              :title="$t('settings.system.jukebox.pin')"
+              prefKey="jukebox_pin"
+              :tooltip="$t('settings.system.jukebox.pin_tooltip')"
+              defaultValue=""
+              maxValue="6"
+              :onlyNumber="true"
+              type="password"
+            />
+          </b-col>
+
           <CheckboxGroup
             :title="$t('settings.system.audioSettings.title')"
             class="mt-4"
@@ -276,6 +290,7 @@ export default class System extends Vue {
   private showInvidiousField = false
   private showYoutubeField = false
   private showPipedField = false
+  private showJukeboxField = false
 
   private invidiousInstances: string[] = []
   private invidiousDetails = ''
@@ -481,17 +496,23 @@ export default class System extends Vue {
 
   private onSystemPrefFetch(value: SystemSettings[]) {
     this.defaultSystemSettings = JSON.parse(JSON.stringify(value))
+    this.showJukeboxField =
+      this.defaultSystemSettings.find((val) => val.key === this.enableJukeboxMode.key)?.enabled ?? false
   }
 
   private onSystemPrefChange(value: SystemSettings[]) {
     if (Array.isArray(value)) {
       for (let i = 0; i < value.length; i++) {
-        if (value[i].key === 'hardwareAcceleration') {
+        if (value[i].key === this.hardwareAcceleration.key) {
           if (this.defaultSystemSettings[i]?.enabled !== value[i].enabled) {
             this.showRestartButton = true
             break
           } else {
             this.showRestartButton = false
+          }
+
+          if (value[i].key === this.enableJukeboxMode.key) {
+            this.showJukeboxField = value[i].enabled
           }
         }
       }
