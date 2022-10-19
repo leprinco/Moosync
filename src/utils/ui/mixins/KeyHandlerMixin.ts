@@ -30,7 +30,21 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
   }
 
   private onlyRequiredKeysPressed(requiredKeys: string[]) {
-    return JSON.stringify(Object.keys(this.pressedKeys)) === JSON.stringify(requiredKeys)
+    const pressedKeys = Object.keys(this.pressedKeys)
+
+    for (const val of requiredKeys) {
+      if (!pressedKeys.includes(val)) {
+        return false
+      }
+    }
+
+    for (const val of pressedKeys) {
+      if (!requiredKeys.includes(val)) {
+        return false
+      }
+    }
+
+    return true
   }
 
   private performAction(action: HotkeyEvents) {
@@ -97,6 +111,7 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
       for (const key of combinations.key) {
         if (this.onlyRequiredKeysPressed(key)) {
           this.performAction(combinations.value)
+          this.pressedKeys = {}
         }
       }
     }
