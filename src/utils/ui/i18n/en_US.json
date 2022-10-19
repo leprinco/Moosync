@@ -161,7 +161,7 @@
       },
       "youtubeAlternative": {
         "title": "Youtube Alternative services",
-        "tool": "Get data from Youtube through a 3rd party provider",
+        "tooltip": "Get data from Youtube through a 3rd party provider",
         "useYoutube": "Use default Youtube services",
         "useInvidious": "Use Invidious services",
         "usePiped": "Use Piped services",
