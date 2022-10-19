@@ -140,6 +140,21 @@
         "commentEnd": "-->"
       }
     ],
+    "license-header-manager.excludeFolders": [
+      "node_modules",
+      "dist",
+      "dist_electron",
+      "src/assets",
+      "public",
+      "aur",
+      "flatpak",
+      "chocolatey",
+      "build",
+      "rpm",
+      "patches",
+      "scripts",
+      "extras"
+    ],
     "files.associations": {
       "*.sql": "sql",
       "*.sh": "shellscript",
