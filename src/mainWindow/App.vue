@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator'
+import { Component, Watch } from 'vue-property-decorator'
 import Titlebar from '@/commonComponents/Titlebar.vue'
 import { mixins } from 'vue-class-component'
 import ThemeHandler from '@/utils/ui/mixins/ThemeHandler'
@@ -97,6 +97,15 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
   private fetchProviderExtensions() {
     vxm.providers.fetchExtensionProviders()
     window.ExtensionUtils.listenExtensionsChanged(() => vxm.providers.fetchExtensionProviders())
+  }
+
+  @Watch('isJukeboxModeActive')
+  private onJukeboxModeChanged(val: boolean) {
+    if (val) {
+      window.WindowUtils.enableFullscreen(true)
+    } else {
+      window.WindowUtils.disableFullscreen(true)
+    }
   }
 
   private watchQueueSort() {

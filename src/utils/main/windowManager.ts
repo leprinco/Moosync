@@ -360,8 +360,13 @@ export class WindowHandler {
 
   public toggleFullscreen(isMainWindow = true) {
     const window = WindowHandler.getWindow(isMainWindow)
+    this.setFullscreen(isMainWindow, !window?.isFullScreen() ?? false)
+  }
+
+  public setFullscreen(isMainWindow = true, value: boolean) {
+    const window = WindowHandler.getWindow(isMainWindow)
     if (window?.fullScreenable) {
-      window.setFullScreen(!window.isFullScreen())
+      window.setFullScreen(value)
     }
   }
 

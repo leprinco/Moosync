@@ -105,7 +105,9 @@ export enum WindowEvents {
 
   GET_PLATFORM = 'getPlatform',
 
-  TOGGLE_FULLSCREEN = 'toggleFullscreen'
+  TOGGLE_FULLSCREEN = 'toggleFullscreen',
+  ENABLE_FULLSCREEN = 'enableFullscreen',
+  DISABLE_FULLSCREEN = 'disableFullscreen'
 }
 
 export enum AlbumEvents {

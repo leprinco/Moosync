@@ -381,6 +381,18 @@ contextBridge.exposeInMainWorld('WindowUtils', {
       params: { isMainWindow }
     }),
 
+  enableFullscreen: (isMainWindow: boolean) =>
+    ipcRendererHolder.send<WindowRequests.MainWindowCheck>(IpcEvents.BROWSER_WINDOWS, {
+      type: WindowEvents.ENABLE_FULLSCREEN,
+      params: { isMainWindow }
+    }),
+
+  disableFullscreen: (isMainWindow: boolean) =>
+    ipcRendererHolder.send<WindowRequests.MainWindowCheck>(IpcEvents.BROWSER_WINDOWS, {
+      type: WindowEvents.DISABLE_FULLSCREEN,
+      params: { isMainWindow }
+    }),
+
   hasFrame: () =>
     ipcRendererHolder.send(IpcEvents.BROWSER_WINDOWS, { type: WindowEvents.HAS_FRAME, params: undefined }),
 

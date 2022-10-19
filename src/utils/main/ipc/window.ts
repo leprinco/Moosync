@@ -35,6 +35,13 @@ export class BrowserWindowChannel implements IpcChannelInterface {
         break
       case WindowEvents.TOGGLE_FULLSCREEN:
         this.toggleFullscreen(event, request as IpcRequest<WindowRequests.MainWindowCheck>)
+        break
+      case WindowEvents.ENABLE_FULLSCREEN:
+        this.enableFullscreen(event, request as IpcRequest<WindowRequests.MainWindowCheck>)
+        break
+      case WindowEvents.DISABLE_FULLSCREEN:
+        this.disableFullscreen(event, request as IpcRequest<WindowRequests.MainWindowCheck>)
+        break
       case WindowEvents.TOGGLE_DEV_TOOLS:
         this.toggleDevTools(event, request as IpcRequest<WindowRequests.MainWindowCheck>)
         break
@@ -105,6 +112,16 @@ export class BrowserWindowChannel implements IpcChannelInterface {
 
   private toggleFullscreen(event: Electron.IpcMainEvent, request: IpcRequest<WindowRequests.MainWindowCheck>) {
     _windowHandler.toggleFullscreen(!!request.params.isMainWindow)
+    event.reply(request.responseChannel)
+  }
+
+  private enableFullscreen(event: Electron.IpcMainEvent, request: IpcRequest<WindowRequests.MainWindowCheck>) {
+    _windowHandler.setFullscreen(!!request.params.isMainWindow, true)
+    event.reply(request.responseChannel)
+  }
+
+  private disableFullscreen(event: Electron.IpcMainEvent, request: IpcRequest<WindowRequests.MainWindowCheck>) {
+    _windowHandler.setFullscreen(!!request.params.isMainWindow, false)
     event.reply(request.responseChannel)
   }
 
