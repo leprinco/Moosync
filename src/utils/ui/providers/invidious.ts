@@ -27,6 +27,8 @@ export class InvidiousProvider extends GenericProvider {
   provides(): ProviderScopes[] {
     return [
       ProviderScopes.SEARCH,
+      ProviderScopes.SEARCH_ARTIST,
+      ProviderScopes.ARTIST_SONGS,
       ProviderScopes.PLAYLIST_FROM_URL,
       ProviderScopes.SONG_FROM_URL,
       ProviderScopes.PLAYLIST_SONGS
@@ -43,11 +45,10 @@ export class InvidiousProvider extends GenericProvider {
     return window.Store.getSecure(KeytarService)
   }
 
-  private async populateRequest<K extends InvidiousResponses.InvidiousApiResources>(
-    resource: K,
-    search: InvidiousResponses.SearchObject<K>,
-    invalidateCache = false
-  ) {
+  private async populateRequest<
+    T extends InvidiousResponses.InvidiousApiResources,
+    K extends InvidiousResponses.SearchTypes
+  >(resource: T, search: InvidiousResponses.SearchObject<T, K>, invalidateCache = false) {
     await this.getLoggedIn()
     return window.SearchUtils.requestInvidious(resource, search, this._token, invalidateCache)
   }
@@ -136,10 +137,10 @@ export class InvidiousProvider extends GenericProvider {
     return []
   }
 
-  private parsePlaylistItems(items: InvidiousResponses.UserPlaylists.PlaylistResponse['videos']): InvidiousSong[] {
+  private parsePlaylistItems(items: InvidiousResponses.VideoDetails.VideoResponse[]): InvidiousSong[] {
     const songs: InvidiousSong[] = []
     for (const s of items) {
-      const stream = (s as InvidiousResponses.VideoDetails.VideoResponse).formatStreams?.slice(-1).pop()
+      const stream = s.formatStreams?.slice(-1).pop()
       songs.push({
         _id: `youtube:${s.videoId}`,
         title: s.title,
@@ -197,15 +198,12 @@ export class InvidiousProvider extends GenericProvider {
   ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
     const playlist_id = this.getIDFromURL(str) ?? str
 
-    console.log('making request')
-
     const resp = await this.populateRequest(
       InvidiousApiResources.PLAYLIST_ITEMS,
       { params: { playlist_id } },
       invalidateCache
     )
 
-    console.log(playlist_id, resp)
     yield { songs: this.parsePlaylistItems(resp?.videos ?? []) }
   }
 
@@ -214,7 +212,11 @@ export class InvidiousProvider extends GenericProvider {
     if (playlist_id) {
       const resp = await this.populateRequest(
         InvidiousApiResources.PLAYLIST_ITEMS,
-        { params: { playlist_id } },
+        {
+          params: {
+            playlist_id
+          }
+        },
         invalidateCache
       )
 
@@ -232,8 +234,11 @@ export class InvidiousProvider extends GenericProvider {
   }
 
   public async getSongDetails(url: string, invalidateCache = false): Promise<Song | undefined> {
-    const parsedUrl = new URL(url)
-    const videoID = parsedUrl.searchParams.get('v')
+    let videoID: string = url
+    if (url.startsWith('http')) {
+      const parsedUrl = new URL(url)
+      videoID = parsedUrl.searchParams.get('v') ?? url
+    }
 
     if (videoID) {
       const resp = await this.populateRequest(
@@ -253,8 +258,27 @@ export class InvidiousProvider extends GenericProvider {
     if (resp) yield this.parsePlaylistItems([resp])
   }
 
-  public async *getArtistSongs(): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
-    yield { songs: [] }
+  public async *getArtistSongs(
+    artist: Artists,
+    nextPageToken?: number
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: number }> {
+    let channelId = artist.artist_extra_info?.youtube?.channel_id
+    if (!channelId && artist.artist_name) {
+      const searchRes = await this.searchArtists(artist.artist_name)
+      channelId = searchRes[0]?.artist_extra_info?.youtube?.channel_id
+    }
+
+    if (channelId) {
+      const resp = await this.populateRequest(InvidiousApiResources.CHANNEL_VIDEOS, {
+        params: {
+          channel_id: channelId,
+          page: nextPageToken ?? 1
+        }
+      })
+
+      const songs = this.parsePlaylistItems(resp ?? [])
+      yield { songs, nextPageToken: (nextPageToken ?? 1) + 1 }
+    }
   }
 
   public async searchSongs(term: string): Promise<Song[]> {
@@ -271,19 +295,70 @@ export class InvidiousProvider extends GenericProvider {
   }
 
   // TODO: Fetch artist details from invidious
-  public async getArtistDetails(): Promise<Artists | undefined> {
-    return
+  public async getArtistDetails(artist: Artists): Promise<Artists | undefined> {
+    const channelId = artist.artist_extra_info?.youtube?.channel_id
+    if (!channelId) {
+      const artists = await this.searchArtists(artist.artist_name ?? '')
+      return artists[0]
+    }
+
+    if (channelId) {
+      const resp = await this.populateRequest(InvidiousApiResources.CHANNELS, {
+        params: {
+          channel_id: channelId
+        }
+      })
+
+      if (resp) {
+        return this.parseArtists([resp])[0]
+      }
+    }
   }
 
-  public async searchArtists(): Promise<Artists[]> {
-    return []
+  private parseArtists(artists: InvidiousResponses.ChannelDetails[]) {
+    const artistList: Artists[] = []
+
+    for (const a of artists) {
+      artistList.push({
+        artist_id: a.authorId,
+        artist_name: a.author,
+        artist_coverPath: 'https:' + a.authorThumbnails?.sort((a, b) => b.height - a.height)[0].url,
+        artist_extra_info: {
+          youtube: {
+            channel_id: a.authorId
+          }
+        }
+      })
+    }
+
+    return artistList
   }
 
-  public async searchPlaylists(): Promise<Playlist[]> {
-    return []
+  public async searchArtists(term: string): Promise<Artists[]> {
+    const resp = await this.populateRequest(InvidiousApiResources.SEARCH, {
+      params: {
+        q: term,
+        type: 'channel',
+        sort_by: 'relevance'
+      }
+    })
+
+    return this.parseArtists(resp ?? [])
   }
 
-  public async searchAlbum(term: string): Promise<Album[]> {
+  public async searchPlaylists(term: string): Promise<Playlist[]> {
+    const resp = await this.populateRequest(InvidiousApiResources.SEARCH, {
+      params: {
+        q: term,
+        type: 'playlist',
+        sort_by: 'relevance'
+      }
+    })
+
+    return this.parsePlaylists(resp ?? [])
+  }
+
+  public async searchAlbum(): Promise<Album[]> {
     return []
   }
 

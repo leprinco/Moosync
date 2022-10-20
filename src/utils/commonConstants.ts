@@ -4,7 +4,9 @@ export enum InvidiousApiResources {
   VIDEO_DETAILS = 'videos/{video_id}',
   TRENDING = 'trending',
   SEARCH = 'search',
-  STATS = 'stats'
+  STATS = 'stats',
+  CHANNELS = 'channels/{channel_id}',
+  CHANNEL_VIDEOS = 'channels/{channel_id}/videos'
 }
 
 export enum HotkeyEvents {

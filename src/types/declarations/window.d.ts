@@ -118,12 +118,12 @@ interface searchUtils {
 
   searchLyrics: (artists: string[], title: string) => Promise<string>
 
-  requestInvidious: <K extends InvidiousResponses.InvidiousApiResources>(
-    resource: K,
-    search: InvidiousResponses.SearchObject<K>,
+  requestInvidious: <T extends InvidiousResponses.InvidiousApiResources, K extends InvidiousResponses.SearchTypes>(
+    resource: T,
+    search: InvidiousResponses.SearchObject<T, K>,
     authorization: string | undefined,
     invalidateCache = false
-  ) => Promise<InvidiousResponses.ResponseType<K> | undefined>
+  ) => Promise<InvidiousResponses.ResponseType<T, K> | undefined>
 
   getPlayCount: (...songIds: string[]) => Promise<Record<string, number>>
 }

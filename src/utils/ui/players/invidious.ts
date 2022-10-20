@@ -38,9 +38,7 @@ export class InvidiousPlayer extends LocalPlayer {
 
       if (str) {
         // This won't make a request to youtube
-        const resp: InvidiousSong | undefined = await vxm.providers._invidiousProvider.getSongDetails(
-          `https://www.youtube.com/watch?v=${str}`
-        )
+        const resp: InvidiousSong | undefined = await vxm.providers._invidiousProvider.getSongDetails(str)
         if (resp && resp.invidiousPlaybackUrl) {
           return resp.invidiousPlaybackUrl
         }

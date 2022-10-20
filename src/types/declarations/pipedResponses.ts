@@ -187,10 +187,7 @@ declare namespace PipedResponses {
     }
   }
 
-  type SearchObject<
-    T extends PipedResources,
-    K extends 'music_songs' | 'channels' | 'playlists' | 'music_albums'
-  > = T extends PipedResources.SEARCH
+  type SearchObject<T extends PipedResources, K extends SearchFilters> = T extends PipedResources.SEARCH
     ? SearchRequest<K>
     : T extends PipedResources.PLAYLIST_DETAILS | PipedResources.PLAYLIST_DETAILS_NEXT
     ? PlaylistDetailsRequest

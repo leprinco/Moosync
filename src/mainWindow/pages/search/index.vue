@@ -104,6 +104,7 @@ import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
+import { YoutubeAlts } from '@/mainWindow/store/providers'
 
 @Component({
   components: {
@@ -135,14 +136,14 @@ export default class SearchPage extends mixins(
 
   private get noResultsReason() {
     if (this.activeProvider === vxm.providers.youtubeProvider.key) {
-      if (vxm.providers.youtubeAlt) {
-        if (this.activeSubcategory !== 'songs') {
-          return 'Searching artists, playlists and albums is currently not supported using Invidious'
+      if (vxm.providers.youtubeAlt === YoutubeAlts.INVIDIOUS) {
+        if (this.activeSubcategory === 'albums') {
+          return 'Searching albums is currently not supported using Invidious'
         }
-      }
-
-      if (this.activeSubcategory === 'albums') {
-        return 'Searching albums is currently not supported for Youtube'
+      } else if (vxm.providers.youtubeAlt === YoutubeAlts.YOUTUBE) {
+        if (this.activeSubcategory === 'albums') {
+          return 'Searching albums is currently not supported for Youtube'
+        }
       }
     } else if (this.activeProvider === vxm.providers.spotifyProvider.key && !vxm.providers.loggedInSpotify) {
       return 'Login to Spotify to use this feature'

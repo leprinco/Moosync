@@ -9,12 +9,15 @@ export class InvidiousRequester extends CacheHandler {
     super(path.join(app.getPath('sessionData'), app.getName(), 'invidious.cache'))
   }
 
-  public async makeInvidiousRequest<K extends InvidiousResponses.InvidiousApiResources>(
-    resource: K,
-    search: InvidiousResponses.SearchObject<K>,
+  public async makeInvidiousRequest<
+    T extends InvidiousResponses.InvidiousApiResources,
+    K extends InvidiousResponses.SearchTypes
+  >(
+    resource: T,
+    search: InvidiousResponses.SearchObject<T, K>,
     authorization?: string | undefined,
     invalidateCache = false
-  ): Promise<InvidiousResponses.ResponseType<K> | undefined> {
+  ): Promise<InvidiousResponses.ResponseType<T, K> | undefined> {
     let BASE_URL = loadSelectivePreference<string>('invidious_instance')
 
     if (BASE_URL) {
@@ -36,9 +39,11 @@ export class InvidiousRequester extends CacheHandler {
       const parsed = new URL(url)
       if (search.params) {
         for (const [key, value] of Object.entries(search.params)) {
-          if (typeof value === 'string') parsed.searchParams.set(key, value)
+          parsed.searchParams.set(key, value.toString())
         }
       }
+
+      console.log(parsed.search)
 
       try {
         return await this.get(parsed, authorization, invalidateCache)
