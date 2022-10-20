@@ -191,6 +191,12 @@
       "jukebox": {
         "pin": "Jukebox mode pin",
         "pin_tooltip": "Tis pin will be required to exit Jukebox Mode. Should be numeric."
+      },
+      "lyrics": {
+        "title": "Lyrics providers",
+        "tooltip": "Select which lyrics providers to use to search for lyrics",
+        "az_lyrics": "Use AZLyrics",
+        "google_lyrics": "Use Google search lyrics"
       }
     },
     "logs": {

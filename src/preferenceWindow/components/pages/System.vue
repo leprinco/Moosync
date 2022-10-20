@@ -111,6 +111,15 @@
             </b-col>
           </b-row>
 
+          <CheckboxGroup
+            :title="$t('settings.system.lyrics.title')"
+            class="mt-4"
+            :tooltip="$t('settings.system.lyrics.tooltip')"
+            :isExtension="false"
+            :defaultValue="lyricsCheckboxValues"
+            key="lyrics_fetchers"
+          />
+
           <EditText
             class="mt-5 mb-3"
             :isExtension="false"
@@ -416,6 +425,21 @@ export default class System extends Vue {
         key: 'use_piped',
         title: this.$tc('settings.system.youtubeAlternative.usePiped'),
         enabled: false
+      }
+    ]
+  }
+
+  get lyricsCheckboxValues(): Checkbox[] {
+    return [
+      {
+        title: this.$tc('settings.system.lyrics.az_lyrics'),
+        key: 'az_lyrics',
+        enabled: true
+      },
+      {
+        title: this.$tc('settings.system.lyrics.google_lyrics'),
+        key: 'google_lyrics',
+        enabled: true
       }
     ]
   }

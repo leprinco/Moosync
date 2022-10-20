@@ -39,6 +39,7 @@ interface Preferences {
   hotkeys: HotkeyPair[]
   zoomFactor: string
   logs: Checkbox[]
+  lyrics_fetchers: Checkbox[]
 }
 
 type HotkeyPair = {

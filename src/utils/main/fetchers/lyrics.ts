@@ -1,6 +1,7 @@
 import { app } from 'electron'
 import https from 'https'
 import path from 'path'
+import { loadSelectiveArrayPreference } from '../db/preferences'
 import { CacheHandler } from './cacheFile'
 
 interface AZSuggestions {
@@ -19,9 +20,19 @@ export class AZLyricsFetcher extends CacheHandler {
   }
 
   public async getLyrics(artists: string[], title: string) {
-    let lyrics = await this.queryAZLyrics(artists, title)
+    const useAzLyrics = loadSelectiveArrayPreference<Checkbox>('lyrics_fetchers.az_lyrics')?.enabled ?? true
+    const useGoogleLyrics = loadSelectiveArrayPreference<Checkbox>('lyrics_fetchers.az_lyrics')?.enabled ?? true
+
+    let lyrics: string | undefined
+
+    if (useAzLyrics) {
+      lyrics = await this.queryAZLyrics(artists, title)
+    }
+
     if (!lyrics) {
-      lyrics = await this.queryGoogle(artists, title)
+      if (useGoogleLyrics) {
+        lyrics = await this.queryGoogle(artists, title)
+      }
     }
 
     return lyrics

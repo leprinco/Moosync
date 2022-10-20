@@ -35,7 +35,8 @@ const defaultPreferences: Preferences = {
   themes: {},
   activeTheme: 'default',
   hotkeys: defaultKeybinds,
-  logs: []
+  logs: [],
+  lyrics_fetchers: []
 }
 
 let ac: AbortController
@@ -102,14 +103,14 @@ export function saveSelectivePreference(key: string, value: unknown, isExtension
  * @param [defaultValue]
  * @returns object belonging to given key
  */
-export function loadSelectivePreference<T>(key?: string, isExtension = false, defaultValue?: T): T | undefined {
+export function loadSelectivePreference<T>(key?: string, isExtension = false, defaultValue?: T): T {
   try {
     const pref = store.get(`prefs.${isExtension ? 'extension.' : ''}${key}`, defaultValue)
     return pref
   } catch (e) {
     console.error(e)
   }
-  return defaultValue
+  return defaultValue as T
 }
 
 export function loadSelectiveArrayPreference<T>(key: string, defaultValue?: T): T | undefined {
