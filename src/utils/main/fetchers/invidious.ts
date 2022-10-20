@@ -14,7 +14,7 @@ export class InvidiousRequester extends CacheHandler {
     search: InvidiousResponses.SearchObject<K>,
     authorization?: string | undefined,
     invalidateCache = false
-  ) {
+  ): Promise<InvidiousResponses.ResponseType<K> | undefined> {
     let BASE_URL = loadSelectivePreference<string>('invidious_instance')
 
     if (BASE_URL) {
@@ -40,48 +40,24 @@ export class InvidiousRequester extends CacheHandler {
         }
       }
 
-      const resp = await this.get(parsed, authorization, invalidateCache)
-
       try {
-        return JSON.parse(resp)
+        return await this.get(parsed, authorization, invalidateCache)
       } catch (e) {
-        return resp
+        console.error('Error in invidious', e)
       }
     }
-  }
-
-  public parseSongs(items: InvidiousResponses.VideoDetails.Trending[]) {
-    const songs: Song[] = []
-    for (const s of items) {
-      songs.push({
-        _id: `youtube:${s.videoId}`,
-        title: s.title,
-        duration: s.lengthSeconds,
-        artists: [
-          {
-            artist_id: `youtube-author:${s.authorId}`,
-            artist_name: s.author
-          }
-        ],
-        date_added: Date.now(),
-        song_coverPath_high: s.videoThumbnails.find((val) => val.quality.includes('maxres'))?.url,
-        song_coverPath_low: s.videoThumbnails.find((val) => val.quality.includes('medium'))?.url,
-        url: s.videoId,
-        type: 'YOUTUBE'
-      })
-    }
-    return songs
   }
 
   private get(parsed: URL, authorization?: string, invalidateCache = false) {
     if (!invalidateCache) {
       const cached = this.getCache(parsed.toString())
       if (cached) {
-        return cached
+        const parsedCache = JSON.parse(cached)
+        if (!parsedCache.error) return parsedCache
       }
     }
 
-    return new Promise<string>((resolve, reject) => {
+    return new Promise<never>((resolve, reject) => {
       const headers: { [key: string]: string } = { 'Content-Type': 'application/json' }
       if (authorization) {
         headers['Authorization'] = `Bearer ${authorization}`
@@ -92,14 +68,19 @@ export class InvidiousRequester extends CacheHandler {
         hostname: parsed.hostname,
         headers
       }
+
       const request = https.get(options, (res) => {
         let data = ''
         res.on('data', (chunk) => {
           data += chunk
         })
         res.on('end', () => {
-          resolve(data)
-          this.addToCache(parsed.toString(), data)
+          try {
+            resolve(JSON.parse(data))
+            this.addToCache(parsed.toString(), data)
+          } catch (e) {
+            reject(e)
+          }
         })
       })
 

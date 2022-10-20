@@ -190,35 +190,6 @@ declare namespace InvidiousResponses {
         }
       ]
     }
-
-    interface Trending {
-      title: string
-      videoId: string
-      videoThumbnails: [
-        {
-          quality: string
-          url: string
-          width: number
-          height: number
-        }
-      ]
-
-      lengthSeconds: number
-      viewCount: number
-
-      author: string
-      authorId: string
-      authorUrl: string
-
-      published: number
-      publishedText: string
-      description: string
-      descriptionHtml: string
-
-      liveNow: boolean
-      paid: boolean
-      premium: boolean
-    }
   }
 
   type InvidiousDetails = {
@@ -284,7 +255,7 @@ declare namespace InvidiousResponses {
     : T extends InvidiousApiResources.VIDEO_DETAILS
     ? VideoDetails.VideoResponse
     : T extends InvidiousApiResources.TRENDING
-    ? VideoDetails.Trending
+    ? SearchResults.RootObject
     : T extends InvidiousApiResources.SEARCH
     ? SearchResults.RootObject[]
     : T extends InvidiousApiResources.STATS

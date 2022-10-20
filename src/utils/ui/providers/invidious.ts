@@ -119,7 +119,7 @@ export class InvidiousProvider extends GenericProvider {
     const playlists: ExtendedPlaylist[] = []
     for (const p of items) {
       playlists.push({
-        playlist_id: `youtube:${p.playlistId}`,
+        playlist_id: `youtube-playlist:${p.playlistId}`,
         playlist_name: p.title,
         playlist_song_count: p.videoCount,
         playlist_coverPath: p.videos[0]?.videoThumbnails[0]?.url ?? ''
@@ -196,11 +196,16 @@ export class InvidiousProvider extends GenericProvider {
     invalidateCache = false
   ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
     const playlist_id = this.getIDFromURL(str) ?? str
+
+    console.log('making request')
+
     const resp = await this.populateRequest(
       InvidiousApiResources.PLAYLIST_ITEMS,
       { params: { playlist_id } },
       invalidateCache
     )
+
+    console.log(playlist_id, resp)
     yield { songs: this.parsePlaylistItems(resp?.videos ?? []) }
   }
 
@@ -212,6 +217,7 @@ export class InvidiousProvider extends GenericProvider {
         { params: { playlist_id } },
         invalidateCache
       )
+
       if (resp) {
         const playlists = this.parsePlaylists([resp])
         if (playlists.length > 0) {
@@ -294,7 +300,7 @@ export class InvidiousProvider extends GenericProvider {
   }
 
   public matchEntityId(id: string): boolean {
-    return id.startsWith('youtube:')
+    return id.startsWith('youtube:') || id.startsWith('youtube-playlist:') || id.startsWith('youtube-author:')
   }
 
   public sanitizeId(id: string, type: 'SONG' | 'PLAYLIST' | 'ALBUM' | 'ARTIST'): string {
