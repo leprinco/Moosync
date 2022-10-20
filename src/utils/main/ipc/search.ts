@@ -16,7 +16,6 @@ import { AZLyricsFetcher } from '../fetchers/lyrics'
 import { LastFMScraper } from '../fetchers/lastfm'
 import { InvidiousRequester } from '../fetchers/invidious'
 import { loadSelectivePreference } from '../db/preferences'
-import { InvidiousApiResources } from '@/utils/commonConstants'
 
 export class SearchChannel implements IpcChannelInterface {
   name = IpcEvents.SEARCH
@@ -107,15 +106,6 @@ export class SearchChannel implements IpcChannelInterface {
             request.params.scrapeYTMusic,
             request.params.scrapeYoutube
           )
-        } else {
-          const searchTerm = `${request.params.artists ? request.params.artists.join(', ') + ' - ' : ''}${
-            request.params.title
-          }`
-          const resp = await this.invidiousRequester.makeInvidiousRequest(InvidiousApiResources.SEARCH, {
-            params: { q: searchTerm, type: 'video', sort_by: 'relevance' }
-          })
-
-          if (resp) data.songs = this.invidiousRequester.parseSongs(resp)
         }
         event.reply(request.responseChannel, data)
       } catch (e) {
