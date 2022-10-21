@@ -365,6 +365,10 @@ type ExtraExtensionEventTypes =
   | 'requestedLyrics'
   | 'requestedArtistSongs'
   | 'requestedAlbumSongs'
+  | 'songAdded'
+  | 'songRemoved'
+  | 'playlistAdded'
+  | 'playlistRemoved'
 
 type ExtraExtensionEventReturnType<T extends ExtraExtensionEventTypes> = T extends 'requestedPlaylists'
   ? PlaylistReturnType | void
@@ -424,6 +428,10 @@ type ExtraExtensionEventData<T extends ExtraExtensionEventTypes> = T extends 're
   ? [artist: Artists]
   : T extends 'requestedAlbumSongs'
   ? [album: Album]
+  : T extends 'songAdded' | 'songRemoved'
+  ? [songs: Song[]]
+  : T extends 'playlistAdded' | 'playlistRemoved'
+  ? [playlists: Playlist[]]
   : []
 
 type PlaylistReturnType = {
@@ -613,10 +621,17 @@ interface extensionAPI {
   addSongs(...songs: Song[]): Promise<(Song | undefined)[] | undefined>
 
   /**
+   * @deprecated pass song instead of song_id
    * Remove song from library
    * @param song_id id of song to remove
    */
   removeSong(song_id: string): Promise<void>
+
+  /**
+   * Remove song from library
+   * @param song song to remove
+   */
+  removeSong(song: Song): Promise<void>
 
   /**
    * Add playlist to library
