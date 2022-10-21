@@ -156,7 +156,7 @@ export default class AllSongs extends mixins(
       args: {
         songs,
         isRemote: typeof this.isRemote === 'function' && this.isRemote(songs),
-        refreshCallback: () => (this.songList = arrayDiff(this.songList, songs))
+        refreshCallback: () => this.songList.splice(0, this.songList.length, ...arrayDiff(this.songList, songs))
       }
     })
   }

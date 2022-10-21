@@ -88,7 +88,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin) {
       args: {
         songs: songs,
         exclude: exclude,
-        refreshCallback: () => (this.songList = arrayDiff(this.songList, songs))
+        refreshCallback: () => this.songList.splice(0, this.songList.length, ...arrayDiff(this.songList, songs))
       }
     })
   }
