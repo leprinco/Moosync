@@ -72,7 +72,9 @@ export class SpotifyProvider extends GenericProvider {
   private api = axios.create({
     adapter: cache.adapter,
     baseURL: BASE_URL,
-    paramsSerializer: (params) => qs.stringify(params, { arrayFormat: 'comma' })
+    paramsSerializer: {
+      serialize: (params) => qs.stringify(params, { arrayFormat: 'repeat', encode: false })
+    }
   })
 
   private getConfig(oauthChannel: string, id: string, secret: string) {

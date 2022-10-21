@@ -92,7 +92,9 @@ export class YoutubeProvider extends GenericProvider {
   private api = axios.create({
     adapter: cache.adapter,
     baseURL: BASE_URL,
-    paramsSerializer: (params) => qs.stringify(params, { arrayFormat: 'repeat' })
+    paramsSerializer: {
+      serialize: (params) => qs.stringify(params, { arrayFormat: 'repeat', encode: false })
+    }
   })
 
   public async getLoggedIn() {

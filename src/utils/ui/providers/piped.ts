@@ -20,7 +20,9 @@ export class PipedProvider extends GenericProvider {
 
   private api = axios.create({
     adapter: cache.adapter,
-    paramsSerializer: (params) => qs.stringify(params, { arrayFormat: 'repeat', encode: false })
+    paramsSerializer: {
+      serialize: (params) => qs.stringify(params, { arrayFormat: 'repeat', encode: false })
+    }
   })
 
   public async getLoggedIn(): Promise<boolean> {

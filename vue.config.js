@@ -72,7 +72,10 @@ module.exports = {
         assert: false,
         crypto: false,
         dgram: false,
-        buffer: require.resolve('buffer')
+        buffer: require.resolve('buffer'),
+        http: false,
+        https: false,
+        zlib: false
       }
     }
   },
