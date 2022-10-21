@@ -331,16 +331,19 @@ export class SongDBInstance extends DBUtils {
         this.updateSongAlbums(song.album ?? {}, oldSong.album, song._id)
         this.updateSongGenre(song.genre ?? [], oldSong.genre, song._id)
 
+        const marshalled = this.marshalSong(song)
+
         const finalCoverPath = await this.getCoverPath(
           oldSong.song_coverPath_high ?? '',
           song.song_coverPath_high ?? ''
         )
 
-        song.song_coverPath_high = finalCoverPath
-        song.song_coverPath_low = finalCoverPath
+        marshalled.song_coverPath_high = finalCoverPath
+        marshalled.song_coverPath_low = finalCoverPath
 
-        this.db.updateWithBlackList('allsongs', song, ['_id = ?', song._id], ['_id'])
+        this.db.updateWithBlackList('allsongs', marshalled, ['_id = ?', song._id], ['_id'])
         this.updateAllSongCounts()
+        return
       }
 
       console.warn('Song with id', song._id, 'does not exist in db')
@@ -391,8 +394,9 @@ export class SongDBInstance extends DBUtils {
     return { songs, albums, artists, genres, playlists }
   }
 
-  private getInnerKey(property: string) {
+  private getInnerKey(property: keyof SearchableSong): keyof marshaledSong {
     if (property === 'extension') return 'provider_extension'
+    if (property === 'showInLibrary') return 'show_in_library'
     return property
   }
 
@@ -412,16 +416,19 @@ export class SongDBInstance extends DBUtils {
         return str
       }
 
-      for (const [key] of Object.entries(options)) {
+      for (const key of Object.keys(options)) {
         if (key !== 'inclusive' && key !== 'sortBy') {
           const tableName = this.getTableByProperty(key as keyof SongAPIOptions)
           const data = options[key as keyof SongAPIOptions]
           if (data) {
             for (const [innerKey, innerValue] of Object.entries(data)) {
-              where += `${addANDorOR()} ${tableName}.${this.getInnerKey(innerKey)} ${this.getLikeQuery(
-                options.invert
-              )} ?`
-              args.push(`${innerValue}`)
+              let parsedValue = innerValue
+              if (typeof innerValue === 'boolean') parsedValue = innerValue ? 1 : 0
+
+              where += `${addANDorOR()} ${tableName}.${this.getInnerKey(
+                innerKey as keyof SearchableSong
+              )} ${this.getLikeQuery(options.invert)} ?`
+              args.push(`${parsedValue}`)
             }
           }
         }
@@ -1047,7 +1054,7 @@ export class SongDBInstance extends DBUtils {
     // TODO: Regenerate cover instead of using existing from song
     let coverExists = this.isPlaylistCoverExists(playlist_id)
     this.db.transaction((songs: Song[]) => {
-      const stored = this.store(...songs)
+      const stored = this.store(...songs.map((val) => ({ ...val, showInLibrary: false })))
 
       for (const s of stored) {
         if (!coverExists) {

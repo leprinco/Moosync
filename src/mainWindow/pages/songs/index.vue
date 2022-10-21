@@ -14,7 +14,7 @@
       :defaultDetails="defaultDetails"
       :songList="songList"
       :afterSongAddRefreshCallback="requestSongs"
-      @onRowContext="getSongMenu(arguments[0], arguments[1], undefined)"
+      :onGeneralSongContextMenuOverride="getGeneralSongsMenu"
       @playAll="playSongs"
       @addToQueue="addSongsToQueue"
     />
@@ -60,21 +60,29 @@ export default class AllSongs extends mixins(ContextMenuMixin) {
     this.requestSongs()
   }
 
-  private async requestSongs() {
+  private async requestSongs(showHidden = false) {
     this.songList = await window.SearchUtils.searchSongsByOptions({
-      sortBy: vxm.themes.songSortBy
+      sortBy: vxm.themes.songSortBy,
+      song: {
+        showInLibrary: !showHidden
+      }
     })
+    this.showingHidden = showHidden
   }
 
   private sort(options: SongSortOptions) {
     vxm.themes.songSortBy = options
   }
 
+  private showingHidden = false
+
   private getGeneralSongsMenu(event: Event) {
     this.getContextMenu(event, {
       type: 'GENERAL_SONGS',
       args: {
         refreshCallback: this.requestSongs,
+        showHiddenToggle: true,
+        isShowingHidden: this.showingHidden,
         sortOptions: {
           callback: this.sort,
           current: vxm.themes.songSortBy

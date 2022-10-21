@@ -251,5 +251,13 @@ export const migrations = [
   ALTER TABLE playlists ADD icon TEXT;
 
   -- Down
+  `,
+
+  // 21-10-2022
+  `
+  -- Up
+  ALTER TABLE allsongs add show_in_library BOOLEAN DEFAULT TRUE;
+
+  -- Down
   `
 ]

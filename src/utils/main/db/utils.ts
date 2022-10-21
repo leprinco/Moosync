@@ -70,7 +70,8 @@ export class DBUtils {
       date_added: dbSong.date_added,
       playbackUrl: dbSong.playbackUrl,
       providerExtension: dbSong.provider_extension,
-      playCount: dbSong.play_count ?? 0
+      playCount: dbSong.play_count ?? 0,
+      showInLibrary: !!dbSong.show_in_library
     }
   }
 
@@ -102,7 +103,8 @@ export class DBUtils {
       playbackUrl: song.playbackUrl?.trim(),
       date_added: Date.now(),
       icon: song.icon,
-      provider_extension: song.providerExtension
+      provider_extension: song.providerExtension,
+      show_in_library: song.showInLibrary ? 1 : 0
     }
   }
 
@@ -196,6 +198,6 @@ export class DBUtils {
   }
 
   protected getSelectClause() {
-    return `allsongs._id, allsongs.path, allsongs.size, allsongs.title, allsongs.song_coverPath_high, allsongs.song_coverPath_low, allsongs.date, allsongs.date_added, allsongs.year, allsongs.lyrics, allsongs.bitrate, allsongs.codec, allsongs.container, allsongs.duration, allsongs.sampleRate, allsongs.hash, allsongs.type, allsongs.url, allsongs.icon, allsongs.playbackUrl, allsongs.provider_extension, albums.album_id, albums.album_name, albums.album_coverPath_high, albums.album_coverPath_low, albums.album_song_count, albums.year as album_year, albums.album_extra_info, analytics.play_count`
+    return `allsongs._id, allsongs.path, allsongs.size, allsongs.title, allsongs.song_coverPath_high, allsongs.song_coverPath_low, allsongs.date, allsongs.date_added, allsongs.year, allsongs.lyrics, allsongs.bitrate, allsongs.codec, allsongs.container, allsongs.duration, allsongs.sampleRate, allsongs.hash, allsongs.type, allsongs.url, allsongs.icon, allsongs.playbackUrl, allsongs.provider_extension, allsongs.show_in_library, albums.album_id, albums.album_name, albums.album_coverPath_high, albums.album_coverPath_low, albums.album_song_count, albums.year as album_year, albums.album_extra_info, analytics.play_count`
   }
 }

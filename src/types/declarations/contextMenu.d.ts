@@ -21,7 +21,9 @@ type ContextMenuArgs =
       type: 'GENERAL_SONGS'
       args: {
         sortOptions?: Sort<SongSortOptions>
-        refreshCallback?: () => void
+        showHiddenToggle?: boolean
+        isShowingHidden?: boolean
+        refreshCallback?: (showHidden?: boolean) => void
       }
     }
   | {

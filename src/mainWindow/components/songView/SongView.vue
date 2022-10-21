@@ -82,7 +82,7 @@ export default class AllSongs extends mixins(
   private optionalProviders!: TabCarouselItem[]
 
   @Prop()
-  private afterSongAddRefreshCallback!: (() => void) | undefined
+  private afterSongAddRefreshCallback!: ((showHidden?: boolean) => void) | undefined
 
   @Prop()
   private isRemote!: ((songs: Song[]) => boolean) | undefined
@@ -135,7 +135,10 @@ export default class AllSongs extends mixins(
   private detailsButtonGroup!: SongDetailButtons
 
   @Prop({ default: null })
-  private onSongContextMenuOverride!: (event: PointerEvent, songs: Song[]) => void
+  private onSongContextMenuOverride!: ((event: PointerEvent, songs: Song[]) => void) | null
+
+  @Prop({ default: null })
+  private onGeneralSongContextMenuOverride!: ((event: PointerEvent) => void) | null
 
   private clearSelection() {
     this.currentSong = null
@@ -177,17 +180,21 @@ export default class AllSongs extends mixins(
     })
   }
 
-  private onGeneralContextMenu(event: Event) {
-    this.getContextMenu(event, {
-      type: 'GENERAL_SONGS',
-      args: {
-        refreshCallback: this.afterSongAddRefreshCallback,
-        sortOptions: {
-          callback: (options) => (vxm.themes.songSortBy = options),
-          current: vxm.themes.songSortBy
+  private onGeneralContextMenu(event: PointerEvent) {
+    if (this.onGeneralSongContextMenuOverride) {
+      this.onGeneralSongContextMenuOverride(event)
+    } else {
+      this.getContextMenu(event, {
+        type: 'GENERAL_SONGS',
+        args: {
+          refreshCallback: this.afterSongAddRefreshCallback,
+          sortOptions: {
+            callback: (options) => (vxm.themes.songSortBy = options),
+            current: vxm.themes.songSortBy
+          }
         }
-      }
-    })
+      })
+    }
   }
 
   private playAll() {

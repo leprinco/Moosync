@@ -45,6 +45,7 @@ interface marshaledSong {
   icon?: string
   provider_extension?: string
   play_count?: number
+  show_in_library: number
 }
 
 interface stats {
