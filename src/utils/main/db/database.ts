@@ -375,6 +375,10 @@ export class SongDBInstance extends DBUtils {
     return property
   }
 
+  private getLikeQuery(invert?: boolean) {
+    return invert ? 'NOT LIKE' : 'LIKE'
+  }
+
   private populateWhereQuery(options?: SongAPIOptions) {
     if (options) {
       let where = 'WHERE '
@@ -393,7 +397,9 @@ export class SongDBInstance extends DBUtils {
           const data = options[key as keyof SongAPIOptions]
           if (data) {
             for (const [innerKey, innerValue] of Object.entries(data)) {
-              where += `${addANDorOR()} ${tableName}.${this.getInnerKey(innerKey)} LIKE ?`
+              where += `${addANDorOR()} ${tableName}.${this.getInnerKey(innerKey)} ${this.getLikeQuery(
+                options.invert
+              )} ?`
               args.push(`${innerValue}`)
             }
           }
@@ -529,7 +535,7 @@ export class SongDBInstance extends DBUtils {
           const data: Record<string, string> = options[key as never]
           if (data) {
             for (const [innerKey, innerValue] of Object.entries(data)) {
-              where += `${addANDorOR()} ${innerKey} LIKE ?`
+              where += `${addANDorOR()} ${innerKey} ${this.getLikeQuery(options.invert)} ?`
               args.push(innerValue)
             }
             break

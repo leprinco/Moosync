@@ -262,6 +262,14 @@ interface SongAPIOptions {
    * False by default
    */
   inclusive?: boolean
+
+  /**
+   * If true, then inverts the query. It will return all records which don't match the search criteria
+   * If false, then it will return all records which match the search criteria
+   *
+   * false by default
+   */
+  invert?: boolean
 }
 
 /**
@@ -282,6 +290,14 @@ type EntityApiOptions<T extends Artists | Album | Genre | Playlist> = {
    * If inclusive is false then albums having album_name as 'aaa' OR album_id as 'bbb' will be returned
    */
   inclusive?: boolean
+
+  /**
+   * If true, then inverts the query. It will return all records which don't match the search criteria
+   * If false, then it will return all records which match the search criteria
+   *
+   * false by default
+   */
+  invert?: boolean
 } & (T extends Artists
   ? {
       artist: Partial<Artists> | boolean
