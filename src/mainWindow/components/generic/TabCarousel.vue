@@ -44,6 +44,7 @@
                 class="searchbar"
                 :placeholder="$t('songView.songList.topbar.searchPlaceholder')"
                 type="text"
+                ref="searchbar"
                 @update="onSearchChange"
               />
             </div>
@@ -173,6 +174,12 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
 
   private toggleSearch() {
     this.showSearchbar = !this.showSearchbar
+
+    if (this.showSearchbar) {
+      this.$nextTick().then(() => {
+        ;(this.$refs['searchbar'] as HTMLInputElement).focus()
+      })
+    }
   }
 
   private onSearchChange() {
