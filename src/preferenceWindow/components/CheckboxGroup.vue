@@ -63,8 +63,6 @@ export default class CheckboxGroup extends Mixins<ExtensionPreferenceMixin<Check
         value.enabled = isChecked
       }
 
-      console.log(this.getValueByKey(key))
-
       this.onInputChange()
     }
 

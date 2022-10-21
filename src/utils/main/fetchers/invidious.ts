@@ -43,8 +43,6 @@ export class InvidiousRequester extends CacheHandler {
         }
       }
 
-      console.log(parsed.search)
-
       try {
         return await this.get(parsed, authorization, invalidateCache)
       } catch (e) {
