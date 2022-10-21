@@ -52,9 +52,9 @@ interface DBUtils {
    * Remove playlist
    * @param playlistID id of playlist to be removed
    */
-  removePlaylist: (playlistID: string) => Promise<void>
+  removePlaylist: (playlist: Playlist) => Promise<void>
 
-  exportPlaylist: (playlistID: string) => Promise<void>
+  exportPlaylist: (playlist: Playlist) => Promise<void>
 
   updateLyrics: (id: string, lyrics: string) => Promise<void>
 

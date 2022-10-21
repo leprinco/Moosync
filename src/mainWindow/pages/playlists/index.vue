@@ -178,7 +178,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   }
 
   private deletePlaylist() {
-    if (this.playlistInAction) window.DBUtils.removePlaylist(this.playlistInAction.playlist_id)
+    if (this.playlistInAction) window.DBUtils.removePlaylist(this.playlistInAction)
     this.refresh()
   }
 

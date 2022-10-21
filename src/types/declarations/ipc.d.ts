@@ -94,7 +94,7 @@ declare namespace PlaylistRequests {
   }
 
   interface RemoveExportPlaylist {
-    playlist_id: string
+    playlist: Playlist
   }
 }
 

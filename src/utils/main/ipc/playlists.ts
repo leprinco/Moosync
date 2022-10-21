@@ -85,8 +85,9 @@ export class PlaylistsChannel implements IpcChannelInterface {
     event: Electron.IpcMainEvent,
     request: IpcRequest<PlaylistRequests.RemoveExportPlaylist>
   ) {
-    if (request.params.playlist_id) {
-      await SongDB.removePlaylist(request.params.playlist_id).then(() => event.reply(request.responseChannel))
+    if (request.params.playlist) {
+      SongDB.removePlaylist(request.params.playlist)
+      event.reply(request.responseChannel)
     }
     event.reply(request.responseChannel)
   }
@@ -95,8 +96,8 @@ export class PlaylistsChannel implements IpcChannelInterface {
     event: Electron.IpcMainEvent,
     request: IpcRequest<PlaylistRequests.RemoveExportPlaylist>
   ) {
-    if (request.params.playlist_id) {
-      const playlist = SongDB.getEntityByOptions<Playlist>({ playlist: { playlist_id: request.params.playlist_id } })[0]
+    if (request.params.playlist) {
+      const playlist = request.params.playlist
       if (playlist) {
         const m3u8 = `#EXTM3U\n#PLAYLIST:${playlist.playlist_name}\n${await this.parsePlaylistSongs(playlist)}`
 

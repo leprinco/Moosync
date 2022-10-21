@@ -219,7 +219,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       items.push({
         label: this.$tc('contextMenu.playlist.export'),
         handler: () => {
-          window.DBUtils.exportPlaylist(playlist.playlist_id)
+          window.DBUtils.exportPlaylist(playlist)
         }
       })
 

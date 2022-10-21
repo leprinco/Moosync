@@ -53,12 +53,14 @@ export class SongDBInstance extends DBUtils {
   }
 
   public store(...songsToAdd: Song[]): Song[] {
-    const retList: Song[] = []
+    const newList: Song[] = []
+    const existingList: Song[] = []
     for (const newDoc of songsToAdd) {
       if (this.verifySong(newDoc)) {
         const existing = this.getSongByOptions({ song: { _id: newDoc._id } })[0]
         if (existing) {
-          retList.push(existing)
+          existingList.push(existing)
+          continue
         }
 
         const artistID = newDoc.artists ? this.storeArtists(...newDoc.artists) : []
@@ -85,12 +87,12 @@ export class SongDBInstance extends DBUtils {
           newDoc.album.album_id = albumID
         }
 
-        retList.push(newDoc)
+        newList.push(newDoc)
       }
     }
 
-    this.notifyExtensionHostSongChanged(true, retList)
-    return retList
+    this.notifyExtensionHostSongChanged(true, newList)
+    return [...newList, ...existingList]
   }
 
   private updateAllSongCounts() {
@@ -965,6 +967,13 @@ export class SongDBInstance extends DBUtils {
                 PLAYLISTS
      ============================= */
 
+  private notifyExtensionHostPlaylistChanged(added: boolean, playlist: Playlist[]) {
+    getExtensionHostChannel().sendExtraEvent({
+      type: added ? 'playlistAdded' : 'playlistRemoved',
+      data: [playlist]
+    })
+  }
+
   /**
    * Creates playlist
    * @param name name of playlist
@@ -976,7 +985,8 @@ export class SongDBInstance extends DBUtils {
     const id = `${extension && !playlist.playlist_id?.startsWith(`${extension}:`) ? extension + ':' : ''}${
       playlist.playlist_id ?? v4()
     }`
-    this.db.insert('playlists', {
+
+    const playlistToInsert: Playlist = {
       playlist_name: playlist.playlist_name ?? 'New Playlist',
       playlist_desc: playlist.playlist_desc,
       playlist_id: id,
@@ -984,7 +994,11 @@ export class SongDBInstance extends DBUtils {
       playlist_coverPath: playlist.playlist_coverPath,
       extension,
       icon: playlist.icon
-    })
+    }
+
+    this.db.insert('playlists', playlistToInsert)
+
+    this.notifyExtensionHostPlaylistChanged(true, [playlistToInsert])
     return id
   }
 
@@ -1041,9 +1055,8 @@ export class SongDBInstance extends DBUtils {
             this.updatePlaylistCoverPath(playlist_id, s.album.album_coverPath_high)
             coverExists = true
           }
-
-          this.db.insert('playlist_bridge', { playlist: playlist_id, song: s._id })
         }
+        this.db.insert('playlist_bridge', { playlist: playlist_id, song: s._id })
       }
     })(songs)
     this.updateSongCountPlaylists()
@@ -1080,11 +1093,16 @@ export class SongDBInstance extends DBUtils {
 
   /**
    * Removes playlist
-   * @param playlist_id id of playlist to be removed
+   * @param playlists playlists to be removed
    */
-  public async removePlaylist(playlist_id: string) {
-    this.db.delete('playlist_bridge', { playlist: playlist_id })
-    this.db.delete('playlists', { playlist_id: playlist_id })
+  public removePlaylist(...playlists: Playlist[]) {
+    for (const playlist of playlists) {
+      const playlist_id = playlist.playlist_id
+      this.db.delete('playlist_bridge', { playlist: playlist_id })
+      this.db.delete('playlists', { playlist_id: playlist_id })
+    }
+
+    this.notifyExtensionHostPlaylistChanged(false, playlists)
   }
 
   private async removeFile(src: string) {

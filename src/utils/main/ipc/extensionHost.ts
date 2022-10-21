@@ -120,9 +120,7 @@ export class ExtensionHostChannel implements IpcChannelInterface {
         }
       })
 
-      for (const p of playlists) {
-        await SongDB.removePlaylist(p.playlist_id)
-      }
+      SongDB.removePlaylist(...playlists)
     }
     event.reply(request.responseChannel)
   }
