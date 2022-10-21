@@ -15,8 +15,7 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
   player: PlayerControls
   utils: Utils
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  private eventCallbackMap: { [key: string]: Function } = {}
+  private eventCallbackMap: { [key: string]: unknown } = {}
 
   private contextMenuMap: ExtendedExtensionContextMenuItems<ContextMenuTypes>[] = []
 
@@ -147,8 +146,7 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
     return await sendAsync<void>(this.packageName, 'close-login-modal')
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  public on(eventName: string, callback: Function) {
+  public on(eventName: ExtraExtensionEventTypes, callback: unknown) {
     console.debug('Registering listener for', eventName, 'in package', this.packageName)
     this.eventCallbackMap[eventName] = callback
 
@@ -168,7 +166,7 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
     const callback = this.eventCallbackMap[event.type] as (
       ...data: ExtraExtensionEventData<T>
     ) => Promise<ExtraExtensionEventReturnType<T>>
-    if (callback) {
+    if (callback && typeof callback === 'function') {
       return (await callback(...event.data)) as ExtraExtensionEventReturnType<T>
     }
   }
