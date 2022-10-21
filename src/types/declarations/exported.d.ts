@@ -388,7 +388,7 @@ type ExtraExtensionEventReturnType<T extends ExtraExtensionEventTypes> = T exten
   : T extends 'requestedSearchResult'
   ? SearchReturnType | void
   : T extends 'requestedRecommendations'
-  ? GetRecommendationsReturnType | void
+  ? RecommendationsReturnType | void
   : T extends 'requestedLyrics'
   ? string | void
   : T extends 'requestedArtistSongs'
@@ -774,13 +774,33 @@ interface extensionAPI {
    * Event fired when songs by a particular artist are requested
    * Callback should return parsed songs or undefined
    */
-  on(eventName: 'requestedArtistSongs', callback: (artist: Artists) => Promise<SongsReturnType | void>)
+  on(eventName: 'requestedArtistSongs', callback: (artist: Artists) => Promise<SongsReturnType | void>): void
 
   /**
    * Event fired when songs by a particular album are requested
    * Callback should return parsed songs or undefined
    */
-  on(eventName: 'requestedAlbumSongs', callback: (album: Album) => Promise<SongsReturnType | void>)
+  on(eventName: 'requestedAlbumSongs', callback: (album: Album) => Promise<SongsReturnType | void>): void
+
+  /**
+   * Event fired when songs are added to library
+   */
+  on(eventName: 'songAdded', callback: (songs: Song[]) => Promise<void>): void
+
+  /**
+   * Event fired when songs are removed from library
+   */
+  on(eventName: 'songRemoved', callback: (songs: Song[]) => Promise<void>): void
+
+  /**
+   * Event fired when playlist is added to library
+   */
+  on(eventName: 'playlistAdded', callback: (playlist: Playlist[]) => Promise<void>): void
+
+  /**
+   * Event fired when playlist is removed from library
+   */
+  on(eventName: 'playlistRemoved', callback: (songs: Playlist[]) => Promise<void>): void
 
   /**
    * Remove callbacks from extra events
@@ -876,4 +896,8 @@ interface extensionAPI {
    * Object containing controls for player
    */
   player: playerControls
+}
+
+declare global {
+  const api: extensionAPI
 }
