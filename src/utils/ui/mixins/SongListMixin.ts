@@ -35,6 +35,7 @@ export default class SongListMixin extends Vue {
   }
 
   private onKeyDown(e: KeyboardEvent) {
+    if ((e.target as HTMLElement)?.tagName?.toLocaleLowerCase() === 'input') return
     if (e.shiftKey || e.ctrlKey) this.keyPressed = e.key as 'Shift' | 'Control'
     if (e.ctrlKey && e.key === 'a') this.selectAll()
   }
