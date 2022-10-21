@@ -17,6 +17,7 @@ import path from 'path'
 import fs from 'fs'
 import https from 'https'
 import http from 'http'
+import { getExtensionHostChannel } from '../ipc'
 
 type KeysOfUnion<T> = T extends T ? keyof T : never
 // AvailableKeys will basically be keyof Foo | keyof Bar
@@ -44,39 +45,52 @@ export class SongDBInstance extends DBUtils {
     return oldId
   }
 
-  public store(newDoc: Song): Song | undefined {
-    if (this.verifySong(newDoc)) {
-      const existing = this.getSongByOptions({ song: { _id: newDoc._id } })[0]
-      if (existing) {
-        return existing
-      }
+  private notifyExtensionHostSongChanged(added: boolean, songs: Song[]) {
+    getExtensionHostChannel().sendExtraEvent({
+      type: added ? 'songAdded' : 'songRemoved',
+      data: [songs]
+    })
+  }
 
-      const artistID = newDoc.artists ? this.storeArtists(...newDoc.artists) : []
-      const albumID = newDoc.album ? this.storeAlbum(newDoc.album) : ''
-      const genreID = newDoc.genre ? this.storeGenre(...newDoc.genre) : []
-
-      newDoc._id = this.getSongId(newDoc._id ?? v4(), newDoc.providerExtension)
-      const marshaledSong = this.marshalSong(newDoc)
-
-      this.db.insert('allsongs', marshaledSong)
-      this.storeArtistBridge(artistID, marshaledSong._id)
-      this.storeGenreBridge(genreID, marshaledSong._id)
-      this.storeAlbumBridge(albumID, marshaledSong._id)
-
-      this.updateAllSongCounts()
-
-      if (newDoc.artists && artistID.length > 0) {
-        for (const i in newDoc.artists) {
-          newDoc.artists[i].artist_id = artistID[i]
+  public store(...songsToAdd: Song[]): Song[] {
+    const retList: Song[] = []
+    for (const newDoc of songsToAdd) {
+      if (this.verifySong(newDoc)) {
+        const existing = this.getSongByOptions({ song: { _id: newDoc._id } })[0]
+        if (existing) {
+          retList.push(existing)
         }
-      }
 
-      if (newDoc.album && albumID) {
-        newDoc.album.album_id = albumID
-      }
+        const artistID = newDoc.artists ? this.storeArtists(...newDoc.artists) : []
+        const albumID = newDoc.album ? this.storeAlbum(newDoc.album) : ''
+        const genreID = newDoc.genre ? this.storeGenre(...newDoc.genre) : []
 
-      return newDoc
+        newDoc._id = this.getSongId(newDoc._id ?? v4(), newDoc.providerExtension)
+        const marshaledSong = this.marshalSong(newDoc)
+
+        this.db.insert('allsongs', marshaledSong)
+        this.storeArtistBridge(artistID, marshaledSong._id)
+        this.storeGenreBridge(genreID, marshaledSong._id)
+        this.storeAlbumBridge(albumID, marshaledSong._id)
+
+        this.updateAllSongCounts()
+
+        if (newDoc.artists && artistID.length > 0) {
+          for (const i in newDoc.artists) {
+            newDoc.artists[i].artist_id = artistID[i]
+          }
+        }
+
+        if (newDoc.album && albumID) {
+          newDoc.album.album_id = albumID
+        }
+
+        retList.push(newDoc)
+      }
     }
+
+    this.notifyExtensionHostSongChanged(true, retList)
+    return retList
   }
 
   private updateAllSongCounts() {
@@ -100,76 +114,81 @@ export class SongDBInstance extends DBUtils {
 
   /**
    * Removes song by its ID. Also removes references to albums, artists, genre, playlist and unlinks thumbnails.
-   * @param song_id id of song to remove
+   * @param songs list of songs to remove
    */
-  public async removeSong(song_id: string) {
+  public async removeSong(...songs: Song[]) {
     const pathsToRemove: string[] = []
+
     this.db
-      .transaction((song_id: string) => {
-        const album_ids = this.getCountBySong('album_bridge', 'album', song_id)
-        const artist_ids = this.getCountBySong('artists_bridge', 'artist', song_id)
-        const genre_ids = this.getCountBySong('genre_bridge', 'genre', song_id)
+      .transaction((song_ids: string[]) => {
+        for (const song_id of song_ids) {
+          const album_ids = this.getCountBySong('album_bridge', 'album', song_id)
+          const artist_ids = this.getCountBySong('artists_bridge', 'artist', song_id)
+          const genre_ids = this.getCountBySong('genre_bridge', 'genre', song_id)
 
-        const songCoverPath_low = this.db.queryFirstCell(
-          `SELECT song_coverPath_low from allsongs WHERE _id = ?`,
-          song_id
-        )
-        const songCoverPath_high = this.db.queryFirstCell(
-          `SELECT song_coverPath_high from allsongs WHERE _id = ?`,
-          song_id
-        )
+          const songCoverPath_low = this.db.queryFirstCell(
+            `SELECT song_coverPath_low from allsongs WHERE _id = ?`,
+            song_id
+          )
+          const songCoverPath_high = this.db.queryFirstCell(
+            `SELECT song_coverPath_high from allsongs WHERE _id = ?`,
+            song_id
+          )
 
-        if (songCoverPath_low) pathsToRemove.push(songCoverPath_low)
-        if (songCoverPath_high) pathsToRemove.push(songCoverPath_high)
+          if (songCoverPath_low) pathsToRemove.push(songCoverPath_low)
+          if (songCoverPath_high) pathsToRemove.push(songCoverPath_high)
 
-        this.db.delete('artists_bridge', { song: song_id })
-        this.db.delete('album_bridge', { song: song_id })
-        this.db.delete('genre_bridge', { song: song_id })
-        this.db.delete('playlist_bridge', { song: song_id })
-        this.db.delete('allsongs', { _id: song_id })
+          this.db.delete('artists_bridge', { song: song_id })
+          this.db.delete('album_bridge', { song: song_id })
+          this.db.delete('genre_bridge', { song: song_id })
+          this.db.delete('playlist_bridge', { song: song_id })
+          this.db.delete('allsongs', { _id: song_id })
 
-        for (const id of album_ids) {
-          if (id.count === 1) {
-            const album: Album = (
-              this.getEntityByOptions({
-                album: {
-                  album_id: id.album
-                }
-              }) as Album[]
-            )[0]
-            this.db.delete('albums', { album_id: id.album })
-            if (album?.album_coverPath_low) pathsToRemove.push(album.album_coverPath_low)
-            if (album?.album_coverPath_high) pathsToRemove.push(album.album_coverPath_high)
+          for (const id of album_ids) {
+            if (id.count === 1) {
+              const album: Album = (
+                this.getEntityByOptions({
+                  album: {
+                    album_id: id.album
+                  }
+                }) as Album[]
+              )[0]
+              this.db.delete('albums', { album_id: id.album })
+              if (album?.album_coverPath_low) pathsToRemove.push(album.album_coverPath_low)
+              if (album?.album_coverPath_high) pathsToRemove.push(album.album_coverPath_high)
+            }
           }
-        }
 
-        for (const id of artist_ids) {
-          if (id.count === 1) {
-            const artist = (
-              this.getEntityByOptions({
-                artist: {
-                  artist_id: id.artist
-                }
-              }) as Artists[]
-            )[0]
-            this.db.delete('artists', { artist_id: id.artist })
-            if (artist?.artist_coverPath) pathsToRemove.push(artist.artist_coverPath)
+          for (const id of artist_ids) {
+            if (id.count === 1) {
+              const artist = (
+                this.getEntityByOptions({
+                  artist: {
+                    artist_id: id.artist
+                  }
+                }) as Artists[]
+              )[0]
+              this.db.delete('artists', { artist_id: id.artist })
+              if (artist?.artist_coverPath) pathsToRemove.push(artist.artist_coverPath)
+            }
           }
-        }
 
-        for (const id of genre_ids) {
-          if (id.count === 1) {
-            this.db.delete('genre', { genre_id: id.genre })
+          for (const id of genre_ids) {
+            if (id.count === 1) {
+              this.db.delete('genre', { genre_id: id.genre })
+            }
           }
         }
       })
-      .immediate(song_id)
+      .immediate(songs.map((val) => val._id))
 
     for (const path of pathsToRemove) {
       await this.removeFile(path)
     }
 
     this.updateAllSongCounts()
+
+    this.notifyExtensionHostSongChanged(false, songs)
   }
 
   private updateSongArtists(newArtists: Artists[], oldArtists: Artists[] | undefined, songID: string) {
@@ -1012,16 +1031,17 @@ export class SongDBInstance extends DBUtils {
    */
   public addToPlaylist(playlist_id: string, ...songs: Song[]) {
     // TODO: Regenerate cover instead of using existing from song
-    const coverExists = this.isPlaylistCoverExists(playlist_id)
+    let coverExists = this.isPlaylistCoverExists(playlist_id)
     this.db.transaction((songs: Song[]) => {
-      for (let s of songs) {
-        if (this.verifySong(s)) {
-          s = this.store(s) as Song
-          if (!coverExists) {
-            if (s.album?.album_coverPath_high) {
-              this.updatePlaylistCoverPath(playlist_id, s.album.album_coverPath_high)
-            }
+      const stored = this.store(...songs)
+
+      for (const s of stored) {
+        if (!coverExists) {
+          if (s.album?.album_coverPath_high) {
+            this.updatePlaylistCoverPath(playlist_id, s.album.album_coverPath_high)
+            coverExists = true
           }
+
           this.db.insert('playlist_bridge', { playlist: playlist_id, song: s._id })
         }
       }

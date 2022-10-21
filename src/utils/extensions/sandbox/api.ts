@@ -79,8 +79,23 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
     return sendAsync<(Song | undefined)[]>(this.packageName, 'add-songs', songs)
   }
 
-  public async removeSong(song_id: string) {
-    return sendAsync<void>(this.packageName, 'remove-song', song_id)
+  public async removeSong(song: Song | string) {
+    let parsedSong: Song | undefined
+    if (typeof song === 'string') {
+      const searchRes = await this.getSongs({
+        song: {
+          _id: song
+        }
+      })
+
+      parsedSong = searchRes?.at(0)
+    } else {
+      parsedSong = song
+    }
+
+    if (parsedSong) {
+      return sendAsync<void>(this.packageName, 'remove-song', song)
+    }
   }
 
   public async addPlaylist(playlist: Omit<Playlist, 'playlist_id'>) {

@@ -9,7 +9,6 @@
 
 import { FAVORITES_PLAYLIST_ID } from '@/utils/commonConstants'
 import { SongDBInstance } from './database'
-import path from 'path'
 
 export const SongDB = new SongDBInstance()
 

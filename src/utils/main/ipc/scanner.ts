@@ -265,14 +265,14 @@ export class ScannerChannel implements IpcChannelInterface {
     for (const s of allSongs) {
       if (s.type == 'LOCAL') {
         if (paths.length == 0 || !(s.path && s.path.match(regex)) || !s.path) {
-          await SongDB.removeSong(s._id)
+          await SongDB.removeSong(s)
           continue
         }
 
         try {
           await fs.promises.access(s.path, fs.constants.F_OK)
         } catch (e) {
-          await SongDB.removeSong(s._id)
+          await SongDB.removeSong(s)
         }
       }
     }

@@ -58,9 +58,7 @@ export class SongsChannel implements IpcChannelInterface {
     const promises: Promise<void>[] = []
     if (request.params.songs) {
       const songs = request.params.songs as Song[]
-      for (const s of songs) {
-        promises.push(SongDB.removeSong(s._id))
-      }
+      promises.push(SongDB.removeSong(...songs))
     }
     Promise.all(promises)
       .then((data) => {
@@ -76,9 +74,7 @@ export class SongsChannel implements IpcChannelInterface {
     const results: (Song | undefined)[] = []
     if (request.params.songs) {
       const songs = request.params.songs
-      for (const s of songs) {
-        results.push(SongDB.store(s))
-      }
+      results.push(...SongDB.store(...songs))
     }
 
     event.reply(request.responseChannel, results)
