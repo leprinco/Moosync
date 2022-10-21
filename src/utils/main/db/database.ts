@@ -1067,12 +1067,12 @@ export class SongDBInstance extends DBUtils {
    * @param playlist id of playlist from which song is to be removed
    * @param songs songs which are to be removed
    */
-  public async removeFromPlaylist(playlist: string, ...songs: string[]) {
+  public removeFromPlaylist(playlist: string, ...songs: Song[]) {
     this.db.transaction((songs: string[]) => {
-      for (const s in songs) {
+      for (const s of songs) {
         this.db.delete('playlist_bridge', { playlist: playlist, song: s })
       }
-    })(songs)
+    })(songs.map((val) => val._id))
     this.updateSongCountPlaylists()
   }
 

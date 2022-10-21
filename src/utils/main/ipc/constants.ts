@@ -132,6 +132,7 @@ export enum PlaylistEvents {
   CREATE_PLAYLIST = 'createPlaylist',
   UPDATE_PLAYLIST = 'updatePlaylist',
   ADD_TO_PLAYLIST = 'AddToPlaylist',
+  REMOVE_FROM_PLAYLIST = 'removeFromPlaylist',
   GET_ALL_PLAYLISTS = 'getPlaylists',
   GET_PLAYLIST = 'getPlaylist',
   ADDED_PLAYLIST = 'addedPlaylist',

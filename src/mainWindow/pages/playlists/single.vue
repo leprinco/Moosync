@@ -20,6 +20,7 @@
       :detailsButtonGroup="buttonGroups"
       :isLoading="isLoading"
       :isRemote="isRemote"
+      :onSongContextMenuOverride="onSongContextMenuOverride"
       @playAll="playPlaylist"
       @addToQueue="addPlaylistToQueue"
       @addToLibrary="addPlaylistToLibrary"
@@ -41,6 +42,7 @@ import { EventBus } from '@/utils/main/ipc/constants'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
 import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
+import { arrayDiff } from '@/utils/common'
 
 @Component({
   components: {
@@ -224,6 +226,18 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
 
   private onSearchChange() {
     this.fetchAll()
+  }
+
+  private onSongContextMenuOverride(event: PointerEvent, songs: Song[]) {
+    this.getContextMenu(event, {
+      type: 'PLAYLIST_SONGS',
+      args: {
+        playlistId: this.playlist.playlist_id,
+        songs,
+        isRemote: this.isRemote(),
+        refreshCallback: () => this.songList.splice(0, this.songList.length, ...arrayDiff(this.songList, songs))
+      }
+    })
   }
 }
 </script>

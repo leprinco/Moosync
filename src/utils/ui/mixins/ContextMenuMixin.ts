@@ -139,6 +139,28 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     return items
   }
 
+  private getPlaylistSongContextMenu(
+    playlistId: string,
+    exclude: string | undefined,
+    refreshCallback?: () => void,
+    isRemote = false,
+    ...item: Song[]
+  ) {
+    const items: MenuItem[] = [...this.getSongContextMenu(exclude, refreshCallback, isRemote, ...item)]
+
+    if (!isRemote) {
+      items.push({
+        label: this.$tc('contextMenu.song.removeFromPlaylist'),
+        handler: async () => {
+          await window.DBUtils.removeFromPlaylist(playlistId, ...item)
+          refreshCallback && refreshCallback()
+        }
+      })
+    }
+
+    return items
+  }
+
   private getSongContextMenu(
     exclude: string | undefined,
     refreshCallback?: () => void,
@@ -372,6 +394,15 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
         break
       case 'SONG_SORT':
         items = this.getSongSortByMenu(options.args.sortOptions)[0].children ?? []
+        break
+      case 'PLAYLIST_SONGS':
+        items = this.getPlaylistSongContextMenu(
+          options.args.playlistId,
+          options.args.exclude,
+          options.args.refreshCallback,
+          options.args.isRemote,
+          ...options.args.songs
+        )
     }
 
     this.getExtensionItems(options.type, this.getExtensionArgs(options)).then((res) => items.push(...res))

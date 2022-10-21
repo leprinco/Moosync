@@ -63,7 +63,8 @@
       "moveManually": "Move manually",
       "manualIndex": "Set index of song",
       "remove": "Remove from Library",
-      "add": "Add Song to Library | Add Songs to Library"
+      "add": "Add Song to Library | Add Songs to Library",
+      "removeFromPlaylist": "Remove from playlist"
     },
     "moreInfo": "More Info"
   },

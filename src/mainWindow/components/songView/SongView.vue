@@ -134,6 +134,9 @@ export default class AllSongs extends mixins(
   })
   private detailsButtonGroup!: SongDetailButtons
 
+  @Prop({ default: null })
+  private onSongContextMenuOverride!: (event: PointerEvent, songs: Song[]) => void
+
   private clearSelection() {
     this.currentSong = null
     this.selected = this.selectedCopy
@@ -150,15 +153,19 @@ export default class AllSongs extends mixins(
     vxm.themes.songSortBy = options
   }
 
-  private onSongContextMenu(event: Event, songs: Song[]) {
-    this.getContextMenu(event, {
-      type: 'SONGS',
-      args: {
-        songs,
-        isRemote: typeof this.isRemote === 'function' && this.isRemote(songs),
-        refreshCallback: () => this.songList.splice(0, this.songList.length, ...arrayDiff(this.songList, songs))
-      }
-    })
+  private onSongContextMenu(event: PointerEvent, songs: Song[]) {
+    if (this.onSongContextMenuOverride) {
+      this.onSongContextMenuOverride(event, songs)
+    } else {
+      this.getContextMenu(event, {
+        type: 'SONGS',
+        args: {
+          songs,
+          isRemote: typeof this.isRemote === 'function' && this.isRemote(songs),
+          refreshCallback: () => this.songList.splice(0, this.songList.length, ...arrayDiff(this.songList, songs))
+        }
+      })
+    }
   }
 
   private showSortMenu(event: Event) {

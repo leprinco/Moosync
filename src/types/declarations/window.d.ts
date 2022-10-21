@@ -49,6 +49,13 @@ interface DBUtils {
   addToPlaylist: (playlistID: string, ...songs: Song[]) => Promise<void>
 
   /**
+   * Remove songs from playlist
+   * @param playlistID id of playlist from which songs are to be removed
+   * @param songIDs songs to be removed from playlist
+   */
+  removeFromPlaylist: (playlistID: string, ...songIDs: Song[]) => Promise<void>
+
+  /**
    * Remove playlist
    * @param playlistID id of playlist to be removed
    */

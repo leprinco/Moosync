@@ -73,6 +73,16 @@ type ContextMenuArgs =
         sortOptions: Sort<SongSortOptions>
       }
     }
+  | {
+      type: 'PLAYLIST_SONGS'
+      args: {
+        exclude?: string
+        refreshCallback?: () => void
+        songs: Song[]
+        isRemote?: boolean
+        playlistId: string
+      }
+    }
 
 type SongSortOptions = { type: 'title' | 'date_added' | 'playCount'; asc: boolean }
 type PlaylistSortOptions = { type: 'name' | 'provider'; asc: boolean }
