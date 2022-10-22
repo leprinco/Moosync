@@ -12,6 +12,7 @@ import DB, { BetterSqlite3Helper } from 'better-sqlite3-helper'
 import { app } from 'electron'
 import { migrations } from './migrations'
 import path from 'path'
+import { isEmpty } from '@/utils/common'
 
 export class DBUtils {
   protected db: BetterSqlite3Helper.DBInstance
@@ -104,7 +105,7 @@ export class DBUtils {
       date_added: Date.now(),
       icon: song.icon,
       provider_extension: song.providerExtension,
-      show_in_library: song.showInLibrary ? 1 : 0
+      show_in_library: isEmpty(song.showInLibrary) || song.showInLibrary ? 1 : 0
     }
   }
 
