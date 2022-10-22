@@ -13,8 +13,8 @@ import { WindowHandler, _windowHandler } from '../windowManager'
 import { mainWindowHasMounted } from '../../../background'
 import { app, shell } from 'electron'
 import path from 'path'
-import { downloadFile } from '@/utils/common'
 import { oauthHandler } from '../oauth/handler'
+import { downloadFile } from '@/utils/main/mainUtils'
 
 export class BrowserWindowChannel implements IpcChannelInterface {
   name = IpcEvents.BROWSER_WINDOWS

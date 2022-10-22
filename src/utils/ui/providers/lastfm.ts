@@ -104,7 +104,7 @@ export class LastFMProvider extends GenericProvider {
   }
 
   private async populateRequest<T extends ApiResources>(
-    axiosMethod: 'GET' | 'POST',
+    fetchMethod: 'GET' | 'POST',
     lastFmMethod: T,
     data?: object,
     token?: string
@@ -136,9 +136,9 @@ export class LastFMProvider extends GenericProvider {
 
       const resp = await this.api.request('', {
         baseURL: API_BASE_URL,
-        method: axiosMethod,
-        search: axiosMethod === 'GET' ? parsedParams : {},
-        body: axiosMethod === 'POST' ? JSON.stringify(parsedParams) : undefined
+        method: fetchMethod,
+        search: fetchMethod === 'GET' ? parsedParams : {},
+        body: fetchMethod === 'POST' ? JSON.stringify(parsedParams) : undefined
       })
 
       return resp.json()

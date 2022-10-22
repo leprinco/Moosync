@@ -9,33 +9,7 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-import { setupCache, buildWebStorage } from 'axios-cache-interceptor'
 import { ProviderScopes } from '@/utils/commonConstants'
-import Axios from 'axios'
-
-type Config = {
-  store: {
-    removeItem: (uid: string) => Promise<void>
-  }
-  uuid: string
-}
-
-// export const forageStore = localforage.createInstance({
-//   driver: [localforage.INDEXEDDB],
-//   name: 'yt-cache'
-// })
-
-export const cache = setupCache(Axios.create(), {
-  ttl: 604800000, // 7 days
-  storage: buildWebStorage(localStorage, 'axios-cache:'),
-  // invalidate: async (config: Config, request) => {
-  //   if (request.clearCacheEntry) {
-  //     await config.store.removeItem(config.uuid)
-  //   }
-  // },
-
-  debug: (msg) => console.debug(msg)
-})
 
 export abstract class GenericProvider {
   constructor() {

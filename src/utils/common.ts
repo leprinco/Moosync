@@ -7,9 +7,6 @@
  *  See LICENSE in the project root for license information.
  */
 
-import axios from 'axios'
-import { createWriteStream } from 'fs'
-
 export function arrayDiff<T>(arr1: T[], arr2: T[]) {
   return arr1.filter((x) => !arr2.includes(x))
 }
@@ -74,18 +71,6 @@ export function sortSongListFn(options: SongSortOptions) {
 
 export function sortSongList(songList: Song[], options: SongSortOptions): Song[] {
   return songList.sort(sortSongListFn(options))
-}
-
-export async function downloadFile(url: string, dest: string) {
-  const file = createWriteStream(dest)
-  const resp = await axios({
-    url,
-    responseType: 'stream'
-  })
-
-  return new Promise<void>((resolve, reject) => {
-    resp.data.pipe(file).on('finish', resolve).on('error', reject)
-  })
 }
 
 const iso8601DurationRegex =
