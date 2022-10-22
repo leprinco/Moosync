@@ -27,6 +27,7 @@
       :optionalProviders="artistSongProviders"
       @onScrollEnd="loadNextPage"
       @onSearchChange="onSearchChange"
+      @playRandom="playRandom"
     />
   </div>
 </template>
@@ -43,6 +44,7 @@ import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import Vue from 'vue'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
+import { getRandomFromArray } from '@/utils/common'
 
 @Component({
   components: {
@@ -80,7 +82,7 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     return {
       enableContainer: true,
       enableLibraryStore: true,
-      playRandom: this.songList.length > 150
+      playRandom: !!(this.songList.length > 150 || this.nextPageToken)
     }
   }
 
@@ -229,6 +231,12 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
   private addArtistToLibrary() {
     this.addSongsToLibrary(...this.songList)
     this.fetchAll((songs) => this.addSongsToLibrary(...songs))
+  }
+
+  private async playRandom() {
+    await this.fetchAll()
+    const randomSongs = getRandomFromArray(this.songList, 100)
+    this.queueSong(randomSongs)
   }
 
   private async fetchRemoteProviderByKey(key: string) {

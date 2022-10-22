@@ -31,7 +31,7 @@ import SongView from '@/mainWindow/components/songView/SongView.vue'
 
 import { mixins } from 'vue-class-component'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
-import { arrayDiff } from '@/utils/common'
+import { arrayDiff, getRandomFromArray } from '@/utils/common'
 import { vxm } from '@/mainWindow/store'
 
 @Component({
@@ -99,6 +99,11 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin) {
 
   private addGenreToQueue() {
     this.queueSong(this.songList)
+  }
+
+  private async playRandom() {
+    const randomSongs = getRandomFromArray(this.songList, 100)
+    this.queueSong(randomSongs)
   }
 }
 </script>

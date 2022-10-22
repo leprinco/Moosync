@@ -26,6 +26,7 @@
       @addToLibrary="addPlaylistToLibrary"
       @onScrollEnd="loadNextPage"
       @onSearchChange="onSearchChange"
+      @playRandom="playRandom"
     />
   </div>
 </template>
@@ -42,7 +43,7 @@ import { EventBus } from '@/utils/main/ipc/constants'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
 import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
-import { arrayDiff } from '@/utils/common'
+import { arrayDiff, getRandomFromArray } from '@/utils/common'
 
 @Component({
   components: {
@@ -74,7 +75,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
     return {
       enableContainer: true,
       enableLibraryStore: this.isRemote() && !this.isAddedInLibrary,
-      playRandom: this.songList.length > 150
+      playRandom: !!(this.songList.length > 150 || this.nextPageToken)
     }
   }
 
@@ -226,6 +227,12 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
 
   private onSearchChange() {
     this.fetchAll()
+  }
+
+  private async playRandom() {
+    await this.fetchAll()
+    const randomSongs = getRandomFromArray(this.songList, 100)
+    this.queueSong(randomSongs)
   }
 
   private onSongContextMenuOverride(event: PointerEvent, songs: Song[]) {

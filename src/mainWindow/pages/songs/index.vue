@@ -17,6 +17,7 @@
       :onGeneralSongContextMenuOverride="getGeneralSongsMenu"
       @playAll="playSongs"
       @addToQueue="addSongsToQueue"
+      @playRandom="playRandom"
     />
   </div>
 </template>
@@ -28,6 +29,7 @@ import SongView from '@/mainWindow/components/songView/SongView.vue'
 import { mixins } from 'vue-class-component'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import { vxm } from '@/mainWindow/store'
+import { getRandomFromArray } from '@/utils/common'
 
 @Component({
   components: {
@@ -97,6 +99,11 @@ export default class AllSongs extends mixins(ContextMenuMixin) {
 
   private addSongsToQueue() {
     this.queueSong(this.songList)
+  }
+
+  private async playRandom() {
+    const randomSongs = getRandomFromArray(this.songList, 100)
+    this.queueSong(randomSongs)
   }
 }
 </script>

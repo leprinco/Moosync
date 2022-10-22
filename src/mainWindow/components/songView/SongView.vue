@@ -52,7 +52,7 @@ import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import { vxm } from '@/mainWindow/store'
 import SongViewClassic from '@/mainWindow/components/songView/components/SongViewClassic.vue'
 import SongViewCompact from '@/mainWindow/components/songView/components/SongViewCompact.vue'
-import { arrayDiff, sortSongList, getRandomFromArray } from '@/utils/common'
+import { arrayDiff, sortSongList } from '@/utils/common'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 
@@ -208,7 +208,7 @@ export default class AllSongs extends mixins(
 
   private addToQueue() {
     if (this.selected) {
-      this.queueSong(this.selected ?? this.songList)
+      this.queueSong(this.selected)
       this.selected = this.selectedCopy
       return
     }
@@ -217,7 +217,7 @@ export default class AllSongs extends mixins(
 
   private addToLibrary() {
     if (this.selected) {
-      this.addSongsToLibrary(...(this.selected ?? this.songList))
+      this.addSongsToLibrary(...this.selected)
       this.selected = this.selectedCopy
       return
     }
@@ -225,8 +225,6 @@ export default class AllSongs extends mixins(
   }
 
   private playRandom() {
-    const randomSongs = getRandomFromArray(this.songList, 100)
-    this.queueSong(randomSongs)
     this.$emit('playRandom')
   }
 

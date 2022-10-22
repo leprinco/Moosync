@@ -24,6 +24,7 @@
       @addToQueue="addAlbumToQueue"
       @onOptionalProviderChanged="onAlbumProviderChanged"
       :optionalProviders="albumSongProviders"
+      @playRandom="playRandom"
     />
   </div>
 </template>
@@ -41,6 +42,7 @@ import Vue from 'vue'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 import { ProviderScopes } from '@/utils/commonConstants'
+import { getRandomFromArray } from '@/utils/common'
 
 @Component({
   components: {
@@ -186,6 +188,11 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
 
   private addAlbumToQueue() {
     this.queueSong(this.songList)
+  }
+
+  private async playRandom() {
+    const randomSongs = getRandomFromArray(this.songList, 100)
+    this.queueSong(randomSongs)
   }
 
   private async fetchProviderSongs(provider: GenericProvider) {
