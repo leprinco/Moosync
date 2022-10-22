@@ -56,18 +56,18 @@ expose({
 async function scanFile(filePath: string): Promise<ScannedSong> {
   const fsStats = await fsP.stat(filePath)
   const buffer = await getBuffer(filePath)
-  const hash = await generateChecksum(buffer)
 
-  return processFile(
+  const processed = processFile(
     {
       path: filePath,
       inode: fsStats.ino.toString(),
       deviceno: fsStats.dev.toString(),
-      size: fsStats.size,
-      hash: hash
+      size: fsStats.size
     },
     buffer
   )
+
+  return processed
 }
 
 async function getBuffer(filePath: string) {
@@ -255,7 +255,9 @@ async function findCoverFile(baseDir: string, fileName: string): Promise<Buffer 
 
 async function processFile(stats: stats, buffer: Buffer): Promise<ScannedSong> {
   const metadata = await mm.parseBuffer(buffer)
-  const info = await getInfo(metadata, stats)
+  const hash = metadata.format.audioMD5?.toString() ?? (await generateChecksum(buffer))
+
+  const info = await getInfo(metadata, stats, hash)
   let cover = metadata.common.picture && metadata.common.picture[0].data
 
   if (!cover) {
@@ -266,7 +268,7 @@ async function processFile(stats: stats, buffer: Buffer): Promise<ScannedSong> {
   return { song: info, cover }
 }
 
-async function getInfo(data: mm.IAudioMetadata, stats: stats): Promise<Song> {
+async function getInfo(data: mm.IAudioMetadata, stats: stats, hash: string): Promise<Song> {
   const artists: Artists[] = []
   if (data.common.artists) {
     for (let i = 0; i < data.common.artists.length; i++) {
@@ -303,7 +305,7 @@ async function getInfo(data: mm.IAudioMetadata, stats: stats): Promise<Song> {
     container: data.format.container,
     duration: data.format.duration || 0,
     sampleRate: data.format.sampleRate,
-    hash: stats.hash,
+    hash,
     inode: stats.inode,
     deviceno: stats.deviceno,
     date_added: Date.now(),

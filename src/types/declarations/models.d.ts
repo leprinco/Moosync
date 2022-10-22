@@ -53,7 +53,6 @@ interface stats {
   size: number
   inode: string
   deviceno: string
-  hash?: string
 }
 
 interface image {
