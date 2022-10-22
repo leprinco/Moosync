@@ -113,8 +113,12 @@ export default class MusicBar extends mixins(PlayerControls, JukeboxMixin) {
 
   private async favoriteSong() {
     if (vxm.player.currentSong) {
-      await window.DBUtils.addToPlaylist(FAVORITES_PLAYLIST_ID, vxm.player.currentSong)
-      this.isFavorite = true
+      if (!this.isFavorite) {
+        await window.DBUtils.addToPlaylist(FAVORITES_PLAYLIST_ID, vxm.player.currentSong)
+      } else {
+        await window.DBUtils.removeFromPlaylist(FAVORITES_PLAYLIST_ID, vxm.player.currentSong)
+      }
+      this.isFavorite = !this.isFavorite
     }
   }
 
