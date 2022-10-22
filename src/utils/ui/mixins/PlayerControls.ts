@@ -22,9 +22,9 @@ export default class PlayerControls extends Vue {
     return vxm.sync.mode !== PeerMode.UNDEFINED
   }
 
-  public nextSong() {
-    if (this.isSyncing) vxm.sync.nextSong()
-    else vxm.player.nextSong()
+  public async nextSong() {
+    if (this.isSyncing) await vxm.sync.nextSong()
+    else await vxm.player.nextSong()
   }
 
   public prevSong() {
@@ -108,8 +108,8 @@ export default class PlayerControls extends Vue {
     }
   }
 
-  public removeFromQueue(index: number) {
-    vxm.player.pop(index)
+  public async removeFromQueue(index: number) {
+    await vxm.player.pop(index)
   }
 
   public setSongIndex(oldIndex: number, newIndex: number) {

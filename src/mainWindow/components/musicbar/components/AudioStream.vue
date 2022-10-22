@@ -324,7 +324,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
       this.lastLoadedSong = undefined
       this.loadAudio(this.currentSong, false)
     } else {
-      this.nextSong()
+      await this.nextSong()
     }
   }
 
@@ -368,11 +368,11 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
       }
     }
 
-    this.activePlayer.onError = (err) => {
+    this.activePlayer.onError = async (err) => {
       console.error('Player error', err.message, 'while playing', this.currentSong?.playbackUrl)
       console.error(`${this.currentSong?._id}: ${this.currentSong?.title} unplayable, skipping.`)
-      this.removeFromQueue(vxm.player.queueIndex)
-      this.nextSong()
+      await this.nextSong()
+      await this.removeFromQueue(vxm.player.queueIndex - 1)
       vxm.player.loading = false
     }
 
@@ -503,6 +503,8 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
   private async getPlaybackUrlAndDuration(
     song: Song
   ): Promise<{ url: string | undefined; duration: number } | undefined> {
+    console.debug('Trying to get playback URL and duration of', song.title, song.type)
+
     if (song.type === 'SPOTIFY') {
       return vxm.providers.spotifyProvider.getPlaybackUrlAndDuration(song)
     }
@@ -608,7 +610,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
       if (!nextSong.playbackUrl || !nextSong.duration) await this.setPlaybackURLAndDuration(nextSong)
 
       if (!nextSong.playbackUrl || !nextSong.duration) {
-        this.removeFromQueue(vxm.player.queueIndex + 1)
+        await this.removeFromQueue(vxm.player.queueIndex + 1)
         return
       }
 
@@ -706,8 +708,8 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
     }
 
     if (!song.path && (!song.playbackUrl || !song.duration)) {
-      this.removeFromQueue(vxm.player.queueIndex)
-      this.nextSong()
+      await this.nextSong()
+      await this.removeFromQueue(vxm.player.queueIndex - 1)
       vxm.player.loading = false
       return
     }
@@ -760,7 +762,7 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
       }
     } catch (e) {
       console.debug(e)
-      this.nextSong()
+      await this.nextSong()
     }
   }
 }
