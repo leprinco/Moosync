@@ -377,6 +377,7 @@ export class SpotifyProvider extends GenericProvider {
   }
 
   public async getPlaybackUrlAndDuration(song: Song) {
+    console.debug(`Searching for ${song.title} on youtube`)
     const ytItem = await this.spotifyToYoutube(song)
     if (ytItem) {
       return { url: ytItem.playbackUrl ?? ytItem.url, duration: ytItem.duration ?? 0 }

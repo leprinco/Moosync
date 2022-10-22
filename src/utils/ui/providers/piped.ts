@@ -396,6 +396,12 @@ export class PipedProvider extends GenericProvider {
     return streams.sort((a, b) => b.bitrate - a.bitrate)[0]
   }
 
+  public async getPlaybackUrlAndDuration(
+    song: Song
+  ): Promise<{ url: string | undefined; duration: number } | undefined> {
+    return { url: song.url, duration: song.duration }
+  }
+
   public async getStreamUrl(videoId: string) {
     if (videoId.startsWith('http')) {
       videoId = this.getIdFromURL(videoId) ?? ''

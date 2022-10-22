@@ -374,6 +374,12 @@ export class InvidiousProvider extends GenericProvider {
     return 'InvidiousIcon'
   }
 
+  public async getPlaybackUrlAndDuration(
+    song: Song
+  ): Promise<{ url: string | undefined; duration: number } | undefined> {
+    return { url: song.url, duration: song.duration }
+  }
+
   public matchEntityId(id: string): boolean {
     return id.startsWith('youtube:') || id.startsWith('youtube-playlist:') || id.startsWith('youtube-author:')
   }

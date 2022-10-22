@@ -715,4 +715,10 @@ export class YoutubeProvider extends GenericProvider {
         return id.replace('youtube-author:', '')
     }
   }
+
+  public async getPlaybackUrlAndDuration(
+    song: Song
+  ): Promise<{ url: string | undefined; duration: number } | undefined> {
+    return { url: song.url, duration: song.duration }
+  }
 }

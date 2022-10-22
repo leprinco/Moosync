@@ -139,6 +139,7 @@ export class YTScraper extends CacheHandler {
           })) ?? [],
         duration: s.duration?.totalSeconds ?? 0,
         url: s.youtubeId,
+        playbackUrl: s.youtubeId,
         date_added: Date.now(),
         type: 'YOUTUBE'
       })
@@ -231,6 +232,7 @@ export class YTScraper extends CacheHandler {
         : undefined,
       duration: vid.duration ? this.parseYoutubeDuration(vid.duration ?? '') : 0,
       url: vid.url,
+      playbackUrl: vid.url,
       date_added: Date.now(),
       type: 'YOUTUBE'
     }
@@ -396,8 +398,6 @@ export class YTScraper extends CacheHandler {
     const resp = await ytdl.getBasicInfo(id)
     const videoDetails = resp.videoDetails
 
-    const watchURLCache = this.getCache(`watchURL:${id}`)
-
     return {
       _id: `youtube:${videoDetails.videoId}`,
       title: videoDetails.title,
@@ -419,7 +419,7 @@ export class YTScraper extends CacheHandler {
             }
           ]
         : undefined,
-      playbackUrl: watchURLCache ?? this.findBestFormat(resp),
+      playbackUrl: videoDetails.video_url,
       url: videoDetails.video_url,
       date_added: Date.now(),
       type: 'YOUTUBE'
