@@ -138,7 +138,7 @@ export class LastFMProvider extends GenericProvider {
         baseURL: API_BASE_URL,
         method: fetchMethod,
         search: fetchMethod === 'GET' ? parsedParams : {},
-        body: fetchMethod === 'POST' ? JSON.stringify(parsedParams) : undefined
+        body: fetchMethod === 'POST' ? parsedParams : undefined
       })
 
       return resp.json()
