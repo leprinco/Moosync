@@ -1,8 +1,8 @@
 import { ProviderScopes } from '@/utils/commonConstants'
-import { cache, GenericProvider } from './generics/genericProvider'
-import axios from 'axios'
+import { GenericProvider } from './generics/genericProvider'
 import qs from 'qs'
 import { vxm } from '@/mainWindow/store'
+import { FetchWrapper } from './generics/fetchWrapper'
 
 enum PipedResources {
   SEARCH = 'search',
@@ -18,12 +18,7 @@ const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 export class PipedProvider extends GenericProvider {
   key = 'piped'
 
-  private api = axios.create({
-    adapter: cache.adapter,
-    paramsSerializer: {
-      serialize: (params) => qs.stringify(params, { arrayFormat: 'repeat', encode: false })
-    }
-  })
+  private api = new FetchWrapper()
 
   public async getLoggedIn(): Promise<boolean> {
     vxm.providers.loggedInYoutube = true
@@ -82,7 +77,7 @@ export class PipedProvider extends GenericProvider {
 
   private async populateRequest<T extends PipedResources, K extends PipedResponses.SearchFilters>(
     resource: T,
-    params: PipedResponses.SearchObject<T, K>,
+    search: PipedResponses.SearchObject<T, K>,
     invalidateCache = false,
     tries = 0
   ): Promise<PipedResponses.ResponseType<T, K> | undefined> {
@@ -94,31 +89,33 @@ export class PipedProvider extends GenericProvider {
     let parsedResource: string = resource
 
     if (resource.includes('${playlist_id}')) {
-      parsedResource = resource.replace('${playlist_id}', (params as PipedResponses.PlaylistDetailsRequest).playlistId)
+      parsedResource = resource.replace('${playlist_id}', (search as PipedResponses.PlaylistDetailsRequest).playlistId)
     }
 
     if (resource.includes('${channel_id}')) {
-      parsedResource = resource.replace('${channel_id}', (params as PipedResponses.ChannelDetailsRequest).channelId)
+      parsedResource = resource.replace('${channel_id}', (search as PipedResponses.ChannelDetailsRequest).channelId)
     }
 
     if (resource.includes('${video_id}')) {
-      parsedResource = resource.replace('${video_id}', (params as PipedResponses.StreamRequest).videoId)
+      parsedResource = resource.replace('${video_id}', (search as PipedResponses.StreamRequest).videoId)
     }
 
     try {
-      const resp = await this.api.get<PipedResponses.ResponseType<T, K>>(`${BASE_URL}${parsedResource}`, {
-        params,
+      const resp = await this.api.request(parsedResource, {
+        baseURL: BASE_URL,
+        serialize: (params) => qs.stringify(params, { arrayFormat: 'repeat', encode: false }),
+        search,
         method: 'GET',
-        clearCacheEntry: invalidateCache
+        invalidateCache
       })
 
-      return resp.data
+      return resp.json()
     } catch (e) {
       console.error('Error while fetching', `${BASE_URL}${parsedResource}`, e)
 
       if (tries < 3) {
         await sleep(1000)
-        return this.populateRequest(resource, params, invalidateCache, tries + 1)
+        return this.populateRequest(resource, search, invalidateCache, tries + 1)
       }
     }
   }

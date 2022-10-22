@@ -7,14 +7,13 @@
  *  See LICENSE in the project root for license information.
  */
 
-import axios from 'axios'
-import { cache } from '@/utils/ui/providers/generics/genericProvider'
 import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { md5 } from 'hash-wasm'
 import { EventBus } from '@/utils/main/ipc/constants'
 import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 import { ProviderScopes } from '@/utils/commonConstants'
+import { FetchWrapper } from './generics/fetchWrapper'
 
 const AUTH_BASE_URL = 'https://www.last.fm/api/'
 const API_BASE_URL = 'https://ws.audioscrobbler.com/2.0'
@@ -39,10 +38,7 @@ type sessionKey = string
 
 export class LastFMProvider extends GenericProvider {
   private _session: sessionKey | undefined
-  private api = axios.create({
-    adapter: cache.adapter,
-    baseURL: API_BASE_URL
-  })
+  private api = new FetchWrapper()
   private scrobbleTimeout: ReturnType<typeof setTimeout> | undefined
   private oAuthChannel: string | undefined
 
@@ -138,13 +134,14 @@ export class LastFMProvider extends GenericProvider {
         format: 'json'
       })
 
-      const resp = await this.api({
+      const resp = await this.api.request('', {
+        baseURL: API_BASE_URL,
         method: axiosMethod,
-        params: axiosMethod === 'GET' && parsedParams,
-        data: axiosMethod === 'POST' && parsedParams
+        search: axiosMethod === 'GET' ? parsedParams : {},
+        body: axiosMethod === 'POST' ? JSON.stringify(parsedParams) : undefined
       })
 
-      return resp.data
+      return resp.json()
     }
   }
 

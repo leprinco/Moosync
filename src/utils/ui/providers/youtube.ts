@@ -8,10 +8,9 @@
  */
 
 import { AuthFlow, AuthStateEmitter } from '@/utils/ui/oauth/flow'
-import { GenericProvider, cache } from '@/utils/ui/providers/generics/genericProvider'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 
 import { AuthorizationServiceConfiguration } from '@openid/appauth'
-import axios from 'axios'
 import { once } from 'events'
 import qs from 'qs'
 import { vxm } from '../../../mainWindow/store/index'
@@ -19,6 +18,7 @@ import { parseISO8601Duration } from '@/utils/common'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
 import { ProviderScopes } from '@/utils/commonConstants'
+import { FetchWrapper } from './generics/fetchWrapper'
 
 const BASE_URL = 'https://youtube.googleapis.com/youtube/v3/'
 
@@ -89,13 +89,7 @@ export class YoutubeProvider extends GenericProvider {
     return !!(conf && conf.client_id && conf.client_secret) || this.isEnvExists()
   }
 
-  private api = axios.create({
-    adapter: cache.adapter,
-    baseURL: BASE_URL,
-    paramsSerializer: {
-      serialize: (params) => qs.stringify(params, { arrayFormat: 'repeat', encode: false })
-    }
-  })
+  private api = new FetchWrapper()
 
   public async getLoggedIn() {
     if (this.auth) {
@@ -150,14 +144,16 @@ export class YoutubeProvider extends GenericProvider {
     invalidateCache = false
   ): Promise<YoutubeResponses.ResponseType<K>> {
     const accessToken = await this.auth?.performWithFreshTokens()
-    const resp = await this.api(resource, {
-      params: search.params,
+    const resp = await this.api.request(resource, {
+      baseURL: BASE_URL,
+      serialize: (params) => qs.stringify(params, { arrayFormat: 'repeat', encode: false }),
+      search: search.params,
       method: 'GET',
       headers: { Authorization: `Bearer ${accessToken}` },
-      clearCacheEntry: invalidateCache
+      invalidateCache
     })
 
-    return resp.data
+    return resp.json()
   }
 
   public async getUserDetails(invalidateCache = false, retries = 0): Promise<string | undefined> {

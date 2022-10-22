@@ -8,16 +8,16 @@
  */
 
 import { AuthFlow, AuthStateEmitter } from '@/utils/ui/oauth/flow'
-import { GenericProvider, cache } from '@/utils/ui/providers/generics/genericProvider'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 
 import { AuthorizationServiceConfiguration } from '@openid/appauth'
-import axios from 'axios'
 import { once } from 'events'
 import qs from 'qs'
 import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
 import { ProviderScopes } from '@/utils/commonConstants'
+import { FetchWrapper } from './generics/fetchWrapper'
 
 /**
  * Spotify API base URL
@@ -69,13 +69,7 @@ export class SpotifyProvider extends GenericProvider {
     else return []
   }
 
-  private api = axios.create({
-    adapter: cache.adapter,
-    baseURL: BASE_URL,
-    paramsSerializer: {
-      serialize: (params) => qs.stringify(params, { arrayFormat: 'repeat', encode: false })
-    }
-  })
+  private api = new FetchWrapper()
 
   private getConfig(oauthChannel: string, id: string, secret: string) {
     return {
@@ -190,14 +184,15 @@ export class SpotifyProvider extends GenericProvider {
       url = resource.replace('{album_id}', (search as SpotifyResponses.AlbumTracksRequest).params.id)
     }
 
-    const resp = await this.api(url, {
-      params: search.params,
-      method: 'GET',
+    const resp = await this.api.request(url, {
+      baseURL: BASE_URL,
+      serialize: (params) => qs.stringify(params, { arrayFormat: 'repeat', encode: false }),
+      search: search.params,
       headers: { Authorization: `Bearer ${accessToken}` },
-      clearCacheEntry: invalidateCache
+      invalidateCache
     })
 
-    return resp.data
+    return resp.json()
   }
 
   public async getUserDetails(): Promise<string | undefined> {
