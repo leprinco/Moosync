@@ -55,9 +55,18 @@ import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import { HLSPlayer } from '@/utils/ui/players/hls'
 import { YoutubeAlts } from '@/mainWindow/store/providers'
 import { PipedPlayer } from '@/utils/ui/players/piped'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 
 @Component({})
-export default class AudioStream extends mixins(SyncMixin, PlayerControls, ErrorHandler, CacheMixin, JukeboxMixin) {
+export default class AudioStream extends mixins(
+  SyncMixin,
+  PlayerControls,
+  ErrorHandler,
+  CacheMixin,
+  JukeboxMixin,
+  ProviderMixin
+) {
   @Ref('audio')
   private audioElement!: HTMLAudioElement
 
@@ -503,24 +512,15 @@ export default class AudioStream extends mixins(SyncMixin, PlayerControls, Error
   private async getPlaybackUrlAndDuration(
     song: Song
   ): Promise<{ url: string | undefined; duration: number } | undefined> {
-    if (song.type === 'SPOTIFY') {
-      return vxm.providers.spotifyProvider.getPlaybackUrlAndDuration(song)
-    }
-
-    if (song.type === 'YOUTUBE') {
-      return vxm.providers.youtubeProvider.getPlaybackUrlAndDuration(song)
-    }
-
+    let provider: GenericProvider | undefined
     if (song.providerExtension) {
-      const data = await window.ExtensionUtils.sendEvent({
-        type: 'playbackDetailsRequested',
-        data: [song],
-        packageName: song.providerExtension
-      })
+      provider = this.getProviderByKey(song.providerExtension)
+    } else {
+      provider = this.getProviderByKey(song.type.toLowerCase())
+    }
 
-      if (data && data[song.providerExtension]) {
-        return data[song.providerExtension] ?? undefined
-      }
+    if (provider) {
+      return provider.getPlaybackUrlAndDuration(song)
     }
 
     try {
