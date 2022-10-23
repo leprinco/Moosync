@@ -99,7 +99,7 @@ class ExtensionHostIPCHandler {
     process.on('SIGUSR2', () => this.mainRequestHandler.killSelf())
     process.on('SIGHUP', () => this.mainRequestHandler.killSelf())
     process.on('uncaughtException', (e) => {
-      console.error('Asynchronous error caught.', e)
+      console.error('Asynchronous error caught.', e.message ?? e.toString())
       if (e.message === 'Channel closed') {
         process.exit()
       }
