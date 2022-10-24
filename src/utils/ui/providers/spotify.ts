@@ -364,9 +364,11 @@ export class SpotifyProvider extends GenericProvider {
         parsed.push(...items)
         if (resp.next) {
           nextOffset += limit
+        } else {
+          nextOffset = -1
         }
 
-        if (nextOffset === 0) {
+        if (nextOffset === -1) {
           yield { songs: items }
         } else {
           yield { songs: items, nextPageToken: nextOffset }
