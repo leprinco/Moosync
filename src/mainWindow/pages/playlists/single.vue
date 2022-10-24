@@ -59,6 +59,8 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   private isLoading = false
   private isAddedInLibrary = false
 
+  private invalidateCache = false
+
   private providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_SONGS)
 
   private getPlaylistOwnerProvider() {
@@ -103,10 +105,10 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
     return !!(this.isYoutube || this.isSpotify || this.isExtension)
   }
 
-  private async refresh(invalidateCache = false) {
+  private async refresh() {
     this.nextPageToken = undefined
     this.songList = []
-    await this.fetchSongListAsync(invalidateCache)
+    await this.fetchSongListAsync()
   }
 
   async created() {
@@ -125,7 +127,8 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
 
   private listenGlobalRefresh() {
     bus.$on(EventBus.REFRESH_PAGE, () => {
-      this.refresh(true)
+      this.invalidateCache = true
+      this.refresh()
     })
   }
 
@@ -157,17 +160,18 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
 
   private nextPageToken?: unknown
 
-  private async fetchProvider(provider: GenericProvider, invalidateCache = false) {
+  private async fetchProvider(provider: GenericProvider) {
     this.isLoading = true
     const generator = provider.getPlaylistContent(
       provider.sanitizeId(this.playlist.playlist_id, 'PLAYLIST'),
-      invalidateCache,
+      this.invalidateCache,
       this.nextPageToken
     )
 
     if (generator) {
       for await (const items of generator) {
-        this.songList.push(...items.songs)
+        const uniqueItems = items.songs.filter((val) => this.songList.findIndex((val2) => val2._id === val._id) === -1)
+        this.songList.push(...uniqueItems)
         this.nextPageToken = items.nextPageToken
       }
     }
@@ -175,14 +179,14 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
     this.isLoading = false
   }
 
-  private async fetchSongListAsync(invalidateCache = false) {
+  private async fetchSongListAsync() {
     if (this.playlist) {
       await this.fetchLocalSongList()
 
       const owner = this.getPlaylistOwnerProvider()
 
       if (owner) {
-        await this.fetchProvider(owner, invalidateCache)
+        await this.fetchProvider(owner)
       }
     }
   }
