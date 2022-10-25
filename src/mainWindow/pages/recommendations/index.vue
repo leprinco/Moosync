@@ -11,26 +11,14 @@
   <div class="h-100 w-100 parent">
     <b-container class="recommendations-container" fluid>
       <b-row no-gutters class="page-title">{{ $t('pages.explore') }}</b-row>
-      <b-row v-for="p of providers" :key="p.provider.Title">
-        <b-col v-if="p.list.length > 0">
+      <b-row v-for="p of providers" :key="p.key">
+        <b-col v-if="recommendationList[p.key] && recommendationList[p.key].length > 0">
           <b-row class="mt-3">
-            <b-col class="provider-title">Hot from {{ p.provider.Title }}</b-col>
+            <b-col class="provider-title">Hot from {{ p.Title }}</b-col>
           </b-row>
           <b-row class="slider-row">
             <b-col>
-              <CardCarousel :songList="p.list" />
-            </b-col>
-          </b-row>
-        </b-col>
-      </b-row>
-      <b-row v-for="e of extensionResults" :key="e.packageName">
-        <b-col v-if="e.songs.length > 0">
-          <b-row class="mt-3">
-            <b-col class="provider-title">Hot from {{ e.providerName }}</b-col>
-          </b-row>
-          <b-row class="slider-row">
-            <b-col>
-              <CardCarousel :songList="e.songs" />
+              <CardCarousel :songList="recommendationList[p.key]" />
             </b-col>
           </b-row>
         </b-col>
@@ -60,42 +48,26 @@ export default class Albums extends mixins(RouterPushes, ContextMenuMixin, Provi
     return this.fetchProviders()
   }
 
+  private recommendationList: Record<string, Song[]> = {}
+
   private fetchProviders() {
     const providers = this.getProvidersByScope(ProviderScopes.RECOMMENDATIONS)
-    return providers.map((val) => ({
-      list: [],
-      provider: val
-    }))
+    return providers
   }
-
-  private extensionResults: { packageName: string; providerName: string; songs: Song[] }[] = []
 
   mounted() {
     for (const val of this.providers) {
-      this.getResults(val.provider.getRecommendations(), val.list)
-    }
-
-    this.getExtensionResults()
-  }
-
-  private async getExtensionResults() {
-    const data = await window.ExtensionUtils.sendEvent({
-      type: 'requestedRecommendations',
-      data: []
-    })
-
-    if (data) {
-      for (const [key, value] of Object.entries(data)) {
-        if (value) {
-          this.extensionResults.push({ ...value, packageName: key })
-        }
-      }
+      this.getResults(val.key, val.getRecommendations())
     }
   }
 
-  private async getResults(gen: AsyncGenerator<Song[]>, list: Song[]) {
-    for await (const song of gen) {
-      list.push(...song.filter((val) => !list.find((l) => val._id === l._id)))
+  private async getResults(key: string, gen: AsyncGenerator<Song[]>) {
+    if (!this.recommendationList[key]) {
+      this.recommendationList[key] = []
+    }
+
+    for await (const s of gen) {
+      this.recommendationList[key].push(...s)
     }
   }
 }
