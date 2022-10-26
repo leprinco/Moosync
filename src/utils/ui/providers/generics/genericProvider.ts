@@ -105,7 +105,7 @@ export abstract class GenericProvider {
    */
   public async getPlaybackUrlAndDuration(
     song: Song
-  ): Promise<{ url: string | undefined; duration: number } | undefined> {
+  ): Promise<{ url: string | undefined; duration?: number } | undefined> {
     return
   }
 

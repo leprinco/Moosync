@@ -375,7 +375,7 @@ export class ExtensionProvider extends GenericProvider {
 
   public async getPlaybackUrlAndDuration(
     song: Song
-  ): Promise<{ url: string | undefined; duration: number } | undefined> {
+  ): Promise<{ url: string | undefined; duration?: number } | undefined> {
     const resp = await this.sendExtensionEventRequest('playbackDetailsRequested', [song])
 
     if (resp) {

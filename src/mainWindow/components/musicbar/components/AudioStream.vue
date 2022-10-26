@@ -511,7 +511,7 @@ export default class AudioStream extends mixins(
 
   private async getPlaybackUrlAndDuration(
     song: Song
-  ): Promise<{ url: string | undefined; duration: number } | undefined> {
+  ): Promise<{ url: string | undefined; duration?: number } | undefined> {
     let provider: GenericProvider | undefined
     if (song.providerExtension) {
       provider = this.getProviderByKey(song.providerExtension)

@@ -718,7 +718,12 @@ export class YoutubeProvider extends GenericProvider {
 
   public async getPlaybackUrlAndDuration(
     song: Song
-  ): Promise<{ url: string | undefined; duration: number } | undefined> {
+  ): Promise<{ url: string | undefined; duration?: number } | undefined> {
+    if (!song.duration && song.url) {
+      const fetchedSong = await this.getSongDetails(`https://youtube.com/watch?v=${song.url}`)
+      console.log(fetchedSong)
+      return { url: fetchedSong?.url, duration: fetchedSong?.duration }
+    }
     return { url: song.url, duration: song.duration }
   }
 }
