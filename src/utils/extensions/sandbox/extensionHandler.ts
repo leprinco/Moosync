@@ -284,6 +284,10 @@ export class ExtensionHandler {
     }))
   }
 
+  private isForwardRequest(data: unknown | undefined): boolean {
+    return !!(data as { forwardTo: string })?.forwardTo
+  }
+
   public async sendExtraEventToExtensions<T extends ExtraExtensionEventTypes>(event: ExtraExtensionEvents<T>) {
     const allData: { [key: string]: ExtraExtensionEventReturnType<T> | undefined } = {}
     const EventType: T = event.type
@@ -300,8 +304,8 @@ export class ExtensionHandler {
         data: event.data
       })
 
-      if (resp) {
-        if (EventType === 'requestedPlaylists') {
+      if (resp && !this.isForwardRequest(resp)) {
+        if (event.type === 'requestedPlaylists') {
           ;(resp as PlaylistReturnType).playlists = this.sanitizePlaylist(
             ext,
             ...(resp as PlaylistReturnType).playlists

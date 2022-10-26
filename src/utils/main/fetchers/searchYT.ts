@@ -378,7 +378,7 @@ export class YTScraper extends CacheHandler {
 
   private isYoutubePlaylistURL(url: string) {
     if (
-      !!url.match(
+      url.match(
         /^((?:https?:)?\/\/)?((?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/
       )
     ) {
@@ -460,23 +460,27 @@ export class YTScraper extends CacheHandler {
     }
   }
 
-  public async parsePlaylistFromID(id: string): Promise<Playlist> {
+  public async parsePlaylistFromID(id: string): Promise<Playlist | undefined> {
     const cache = this.getCache(`playlist:${id}`)
     if (cache) {
       return JSON.parse(cache)
     }
 
-    const playlist = await ytpl(id)
-    const parsed = {
-      playlist_id: `youtube-playlist:${playlist.id}`,
-      playlist_name: playlist.title,
-      playlist_coverPath:
-        playlist.bestThumbnail.url ?? playlist.thumbnails.filter((val) => val.url)[0].url ?? undefined,
-      playlist_desc: playlist.description ?? undefined
-    }
+    try {
+      const playlist = await ytpl(id)
+      const parsed = {
+        playlist_id: `youtube-playlist:${playlist.id}`,
+        playlist_name: playlist.title,
+        playlist_coverPath:
+          playlist.bestThumbnail.url ?? playlist.thumbnails.filter((val) => val.url)[0].url ?? undefined,
+        playlist_desc: playlist.description ?? undefined
+      }
 
-    this.addToCache(`playlist:${id}`, JSON.stringify(parsed))
-    return parsed
+      this.addToCache(`playlist:${id}`, JSON.stringify(parsed))
+      return parsed
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   public async getPlaylistContent(
@@ -489,17 +493,23 @@ export class YTScraper extends CacheHandler {
     }
 
     // JSON.stringify cannot set Infinity.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (page && (page as any).length >= 3 && (page as any)[3]?.limit === null) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(page as any)[3].limit = Infinity
     }
 
     const songList: Song[] = []
     let songs: ytpl.ContinueResult | ytpl.Result
 
-    if (!page) {
-      songs = await ytpl(id, { pages: 1 })
-    } else {
-      songs = await ytpl.continueReq(page)
+    try {
+      if (!page) {
+        songs = await ytpl(id, { pages: 1 })
+      } else {
+        songs = await ytpl.continueReq(page)
+      }
+    } catch (e) {
+      return { songs: [] }
     }
 
     for (const s of songs.items) {

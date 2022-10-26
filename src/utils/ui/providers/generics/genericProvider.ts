@@ -10,7 +10,12 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import { ProviderScopes } from '@/utils/commonConstants'
+import 'reflect-metadata'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function MethodMetadataDecorator(target: unknown, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+  return descriptor
+}
 export abstract class GenericProvider {
   constructor() {
     this.updateConfig()
@@ -71,6 +76,7 @@ export abstract class GenericProvider {
    * @param id
    * @returns Generator of array {@link Song}
    */
+  @MethodMetadataDecorator
   public async *getPlaylistContent(
     id: string,
     invalidateCache?: boolean,

@@ -211,10 +211,10 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
           (await window.SearchUtils.searchLyrics(artists?.map((val) => val.artist_name ?? '') ?? [], title))
 
         if (this.currentSong._id === _id) {
-          this.currentSong.lyrics = resp
-          this.lyrics = resp || 'No lyrics found...'
+          this.currentSong.lyrics = resp as string
+          this.lyrics = (resp as string) || 'No lyrics found...'
         }
-        window.DBUtils.updateLyrics(_id, resp)
+        window.DBUtils.updateLyrics(_id, resp as string)
       }
     }
   }

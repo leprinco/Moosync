@@ -46,7 +46,7 @@ export default class ProviderMixin extends Vue {
       ...vxm.providers.extensionProviders
     ]
 
-    return allProviders.filter((val) => val.key === key)[0]
+    return allProviders.find((val) => val.key === key)
   }
 
   onProvidersChanged(callback: () => void) {

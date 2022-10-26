@@ -1,7 +1,18 @@
+/* eslint-disable @typescript-eslint/ban-types */
+/* eslint-disable prefer-rest-params */
 import { ProviderScopes } from '@/utils/commonConstants'
 import { GenericProvider } from './generics/genericProvider'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
+import { vxm } from '@/mainWindow/store'
+import 'reflect-metadata'
+
+type KeysMatching<T, V> = { [K in keyof T]-?: T[K] extends V ? K : never }[keyof T]
+
+type ExecutionStack = {
+  isExecStack: boolean
+  stack: string[]
+}
 
 export class ExtensionProvider extends GenericProvider {
   public key: string
@@ -76,6 +87,56 @@ export class ExtensionProvider extends GenericProvider {
     return id.replace(`${this.key}:`, '')
   }
 
+  private isForwardRequest<T extends ExtraExtensionEventTypes>(
+    data: ExtraExtensionEventReturnType<T> | ForwardRequestReturnType<T>
+  ): data is ForwardRequestReturnType<T> {
+    return !!(data as ForwardRequestReturnType<T>).forwardTo
+  }
+
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  private handleForwardRequest<T extends ExtraExtensionEventTypes, K extends KeysMatching<GenericProvider, Function>>(
+    method: K,
+    data: ForwardRequestReturnType<T>,
+    originalData: ExtraExtensionEventData<T>,
+    execStack: ExecutionStack
+  ): ReturnType<GenericProvider[K]> | undefined {
+    const allProviders = [
+      vxm.providers.youtubeProvider,
+      vxm.providers.spotifyProvider,
+      vxm.providers.lastfmProvider,
+      ...vxm.providers.extensionProviders
+    ]
+
+    if (!execStack.stack.includes(this.key)) {
+      execStack.stack.push(this.key)
+
+      const forwardToProvider = allProviders.find((val) => val.key === data.forwardTo)
+      if (forwardToProvider) {
+        const m = forwardToProvider[method]
+        if (typeof m === 'function') {
+          const metadataArgs: (() => unknown)[] = Reflect.getMetadata('design:paramtypes', this, m.name)
+          const args: unknown[] = []
+
+          const transformedArgs = data.transformedData ?? originalData
+
+          for (let i = 0; i < metadataArgs.length; i++) {
+            args.push(transformedArgs[i])
+          }
+
+          const ret = (m as (...args: unknown[]) => ReturnType<GenericProvider[K]>).call(
+            forwardToProvider,
+            ...args,
+            execStack
+          )
+
+          return ret
+        }
+      }
+    } else {
+      console.error('Recursion detected in forward request, aborting...')
+    }
+  }
+
   private async sendExtensionEventRequest<T extends ExtraExtensionEventTypes>(
     type: T,
     data: ExtraExtensionEventData<T>
@@ -92,11 +153,33 @@ export class ExtensionProvider extends GenericProvider {
     }
   }
 
+  private getExecStack(...args: unknown[]): ExecutionStack {
+    const lastElem = args[args.length - 1]
+    if ((lastElem as ExecutionStack)?.isExecStack) {
+      return lastElem as ExecutionStack
+    }
+
+    return {
+      isExecStack: true,
+      stack: []
+    }
+  }
+
   public async getUserPlaylists(invalidateCache?: boolean | undefined): Promise<ExtendedPlaylist[]> {
     const playlists: ExtendedPlaylist[] = []
     const resp = await this.sendExtensionEventRequest('requestedPlaylists', [invalidateCache ?? false])
 
     if (resp) {
+      if (this.isForwardRequest(resp)) {
+        return (
+          this.handleForwardRequest(
+            'getUserPlaylists',
+            resp,
+            [invalidateCache ?? false],
+            this.getExecStack(...arguments)
+          ) ?? []
+        )
+      }
       const icon = await window.ExtensionUtils.getExtensionIcon(this.key)
       for (const p of resp.playlists) {
         playlists.push({
@@ -112,34 +195,76 @@ export class ExtensionProvider extends GenericProvider {
 
   public async *getPlaylistContent(
     id: string,
-    invalidateCache?: boolean | undefined
+    invalidateCache?: boolean | undefined,
+    nextPageToken?: unknown
   ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {
-    const resp = await this.sendExtensionEventRequest('requestedPlaylistSongs', [id, invalidateCache ?? false])
+    const resp = await this.sendExtensionEventRequest('requestedPlaylistSongs', [
+      id,
+      invalidateCache ?? false,
+      nextPageToken
+    ])
 
     if (resp) {
+      if (this.isForwardRequest(resp)) {
+        const generator = this.handleForwardRequest(
+          'getPlaylistContent',
+          resp,
+          [id, invalidateCache ?? false, nextPageToken],
+          this.getExecStack(...arguments)
+        )
+        if (generator) {
+          yield* generator
+        }
+        return
+      }
       yield { songs: resp.songs }
     }
   }
 
-  public async *getArtistSongs(artist: Artists): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {
-    const resp = await this.sendExtensionEventRequest('requestedArtistSongs', [artist])
-
+  public async *getArtistSongs(
+    artist: Artists,
+    nextPageToken?: unknown
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {
+    const resp = await this.sendExtensionEventRequest('requestedArtistSongs', [artist, nextPageToken])
     if (resp) {
+      if (this.isForwardRequest(resp)) {
+        return this.handleForwardRequest(
+          'getArtistSongs',
+          resp,
+          [artist, nextPageToken],
+          this.getExecStack(...arguments)
+        )
+      }
       yield { songs: resp.songs }
     }
   }
 
-  public async *getAlbumSongs(album: Album): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {
-    const resp = await this.sendExtensionEventRequest('requestedAlbumSongs', [album])
-
+  public async *getAlbumSongs(
+    album: Album,
+    nextPageToken?: unknown
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {
+    const resp = await this.sendExtensionEventRequest('requestedAlbumSongs', [album, nextPageToken])
     if (resp) {
+      if (this.isForwardRequest(resp)) {
+        return this.handleForwardRequest('getAlbumSongs', resp, [album, nextPageToken], this.getExecStack(...arguments))
+      }
       yield { songs: resp.songs }
     }
   }
 
   public async getPlaylistDetails(url: string, invalidateCache?: boolean | undefined): Promise<Playlist | undefined> {
     const resp = await this.sendExtensionEventRequest('requestedPlaylistFromURL', [url, invalidateCache ?? false])
-    return resp?.playlist
+    if (resp) {
+      if (this.isForwardRequest(resp)) {
+        return this.handleForwardRequest(
+          'getPlaylistDetails',
+          resp,
+          [url, invalidateCache ?? false],
+          this.getExecStack(...arguments)
+        )
+      }
+      return resp.playlist
+    }
   }
 
   // TODO: Match playlist url to extension
@@ -149,7 +274,7 @@ export class ExtensionProvider extends GenericProvider {
 
   public async getSongDetails(url: string, invalidateCache?: boolean | undefined): Promise<Song | undefined> {
     const resp = await this.sendExtensionEventRequest('requestedSongFromURL', [url, invalidateCache ?? false])
-    return resp?.song
+    return (resp as SongReturnType).song
   }
 
   private _lastSearchResult: Record<string, SearchReturnType> = {}
@@ -173,32 +298,92 @@ export class ExtensionProvider extends GenericProvider {
     return this._lastSearchResult[term]
   }
 
-  private async splitSearch<T extends keyof SearchReturnType>(term: string, property: T): Promise<SearchReturnType[T]> {
+  private async splitSearch(term: string) {
     const cache = this.getLastSearchResult(term)
     if (cache) {
-      return cache[property]
+      return cache
     }
 
     const resp = await this.sendExtensionEventRequest('requestedSearchResult', [term])
-    this.setLastSearchResult(term, resp)
 
-    return (resp && resp[property]) ?? []
+    if (resp) {
+      this.setLastSearchResult(term, resp as SearchReturnType)
+      return resp
+    }
+  }
+
+  private getSearchProperty(
+    method: 'searchSongs' | 'searchArtists' | 'searchAlbum' | 'searchPlaylists'
+  ): keyof SearchReturnType {
+    switch (method) {
+      case 'searchSongs':
+        return 'songs'
+      case 'searchAlbum':
+        return 'albums'
+      case 'searchArtists':
+        return 'artists'
+      case 'searchPlaylists':
+        return 'playlists'
+    }
+  }
+
+  private async handleSearchResultForwardRequest<
+    T extends 'searchSongs' | 'searchArtists' | 'searchAlbum' | 'searchPlaylists'
+  >(
+    resp: ExtraExtensionEventReturnType<'requestedSearchResult'>,
+    method: T,
+    term: string
+  ): Promise<Awaited<ReturnType<GenericProvider[T]>>> {
+    if (resp) {
+      const property = this.getSearchProperty(method)
+
+      if (this.isForwardRequest(resp)) {
+        return ((await this.handleForwardRequest(method, resp, [term], this.getExecStack(...arguments))) ??
+          []) as Awaited<ReturnType<GenericProvider[T]>>
+      }
+      return resp[property] as Awaited<ReturnType<GenericProvider[T]>>
+    }
+    return [] as Awaited<ReturnType<GenericProvider[T]>>
   }
 
   public async searchSongs(term: string): Promise<Song[]> {
-    return await this.splitSearch(term, 'songs')
+    return this.handleSearchResultForwardRequest(await this.splitSearch(term), 'searchSongs', term)
   }
 
   public async searchArtists(term: string): Promise<Artists[]> {
-    return await this.splitSearch(term, 'artists')
+    return this.handleSearchResultForwardRequest(await this.splitSearch(term), 'searchArtists', term)
   }
 
   public async searchAlbum(term: string): Promise<Album[]> {
-    return await this.splitSearch(term, 'albums')
+    return this.handleSearchResultForwardRequest(await this.splitSearch(term), 'searchAlbum', term)
   }
 
   public async searchPlaylists(term: string): Promise<Playlist[]> {
-    return await this.splitSearch(term, 'playlists')
+    return this.handleSearchResultForwardRequest(await this.splitSearch(term), 'searchPlaylists', term)
+  }
+
+  public async *getRecommendations(): AsyncGenerator<Song[]> {
+    const resp = await this.sendExtensionEventRequest('requestedRecommendations', [])
+
+    if (resp) {
+      if (this.isForwardRequest(resp)) {
+        return this.handleForwardRequest('getRecommendations', resp, [], this.getExecStack(...arguments))
+      }
+      yield resp.songs
+    }
+  }
+
+  public async getPlaybackUrlAndDuration(
+    song: Song
+  ): Promise<{ url: string | undefined; duration: number } | undefined> {
+    const resp = await this.sendExtensionEventRequest('playbackDetailsRequested', [song])
+
+    if (resp) {
+      if (this.isForwardRequest(resp)) {
+        return this.handleForwardRequest('getPlaybackUrlAndDuration', resp, [song], this.getExecStack(...arguments))
+      }
+      return resp
+    }
   }
 
   public provides(): ProviderScopes[] {
