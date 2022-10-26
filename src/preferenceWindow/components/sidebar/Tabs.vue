@@ -54,6 +54,7 @@ import Paths from '@/icons/PathsIcon.vue'
 import System from '@/icons/SystemIcon.vue'
 import Themes from '@/icons/ThemesIcon.vue'
 import Logs from '@/icons/LogsIcon.vue'
+import Keybind from '@/icons/KeybindIcon.vue'
 
 @Component({
   components: {
@@ -61,7 +62,8 @@ import Logs from '@/icons/LogsIcon.vue'
     Paths,
     System,
     Themes,
-    Logs
+    Logs,
+    Keybind
   }
 })
 export default class Sidebar extends Vue {
@@ -71,7 +73,7 @@ export default class Sidebar extends Vue {
     { component: 'Extensions', title: 'Extensions', link: '/extensions' },
     { component: 'System', title: 'System', link: '/system' },
     { component: 'Logs', title: 'Logs', link: '/logs' },
-    { component: 'Logs', title: 'Keybinds', link: '/keybinds' }
+    { component: 'Keybind', title: 'Keybinds', link: '/keybinds' }
   ]
 }
 </script>
