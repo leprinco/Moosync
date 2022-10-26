@@ -29,14 +29,13 @@ function isImage(e: HTMLElement) {
 Vue.directive('click-outside', {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   bind: function (el: HTMLElement, binding) {
-    // Define Handler and cache it on the element
-    const bubble = binding.modifiers.bubble
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handler = (e: any) => {
       if (el !== e.target && !el.contains(e.target) && !isImage(e.target)) {
         binding.value(e)
       }
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(el as any)['__vueClickOutside__'] = handler
     // add Event Listeners
     document.addEventListener('click', handler)

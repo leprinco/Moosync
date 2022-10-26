@@ -32,7 +32,7 @@ export class FetchWrapper {
       if (init.search && !init.serialize) {
         const entries = typeof init.search.entries === 'function' ? init.search.entries() : Object.entries(init.search)
         for (const [key, value] of entries) {
-          if (!isEmpty(value)) url.searchParams.set(key, value!.toString())
+          if (!isEmpty(value)) url.searchParams.set(key, value.toString())
         }
       }
 

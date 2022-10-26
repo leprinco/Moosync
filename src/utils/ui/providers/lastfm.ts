@@ -339,7 +339,7 @@ export class LastFMProvider extends GenericProvider {
     return id.startsWith('lastfm:')
   }
 
-  public sanitizeId(id: string, type: 'SONG' | 'PLAYLIST' | 'ALBUM' | 'ARTIST'): string {
+  public sanitizeId(id: string): string {
     return id.replace('lastfm:', '')
   }
 }

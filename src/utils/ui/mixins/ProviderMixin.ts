@@ -27,7 +27,7 @@ export default class ProviderMixin extends Vue {
     for (const provider of allProviders) {
       const provides = provider.provides()
       if (!isEmpty(action)) {
-        if (provides.includes(action!)) {
+        if (provides.includes(action)) {
           ret.push(provider)
         }
       } else {

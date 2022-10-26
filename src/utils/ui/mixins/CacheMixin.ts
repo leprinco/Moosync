@@ -13,7 +13,7 @@ import { Component, Vue } from 'vue-property-decorator'
 export default class CacheMixin extends Vue {
   private localStorageInstance = window.localStorage
 
-  public setItem(key: string, value: any, expiry?: number) {
+  public setItem(key: string, value: unknown, expiry?: number) {
     this.localStorageInstance.setItem(key, JSON.stringify({ value, expiry }))
   }
 
