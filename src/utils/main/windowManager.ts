@@ -30,11 +30,9 @@ import pie from 'puppeteer-in-electron'
 import puppeteer from 'puppeteer-core'
 import { getExtensionHostChannel } from './ipc'
 import { SongDB } from './db/index'
-import https from 'https'
 import { Readable } from 'stream'
 import { getMprisChannel } from './ipc/index'
 import { ButtonEnum, PlayerButtons } from 'media-controller'
-import http from 'http'
 
 export class WindowHandler {
   private static mainWindow: number
@@ -65,10 +63,6 @@ export class WindowHandler {
     return getActiveTheme()?.theme.primary ?? '#212121'
   }
 
-  private get shouldEnableDevTools() {
-    return process.env.NODE_ENV !== 'production' || process.env.DEBUG_LOGGING
-  }
-
   private get baseWindowProps(): BrowserWindowConstructorOptions {
     return {
       backgroundColor: this.windowBackgroundColor,
@@ -77,7 +71,7 @@ export class WindowHandler {
       show: false,
       icon: path.join(__static, 'logo.png'),
       webPreferences: {
-        devTools: this.shouldEnableDevTools,
+        devTools: true,
         contextIsolation: true,
         // Use pluginOptions.nodeIntegration, leave this alone
         // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
