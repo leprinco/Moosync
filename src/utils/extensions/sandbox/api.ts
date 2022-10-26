@@ -14,6 +14,7 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
   private packageName: string
   player: PlayerControls
   utils: Utils
+  private extensionRetriever: () => Iterable<ExtensionItem>
 
   private eventCallbackMap: { [key: string]: unknown } = {}
 
@@ -21,10 +22,11 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
 
   private accountsMap: AccountDetails[] = []
 
-  constructor(packageName: string) {
+  constructor(packageName: string, extensionRetriever: () => Iterable<ExtensionItem>) {
     this.packageName = packageName
     this.player = new PlayerControls(this.packageName)
     this.utils = new Utils(packageName)
+    this.extensionRetriever = extensionRetriever
   }
 
   public async getSongs(options: SongAPIOptions) {
@@ -222,6 +224,10 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
     return this.contextMenuMap
   }
 
+  public getInstalledExtensions() {
+    return Array.from(this.extensionRetriever()).map((val) => val.packageName)
+  }
+
   public _getContextMenuItems(): ExtendedExtensionContextMenuItems<ContextMenuTypes>[] {
     return JSON.parse(JSON.stringify(this.getContextMenuItems()))
   }
@@ -230,15 +236,15 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
     return this.accountsMap
   }
 
-  public registerSearchProvider(title: string) {
+  public registerSearchProvider() {
     console.warn('Deprecated API, please update the extension')
   }
 
-  public registerArtistSongProvider(title: string) {
+  public registerArtistSongProvider() {
     console.warn('Deprecated API, please update the extension')
   }
 
-  public registerAlbumSongProvider(title: string) {
+  public registerAlbumSongProvider() {
     console.warn('Deprecated API, please update the extension')
   }
 

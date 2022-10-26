@@ -933,6 +933,11 @@ interface extensionAPI {
   setAlbumEditableInfo(artist_id: string, object: Record<string, string>): Promise<void>
 
   /**
+   * Returns a list of package names of all installed extensions
+   */
+  getInstalledExtensions(): string[]
+
+  /**
    * Object containing controls for player
    */
   player: playerControls

@@ -89,7 +89,7 @@ export class ExtensionManager extends AbstractExtensionManager {
     return {
       __dirname: path.dirname(entryFilePath),
       __filename: entryFilePath,
-      api: new ExtensionRequestGenerator(packageName),
+      api: new ExtensionRequestGenerator(packageName, this.getExtensions.bind(this)),
       logger: child
     }
   }
