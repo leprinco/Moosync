@@ -59,7 +59,6 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 import Playlists from '@/icons/PlaylistsIcon.vue'
 import AllSongs from '@/icons/AllSongsIcon.vue'
 import Artists from '@/icons/ArtistsIcon.vue'
-import Fav from '@/icons/FavIcon.vue'
 import Genre from '@/icons/GenreIcon.vue'
 import Albums from '@/icons/AlbumsIcon.vue'
 import Toggle from '@/icons/ToggleIcon.vue'
@@ -73,7 +72,6 @@ import { bus } from '@/mainWindow/main'
     Playlists,
     AllSongs,
     Artists,
-    Fav,
     Genre,
     Albums,
     Toggle,
@@ -92,7 +90,6 @@ export default class Sidebar extends Vue {
       { component: 'Artists', title: this.$t('sidebar.tabs.artists'), link: '/artists' },
       { component: 'Genre', title: this.$t('sidebar.tabs.genre'), link: '/genre' },
       { component: 'Explore', title: this.$t('sidebar.tabs.explore'), link: '/recommendations' }
-      // { component: 'Fav', title: 'Favourites', link: '/favs' }
     ]
   }
 

@@ -45,7 +45,8 @@
             </template>
 
             <template #defaultCover>
-              <PlaylistDefault />
+              <PlaylistDefault v-if="playlist.playlist_id !== FAVORITES_PLAYLIST_ID" />
+              <FavPlaylistIcon v-else />
             </template>
           </CardView>
         </b-col>
@@ -71,6 +72,7 @@ import { EventBus } from '@/utils/main/ipc/constants'
 import PlusIcon from '@/icons/PlusIcon.vue'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { FAVORITES_PLAYLIST_ID, ProviderScopes } from '@/utils/commonConstants'
+import FavPlaylistIcon from '@/icons/FavPlaylistIcon.vue'
 
 @Component({
   components: {
@@ -79,7 +81,8 @@ import { FAVORITES_PLAYLIST_ID, ProviderScopes } from '@/utils/commonConstants'
     YoutubeIcon,
     PlaylistDefault,
     DeleteModal,
-    PlusIcon
+    PlusIcon,
+    FavPlaylistIcon
   }
 })
 export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, ProviderMixin) {
@@ -89,10 +92,13 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   private get allPlaylists(): ExtendedPlaylist[] {
     return [...this.localPlaylists, ...this.remotePlaylists]
   }
+
   private localPlaylists: ExtendedPlaylist[] = []
   private remotePlaylists: ExtendedPlaylist[] = []
 
   private playlistInAction: Playlist | undefined
+
+  private FAVORITES_PLAYLIST_ID = FAVORITES_PLAYLIST_ID
 
   private get providers() {
     return this.getProvidersByScope(ProviderScopes.PLAYLISTS)
@@ -126,10 +132,6 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
       playlist: true
     })
 
-    const favPlaylist = localPlaylists.find((val) => val.playlist_id === FAVORITES_PLAYLIST_ID)
-    if (favPlaylist && !favPlaylist.playlist_coverPath) {
-      favPlaylist.playlist_coverPath = `static://fav_icon.svg`
-    }
     this.localPlaylists.push(...localPlaylists)
   }
 
