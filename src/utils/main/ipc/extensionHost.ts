@@ -72,6 +72,7 @@ export class ExtensionHostChannel implements IpcChannelInterface {
       this.extensionHost
         .installExtension(request.params.path)
         .then((result) => event.reply(request.responseChannel, result))
+        .then(() => this.notifyExtensionChangedMainWindow())
         .catch(console.error)
       return
     }
