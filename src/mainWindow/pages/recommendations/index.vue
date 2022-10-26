@@ -55,10 +55,15 @@ export default class Albums extends mixins(RouterPushes, ContextMenuMixin, Provi
     return providers
   }
 
-  mounted() {
+  private fetchRecomsFromProviders() {
     for (const val of this.providers) {
       this.getResults(val.key, val.getRecommendations())
     }
+  }
+
+  mounted() {
+    this.fetchRecomsFromProviders()
+    this.onProvidersChanged(this.fetchRecomsFromProviders)
   }
 
   private async getResults(key: string, gen: AsyncGenerator<Song[]>) {
@@ -67,8 +72,6 @@ export default class Albums extends mixins(RouterPushes, ContextMenuMixin, Provi
       val.push(...s)
       this.$set(this.recommendationList, key, val)
     }
-
-    console.log(this.recommendationList)
   }
 }
 </script>
