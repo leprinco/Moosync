@@ -265,7 +265,7 @@ export class LastFMProvider extends GenericProvider {
   }
 
   public async *getRecommendations(): AsyncGenerator<Song[]> {
-    if (await this.getLoggedIn()) {
+    if ((await this.getLoggedIn()) && (await this.getUserDetails()) && this.username) {
       const resp = await window.SearchUtils.scrapeLastFM(
         `https://www.last.fm/player/station/user/${this.username}/recommended`
       )
