@@ -62,13 +62,13 @@ export default class Albums extends mixins(RouterPushes, ContextMenuMixin, Provi
   }
 
   private async getResults(key: string, gen: AsyncGenerator<Song[]>) {
-    if (!this.recommendationList[key]) {
-      this.recommendationList[key] = []
+    const val = []
+    for await (const s of gen) {
+      val.push(...s)
+      this.$set(this.recommendationList, key, val)
     }
 
-    for await (const s of gen) {
-      this.recommendationList[key].push(...s)
-    }
+    console.log(this.recommendationList)
   }
 }
 </script>
