@@ -30,8 +30,8 @@ jobs:
       - name: Install Snapcraft
         if: ${{ runner.os == 'Linux' }}
         uses: samuelmeuli/action-snapcraft@v1
-        with:
-          snapcraft_token: ${{ secrets.SNAPCRAFT_TOKEN }}
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_TOKEN }}
 
       - name: Install multipass
         if: ${{ runner.os == 'Linux' }}
