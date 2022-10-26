@@ -11,7 +11,7 @@
   <div class="w-100 h-100">
     <HotkeyGroup
       class="mt-5 mb-3"
-      prefKey="hotkeys"
+      key="hotkeys"
       :isExtension="false"
       title="Hotkeys"
       tooltip="Hotkeys to easily perform actions using button presses"
