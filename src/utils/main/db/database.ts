@@ -14,9 +14,6 @@ import { sanitizeArtistName } from '../../common'
 
 import { loadPreferences } from './preferences'
 import path from 'path'
-import fs from 'fs'
-import https from 'https'
-import http from 'http'
 import { getExtensionHostChannel } from '../ipc'
 import { downloadFile } from '@/utils/main/mainUtils'
 
@@ -171,6 +168,9 @@ export class SongDBInstance extends DBUtils {
                   }
                 }) as Artists[]
               )[0]
+
+              console.log('removing artist', artist.artist_name)
+
               this.db.delete('artists', { artist_id: id.artist })
               if (artist?.artist_coverPath) pathsToRemove.push(artist.artist_coverPath)
             }
@@ -789,21 +789,23 @@ export class SongDBInstance extends DBUtils {
       }
     })[0]
 
-    const coverPath = await this.getCoverPath(oldArtist.artist_coverPath ?? '', artist.artist_coverPath ?? '')
-    artist.artist_coverPath = coverPath
+    if (oldArtist) {
+      const coverPath = await this.getCoverPath(oldArtist.artist_coverPath ?? '', artist.artist_coverPath ?? '')
+      artist.artist_coverPath = coverPath
 
-    this.db.updateWithBlackList(
-      'artists',
-      artist,
-      ['artist_id = ?', artist.artist_id],
-      ['artist_id', 'artist_extra_info']
-    )
+      this.db.updateWithBlackList(
+        'artists',
+        artist,
+        ['artist_id = ?', artist.artist_id],
+        ['artist_id', 'artist_extra_info']
+      )
 
-    if (oldArtist?.artist_coverPath) {
-      await this.removeFile(oldArtist.artist_coverPath)
+      if (oldArtist?.artist_coverPath) {
+        await this.removeFile(oldArtist.artist_coverPath)
+      }
+
+      this.updateArtistExtraInfo(artist.artist_id, artist.artist_extra_info)
     }
-
-    this.updateArtistExtraInfo(artist.artist_id, artist.artist_extra_info)
   }
 
   private storeArtists(...artists: Artists[]): string[] {

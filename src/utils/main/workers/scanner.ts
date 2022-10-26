@@ -370,8 +370,12 @@ async function scan(allFiles: string[], observer: SubscriptionObserver<ScannedSo
 
 async function startScan(paths: togglePaths, existingFiles: string[], observer: SubscriptionObserver<unknown>) {
   const allFiles: string[] = []
+
+  const excludePaths = paths.filter((val) => !val.enabled)
+  const excludeRegex = new RegExp(excludePaths.length > 0 ? excludePaths.join('|') : /(?!)/)
+
   for (const p of paths) {
-    p.enabled && allFiles.push(...(await getAllFiles(p.path)))
+    allFiles.push(...(await getAllFiles(p.path, excludeRegex)))
   }
 
   const newFiles = allFiles.filter((x) => !existingFiles.includes(x))
@@ -381,16 +385,18 @@ async function startScan(paths: togglePaths, existingFiles: string[], observer: 
   observer.complete()
 }
 
-async function getAllFiles(p: string) {
+async function getAllFiles(p: string, excludeRegex: RegExp) {
   const allFiles: string[] = []
   if (fs.existsSync(p)) {
     const files = await fs.promises.readdir(p)
     for (const file of files) {
       const filePath = path.resolve(path.join(p, file))
-      if ((await fs.promises.stat(filePath)).isDirectory()) {
-        allFiles.push(...(await getAllFiles(filePath)))
-      } else {
-        allFiles.push(filePath)
+      if (!filePath.match(excludeRegex)) {
+        if ((await fs.promises.stat(filePath)).isDirectory()) {
+          allFiles.push(...(await getAllFiles(filePath, excludeRegex)))
+        } else {
+          allFiles.push(filePath)
+        }
       }
     }
   }
