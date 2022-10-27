@@ -66,12 +66,12 @@ export class MprisChannel implements IpcChannelInterface {
     if (request.params.state) {
       switch (request.params.state) {
         case 'PLAYING':
-          this.controller.setPlaybackStatus(PlaybackStateEnum.Playing)
           this.handlePlayPauseButtonState(true)
+          this.controller.setPlaybackStatus(PlaybackStateEnum.Playing)
           break
         case 'PAUSED':
-          this.controller.setPlaybackStatus(PlaybackStateEnum.Paused)
           this.handlePlayPauseButtonState(false)
+          this.controller.setPlaybackStatus(PlaybackStateEnum.Paused)
           break
         case 'STOPPED':
           this.controller.setPlaybackStatus(PlaybackStateEnum.Stopped)
@@ -101,10 +101,6 @@ export class MprisChannel implements IpcChannelInterface {
   private handlePlayPauseButtonState(isPlaying: boolean) {
     this.buttonState['play'] = !isPlaying
     this.buttonState['pause'] = isPlaying
-
-    this.buttonStatusCallbacks.forEach((val) => {
-      val(this.buttonState)
-    })
   }
 
   public onButtonPressed(button: ValueOf<typeof ButtonEnum>) {
