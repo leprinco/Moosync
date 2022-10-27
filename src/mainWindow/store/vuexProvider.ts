@@ -8,6 +8,7 @@ const persist = [
   'player.currentSong',
   'player.songQueue',
   'player.repeat',
+  'player.state',
   'themes.colors',
   'themes.songSortBy',
   'themes.playlistSortBy',
