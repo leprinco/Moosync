@@ -11,7 +11,7 @@
 
 import 'threads/register'
 
-import { BrowserWindow, app, nativeTheme, protocol, session } from 'electron'
+import { BrowserWindow, app, protocol, session } from 'electron'
 import { WindowHandler, setIsQuitting, _windowHandler } from './utils/main/windowManager'
 import path, { resolve } from 'path'
 
@@ -38,8 +38,6 @@ if (isDevelopment) {
   app.commandLine.appendSwitch('ignore-certificate-errors')
   app.commandLine.appendSwitch('allow-insecure-localhost', 'true')
 }
-
-nativeTheme.themeSource = 'dark'
 
 overrideConsole()
 _windowHandler.setHardwareAcceleration()

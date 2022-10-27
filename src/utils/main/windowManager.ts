@@ -33,6 +33,7 @@ import { SongDB } from './db/index'
 import { Readable } from 'stream'
 import { getMprisChannel } from './ipc/index'
 import { ButtonEnum, PlayerButtons } from 'media-controller'
+import { nativeTheme } from 'electron'
 
 export class WindowHandler {
   private static mainWindow: number
@@ -496,7 +497,7 @@ class WindowToolbarButtonsHandler {
 
     if (buttonState.prev) {
       buttons.push({
-        icon: nativeImage.createFromPath(path.join(__static, 'prev_track.png')),
+        icon: getThemeIcon('prev_track'),
         click: () => getMprisChannel().onButtonPressed(ButtonEnum.Previous),
         tooltip: 'Previous track'
       })
@@ -504,7 +505,7 @@ class WindowToolbarButtonsHandler {
 
     if (buttonState.play) {
       buttons.push({
-        icon: nativeImage.createFromPath(path.join(__static, 'play.png')),
+        icon: getThemeIcon('play'),
         click: () => getMprisChannel().onButtonPressed(ButtonEnum.Play),
         tooltip: 'Play'
       })
@@ -512,7 +513,7 @@ class WindowToolbarButtonsHandler {
 
     if (buttonState.pause) {
       buttons.push({
-        icon: nativeImage.createFromPath(path.join(__static, 'pause.png')),
+        icon: getThemeIcon('pause'),
         click: () => getMprisChannel().onButtonPressed(ButtonEnum.Pause),
         tooltip: 'Pause'
       })
@@ -520,7 +521,7 @@ class WindowToolbarButtonsHandler {
 
     if (buttonState.next) {
       buttons.push({
-        icon: nativeImage.createFromPath(path.join(__static, 'next_track.png')),
+        icon: getThemeIcon('next_track'),
         click: () => getMprisChannel().onButtonPressed(ButtonEnum.Next),
         tooltip: 'Next track'
       })
@@ -544,6 +545,11 @@ class TrayHandler {
       // Tray will be updated only if it exists
       this.setupContextMenu()
     })
+
+    nativeTheme.on('updated', () => {
+      this.extraButtons = this.buildControlButtons(getMprisChannel().buttonStatus)
+      this.setupContextMenu()
+    })
   }
 
   public async createTray() {
@@ -565,7 +571,7 @@ class TrayHandler {
     if (buttonState.play) {
       buttons.push({
         label: 'Play',
-        icon: nativeImage.createFromPath(path.join(__static, 'play.png')),
+        icon: getThemeIcon('play'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Play)
         }
@@ -575,7 +581,7 @@ class TrayHandler {
     if (buttonState.pause) {
       buttons.push({
         label: 'Pause',
-        icon: nativeImage.createFromPath(path.join(__static, 'pause.png')),
+        icon: getThemeIcon('pause'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Pause)
         }
@@ -585,7 +591,7 @@ class TrayHandler {
     if (buttonState.next) {
       buttons.push({
         label: 'Next',
-        icon: nativeImage.createFromPath(path.join(__static, 'next_track.png')),
+        icon: getThemeIcon('next_track'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Next)
         }
@@ -595,7 +601,7 @@ class TrayHandler {
     if (buttonState.prev) {
       buttons.push({
         label: 'Prev',
-        icon: nativeImage.createFromPath(path.join(__static, 'prev_track.png')),
+        icon: getThemeIcon('prev_track'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Previous)
         }
@@ -605,7 +611,7 @@ class TrayHandler {
     if (buttonState.loop) {
       buttons.push({
         label: 'Repeat',
-        icon: nativeImage.createFromPath(path.join(__static, 'repeat.png')),
+        icon: getThemeIcon('repeat'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Repeat)
         }
@@ -613,7 +619,7 @@ class TrayHandler {
     } else {
       buttons.push({
         label: 'No Repeat',
-        icon: nativeImage.createFromPath(path.join(__static, 'repeat.png')),
+        icon: getThemeIcon('repeat'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Repeat)
         }
@@ -623,7 +629,7 @@ class TrayHandler {
     if (buttonState.shuffle) {
       buttons.push({
         label: 'Shuffle',
-        icon: nativeImage.createFromPath(path.join(__static, 'shuffle.png')),
+        icon: getThemeIcon('shuffle'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Shuffle)
         }
@@ -639,7 +645,7 @@ class TrayHandler {
         Menu.buildFromTemplate([
           {
             label: 'Show App',
-            icon: nativeImage.createFromPath(path.join(__static, 'show_eye.png')),
+            icon: getThemeIcon('show_eye'),
             click: () => {
               this.destroy()
               AppExitHandler._isQuitting = false
@@ -649,7 +655,7 @@ class TrayHandler {
           ...this.extraButtons,
           {
             label: 'Quit',
-            icon: nativeImage.createFromPath(path.join(__static, 'close.png')),
+            icon: getThemeIcon('close'),
             click: function () {
               AppExitHandler._isQuitting = true
               app.quit()
@@ -677,6 +683,12 @@ class TrayHandler {
       this._tray = null
     }
   }
+}
+
+function getThemeIcon(iconName: string) {
+  return nativeImage.createFromPath(
+    path.join(__static, `${iconName}${nativeTheme.shouldUseDarkColors ? '' : '_light'}.png`)
+  )
 }
 
 export function setMinimizeToTray(enabled: boolean) {

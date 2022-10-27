@@ -10,8 +10,6 @@
 import { IpcEvents, MprisEvents } from './constants'
 import MediaController, { ButtonEnum, PlaybackStateEnum, PlayerButtons } from 'media-controller'
 import { WindowHandler } from '../windowManager'
-import { nativeImage, ThumbarButton } from 'electron'
-import path from 'path'
 
 export class MprisChannel implements IpcChannelInterface {
   name = IpcEvents.MPRIS
@@ -122,5 +120,9 @@ export class MprisChannel implements IpcChannelInterface {
 
   public onButtonStatusChange(callback: (buttons: PlayerButtons) => void) {
     this.buttonStatusCallbacks.push(callback)
+  }
+
+  public get buttonStatus() {
+    return this.buttonState
   }
 }
