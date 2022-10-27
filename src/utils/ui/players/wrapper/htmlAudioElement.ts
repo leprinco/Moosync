@@ -13,7 +13,6 @@ export function wrapHTMLAudioElement(elem: HTMLAudioElement | CustomAudioInstanc
     const prototype = Reflect.getPrototypeOf(elem) as WrappedAudioInstance
     if (prototype) {
       prototype['setSrc'] = function (src: string, autoPlay?: boolean) {
-        console.log('setting src', src, autoPlay, this.play)
         this.src = src
         this.load()
         autoPlay && this.play()
