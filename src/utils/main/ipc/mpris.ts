@@ -101,6 +101,8 @@ export class MprisChannel implements IpcChannelInterface {
   private handlePlayPauseButtonState(isPlaying: boolean) {
     this.buttonState['play'] = !isPlaying
     this.buttonState['pause'] = isPlaying
+
+    this.controller.setButtonStatus(this.buttonState)
   }
 
   public onButtonPressed(button: ValueOf<typeof ButtonEnum>) {
