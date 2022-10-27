@@ -29,7 +29,7 @@
           v-if="item.custom ? false : isActive"
         ></div>
         <div
-          class="d-flex align-items-center icon-transition icon-padding-open"
+          class="d-flex align-items-center icon-transition icon-padding-open w-100"
           v-bind:class="{
             'icon-active': item.custom ? false : isActive
           }"
