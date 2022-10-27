@@ -544,7 +544,6 @@ class TrayHandler {
 
   constructor() {
     getMprisChannel().onButtonStatusChange((buttons) => {
-      console.log(buttons)
       this.extraButtons = this.buildControlButtons(buttons)
       // Tray will be updated only if it exists
       this.setupContextMenu()
