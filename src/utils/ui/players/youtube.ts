@@ -95,14 +95,7 @@ export class YoutubePlayer extends LocalPlayer {
       }
     }
 
-    if (src) {
-      src && (this.playerInstance.src = src)
-      volume && (this.volume = volume)
-      autoplay && this.play()
-    } else {
-      this.playerInstance.dispatchEvent(new Event('error'))
-    }
-    volume && (this.volume = volume)
+    super.load(src, volume, autoplay)
   }
 
   protected listenOnTimeUpdate(callback: (time: number) => void): void {
