@@ -23,7 +23,7 @@
           <Play2 class="align-self-center" />
         </div>
         <div v-if="current" class="now-playing d-flex justify-content-center">
-          <AnimatedEqualizer class="animated-playing" />
+          <AnimatedEqualizer :isRunning="isSongPlaying" class="animated-playing" />
         </div>
       </b-col>
       <b-col xl="8" lg="7" cols="5">
@@ -116,6 +116,10 @@ export default class MusicInfo extends mixins(ImgLoader, PlayerControls, Context
 
   get queueProvider() {
     return this.isSyncing ? vxm.sync : vxm.player
+  }
+
+  get isSongPlaying() {
+    return vxm.player.playerState === 'PLAYING'
   }
 
   private async getIconType() {

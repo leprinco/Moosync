@@ -16,7 +16,11 @@
     shape-rendering="geometricPrecision"
     text-rendering="geometricPrecision"
   >
-    <g id="eF20KXoiB5d2_ts" transform="translate(1.989899,14) scale(1,1)">
+    <g
+      id="eF20KXoiB5d2_ts"
+      :class="isRunning ? 'animation-play' : 'animation-pause'"
+      transform="translate(1.989899,14) scale(1,1)"
+    >
       <path
         id="eF20KXoiB5d2"
         d="M3.337220,0.381592L0.642578,0.381592L0.642578,13.991600L3.337220,13.991600L3.337220,0.381592Z"
@@ -27,7 +31,11 @@
         stroke-miterlimit="1"
       />
     </g>
-    <g id="eF20KXoiB5d3_ts" transform="translate(6.030915,14.000671) scale(1,1)">
+    <g
+      id="eF20KXoiB5d3_ts"
+      :class="isRunning ? 'animation-play' : 'animation-pause'"
+      transform="translate(6.030915,14.000671) scale(1,1)"
+    >
       <path
         id="eF20KXoiB5d3"
         d="M7.378240,5.199710L4.683590,5.199710L4.683590,13.991700L7.378240,13.991700L7.378240,5.199710Z"
@@ -38,7 +46,11 @@
         stroke-miterlimit="1"
       />
     </g>
-    <g id="eF20KXoiB5d4_ts" transform="translate(9.851647,14.039325) scale(1,1)">
+    <g
+      id="eF20KXoiB5d4_ts"
+      :class="isRunning ? 'animation-play' : 'animation-pause'"
+      transform="translate(9.851647,14.039325) scale(1,1)"
+    >
       <path
         id="eF20KXoiB5d4"
         d="M11.175100,8.803340L8.480470,8.803340L8.480470,13.991600L11.175100,13.991600L11.175100,8.803340Z"
@@ -52,7 +64,26 @@
   </svg>
 </template>
 
+<script lang="ts">
+import Vue from 'vue'
+import { Component, Prop } from 'vue-property-decorator'
+
+@Component({})
+export default class AnimatedEqualizerIcon extends Vue {
+  @Prop({ default: false })
+  private isRunning!: boolean
+}
+</script>
+
 <style>
+.animation-play {
+  animation-play-state: running !important;
+}
+
+.animation-pause {
+  animation-play-state: paused !important;
+}
+
 #eF20KXoiB5d2_ts {
   animation: eF20KXoiB5d2_ts__ts 800ms linear infinite normal forwards;
 }
