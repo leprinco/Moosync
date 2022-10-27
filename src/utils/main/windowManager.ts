@@ -264,6 +264,10 @@ export class WindowHandler {
       else console.warn('Cant find existing window')
     }
 
+    if (isMainWindow) {
+      this.trayHandler.createTray()
+    }
+
     win?.webContents.on('did-finish-load', () => win?.webContents.send(WindowEvents.GOT_EXTRA_ARGS, args))
   }
 
@@ -277,8 +281,8 @@ export class WindowHandler {
 
     if (isMainWindow) {
       if (!AppExitHandler._isQuitting && AppExitHandler._minimizeToTray) {
+        // await this.trayHandler.createTray()
         event.preventDefault()
-        await this.trayHandler.createTray()
         window.hide()
       } else {
         this.stopAll()
@@ -647,9 +651,10 @@ class TrayHandler {
             label: 'Show App',
             icon: getThemeIcon('show_eye'),
             click: () => {
-              this.destroy()
+              // this.destroy()
               AppExitHandler._isQuitting = false
               WindowHandler.getWindow()?.show()
+              WindowHandler.getWindow()?.focus()
             }
           },
           ...this.extraButtons,
@@ -670,7 +675,7 @@ class TrayHandler {
     if (this._tray) {
       this._tray.on('double-click', () => {
         WindowHandler.getWindow()?.show()
-        this.destroy()
+        // this.destroy()
       })
     }
   }
