@@ -74,27 +74,31 @@ export class YTScraper extends CacheHandler {
     try {
       scrapeYTMusic &&
         promises.push(
-          this.scrapeYTMusic(title, artists, matchTitle).then((data) => {
-            res.songs.push(...data.songs)
-            res.artists.push(...data.artists)
-            res.playlists.push(...data.playlists)
-            res.albums.push(...data.albums)
-            res.genres.push(...data.genres)
-          })
+          this.scrapeYTMusic(title, artists, matchTitle)
+            .then((data) => {
+              res.songs.push(...data.songs)
+              res.artists.push(...data.artists)
+              res.playlists.push(...data.playlists)
+              res.albums.push(...data.albums)
+              res.genres.push(...data.genres)
+            })
+            .catch((e) => console.error(e))
         )
 
       scrapeYoutube &&
         promises.push(
-          this.scrapeYoutube(title, artists, matchTitle).then((data) => {
-            res.songs.push(...data.songs)
-            res.artists.push(...data.artists)
-            res.playlists.push(...data.playlists)
-            res.albums.push(...data.albums)
-            res.genres.push(...data.genres)
-          })
+          this.scrapeYoutube(title, artists, matchTitle)
+            .then((data) => {
+              res.songs.push(...data.songs)
+              res.artists.push(...data.artists)
+              res.playlists.push(...data.playlists)
+              res.albums.push(...data.albums)
+              res.genres.push(...data.genres)
+            })
+            .catch((e) => console.error(e))
         )
 
-      await Promise.all(promises)
+      await Promise.allSettled(promises)
 
       if (
         res.songs.length > 0 ||
@@ -264,6 +268,7 @@ export class YTScraper extends CacheHandler {
   private async scrapeYoutube(title: string, artists?: string[], matchTitle = true) {
     const term = `${artists ? artists.join(', ') + ' - ' : ''}${title}`
 
+    console.log(term)
     const resp = await ytsr(term)
     const ret: SearchResult = {
       songs: [],

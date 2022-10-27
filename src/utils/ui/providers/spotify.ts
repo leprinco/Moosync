@@ -258,7 +258,8 @@ export class SpotifyProvider extends GenericProvider {
   public async spotifyToYoutube(item: Song) {
     const res = await vxm.providers.youtubeProvider.searchSongs(
       `${item.artists?.map((val) => val.artist_name ?? '').join(', ') ?? ''} ${item.title}`,
-      1
+      1,
+      true
     )
 
     console.debug(

@@ -378,7 +378,7 @@ export class YoutubeProvider extends GenericProvider {
     }
   }
 
-  public async searchSongs(term: string, maxResults = 30): Promise<Song[]> {
+  public async searchSongs(term: string, maxResults = 30, matchTitle?: boolean): Promise<Song[]> {
     const songList: Song[] = []
 
     if (await this.getLoggedIn()) {
@@ -410,7 +410,7 @@ export class YoutubeProvider extends GenericProvider {
           }
         } catch (e) {
           console.error('Youtube search api failed. Falling back to unofficial search', e)
-          const resp = await this.unofficialSearch(term)
+          const resp = await this.unofficialSearch(term, matchTitle)
           if (resp && resp.songs.length > 0) {
             songList.push(...resp.songs)
           }
@@ -426,8 +426,8 @@ export class YoutubeProvider extends GenericProvider {
     return songList
   }
 
-  private async unofficialSearch(term: string) {
-    return window.SearchUtils.searchYT(term, undefined, false, false, true)
+  private async unofficialSearch(term: string, matchTitle = false) {
+    return window.SearchUtils.searchYT(term, undefined, matchTitle, true, true)
   }
 
   public matchSongURL(url: string) {
@@ -448,7 +448,7 @@ export class YoutubeProvider extends GenericProvider {
         }
 
         // Apparently searching Video ID in youtube returns the proper video as first result
-        const scraped = await window.SearchUtils.searchYT(videoID, undefined, false, false, true)
+        const scraped = await window.SearchUtils.searchYT(videoID, undefined, false, true, true)
         if (scraped && scraped.songs.length > 0) {
           return scraped.songs[0]
         }
