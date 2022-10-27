@@ -539,6 +539,7 @@ class TrayHandler {
 
   constructor() {
     getMprisChannel().onButtonStatusChange((buttons) => {
+      console.log(buttons)
       this.extraButtons = this.buildControlButtons(buttons)
       // Tray will be updated only if it exists
       this.setupContextMenu()
@@ -564,6 +565,7 @@ class TrayHandler {
     if (buttonState.play) {
       buttons.push({
         label: 'Play',
+        icon: nativeImage.createFromPath(path.join(__static, 'play.png')),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Play)
         }
@@ -573,6 +575,7 @@ class TrayHandler {
     if (buttonState.pause) {
       buttons.push({
         label: 'Pause',
+        icon: nativeImage.createFromPath(path.join(__static, 'pause.png')),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Pause)
         }
@@ -582,6 +585,7 @@ class TrayHandler {
     if (buttonState.next) {
       buttons.push({
         label: 'Next',
+        icon: nativeImage.createFromPath(path.join(__static, 'next_track.png')),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Next)
         }
@@ -591,6 +595,7 @@ class TrayHandler {
     if (buttonState.prev) {
       buttons.push({
         label: 'Prev',
+        icon: nativeImage.createFromPath(path.join(__static, 'prev_track.png')),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Previous)
         }
@@ -600,6 +605,7 @@ class TrayHandler {
     if (buttonState.loop) {
       buttons.push({
         label: 'Repeat',
+        icon: nativeImage.createFromPath(path.join(__static, 'repeat.png')),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Repeat)
         }
@@ -607,6 +613,7 @@ class TrayHandler {
     } else {
       buttons.push({
         label: 'No Repeat',
+        icon: nativeImage.createFromPath(path.join(__static, 'repeat.png')),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Repeat)
         }
@@ -616,6 +623,7 @@ class TrayHandler {
     if (buttonState.shuffle) {
       buttons.push({
         label: 'Shuffle',
+        icon: nativeImage.createFromPath(path.join(__static, 'shuffle.png')),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Shuffle)
         }
@@ -631,6 +639,7 @@ class TrayHandler {
         Menu.buildFromTemplate([
           {
             label: 'Show App',
+            icon: nativeImage.createFromPath(path.join(__static, 'show_eye.png')),
             click: () => {
               this.destroy()
               AppExitHandler._isQuitting = false
@@ -640,6 +649,7 @@ class TrayHandler {
           ...this.extraButtons,
           {
             label: 'Quit',
+            icon: nativeImage.createFromPath(path.join(__static, 'close.png')),
             click: function () {
               AppExitHandler._isQuitting = true
               app.quit()

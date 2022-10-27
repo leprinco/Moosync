@@ -572,7 +572,7 @@ export default class AudioStream extends mixins(
       pause: true,
       next: this.enableTrackControls,
       prev: this.enableTrackControls,
-      shuffle: false,
+      shuffle: true,
       loop: 'None'
     })
   }
