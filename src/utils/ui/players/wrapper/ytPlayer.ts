@@ -35,12 +35,8 @@ export class YTPlayerWrapper implements CustomAudioInstance {
     return
   }
 
-  set src(src: string) {
-    if (!src) {
-      this.stop()
-      return
-    }
-    this.instance.load(src, false)
+  async setSrc(src: string, autoPlay = true) {
+    this.instance.load(src, autoPlay)
   }
 
   set volume(volume: number) {

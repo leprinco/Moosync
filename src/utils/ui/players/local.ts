@@ -8,23 +8,23 @@
  */
 
 import { Player } from './player'
+import { wrapHTMLAudioElement as wrapPlayerInstance } from './wrapper/htmlAudioElement'
 
 export class LocalPlayer extends Player {
   playerInstance: CustomAudioInstance
   private track: MediaElementAudioSourceNode | undefined
   private context: AudioContext | undefined
 
-  constructor(playerInstance: CustomAudioInstance) {
+  constructor(playerInstance: CustomAudioInstance | HTMLAudioElement) {
     super()
-    this.playerInstance = playerInstance
-    this.playerInstance.load()
+    this.playerInstance = wrapPlayerInstance(playerInstance)
   }
 
-  load(src?: string, volume?: number, autoplay?: boolean): void {
-    src && (this.playerInstance.src = src)
-    this.playerInstance.load()
+  async load(src?: string, volume?: number, autoplay?: boolean): Promise<void> {
+    if (src) {
+      this.playerInstance.setSrc(src, autoplay)
+    }
     volume && (this.volume = volume)
-    autoplay && this.play()
   }
 
   async play(): Promise<void> {
@@ -36,9 +36,7 @@ export class LocalPlayer extends Player {
   }
 
   stop(): void {
-    this.playerInstance.removeAttribute('src')
-    this.playerInstance.srcObject = null
-    this.playerInstance.load()
+    this.playerInstance.stop()
   }
 
   get currentTime(): number {

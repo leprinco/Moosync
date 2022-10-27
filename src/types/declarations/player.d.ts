@@ -30,13 +30,14 @@ interface GenericQueue<T> {
 interface CustomAudioInstance {
   currentTime: number
   volume: number
-  src: string
   paused: boolean
   srcObject: unknown
 
-  public load(): void
   public pause(): void
   public play(): Promise<void>
+  public stop(): void
+
+  setSrc(src: string, autoPlay?: boolean): void
 
   onended: ((this: GlobalEventHandlers, ev: Event) => void) | null
   ontimeupdate: ((this: GlobalEventHandlers, ev: Event) => void) | null
