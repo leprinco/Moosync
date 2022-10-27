@@ -40,7 +40,7 @@ export class YTPlayerWrapper implements CustomAudioInstance {
       this.stop()
       return
     }
-    this.instance.load(src, true)
+    this.instance.load(src, false)
   }
 
   set volume(volume: number) {
@@ -77,7 +77,8 @@ export class YTPlayerWrapper implements CustomAudioInstance {
     return (
       this.instance.getState() === 'paused' ||
       this.instance.getState() === 'ended' ||
-      this.instance.getState() === 'unstarted'
+      this.instance.getState() === 'unstarted' ||
+      this.instance.getState() === 'cued'
     )
   }
 
