@@ -737,7 +737,7 @@ export default class AudioStream extends mixins(
 
     this.handleFirstPlayback(loadedState)
 
-    this.setMediaInfo(song)
+    await this.setMediaInfo(song)
 
     // Clear preload status after song has changed
     this.preloadStatus = undefined
