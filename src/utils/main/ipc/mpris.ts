@@ -53,6 +53,10 @@ export class MprisChannel implements IpcChannelInterface {
       } else {
         this.controller.updatePlayerDetails({ title, albumName, artistName, thumbnail, genres, albumArtist })
       }
+
+      if (this.buttonState) {
+        this.controller.setButtonStatus(this.buttonState)
+      }
     }
 
     event.reply(request.responseChannel)
@@ -84,14 +88,7 @@ export class MprisChannel implements IpcChannelInterface {
     if (request.params) {
       this.buttonState = { ...this.buttonState, ...request.params }
 
-      this.controller.setButtonStatus({
-        play: this.buttonState.play,
-        pause: this.buttonState.pause,
-        next: this.buttonState.next,
-        prev: this.buttonState.prev,
-        shuffle: this.buttonState.shuffle,
-        loop: this.buttonState.loop
-      })
+      this.controller.setButtonStatus(this.buttonState)
 
       this.buttonStatusCallbacks.forEach((val) => {
         val(this.buttonState)
