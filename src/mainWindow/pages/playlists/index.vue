@@ -35,7 +35,7 @@
                 color="#E62017"
                 :filled="true"
               />
-              <inline-svg v-if="playlist.icon && playlist.icon.endsWith('svg')" :src="playlist.icon" />
+              <inline-svg v-if="playlist.icon && playlist.icon.endsWith('svg')" :src="getImgSrc(playlist.icon)" />
               <img
                 v-if="playlist.icon && !playlist.icon.endsWith('svg')"
                 :src="playlist.icon"
@@ -73,6 +73,7 @@ import PlusIcon from '@/icons/PlusIcon.vue'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { FAVORITES_PLAYLIST_ID, ProviderScopes } from '@/utils/commonConstants'
 import FavPlaylistIcon from '@/icons/FavPlaylistIcon.vue'
+import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 
 @Component({
   components: {
@@ -85,7 +86,7 @@ import FavPlaylistIcon from '@/icons/FavPlaylistIcon.vue'
     FavPlaylistIcon
   }
 })
-export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, ProviderMixin) {
+export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, ProviderMixin, ImgLoader) {
   @Prop({ default: () => () => undefined })
   private enableRefresh!: () => void
 
@@ -132,7 +133,14 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
       playlist: true
     })
 
-    this.localPlaylists.push(...localPlaylists)
+    for (const p of localPlaylists) {
+      if (this.allPlaylists.findIndex((val) => val.playlist_id === p.playlist_id) === -1) {
+        if (p.extension && !p.icon) {
+          p.icon = await window.ExtensionUtils.getExtensionIcon(p.extension)
+        }
+        this.localPlaylists.push(p)
+      }
+    }
   }
 
   private async pushPlaylistToList(playlists: Playlist[]) {
