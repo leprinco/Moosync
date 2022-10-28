@@ -694,7 +694,7 @@ interface extensionAPI {
    */
   on(
     eventName: 'requestedPlaylistSongs',
-    callback: (playlistID: string, invalidateCache: boolean) => Promise<SongsReturnType | void>
+    callback: (playlistID: string, invalidateCache: boolean, nextPageToken?: unknown) => Promise<SongsReturnType | void>
   ): void
 
   /**
@@ -816,7 +816,10 @@ interface extensionAPI {
    */
   on(
     eventName: 'requestedArtistSongs',
-    callback: (artist: Artists) => Promise<SongsReturnType | ForwardRequestReturnType<'requestedArtistSongs'> | void>
+    callback: (
+      artist: Artists,
+      nextPageToken?: unknown
+    ) => Promise<SongsReturnType | ForwardRequestReturnType<'requestedArtistSongs'> | void>
   ): void
 
   /**
@@ -825,7 +828,10 @@ interface extensionAPI {
    */
   on(
     eventName: 'requestedAlbumSongs',
-    callback: (album: Album) => Promise<SongsReturnType | ForwardRequestReturnType<'requestedAlbumSongs'> | void>
+    callback: (
+      album: Album,
+      nextPageToken?: unknown
+    ) => Promise<SongsReturnType | ForwardRequestReturnType<'requestedAlbumSongs'> | void>
   ): void
 
   /**
