@@ -116,9 +116,9 @@ export class SearchChannel implements IpcChannelInterface {
   }
 
   private getYTSuggestions(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.YTSuggestions>) {
-    if (request.params && request.params.videoID) {
+    if (request.params) {
       this.ytScraper
-        .getSuggestions(request.params.videoID)
+        .getSuggestions(request.params.videoID ?? '')
         .then((data) => event.reply(request.responseChannel, data))
         .catch((e) => {
           console.error(e)

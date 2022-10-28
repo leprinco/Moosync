@@ -457,6 +457,23 @@ export class YoutubeProvider extends GenericProvider {
     }
   }
 
+  private async *searchAndGetRecommendations() {
+    const songs = await window.SearchUtils.searchSongsByOptions({})
+    const shuffled = songs.sort(() => 0.5 - Math.random())
+    const selected = shuffled.slice(0, 5)
+
+    for (const s of selected) {
+      const song = (
+        await this.searchSongs(
+          `${s.artists ? s.artists?.map((val) => val.artist_name).join(', ') + ' - ' : ''}${s.title}`
+        )
+      )[0]
+
+      const recommendations = await window.SearchUtils.getYTSuggestions(this.sanitizeId(song._id, 'SONG'))
+      yield recommendations
+    }
+  }
+
   public async *getRecommendations(): AsyncGenerator<Song[]> {
     const youtubeSongs = await window.SearchUtils.searchSongsByOptions({
       song: {
@@ -464,15 +481,17 @@ export class YoutubeProvider extends GenericProvider {
       }
     })
 
+    if (youtubeSongs.length === 0) {
+      yield* this.searchAndGetRecommendations()
+    }
+
     const resp: Parameters<typeof this.getSongDetailsFromID>[1][] = []
 
     let count = 0
     for (const song of youtubeSongs.slice(0, 10)) {
-      if (song.url) {
-        const songs = await window.SearchUtils.getYTSuggestions(song.url)
-        count += songs.length
-        yield songs
-      }
+      const songs = await window.SearchUtils.getYTSuggestions(this.sanitizeId(song._id, 'SONG'))
+      count += songs.length
+      yield songs
     }
 
     if (await this.getLoggedIn()) {
