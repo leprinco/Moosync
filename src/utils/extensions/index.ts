@@ -288,6 +288,11 @@ class ExtensionRequestHandler {
       resp.data = songs
     }
 
+    if (message.type === 'get-entity') {
+      const entity = SongDB.getEntityByOptions(message.data)
+      resp.data = entity
+    }
+
     if (message.type === 'add-songs') {
       resp.data = []
       for (const s of message.data) {

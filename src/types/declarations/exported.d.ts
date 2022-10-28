@@ -569,6 +569,12 @@ interface extensionAPI {
   getSongs(options: SongAPIOptions): Promise<Song[] | undefined>
 
   /**
+   * Get entities such as playlists, artists, albums, genres from database  by provided options
+   * @param options filter the results
+   */
+  getEntity<T extends Artists | Album | Genre | Playlist>(options: EntityApiOptions<T>): Promise<T[] | undefined>
+
+  /**
    * Get the current playing track. Undefined if no track is playing
    */
   getCurrentSong(): Promise<Song | undefined>

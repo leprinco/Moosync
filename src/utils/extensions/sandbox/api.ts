@@ -33,6 +33,10 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
     return sendAsync<Song[]>(this.packageName, 'get-songs', options)
   }
 
+  public async getEntity<T extends Artists | Album | Genre | Playlist>(options: EntityApiOptions<T>) {
+    return sendAsync<T[]>(this.packageName, 'get-entity', options)
+  }
+
   public async getCurrentSong() {
     return sendAsync<Song>(this.packageName, 'get-current-song')
   }

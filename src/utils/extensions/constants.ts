@@ -9,6 +9,7 @@
 
 export const extensionRequestsKeys = [
   'get-songs',
+  'get-entity',
   'add-songs',
   'add-playlist',
   'add-song-to-playlist',
