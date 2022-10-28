@@ -125,6 +125,10 @@ export function prefixLogger(basePath: string, logger: log.Logger) {
   activeLoggers.push(logger)
 }
 
+export function getLogFile() {
+  return filePath
+}
+
 export function getLogTail() {
-  return new Tail(path.join(filePath), { encoding: 'utf-8', fromBeginning: true, follow: true })
+  return new Tail(filePath, { encoding: 'utf-8', follow: true })
 }
