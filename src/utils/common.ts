@@ -7,6 +7,8 @@
  *  See LICENSE in the project root for license information.
  */
 
+import { v4 } from 'uuid'
+
 export function arrayDiff<T>(arr1: T[], arr2: T[]) {
   return arr1.filter((x) => !arr2.includes(x))
 }
@@ -229,4 +231,55 @@ export function getRandomFromArray(arr: unknown[], n: number) {
     taken[x] = --len in taken ? taken[len] : len
   }
   return result
+}
+
+export function sanitizeSong(ext: string, ...songs: Song[]): Song[] {
+  return songs.map((val) => ({
+    ...val,
+    artists: sanitizeArtists(ext, ...(val.artists ?? [])),
+    _id: `${ext}:${val._id ?? v4()}`,
+    providerExtension: ext
+  }))
+}
+
+export function sanitizePlaylist(ext: string, ...playlists: Playlist[]): ExtendedPlaylist[] {
+  return playlists.map((val) => ({
+    ...val,
+    playlist_id: `${ext}:${val.playlist_id ?? v4()}`,
+    extension: ext
+  }))
+}
+
+export function sanitizeAlbums(ext: string, ...albums: Album[]): Album[] {
+  return albums.map((val) => ({
+    ...val,
+    album_id: `${ext}:${val.album_id ?? v4()}`
+  }))
+}
+
+export function sanitizeArtistExtraInfo(extra_info?: Record<string, unknown>) {
+  const ret: Record<string, string | undefined> = {}
+  if (extra_info) {
+    for (const [key, val] of Object.entries(extra_info)) {
+      if (typeof val !== 'string') {
+        ret[key] = JSON.stringify(val)
+      } else {
+        ret[key] = val as string
+      }
+    }
+  }
+
+  return ret
+}
+
+export function sanitizeArtists(ext: string, ...artists: Artists[]): Artists[] {
+  return artists.map((val) => ({
+    ...val,
+    artist_id: `${ext}:${val.artist_id ?? v4()}`,
+    artist_extra_info: {
+      extensions: {
+        [ext]: sanitizeArtistExtraInfo(val.artist_extra_info)
+      }
+    }
+  }))
 }

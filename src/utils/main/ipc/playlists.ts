@@ -47,7 +47,7 @@ export class PlaylistsChannel implements IpcChannelInterface {
 
   private createPlaylist(event: Electron.IpcMainEvent, request: IpcRequest<PlaylistRequests.CreatePlaylist>) {
     try {
-      const data = SongDB.createPlaylist(request.params.playlist, request.params.playlist.extension)
+      const data = SongDB.createPlaylist(request.params.playlist)
       event.reply(request.responseChannel, data)
     } catch (e) {
       console.error(e)

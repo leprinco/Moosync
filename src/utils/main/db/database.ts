@@ -950,10 +950,8 @@ export class SongDBInstance extends DBUtils {
    * @param imgSrc cover image of playlist
    * @returns playlist id after creation
    */
-  public createPlaylist(playlist: Partial<Playlist>, extension?: string): string {
-    const id = `${extension && !playlist.playlist_id?.startsWith(`${extension}:`) ? extension + ':' : ''}${
-      playlist.playlist_id ?? v4()
-    }`
+  public createPlaylist(playlist: Partial<Playlist>): string {
+    const id = playlist.playlist_id ?? v4()
 
     const playlistToInsert: Playlist = {
       playlist_name: playlist.playlist_name ?? 'New Playlist',
@@ -961,7 +959,7 @@ export class SongDBInstance extends DBUtils {
       playlist_id: id,
       playlist_song_count: playlist.playlist_song_count ?? 0,
       playlist_coverPath: playlist.playlist_coverPath,
-      extension,
+      extension: playlist.extension,
       icon: playlist.icon
     }
 

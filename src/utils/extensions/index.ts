@@ -17,13 +17,14 @@ import { SongDB } from '@/utils/main/db/index'
 import { WindowHandler } from '../main/windowManager'
 import { async } from 'node-stream-zip'
 import { promises as fsP } from 'fs'
-import { getVersion } from '@/utils/common'
+import { getVersion, sanitizeSong } from '@/utils/common'
 import path from 'path'
 import { playerControlRequests } from './constants'
 import { v4 } from 'uuid'
 import { oauthHandler } from '@/utils/main/oauth/handler'
 import { getStoreChannel } from '../main/ipc'
 import { LogLevelDesc } from 'loglevel'
+import { sanitizePlaylist } from '@/utils/common'
 
 export const defaultExtensionPath = path.join(app.getPath('appData'), app.getName(), 'extensions')
 const defaultLogPath = path.join(app.getPath('logs'))
@@ -291,28 +292,24 @@ class ExtensionRequestHandler {
       resp.data = []
       for (const s of message.data) {
         if (s) {
-          resp.data.push(
-            SongDB.store({
-              ...s,
-              _id: `${message.extensionName}-${s._id}`,
-              providerExtension: message.extensionName
-            })
-          )
+          resp.data.push(SongDB.store(...sanitizeSong(message.extensionName, s)))
         }
       }
     }
 
     if (message.type === 'add-playlist') {
       const playlist = message.data as Playlist
-      resp.data = SongDB.createPlaylist(playlist, message.extensionName)
+      resp.data = SongDB.createPlaylist(sanitizePlaylist(message.extensionName, playlist)[0])
     }
 
     if (message.type === 'add-song-to-playlist') {
-      SongDB.addToPlaylist(message.data.playlistID, ...message.data.songs)
+      SongDB.addToPlaylist(message.data.playlistID, ...sanitizeSong(message.extensionName, ...message.data.songs))
     }
 
     if (message.type === 'remove-song') {
-      await SongDB.removeSong(message.data)
+      await SongDB.removeSong(
+        ...(message.data as Song[]).filter((val) => val._id.startsWith(`${message.extensionName}:`))
+      )
     }
 
     if (message.type === 'get-preferences') {
