@@ -54,6 +54,7 @@ import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
 import { YoutubeAlts } from './store/providers'
 import PinEntryModal from './components/modals/PinEntryModal.vue'
+import { ExtensionProvider } from '@/utils/ui/providers/extensionWrapper'
 
 @Component({
   components: {
@@ -97,6 +98,13 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
   private fetchProviderExtensions() {
     vxm.providers.fetchExtensionProviders()
     window.ExtensionUtils.listenExtensionsChanged(() => vxm.providers.fetchExtensionProviders())
+
+    window.ExtensionUtils.listenAccountRegistered((details) => {
+      const provider = this.getProviderByKey(details.packageName) as ExtensionProvider
+      if (provider) {
+        provider.setAccountDetails(details.data)
+      }
+    })
   }
 
   @Watch('isJukeboxModeActive')

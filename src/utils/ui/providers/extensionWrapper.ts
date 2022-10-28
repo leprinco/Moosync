@@ -37,13 +37,9 @@ export class ExtensionProvider extends GenericProvider {
     window.ExtensionUtils.getRegisteredAccounts(this.key).then((details) => {
       if (details[this.key] && details[this.key][0]) this.setAccountDetails(details[this.key][0])
     })
-
-    window.ExtensionUtils.listenAccountRegistered((details) => {
-      this.setAccountDetails(details.data)
-    })
   }
 
-  private setAccountDetails(details: StrippedAccountDetails) {
+  public setAccountDetails(details: StrippedAccountDetails) {
     this._title = details.name
     this.loggedInStatus = details.loggedIn
     this._icon = details.icon
