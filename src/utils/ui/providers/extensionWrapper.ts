@@ -15,7 +15,8 @@ type ExecutionStack = {
 }
 
 // Decorator needed for reflect-metadata to emit function metadata
-function dummyDecorator(target: unknown, member: string) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function dummyDecorator(_target: unknown, _member: string) {
   // do nothing
 }
 
