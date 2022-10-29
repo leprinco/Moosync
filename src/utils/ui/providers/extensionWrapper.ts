@@ -14,6 +14,11 @@ type ExecutionStack = {
   stack: string[]
 }
 
+// Decorator needed for reflect-metadata to emit function metadata
+function dummyDecorator(target: unknown, member: string) {
+  // do nothing
+}
+
 export class ExtensionProvider extends GenericProvider {
   public key: string
 
@@ -115,8 +120,14 @@ export class ExtensionProvider extends GenericProvider {
 
           const transformedArgs = data.transformedData ?? originalData
 
-          for (let i = 0; i < metadataArgs.length; i++) {
-            args.push(transformedArgs[i])
+          if (metadataArgs) {
+            for (let i = 0; i < metadataArgs.length; i++) {
+              args.push(transformedArgs[i])
+            }
+          } else {
+            // TODO: Should type check the args somehow
+            console.warn('Could not check transformed args')
+            args.push(...transformedArgs)
           }
 
           const ret = (m as (...args: unknown[]) => ReturnType<GenericProvider[K]>).call(
@@ -161,6 +172,7 @@ export class ExtensionProvider extends GenericProvider {
     }
   }
 
+  @dummyDecorator
   public async getUserPlaylists(invalidateCache?: boolean | undefined): Promise<ExtendedPlaylist[]> {
     const playlists: ExtendedPlaylist[] = []
     const resp = await this.sendExtensionEventRequest('requestedPlaylists', [invalidateCache ?? false])
@@ -189,6 +201,7 @@ export class ExtensionProvider extends GenericProvider {
     return playlists
   }
 
+  @dummyDecorator
   public async *getPlaylistContent(
     id: string,
     invalidateCache?: boolean | undefined,
@@ -217,6 +230,7 @@ export class ExtensionProvider extends GenericProvider {
     }
   }
 
+  @dummyDecorator
   public async *getArtistSongs(
     artist: Artists,
     nextPageToken?: unknown
@@ -235,6 +249,7 @@ export class ExtensionProvider extends GenericProvider {
     }
   }
 
+  @dummyDecorator
   public async *getAlbumSongs(
     album: Album,
     nextPageToken?: unknown
@@ -248,6 +263,7 @@ export class ExtensionProvider extends GenericProvider {
     }
   }
 
+  @dummyDecorator
   public async getPlaylistDetails(url: string, invalidateCache?: boolean | undefined): Promise<Playlist | undefined> {
     const resp = await this.sendExtensionEventRequest('requestedPlaylistFromURL', [url, invalidateCache ?? false])
     if (resp) {
@@ -323,6 +339,7 @@ export class ExtensionProvider extends GenericProvider {
     }
   }
 
+  @dummyDecorator
   private async handleSearchResultForwardRequest<
     T extends 'searchSongs' | 'searchArtists' | 'searchAlbum' | 'searchPlaylists'
   >(
@@ -342,22 +359,27 @@ export class ExtensionProvider extends GenericProvider {
     return [] as Awaited<ReturnType<GenericProvider[T]>>
   }
 
+  @dummyDecorator
   public async searchSongs(term: string): Promise<Song[]> {
     return this.handleSearchResultForwardRequest(await this.splitSearch(term), 'searchSongs', term)
   }
 
+  @dummyDecorator
   public async searchArtists(term: string): Promise<Artists[]> {
     return this.handleSearchResultForwardRequest(await this.splitSearch(term), 'searchArtists', term)
   }
 
+  @dummyDecorator
   public async searchAlbum(term: string): Promise<Album[]> {
     return this.handleSearchResultForwardRequest(await this.splitSearch(term), 'searchAlbum', term)
   }
 
+  @dummyDecorator
   public async searchPlaylists(term: string): Promise<Playlist[]> {
     return this.handleSearchResultForwardRequest(await this.splitSearch(term), 'searchPlaylists', term)
   }
 
+  @dummyDecorator
   public async *getRecommendations(): AsyncGenerator<Song[]> {
     const resp = await this.sendExtensionEventRequest('requestedRecommendations', [])
 
@@ -369,11 +391,14 @@ export class ExtensionProvider extends GenericProvider {
     }
   }
 
+  @dummyDecorator
   public async getPlaybackUrlAndDuration(
     song: Song
   ): Promise<{ url: string | undefined; duration?: number } | undefined> {
-    const resp = await this.sendExtensionEventRequest('playbackDetailsRequested', [song])
-
+    const resp = await this.sendExtensionEventRequest('playbackDetailsRequested', [
+      { ...song, _id: this.sanitizeId(song._id) }
+    ])
+    console.log(resp)
     if (resp) {
       if (this.isForwardRequest(resp)) {
         return this.handleForwardRequest('getPlaybackUrlAndDuration', resp, [song], this.getExecStack(...arguments))
