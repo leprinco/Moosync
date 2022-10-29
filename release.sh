@@ -10,6 +10,7 @@ VERSION=$(echo $VERSION | xargs)
 cd aur
 git checkout master
 sed -i "s/pkgver=.*/pkgver=${VERSION}/" PKGBUILD
+sed -i "s/pkgrel=.*/pkgrel=1/" PKGBUILD
 updpkgsums
 makepkg --printsrcinfo > .SRCINFO
 git add -A
