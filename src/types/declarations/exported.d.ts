@@ -395,7 +395,7 @@ type ExtraExtensionEventReturnType<T extends ExtraExtensionEventTypes> =
       : void)
   | void
 
-type ExtraExtensionEventData<T extends ExtraExtensionEventTypes> = T extends 'requestedPlaylistSongs'
+type ExtraExtensionEventData<T extends ExtraExtensionEventTypes | unknown> = T extends 'requestedPlaylistSongs'
   ? [playlistID: string, invalidateCache: boolean, nextPageToken: unknown | undefined]
   : T extends 'requestedPlaylists'
   ? [invalidateCache: boolean]
