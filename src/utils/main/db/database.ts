@@ -44,10 +44,12 @@ export class SongDBInstance extends DBUtils {
   }
 
   private notifyExtensionHostSongChanged(added: boolean, songs: Song[]) {
-    getExtensionHostChannel().sendExtraEvent({
-      type: added ? 'songAdded' : 'songRemoved',
-      data: [songs]
-    })
+    if (songs.length > 0) {
+      getExtensionHostChannel().sendExtraEvent({
+        type: added ? 'songAdded' : 'songRemoved',
+        data: [songs]
+      })
+    }
   }
 
   public store(...songsToAdd: Song[]): Song[] {
@@ -937,10 +939,12 @@ export class SongDBInstance extends DBUtils {
      ============================= */
 
   private notifyExtensionHostPlaylistChanged(added: boolean, playlist: Playlist[]) {
-    getExtensionHostChannel().sendExtraEvent({
-      type: added ? 'playlistAdded' : 'playlistRemoved',
-      data: [playlist]
-    })
+    if (playlist.length > 0) {
+      getExtensionHostChannel().sendExtraEvent({
+        type: added ? 'playlistAdded' : 'playlistRemoved',
+        data: [playlist]
+      })
+    }
   }
 
   /**
