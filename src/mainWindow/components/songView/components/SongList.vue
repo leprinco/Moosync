@@ -47,7 +47,7 @@
                 :key="`${item._id}-${field.key}`"
                 class="box text-truncate"
                 :style="{ width: columnWidths[i1] + '%' }"
-                :title="field.key === 'index' ? index + 1 : getFieldData(field.key, item)"
+                :title="field.key === 'index' ? index + 1 : getFieldTitle(field.key, item)"
                 @dblclick="onRowDoubleClicked(item)"
                 @click="onRowSelected(index)"
                 @contextmenu="onRowContext(arguments[0], item)"
@@ -108,6 +108,11 @@ export default class SongList extends mixins(SongListMixin) {
       case 'artist_name':
         return song.artists
     }
+  }
+
+  private getFieldTitle(field: TableFields, song: Song, index: number) {
+    if (field !== 'artist_name') return this.getFieldData(field, song, index)
+    else return song.artists?.map((val) => val.artist_name).join(', ')
   }
 
   private getAlbumName(data: Song) {
