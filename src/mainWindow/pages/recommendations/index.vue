@@ -12,12 +12,17 @@
     <b-container class="recommendations-container" fluid>
       <b-row no-gutters class="page-title">{{ $t('pages.explore') }}</b-row>
       <b-row v-for="p of providers" :key="p.key">
-        <b-col v-if="recommendationList[p.key] && recommendationList[p.key].length > 0">
+        <b-col v-if="(recommendationList[p.key] && recommendationList[p.key].length > 0) || loadingMap[p.key]">
           <b-row class="mt-3">
-            <b-col class="provider-title">Hot from {{ p.Title }}</b-col>
+            <b-col cols="auto" class="provider-title">Hot from {{ p.Title }}</b-col>
+            <b-col cols="auto" v-if="loadingMap[p.key]">
+              <div class="loading-spinner d-flex justify-content-center">
+                <b-spinner class="align-self-center" />
+              </div>
+            </b-col>
           </b-row>
           <b-row class="slider-row">
-            <b-col>
+            <b-col v-if="recommendationList[p.key] && recommendationList[p.key].length > 0">
               <CardCarousel :songList="recommendationList[p.key]" />
             </b-col>
           </b-row>
@@ -49,6 +54,7 @@ export default class Albums extends mixins(RouterPushes, ContextMenuMixin, Provi
   }
 
   private recommendationList: Record<string, Song[]> = {}
+  private loadingMap: Record<string, boolean> = {}
 
   private fetchProviders() {
     const providers = this.getProvidersByScope(ProviderScopes.RECOMMENDATIONS)
@@ -67,11 +73,15 @@ export default class Albums extends mixins(RouterPushes, ContextMenuMixin, Provi
   }
 
   private async getResults(key: string, gen: AsyncGenerator<Song[]>) {
-    const val = []
+    this.$set(this.loadingMap, key, true)
     for await (const s of gen) {
-      val.push(...s)
-      this.$set(this.recommendationList, key, val)
+      if (!this.recommendationList[key]) {
+        this.recommendationList[key] = []
+      }
+      this.recommendationList[key].push(...s)
+      this.recommendationList = Object.assign({}, this.recommendationList)
     }
+    this.$set(this.loadingMap, key, false)
   }
 }
 </script>
