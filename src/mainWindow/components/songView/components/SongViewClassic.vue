@@ -16,6 +16,7 @@
           :defaultDetails="defaultDetails"
           :buttonGroup="detailsButtonGroup"
           :currentSong="currentSong"
+          :optionalProviders="optionalProviders"
           v-on="$listeners"
         />
       </b-row>
@@ -59,6 +60,9 @@ export default class SongViewClassic extends mixins(ImgLoader, ModelHelper) {
 
   @Prop({ default: false })
   private isLoading!: boolean
+
+  @Prop({ default: () => [] })
+  private optionalProviders!: TabCarouselItem[]
 
   @Prop({
     default: () => {

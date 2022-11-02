@@ -55,8 +55,8 @@
               </div>
             </div>
           </b-row>
-          <b-row no-gutters align-v="end" class="flex-fill mt-2">
-            <b-col>
+          <b-row no-gutters align-v="end" align-h="between" class="flex-fill mt-2 button-row">
+            <b-col cols="auto">
               <div v-if="buttonGroup.enableContainer" class="button-group d-flex">
                 <PlainPlay :title="$t('buttons.playSingle', { title })" @click.native="playAll" />
                 <AddToQueue :title="$t('buttons.addToQueue', { title })" @click.native="addToQueue" />
@@ -71,6 +71,9 @@
                   @click.native="playRandom"
                 />
               </div>
+            </b-col>
+            <b-col cols="auto">
+              <TabCarousel class="tab-carousel" v-on="$listeners" :items="optionalProviders" />
             </b-col>
           </b-row>
         </b-container>
@@ -92,6 +95,7 @@ import ErrorHandler from '@/utils/ui/mixins/errorHandler'
 import ImageLoader from '@/utils/ui/mixins/ImageLoader'
 import FileMixin from '@/utils/ui/mixins/FileMixin'
 import { convertDuration } from '@/utils/common'
+import TabCarousel from '../../generic/TabCarousel.vue'
 
 @Component({
   components: {
@@ -100,7 +104,8 @@ import { convertDuration } from '@/utils/common'
     AddToLibrary,
     AddToQueue,
     YoutubeIcon,
-    SpotifyIcon
+    SpotifyIcon,
+    TabCarousel
   }
 })
 export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileMixin) {
@@ -114,6 +119,9 @@ export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileM
 
   @Prop({ default: () => undefined })
   private forceCover!: string
+
+  @Prop({ default: () => [] })
+  private optionalProviders!: TabCarouselItem[]
 
   @Prop({
     default: () => {
@@ -186,3 +194,8 @@ export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileM
   }
 }
 </script>
+
+<style lang="sass" scoped>
+.tab-carousel
+  margin-bottom: -16px
+</style>
