@@ -28,6 +28,7 @@
         id="myRange"
         aria-label="volume"
         v-model="volume"
+        @mousewheel="handleScrollEvent"
       />
     </b-col>
     <b-col cols="auto" v-if="!isJukeboxModeActive">
@@ -37,6 +38,7 @@
         :cut="volume == 0"
         @mouseenter.native="handleVolumeIconMouseEnter"
         @mouseleave.native="handleVolumeIconMouseLeave"
+        @mousewheel.native="handleScrollEvent"
       />
     </b-col>
     <b-col cols="auto" class="expand-icon ml-3" :class="{ open: sliderOpen }" @click="emitToggleSlider">
@@ -113,6 +115,14 @@ export default class ExtraControls extends mixins(PlayerControls, JukeboxMixin) 
   private handleSliderMouseLeave() {
     this.showVolume = false
     this.leaveTimeout && clearTimeout(this.leaveTimeout)
+  }
+
+  private handleScrollEvent(e: WheelEvent) {
+    if (e.deltaY < 0) {
+      this.volume += 3
+    } else {
+      this.volume -= 3
+    }
   }
 }
 </script>
