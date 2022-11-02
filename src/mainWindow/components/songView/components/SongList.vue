@@ -39,6 +39,7 @@
           key-field="_id"
           :direction="'vertical'"
           v-click-outside="clearSelection"
+          @scroll.native="onScroll"
         >
           <template v-slot="{ item, index }">
             <div class="wrapper w-100 field-content" :class="{ selectedItem: selected.includes(index) }">
@@ -262,6 +263,10 @@ export default class SongList extends mixins(SongListMixin) {
   // For some reason table isn't rerendered on window size change through maximize and minimize functions
   private rerenderTable() {
     this.refreshKey = !this.refreshKey
+  }
+
+  private onScroll(e: Event) {
+    this.$emit('scroll', e)
   }
 }
 </script>
