@@ -12,9 +12,21 @@
     <b-container class="recommendations-container" fluid>
       <b-row no-gutters class="page-title">{{ $t('pages.explore') }}</b-row>
       <b-row v-for="p of providers" :key="p.key">
-        <b-col v-if="(recommendationList[p.key] && recommendationList[p.key].length > 0) || loadingMap[p.key]">
-          <b-row class="mt-3">
+        <b-col v-if="hasRecommendations(p.key) || loadingMap[p.key]">
+          <b-row align-v="center" class="mt-3">
             <b-col cols="auto" class="provider-title">Hot from {{ p.Title }}</b-col>
+            <b-col cols="2" class="d-flex button-group mt-1" v-if="hasRecommendations(p.key)">
+              <PlainPlay
+                v-if="!isJukeboxModeActive"
+                :title="$t('buttons.playSingle', { title: p.Title })"
+                @click.native="playAll(p.key)"
+              />
+              <AddToQueue :title="$t('buttons.addToQueue', { title: p.Title })" @click.native="addToQueue(p.key)" />
+              <AddToLibrary
+                :title="$t('buttons.addToLibrary', { title: p.Title })"
+                @click.native="addToLibrary(p.key)"
+              />
+            </b-col>
             <b-col cols="auto" v-if="loadingMap[p.key]">
               <div class="loading-spinner d-flex justify-content-center">
                 <b-spinner class="align-self-center" />
@@ -22,7 +34,7 @@
             </b-col>
           </b-row>
           <b-row class="slider-row">
-            <b-col v-if="recommendationList[p.key] && recommendationList[p.key].length > 0">
+            <b-col v-if="hasRecommendations(p.key)">
               <CardCarousel :songList="recommendationList[p.key]" />
             </b-col>
           </b-row>
@@ -41,14 +53,28 @@ import CardView from '../../components/generic/CardView.vue'
 import CardCarousel from '../../components/generic/CardCarousel.vue'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
+import AddToQueue from '@/icons/AddToQueueIcon.vue'
+import PlainPlay from '@/icons/PlainPlayIcon.vue'
+import AddToLibrary from '@/icons/AddToLibraryIcon.vue'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
+import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 
 @Component({
   components: {
     CardView,
-    CardCarousel
+    CardCarousel,
+    PlainPlay,
+    AddToLibrary,
+    AddToQueue
   }
 })
-export default class Albums extends mixins(RouterPushes, ContextMenuMixin, ProviderMixin) {
+export default class Albums extends mixins(
+  RouterPushes,
+  ContextMenuMixin,
+  ProviderMixin,
+  JukeboxMixin,
+  PlayerControls
+) {
   private get providers() {
     return this.fetchProviders()
   }
@@ -67,6 +93,21 @@ export default class Albums extends mixins(RouterPushes, ContextMenuMixin, Provi
     }
   }
 
+  private hasRecommendations(key: string) {
+    return this.recommendationList[key] && this.recommendationList[key].length > 0
+  }
+
+  private addToQueue(key: string) {
+    this.queueSong(this.recommendationList[key] ?? [])
+  }
+
+  private playAll(key: string) {
+    this.playTop(this.recommendationList[key] ?? [])
+  }
+
+  private addToLibrary(key: string) {
+    this.addSongsToLibrary(...(this.recommendationList[key] ?? []))
+  }
   mounted() {
     this.fetchRecomsFromProviders()
     this.onProvidersChanged(this.fetchRecomsFromProviders)
