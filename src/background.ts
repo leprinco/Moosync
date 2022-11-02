@@ -26,6 +26,23 @@ import { ToadScheduler } from 'toad-scheduler'
 import { setupUpdateCheckTask } from '@/utils/main/scheduler/index'
 import pie from 'puppeteer-in-electron'
 import { loadSelectiveArrayPreference } from './utils/main/db/preferences'
+import { exit } from 'process'
+
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    if (process.argv.includes('--version')) {
+      console.log(`Moosync version ${process.env.MOOSYNC_VERSION}`)
+      exit(0)
+    }
+
+    // Set the path of electron.exe and your app.
+    // These two additional parameters are only available on windows.
+    // Setting this is required to get this working in dev mode.
+    app.setAsDefaultProtocolClient('moosync', process.execPath, [resolve(process.argv[1])])
+  }
+} else {
+  app.setAsDefaultProtocolClient('moosync')
+}
 
 if (process.platform !== 'darwin') {
   app.commandLine.appendSwitch('disable-features', 'HardwareMediaKeyHandling,MediaSessionService')
@@ -212,17 +229,6 @@ process.on('SIGINT', async () => {
   await _windowHandler.stopAll()
   app.quit()
 })
-
-if (process.defaultApp) {
-  if (process.argv.length >= 2) {
-    // Set the path of electron.exe and your app.
-    // These two additional parameters are only available on windows.
-    // Setting this is required to get this working in dev mode.
-    app.setAsDefaultProtocolClient('moosync', process.execPath, [resolve(process.argv[1])])
-  }
-} else {
-  app.setAsDefaultProtocolClient('moosync')
-}
 
 /**
  * Parses process.argv to find if app was started by protocol
