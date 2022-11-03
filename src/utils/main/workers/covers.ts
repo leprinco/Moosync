@@ -16,7 +16,7 @@ let sharpInstance: (input?: Buffer | string, options?: SharpOptions) => Sharp
 
 let importFailed = false
 
-export async function writeBuffer(bufferDesc: Buffer, basePath: string, onlyHigh = false) {
+export async function writeBuffer(bufferDesc: Buffer, basePath: string, hash?: string, onlyHigh = false) {
   if (!sharpInstance && !importFailed) {
     try {
       sharpInstance = (await import('sharp')).default
@@ -28,7 +28,7 @@ export async function writeBuffer(bufferDesc: Buffer, basePath: string, onlyHigh
     }
   }
 
-  const id = v4()
+  const id = hash ?? v4()
 
   const highPath = path.join(basePath, id + '-high.jpg')
 
