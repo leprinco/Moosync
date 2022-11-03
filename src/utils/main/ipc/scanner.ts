@@ -13,7 +13,7 @@ import { Thread, TransferDescriptor, Worker, spawn } from 'threads'
 import { IpcMainEvent, app } from 'electron'
 import { SongDB } from '@/utils/main/db/index'
 import fs from 'fs'
-import { loadPreferences } from '@/utils/main/db/preferences'
+import { loadPreferences, loadSelectivePreference } from '@/utils/main/db/preferences'
 import { writeBuffer } from '@/utils/main/workers/covers'
 import { access, mkdir } from 'fs/promises'
 
@@ -37,12 +37,21 @@ enum scanning {
 type ScannedSong = { song: Song; cover: undefined | TransferDescriptor<Buffer> }
 type ScannedPlaylist = { filePath: string; title: string; songHashes: string[] }
 
+type ScanWorkerWorkerType = {
+  start: (
+    togglePaths: togglePaths,
+    excludePaths: string[],
+    loggerPath: string
+  ) => ScannedSong | ScannedPlaylist | Progress
+}
+
+type ScanWorker = Awaited<ReturnType<typeof spawn<ScanWorkerWorkerType>>>
+
 export class ScannerChannel implements IpcChannelInterface {
   name = IpcEvents.SCANNER
   private scanStatus: scanning = scanning.UNDEFINED
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private scannerWorker: any
+  private scannerWorker: ScanWorker | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private scraperWorker: any
 
@@ -172,14 +181,12 @@ export class ScannerChannel implements IpcChannelInterface {
     } as Progress)
   }
 
-  private scanSongs(preferences: Preferences, forceScan = false) {
+  private scanSongs(paths: togglePaths, forceScan = false) {
     return new Promise<void>((resolve, reject) => {
       ;(
-        this.scannerWorker.start(
-          preferences.musicPaths,
-          forceScan ? [] : SongDB.getAllPaths(),
-          loggerPath
-        ) as Observable<ScannedSong | ScannedPlaylist | Progress>
+        this.scannerWorker?.start(paths, forceScan ? [] : SongDB.getAllPaths(), loggerPath) as Observable<
+          ScannedSong | ScannedPlaylist | Progress
+        >
       ).subscribe(
         (result) => {
           if ((result as Progress).total) {
@@ -332,7 +339,7 @@ export class ScannerChannel implements IpcChannelInterface {
     }
     this.setScanning()
 
-    const preferences = loadPreferences()
+    const preferences = loadSelectivePreference<togglePaths>('musicPaths')
 
     if (this.scannerWorker) {
       await Thread.terminate(this.scannerWorker)
@@ -340,14 +347,14 @@ export class ScannerChannel implements IpcChannelInterface {
     }
 
     try {
-      this.scannerWorker = await spawn(new Worker(`./${scannerWorker}`), { timeout: 5000 })
+      this.scannerWorker = await spawn<ScanWorkerWorkerType>(new Worker(`./${scannerWorker}`), { timeout: 5000 })
     } catch (e) {
       console.error('Error Spawning', scannerWorker, e)
       event?.reply(request?.responseChannel, e)
       return
     }
 
-    await this.destructiveScan(preferences.musicPaths)
+    await this.destructiveScan(preferences)
 
     try {
       await this.scanSongs(preferences, request?.params.forceScan)
@@ -359,8 +366,10 @@ export class ScannerChannel implements IpcChannelInterface {
 
     this.setIdle()
 
-    Thread.terminate(this.scannerWorker)
-    this.scannerWorker = undefined
+    if (this.scannerWorker) {
+      Thread.terminate(this.scannerWorker)
+      this.scannerWorker = undefined
+    }
 
     if (this.isScanQueued()) {
       await this.scanAll(event, request)
