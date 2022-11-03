@@ -24,7 +24,7 @@ import scraperWorker from 'threads-plugin/dist/loader?name=1!/src/utils/main/wor
 import { WindowHandler } from '../windowManager'
 import { v4 } from 'uuid'
 import path from 'path'
-import { isEmpty } from '../../../../aur/src/Moosync-6.0.0/src/utils/common'
+import { isEmpty } from '@/utils/common'
 
 const loggerPath = app.getPath('logs')
 
