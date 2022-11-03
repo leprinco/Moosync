@@ -221,7 +221,7 @@ export class LastFMProvider extends GenericProvider {
 
       this.populateRequest('POST', ApiResources.UPDATE_NOW_PLAYING, {
         ...parsedSong,
-        artist: song.artists && song.artists[0].artist_name
+        artist: song.artists && song.artists.length > 0 && song.artists[0].artist_name
       })
 
       if (this.scrobbleTimeout) {
