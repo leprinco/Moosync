@@ -63,22 +63,18 @@ export class LastFMProvider extends GenericProvider {
     return !!this._session
   }
 
-  private isEnvExists() {
-    return !!(process.env.LastFmApiKey && process.env.LastFmSecret)
-  }
-
   public async updateConfig(): Promise<boolean> {
-    const conf = (await window.PreferenceUtils.loadSelective('lastfm')) as { api_key: string; client_secret: string }
-    if (conf || this.isEnvExists()) {
-      this._config = {
-        key: process.env.LastFmApiKey ?? conf.api_key,
-        secret: process.env.LastFmSecret ?? conf.client_secret
-      }
+    const conf = (await window.PreferenceUtils.loadSelective('lastfm')) as { client_id: string; client_secret: string }
+    const key = conf.client_id ?? process.env.LastFmApiKey
+    const secret = conf.client_secret ?? process.env.LastFmSecret
+    if (key && secret) {
+      this._config = { key, secret }
 
       this._session = (await this.fetchStoredToken()) ?? undefined
+      return true
     }
 
-    return !!(conf && conf.api_key && conf.client_secret) || this.isEnvExists()
+    return false
   }
 
   private async getMethodSignature(...params: object[]) {
