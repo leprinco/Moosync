@@ -21,10 +21,10 @@ import { access, mkdir } from 'fs/promises'
 import scannerWorker from 'threads-plugin/dist/loader?name=0!/src/utils/main/workers/scanner.ts'
 // @ts-expect-error it don't want .ts
 import scraperWorker from 'threads-plugin/dist/loader?name=1!/src/utils/main/workers/scraper.ts'
-import { Observable } from 'observable-fns'
 import { WindowHandler } from '../windowManager'
 import { v4 } from 'uuid'
 import path from 'path'
+import { isEmpty } from '../../../../aur/src/Moosync-6.0.0/src/utils/common'
 
 const loggerPath = app.getPath('logs')
 
@@ -43,6 +43,8 @@ type ScanWorkerWorkerType = {
     excludePaths: string[],
     loggerPath: string
   ) => ScannedSong | ScannedPlaylist | Progress
+
+  scanSinglePlaylist: (path: string, loggerPath: string) => ScannedSong | ScannedPlaylist | Progress
 }
 
 type ScanWorker = Awaited<ReturnType<typeof spawn<ScanWorkerWorkerType>>>
@@ -54,9 +56,6 @@ export class ScannerChannel implements IpcChannelInterface {
   private scannerWorker: ScanWorker | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private scraperWorker: any
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private singleScannerWorker: any
 
   private totalScanFiles = 0
   private currentScanFile = 0
@@ -183,25 +182,21 @@ export class ScannerChannel implements IpcChannelInterface {
 
   private scanSongs(paths: togglePaths, forceScan = false) {
     return new Promise<void>((resolve, reject) => {
-      ;(
-        this.scannerWorker?.start(paths, forceScan ? [] : SongDB.getAllPaths(), loggerPath) as Observable<
-          ScannedSong | ScannedPlaylist | Progress
-        >
-      ).subscribe(
+      this.scannerWorker?.start(paths, forceScan ? [] : SongDB.getAllPaths(), loggerPath).subscribe(
         (result) => {
-          if ((result as Progress).total) {
-            this.totalScanFiles = (result as Progress).total
-            this.currentScanFile = (result as Progress).current
+          if (this.isProgress(result)) {
+            this.totalScanFiles = result.total
+            this.currentScanFile = result.current
 
             this.updateProgress()
           }
 
-          if ((result as ScannedSong).song) {
-            this.checkDuplicateAndStore((result as ScannedSong).song, (result as ScannedSong).cover)
+          if (this.isScannedSong(result)) {
+            this.checkDuplicateAndStore(result.song, result.cover)
           }
 
-          if ((result as ScannedPlaylist).filePath && (result as ScannedPlaylist).songHashes) {
-            this.storePlaylist(result as ScannedPlaylist)
+          if (this.isScannedPlaylist(result)) {
+            this.storePlaylist(result)
           }
         },
         reject,
@@ -384,46 +379,51 @@ export class ScannerChannel implements IpcChannelInterface {
     if (event && request) event.reply(request.responseChannel)
   }
 
+  private isScannedSong(item: ScannedSong | ScannedPlaylist | Progress): item is ScannedSong {
+    return !!isEmpty((item as ScannedSong).song)
+  }
+
+  private isScannedPlaylist(item: ScannedSong | ScannedPlaylist | Progress): item is ScannedPlaylist {
+    return !!(isEmpty((item as ScannedPlaylist).filePath) && isEmpty((item as ScannedPlaylist).songHashes))
+  }
+
+  private isProgress(item: ScannedSong | ScannedPlaylist | Progress): item is Progress {
+    return !!isEmpty((item as Progress).total)
+  }
+
   private async scanSinglePlaylist(event: IpcMainEvent, request: IpcRequest<ScannerRequests.ScanSinglePlaylist>) {
     if (request.params.playlistPath) {
-      if (this.singleScannerWorker) {
-        await Thread.terminate(this.singleScannerWorker)
-        this.singleScannerWorker = undefined
-      }
-
       try {
-        this.singleScannerWorker = await spawn(new Worker(`./${scannerWorker}`), { timeout: 5000 })
+        const scanWorker = await spawn<ScanWorkerWorkerType>(new Worker(`./${scannerWorker}`), { timeout: 5000 })
+
+        const songs: Song[] = []
+        let playlist: Partial<Playlist> | null = null
+        scanWorker.scanSinglePlaylist(request.params.playlistPath, loggerPath).subscribe(
+          (result) => {
+            if (this.isScannedSong(result)) {
+              songs.push(result.song)
+            }
+
+            if (this.isScannedPlaylist(result)) {
+              playlist = {
+                playlist_id: v4(),
+                playlist_name: result.title,
+                playlist_path: result.filePath
+              }
+
+              console.debug('Got playlist', playlist.playlist_name)
+            }
+          },
+          console.error,
+          () => event.reply(request.responseChannel, { playlist, songs })
+        )
+
+        await Thread.terminate(scanWorker)
       } catch (e) {
         console.error('Error Spawning', scannerWorker, e)
         event.reply(request.responseChannel, e)
         return
       }
-
-      const songs: Song[] = []
-      let playlist: Partial<Playlist> | null = null
-      ;(
-        this.singleScannerWorker.scanSinglePlaylist(request.params.playlistPath, loggerPath) as Observable<
-          ScannedSong | ScannedPlaylist | Progress
-        >
-      ).subscribe(
-        (result) => {
-          if ((result as ScannedSong).song) {
-            songs.push((result as ScannedSong).song)
-          }
-
-          if ((result as ScannedPlaylist).filePath && (result as ScannedPlaylist).songHashes) {
-            playlist = {
-              playlist_id: v4(),
-              playlist_name: (result as ScannedPlaylist).title,
-              playlist_path: (result as ScannedPlaylist).filePath
-            }
-
-            console.debug('Got playlist', playlist.playlist_name)
-          }
-        },
-        console.error,
-        () => event.reply(request.responseChannel, { playlist, songs })
-      )
     }
   }
 }
