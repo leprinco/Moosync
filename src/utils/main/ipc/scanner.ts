@@ -13,7 +13,7 @@ import { Thread, TransferDescriptor, Worker, spawn } from 'threads'
 import { IpcMainEvent, app } from 'electron'
 import { SongDB } from '@/utils/main/db/index'
 import fs from 'fs'
-import { loadPreferences, loadSelectivePreference } from '@/utils/main/db/preferences'
+import { getCombinedMusicPaths, loadPreferences } from '@/utils/main/db/preferences'
 import { writeBuffer } from '@/utils/main/workers/covers'
 import { access, mkdir } from 'fs/promises'
 
@@ -346,8 +346,6 @@ export class ScannerChannel implements IpcChannelInterface {
     }
     this.setScanning()
 
-    const preferences = loadSelectivePreference<togglePaths>('musicPaths')
-
     if (this.scannerWorker) {
       await Thread.terminate(this.scannerWorker)
       this.scannerWorker = undefined
@@ -361,10 +359,12 @@ export class ScannerChannel implements IpcChannelInterface {
       return
     }
 
-    await this.destructiveScan(preferences)
+    const scanPaths = getCombinedMusicPaths()
+
+    await this.destructiveScan(scanPaths)
 
     try {
-      await this.scanSongs(preferences, request?.params.forceScan)
+      await this.scanSongs(scanPaths, request?.params.forceScan)
     } catch (e) {
       console.error(e)
     }
