@@ -70,6 +70,9 @@ export class ScannerChannel implements IpcChannelInterface {
       case ScannerEvents.SCAN_SINGLE_SONG:
         this.scanSingleSong(event, request as IpcRequest<ScannerRequests.ScanSingleSong>)
         break
+      case ScannerEvents.GET_COVER_BY_HASH:
+        this.getCoverByHash(event, request as IpcRequest<ScannerRequests.GetCoverByHash>)
+        break
       case ScannerEvents.GET_PROGRESS:
         this.getScanProgress(event, request)
         break
@@ -105,7 +108,7 @@ export class ScannerChannel implements IpcChannelInterface {
     if (song.hash) {
       const existing = SongDB.getByHash(song.hash)
       if (existing.length === 0) {
-        const res = cover && (await this.storeCover(cover))
+        const res = cover && (await this.storeCover(cover, song.hash))
         if (res) {
           song.album = {
             ...song.album,
@@ -123,7 +126,7 @@ export class ScannerChannel implements IpcChannelInterface {
         const songCoverExists = await this.checkSongCovers(s)
 
         if (!albumCoverExists || !songCoverExists) {
-          const res = cover && (await this.storeCover(cover))
+          const res = cover && (await this.storeCover(cover, song.hash))
           if (res) {
             if (!songCoverExists) SongDB.updateSongCover(s._id, res.high, res.low)
             if (!albumCoverExists) SongDB.updateAlbumCovers(s._id, res.high, res.low)
@@ -133,7 +136,9 @@ export class ScannerChannel implements IpcChannelInterface {
     }
   }
 
-  private async storeCover(cover: TransferDescriptor<Buffer> | undefined) {
+  private isWritingCover: Record<string, Promise<{ high: string; low?: string }>> = {}
+
+  private async storeCover(cover: TransferDescriptor<Buffer> | undefined, hash: string) {
     if (cover) {
       const thumbPath = loadPreferences().thumbnailPath
       try {
@@ -143,7 +148,9 @@ export class ScannerChannel implements IpcChannelInterface {
       }
 
       try {
-        return writeBuffer(cover.send, thumbPath)
+        const ret = writeBuffer(cover.send, thumbPath, hash)
+        this.isWritingCover[hash] = ret
+        return await ret
       } catch (e) {
         console.error('Error writing cover', e)
       }
@@ -404,6 +411,7 @@ export class ScannerChannel implements IpcChannelInterface {
 
         const songs: Song[] = []
         let playlist: Partial<Playlist> | null = null
+
         scanWorker.scanSinglePlaylist(request.params.playlistPath, loggerPath).subscribe(
           (result) => {
             if (this.isScannedSong(result)) {
@@ -433,22 +441,52 @@ export class ScannerChannel implements IpcChannelInterface {
     }
   }
 
-  public async scanSingleSong(event: IpcMainEvent, request: IpcRequest<ScannerRequests.ScanSingleSong>) {
+  private async getCoverByHash(event: IpcMainEvent, request: IpcRequest<ScannerRequests.GetCoverByHash>) {
+    if (request.params.hash) {
+      if (Object.keys(this.isWritingCover).includes(request.params.hash)) {
+        event.reply(request.responseChannel, await this.isWritingCover[request.params.hash])
+      }
+
+      const thumbPath = loadPreferences().thumbnailPath
+      const coverPathHigh = path.join(thumbPath, `${request.params.hash}-high.jpg`)
+      const coverPathLow = path.join(thumbPath, `${request.params.hash}-high.jpg`)
+      const ret: { high?: string; low?: string } = {}
+      try {
+        await access(coverPathHigh)
+        ret.high = coverPathHigh
+      } catch (e) {
+        console.warn('High res coverpath not found for', request.params.hash)
+      }
+
+      try {
+        await access(coverPathLow)
+        ret.low = coverPathLow
+      } catch (e) {
+        console.warn('Low res coverpath not found for', request.params.hash)
+      }
+
+      event.reply(request.responseChannel, ret)
+    }
+  }
+
+  private async scanSingleSong(event: IpcMainEvent, request: IpcRequest<ScannerRequests.ScanSingleSong>) {
     if (request.params.songPath) {
       try {
         let song: Song | undefined = undefined
         // Don't use global scan worker since this method should not wait for full scan to complete
         const singleScanWorker = await spawn<ScanWorkerWorkerType>(new Worker(`./${scannerWorker}`), { timeout: 5000 })
+
         singleScanWorker.scanSingleSong(request.params.songPath, loggerPath).subscribe(
           (result) => {
             if (this.isScannedSong(result)) {
-              console.log('got song result', result)
               song = result.song
+              if (result.cover && song.hash) {
+                this.storeCover(result.cover, song.hash)
+              }
             }
           },
           console.error,
           () => {
-            console.log('replying with result', song)
             event.reply(request.responseChannel, { song })
           }
         )

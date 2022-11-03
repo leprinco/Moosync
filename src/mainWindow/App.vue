@@ -229,7 +229,25 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       return results[0]
     }
 
-    return (await window.FileUtils.scanSingleSong(path)).song ?? undefined
+    const data = (await window.FileUtils.scanSingleSong(path)).song ?? undefined
+    if (data?.hash) {
+      window.FileUtils.getCoverByHash(data?.hash).then((val) => {
+        if (val) {
+          this.$set(data, 'song_coverPath_high', val.high)
+          this.$set(data, 'song_coverPath_low', val.low)
+          if (data.album) {
+            const album = {
+              ...data.album,
+              album_coverPath_high: val.high,
+              album_coverPath_low: val.low
+            }
+            this.$set(data, 'album', album)
+          }
+        }
+      })
+    }
+
+    return data
   }
 
   private registerFileOpenRequests() {
@@ -259,6 +277,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
         for (const f of event.dataTransfer.files) {
           if (f) {
             const song = await this.getSongFromPath(f.path)
+            console.log(song)
             if (song) {
               await this.playTop([song])
             }
