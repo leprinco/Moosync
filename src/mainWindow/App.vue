@@ -42,7 +42,6 @@ import { vxm } from './store'
 import { bus } from './main'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import KeyHandlerMixin from '@/utils/ui/mixins/KeyHandlerMixin'
-import { v1 } from 'uuid'
 import { EventBus } from '@/utils/main/ipc/constants'
 import OAuthModal from './components/modals/OAuthModal.vue'
 import FormModal from './components/modals/FormModal.vue'
@@ -220,7 +219,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     })
   }
 
-  private async getSongFromPath(path: string): Promise<Song> {
+  private async getSongFromPath(path: string): Promise<Song | undefined> {
     const results = await window.SearchUtils.searchSongsByOptions({
       song: {
         path: path
@@ -230,16 +229,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       return results[0]
     }
 
-    const duration = await this.getDuration(path)
-    return {
-      _id: v1(),
-      title: this.getFileName(path),
-      duration: duration,
-      artists: [],
-      path: path,
-      date_added: Date.now(),
-      type: 'LOCAL'
-    }
+    return (await window.FileUtils.scanSingleSong(path)).song ?? undefined
   }
 
   private registerFileOpenRequests() {
@@ -247,10 +237,12 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       if (paths.length > 0) {
         for (const [index, path] of paths.entries()) {
           const song = await this.getSongFromPath(path)
-          if (index === 0) {
-            await this.playTop([song])
-          } else {
-            await this.queueSong([song])
+          if (song) {
+            if (index === 0) {
+              await this.playTop([song])
+            } else {
+              await this.queueSong([song])
+            }
           }
         }
       }
@@ -267,7 +259,9 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
         for (const f of event.dataTransfer.files) {
           if (f) {
             const song = await this.getSongFromPath(f.path)
-            await this.playTop([song])
+            if (song) {
+              await this.playTop([song])
+            }
           }
         }
       }

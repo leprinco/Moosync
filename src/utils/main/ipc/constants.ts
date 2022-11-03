@@ -122,6 +122,7 @@ export enum GenreEvents {
 
 export enum ScannerEvents {
   SCAN_MUSIC = 'scanMusic',
+  SCAN_SINGLE_SONG = 'scanSingleSong',
   SCAN_SINGLE_PLAYLIST = 'scanSinglePlaylist',
   GET_PROGRESS = 'getProgress',
 

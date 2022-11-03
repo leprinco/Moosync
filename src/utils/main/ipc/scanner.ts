@@ -45,6 +45,8 @@ type ScanWorkerWorkerType = {
   ) => ScannedSong | ScannedPlaylist | Progress
 
   scanSinglePlaylist: (path: string, loggerPath: string) => ScannedSong | ScannedPlaylist | Progress
+
+  scanSingleSong: (path: string, loggerPath: string) => ScannedSong | ScannedPlaylist | Progress
 }
 
 type ScanWorker = Awaited<ReturnType<typeof spawn<ScanWorkerWorkerType>>>
@@ -64,6 +66,9 @@ export class ScannerChannel implements IpcChannelInterface {
     switch (request.type) {
       case ScannerEvents.SCAN_MUSIC:
         this.scanAll(event, request as IpcRequest<ScannerRequests.ScanSongs>)
+        break
+      case ScannerEvents.SCAN_SINGLE_SONG:
+        this.scanSingleSong(event, request as IpcRequest<ScannerRequests.ScanSingleSong>)
         break
       case ScannerEvents.GET_PROGRESS:
         this.getScanProgress(event, request)
@@ -345,7 +350,7 @@ export class ScannerChannel implements IpcChannelInterface {
       this.scannerWorker = await spawn<ScanWorkerWorkerType>(new Worker(`./${scannerWorker}`), { timeout: 5000 })
     } catch (e) {
       console.error('Error Spawning', scannerWorker, e)
-      event?.reply(request?.responseChannel, e)
+      event?.reply(request?.responseChannel)
       return
     }
 
@@ -380,20 +385,21 @@ export class ScannerChannel implements IpcChannelInterface {
   }
 
   private isScannedSong(item: ScannedSong | ScannedPlaylist | Progress): item is ScannedSong {
-    return !!isEmpty((item as ScannedSong).song)
+    return !isEmpty((item as ScannedSong).song)
   }
 
   private isScannedPlaylist(item: ScannedSong | ScannedPlaylist | Progress): item is ScannedPlaylist {
-    return !!(isEmpty((item as ScannedPlaylist).filePath) && isEmpty((item as ScannedPlaylist).songHashes))
+    return !(isEmpty((item as ScannedPlaylist).filePath) || isEmpty((item as ScannedPlaylist).songHashes))
   }
 
   private isProgress(item: ScannedSong | ScannedPlaylist | Progress): item is Progress {
-    return !!isEmpty((item as Progress).total)
+    return !isEmpty((item as Progress).total)
   }
 
   private async scanSinglePlaylist(event: IpcMainEvent, request: IpcRequest<ScannerRequests.ScanSinglePlaylist>) {
     if (request.params.playlistPath) {
       try {
+        // Don't use global scan worker since this method should not wait for full scan to complete
         const scanWorker = await spawn<ScanWorkerWorkerType>(new Worker(`./${scannerWorker}`), { timeout: 5000 })
 
         const songs: Song[] = []
@@ -421,7 +427,34 @@ export class ScannerChannel implements IpcChannelInterface {
         await Thread.terminate(scanWorker)
       } catch (e) {
         console.error('Error Spawning', scannerWorker, e)
-        event.reply(request.responseChannel, e)
+        event.reply(request.responseChannel)
+        return
+      }
+    }
+  }
+
+  public async scanSingleSong(event: IpcMainEvent, request: IpcRequest<ScannerRequests.ScanSingleSong>) {
+    if (request.params.songPath) {
+      try {
+        let song: Song | undefined = undefined
+        // Don't use global scan worker since this method should not wait for full scan to complete
+        const singleScanWorker = await spawn<ScanWorkerWorkerType>(new Worker(`./${scannerWorker}`), { timeout: 5000 })
+        singleScanWorker.scanSingleSong(request.params.songPath, loggerPath).subscribe(
+          (result) => {
+            if (this.isScannedSong(result)) {
+              console.log('got song result', result)
+              song = result.song
+            }
+          },
+          console.error,
+          () => {
+            console.log('replying with result', song)
+            event.reply(request.responseChannel, { song })
+          }
+        )
+      } catch (e) {
+        console.error('Error Spawning', scannerWorker, e)
+        event.reply(request?.responseChannel)
         return
       }
     }
