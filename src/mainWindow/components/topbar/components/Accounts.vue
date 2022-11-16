@@ -14,7 +14,7 @@
       <div class="buttons">
         <div v-for="p in providers" :key="`${p.provider.Title}-${p.username}`">
           <IconButton
-            v-if="p.provider.canLogin"
+            v-if="p && p.provider.canLogin"
             :bgColor="p.provider.BgColor"
             :hoverText="p.provider.loggedIn ? 'Sign out' : p.provider.Title"
             :title="p.username ? p.username : 'Connect'"

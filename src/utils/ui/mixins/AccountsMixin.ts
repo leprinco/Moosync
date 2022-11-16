@@ -38,7 +38,7 @@ export default class AccountsMixin extends mixins(ProviderMixin) {
   protected providers: Provider[] = this.fetchProviders()
 
   protected async getUserDetails(provider: Provider) {
-    const username = await provider?.provider.getUserDetails()
+    const username = (await provider?.provider.getUserDetails()) ?? ''
     this.$set(provider, 'username', username)
     // if (!provider.username) {
     //   provider.provider.signOut()
@@ -46,8 +46,8 @@ export default class AccountsMixin extends mixins(ProviderMixin) {
   }
 
   protected async handleClick(provider: Provider) {
-    if (!(await provider.provider.getLoggedIn())) {
-      const success = await provider.provider.updateConfig()
+    if (!(await provider?.provider.getLoggedIn())) {
+      const success = await provider?.provider.updateConfig()
       if (!success) {
         window.WindowUtils.openWindow(false, { page: 'system' })
         return
@@ -91,7 +91,7 @@ export default class AccountsMixin extends mixins(ProviderMixin) {
 
     bus.$on(EventBus.REFRESH_ACCOUNTS, (providerKey?: string) => {
       if (providerKey) {
-        const provider = this.providers.find((val) => val.provider.key === providerKey)
+        const provider = this.providers.find((val) => val?.provider.key === providerKey)
         if (provider) {
           this.getUserDetails(provider)
         }
