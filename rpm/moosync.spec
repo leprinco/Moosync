@@ -12,7 +12,7 @@ License: GPLv3+
 Group: Applications/Multimedia
 ExclusiveArch: x86_64
 
-Requires: vips >= 8, libffi7
+Requires: vips >= 8
 
 BuildRequires: desktop-file-utils
  
