@@ -33,7 +33,7 @@ jobs:
           xcode-version: latest-stable
 
       - if: ${{ runner.os == 'Linux' }}
-        run: sudo apt-get update -y && sudo apt-get install -y libarchive-tools rpm
+        run: sudo apt-get update -y && sudo apt-get install -y libarchive-tools rpm libasound2-dev
 
       - name: yarn install
         run: yarn install --immutable
