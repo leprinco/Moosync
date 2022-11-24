@@ -11,16 +11,31 @@ import { Player } from './player'
 import { wrapHTMLAudioElement as wrapPlayerInstance } from './wrapper/htmlAudioElement'
 
 export class LocalPlayer extends Player {
-  playerInstance: CustomAudioInstance
+  playerInstance!: CustomAudioInstance
   private track: MediaElementAudioSourceNode | undefined
   private context: AudioContext | undefined
 
-  constructor(playerInstance: CustomAudioInstance | HTMLAudioElement) {
-    super()
-    this.playerInstance = wrapPlayerInstance(playerInstance)
+  public provides(): PlayerTypes[] {
+    return ['LOCAL', 'URL']
   }
 
-  async load(src?: string, volume?: number, autoplay?: boolean): Promise<void> {
+  get key() {
+    return 'LOCAL'
+  }
+
+  // TODO: Typecheck playerInstance somehow
+  protected async _initialize(playerInstance: unknown): Promise<void> {
+    if (
+      playerInstance &&
+      (playerInstance instanceof HTMLAudioElement || (playerInstance as CustomAudioInstance).isCustomAudio)
+    ) {
+      this.playerInstance = wrapPlayerInstance(playerInstance as CustomAudioInstance)
+    } else {
+      throw new Error('passed player is not an instance of CustomAudioInstance')
+    }
+  }
+
+  protected async _load(src?: string, volume?: number, autoplay?: boolean): Promise<void> {
     if (src) {
       console.debug('Loading src', src)
       this.playerInstance.setSrc(src, autoplay)
@@ -28,15 +43,15 @@ export class LocalPlayer extends Player {
     volume && (this.volume = volume)
   }
 
-  async play(): Promise<void> {
+  protected async _play(): Promise<void> {
     if (this.playerInstance.paused) await this.playerInstance?.play()
   }
 
-  pause(): void {
+  protected _pause(): void {
     if (!this.playerInstance.paused) this.playerInstance?.pause()
   }
 
-  stop(): void {
+  protected _stop(): void {
     this.playerInstance.stop()
   }
 
@@ -65,6 +80,7 @@ export class LocalPlayer extends Player {
   }
 
   protected listenOnLoad(callback: () => void): void {
+    this.playerInstance.addEventListener('onload', () => console.log('loaded'))
     this.playerInstance.onload = callback
     this.playerInstance.onloadeddata = callback
   }

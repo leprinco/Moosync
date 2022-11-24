@@ -1,6 +1,7 @@
 import YTPlayer from 'yt-player'
 
 export class YTPlayerWrapper implements CustomAudioInstance {
+  isCustomAudio = true
   private supposedVolume
   private instance: YTPlayer
 

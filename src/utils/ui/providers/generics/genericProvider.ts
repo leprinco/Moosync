@@ -168,6 +168,10 @@ export abstract class GenericProvider {
     return
   }
 
+  public async validatePlaybackURL(playbackUrl: string): Promise<boolean> {
+    return true
+  }
+
   public abstract matchEntityId(id: string): boolean
   public abstract sanitizeId(id: string, type: 'SONG' | 'PLAYLIST' | 'ALBUM' | 'ARTIST'): string
 

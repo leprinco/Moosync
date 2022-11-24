@@ -20,6 +20,7 @@ import { ipcMain } from 'electron'
 import { UpdateChannel } from './update'
 import { NotifierChannel } from './notifier'
 import { MprisChannel } from './mpris'
+import { SpotifyPlayerChannel } from './spotifyPlayer'
 
 let scannerChannel: ScannerChannel | undefined
 let updateChannel: UpdateChannel | undefined
@@ -27,6 +28,7 @@ let extensionChannel: ExtensionHostChannel | undefined
 let preferenceChannel: PreferenceChannel | undefined
 let storeChannel: StoreChannel | undefined
 let mprisChannel: MprisChannel | undefined
+let spotifyPlayerChannel: SpotifyPlayerChannel | undefined
 
 export function registerIpcChannels() {
   const ipcChannels = [
@@ -41,7 +43,8 @@ export function registerIpcChannels() {
     getExtensionHostChannel(),
     getUpdateChannel(),
     new NotifierChannel(),
-    getMprisChannel()
+    getMprisChannel(),
+    getSpotifyPlayerChannel()
   ]
   ipcChannels.forEach((channel) => ipcMain.on(channel.name, (event, request) => channel.handle(event, request)))
 }
@@ -86,4 +89,11 @@ export function getMprisChannel() {
     mprisChannel = new MprisChannel()
   }
   return mprisChannel
+}
+
+export function getSpotifyPlayerChannel() {
+  if (!spotifyPlayerChannel) {
+    spotifyPlayerChannel = new SpotifyPlayerChannel()
+  }
+  return spotifyPlayerChannel
 }

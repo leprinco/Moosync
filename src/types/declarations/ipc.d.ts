@@ -79,6 +79,24 @@ declare namespace LoggerRequests {
   }
 }
 
+declare namespace SpotifyRequests {
+  type Config = import('librespot-node').ConstructorConfig
+  type EventListener = {
+    event: string
+  }
+
+  interface Token {
+    scopes: import('librespot-node').TokenScope[]
+  }
+
+  type SpotifyCommands = 'PLAY' | 'PAUSE' | 'SEEK' | 'VOLUME' | 'LOAD'
+
+  interface Command {
+    command: SpotifyCommands
+    args: unknown[]
+  }
+}
+
 declare namespace PlaylistRequests {
   interface AddToPlaylist {
     playlist_id: string

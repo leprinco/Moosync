@@ -105,6 +105,36 @@
             />
           </b-col>
 
+          <CheckboxGroup
+            :title="$t('settings.system.spotify.title')"
+            :tooltip="$t('settings.system.spotify.tooltip')"
+            class="mt-4"
+            key="spotify.options"
+            :defaultValue="spotifyCheckboxValues"
+            :isExtension="false"
+            :onValueChange="onSpotifyValueFetch"
+            :onValueFetch="onSpotifyValueFetch"
+          />
+
+          <b-col v-if="showSpotifyUserPass">
+            <EditText
+              class="mt-4"
+              :isExtension="false"
+              :title="$t('settings.system.spotify.username')"
+              key="spotify.username"
+              :tooltip="$t('settings.system.spotify.username_tooltip')"
+            />
+
+            <EditText
+              class="mt-2"
+              :isExtension="false"
+              :title="$t('settings.system.spotify.password')"
+              key="spotify.password"
+              :tooltip="$t('settings.system.spotify.password_tooltip')"
+              type="password"
+            />
+          </b-col>
+
           <b-row v-if="showRestartButton">
             <b-col cols="auto">
               <b-button class="create-button" @click="restartApp">{{ $t('settings.system.restartApp') }}</b-button>
@@ -138,8 +168,8 @@
             key="spotify.client_id"
             :tooltip="$t('settings.system.spotify.client_id_tooltip')"
             @tooltipClick="openSpotifyHelp"
-            :onValueFetch="onSpotifyValueFetch"
-            :onValueChange="onSpotifyValueFetch"
+            :onValueFetch="onSpotifySecretsFetch"
+            :onValueChange="onSpotifySecretsFetch"
           />
           <EditText
             :isExtension="false"
@@ -147,8 +177,8 @@
             :title="$t('settings.system.spotify.client_secret')"
             key="spotify.client_secret"
             @tooltipClick="openSpotifyHelp"
-            :onValueFetch="onSpotifyValueFetch"
-            :onValueChange="onSpotifyValueFetch"
+            :onValueFetch="onSpotifySecretsFetch"
+            :onValueChange="onSpotifySecretsFetch"
           />
 
           <b-row v-if="showSpotifyButton">
@@ -296,6 +326,7 @@ export default class System extends Vue {
   private showYoutubeField = false
   private showPipedField = false
   private showJukeboxField = false
+  private showSpotifyUserPass = false
 
   private invidiousInstances: string[] = []
   private invidiousDetails = ''
@@ -373,6 +404,20 @@ export default class System extends Vue {
 
   private defaultSystemSettings: SystemSettings[] = []
   private defaultYoutubeAlts: Checkbox[] = []
+
+  get spotifyCheckboxValues(): Checkbox[] {
+    return [
+      {
+        key: 'use_librespot',
+        title: this.$tc('settings.system.spotify.librespot.enable'),
+        enabled: true
+      }
+    ]
+  }
+
+  private onSpotifyValueFetch(value: Checkbox[]) {
+    this.showSpotifyUserPass = value.find((val) => val.key === 'use_librespot')?.enabled ?? false
+  }
 
   get invidiousAdvancedCheckboxValues(): Checkbox[] {
     return [
@@ -567,7 +612,7 @@ export default class System extends Vue {
     await window.WindowUtils.restartApp()
   }
 
-  private onSpotifyValueFetch(value: string) {
+  private onSpotifySecretsFetch(value: string) {
     if (!value) {
       this.showSpotifyButton = true
     } else {

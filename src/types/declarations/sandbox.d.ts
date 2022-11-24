@@ -20,6 +20,12 @@ type GithubRepoResponse = {
   }[]
 }
 
+type PlayerChannelMessage = { channel: string; data?: unknown; error?: string }
+type SpotifyMessage =
+  | { type: 'CONNECT'; args: ConstructorConfig }
+  | { type: 'COMMAND'; args: SpotifyRequests.Command }
+  | { type: 'TOKEN'; args?: import('librespot-node').TokenScope[] }
+
 type FetchedExtensionManifest = {
   name: string
   packageName: string

@@ -18,6 +18,7 @@ import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
 import { ProviderScopes } from '@/utils/commonConstants'
 import { FetchWrapper } from './generics/fetchWrapper'
+import { TokenScope } from 'librespot-node'
 
 /**
  * Spotify API base URL
@@ -48,6 +49,8 @@ export class SpotifyProvider extends GenericProvider {
   private auth!: AuthFlow
   private _config!: ReturnType<SpotifyProvider['getConfig']>
 
+  private _isPremium = false
+
   public get key() {
     return 'spotify'
   }
@@ -77,7 +80,7 @@ export class SpotifyProvider extends GenericProvider {
       clientId: id,
       clientSecret: secret,
       redirectUri: 'https://moosync.app/spotify',
-      scope: 'playlist-read-private user-top-read user-library-read',
+      scope: 'playlist-read-private user-top-read user-library-read user-read-private',
       keytarService: 'MoosyncSpotifyRefreshToken',
       oAuthChannel: oauthChannel
     }
@@ -85,21 +88,63 @@ export class SpotifyProvider extends GenericProvider {
 
   public async updateConfig() {
     const conf = (await window.PreferenceUtils.loadSelective('spotify')) as { client_id: string; client_secret: string }
+    const channel = await window.WindowUtils.registerOAuthCallback('spotifyoauthcallback')
+    this._config = this.getConfig(channel, conf.client_id, conf.client_secret)
 
-    if (conf) {
-      const channel = await window.WindowUtils.registerOAuthCallback('spotifyoauthcallback')
-      this._config = this.getConfig(channel, conf.client_id, conf.client_secret)
+    const serviceConfig = new AuthorizationServiceConfiguration({
+      authorization_endpoint: this._config.openIdConnectUrl,
+      token_endpoint: 'https://accounts.spotify.com/api/token',
+      revocation_endpoint: this._config.openIdConnectUrl
+    })
 
-      const serviceConfig = new AuthorizationServiceConfiguration({
-        authorization_endpoint: this._config.openIdConnectUrl,
-        token_endpoint: 'https://accounts.spotify.com/api/token',
-        revocation_endpoint: this._config.openIdConnectUrl
-      })
+    const useUserPass =
+      (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('spotify.options.use_librespot')).enabled ?? false
 
-      this.auth = new AuthFlow(this._config, serviceConfig)
+    if (useUserPass) {
+      const username = await window.PreferenceUtils.loadSelective<string>('spotify.username')
+      const password = await window.Store.getSecure('spotify.password')
+
+      if (username && password) {
+        this.auth = new AuthFlow(this._config, serviceConfig, false)
+
+        try {
+          await window.SpotifyPlayer.connect({
+            auth: {
+              username,
+              password
+            },
+            connectConfig: {
+              name: 'Moosync',
+              deviceType: 'computer',
+              initialVolume: vxm.player.volume,
+              hasVolumeControl: true
+            }
+          })
+
+          const token = await window.SpotifyPlayer.getToken(this._config.scope.split(' ') as TokenScope[])
+          if (token) {
+            this.auth.setToken({
+              ...token,
+              scope: token.scopes.join(' '),
+              token_type: 'bearer',
+              expires_in: token.expires_in.toString(),
+              issued_at: token.expiry_from_epoch - token.expires_in
+            })
+
+            return true
+          }
+        } catch (e) {
+          console.error('Error while fetching token from librespot', e)
+        }
+      }
     }
 
-    return !!(conf && conf.client_id && conf.client_secret)
+    if (conf && conf.client_id && conf.client_secret) {
+      this.auth = new AuthFlow(this._config, serviceConfig)
+      return true
+    }
+
+    return false
   }
 
   public async getLoggedIn() {
@@ -147,6 +192,7 @@ export class SpotifyProvider extends GenericProvider {
 
   public async signOut() {
     this.auth?.signOut()
+    this._isPremium = false
     await this.getLoggedIn()
   }
 
@@ -195,15 +241,17 @@ export class SpotifyProvider extends GenericProvider {
     return resp.json()
   }
 
-  public async getUserDetails(): Promise<string | undefined> {
+  public async getUser(invalidateCache = true): Promise<SpotifyResponses.UserDetails.UserDetails | undefined> {
     const validRefreshToken = await this.auth?.hasValidRefreshToken()
     if ((await this.getLoggedIn()) || validRefreshToken) {
-      const resp = await this.populateRequest(ApiResources.USER_DETAILS, {
-        params: undefined
-      })
-
-      return resp.display_name
+      const resp = await this.populateRequest(ApiResources.USER_DETAILS, { params: undefined }, invalidateCache)
+      this._isPremium = resp.product?.toLowerCase() === 'premium'
+      return resp
     }
+  }
+
+  public async getUserDetails(): Promise<string | undefined> {
+    return (await this.getUser())?.display_name
   }
 
   private parsePlaylists(items: SpotifyResponses.UserPlaylists.Item[]) {
@@ -379,8 +427,21 @@ export class SpotifyProvider extends GenericProvider {
     return
   }
 
+  public async validatePlaybackURL(playbackUrl: string): Promise<boolean> {
+    await this.getUser(false)
+    console.log(this._isPremium)
+    if (this._isPremium && playbackUrl.startsWith('spotify:track:')) return true
+    if (!this._isPremium && !playbackUrl.startsWith('spotify:track:')) return true
+    return false
+  }
+
   public async getPlaybackUrlAndDuration(song: Song) {
+    if (this._isPremium) {
+      return { url: `spotify:track:${song.url}`, duration: song.duration }
+    }
+
     console.debug(`Searching for ${song.title} on youtube`)
+
     const ytItem = await this.spotifyToYoutube(song)
     if (ytItem) {
       return { url: ytItem.playbackUrl ?? ytItem.url, duration: ytItem.duration ?? 0 }

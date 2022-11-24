@@ -11,21 +11,28 @@ import { Player } from './player'
 import dashjs from 'dashjs'
 
 export class DashPlayer extends Player {
-  private playerInstance: dashjs.MediaPlayerClass
-  private htmlElement: HTMLVideoElement
+  private playerInstance!: dashjs.MediaPlayerClass
+  private htmlElement!: HTMLVideoElement
 
   private isAttachedView = false
 
   private track: MediaElementAudioSourceNode | undefined
   private context: AudioContext | undefined
 
-  constructor(element: HTMLVideoElement) {
-    super()
+  public provides(): PlayerTypes[] {
+    return ['DASH']
+  }
+
+  get key() {
+    return 'DASH'
+  }
+
+  protected async _initialize(element: HTMLVideoElement): Promise<void> {
     this.htmlElement = element
     this.playerInstance = dashjs.MediaPlayer().create()
   }
 
-  load(src?: string, volume?: number, autoplay?: boolean): void {
+  _load(src?: string, volume?: number, autoplay?: boolean): void {
     if (src) {
       this.playerInstance.initialize(this.htmlElement, src, autoplay)
       this.isAttachedView = true
@@ -36,15 +43,15 @@ export class DashPlayer extends Player {
     }
   }
 
-  async play(): Promise<void> {
+  async _play(): Promise<void> {
     this.isAttachedView && this.playerInstance?.play()
   }
 
-  pause(): void {
+  _pause(): void {
     this.isAttachedView && this.playerInstance?.pause()
   }
 
-  stop(): void {
+  _stop(): void {
     this.isAttachedView = false
     this.playerInstance.reset()
   }

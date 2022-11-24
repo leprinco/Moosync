@@ -51,9 +51,9 @@ if (process.platform !== 'darwin') {
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
 if (isDevelopment) {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
-  app.commandLine.appendSwitch('ignore-certificate-errors')
-  app.commandLine.appendSwitch('allow-insecure-localhost', 'true')
+  // process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+  // app.commandLine.appendSwitch('ignore-certificate-errors')
+  // app.commandLine.appendSwitch('allow-insecure-localhost', 'true')
 }
 
 overrideConsole()

@@ -337,6 +337,18 @@ interface mprisUtils {
   listenMediaButtonPress: (callback: (args: number) => void) => Promise<void>
 }
 
+interface spotifyPlayer {
+  connect: (config: import('librespot-node').ConstructorConfig) => Promise<void>
+  on: <T extends import('librespot-node').PlayerEventTypes>(
+    event: T,
+    listener: (event: import('librespot-node').PlayerEvent<T>) => void
+  ) => string
+  off: (channel: string, event: string, listener: unknown) => void
+  command: (command: SpotifyRequests.SpotifyCommands, args?: SpotifyRequests.Command['args']) => Promise<void>
+  close: () => Promise<void>
+  getToken: (scopes: TokenScope[]) => Promise<import('librespot-node').Token>
+}
+
 interface Window {
   DBUtils: DBUtils
   SearchUtils: searchUtils
@@ -350,4 +362,5 @@ interface Window {
   ThemeUtils: themeUtils
   UpdateUtils: updateUtils
   MprisUtils: mprisUtils
+  SpotifyPlayer: spotifyPlayer
 }

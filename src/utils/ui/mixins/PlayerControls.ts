@@ -11,6 +11,7 @@ import { Component, Vue } from 'vue-property-decorator'
 
 import { PeerMode } from '@/mainWindow/store/syncState'
 import { vxm } from '@/mainWindow/store'
+import { Player } from '../players/player'
 
 @Component
 export default class PlayerControls extends Vue {
@@ -158,5 +159,18 @@ export default class PlayerControls extends Vue {
 
   public unmute() {
     this.volume = this.oldVolume
+  }
+
+  public findPlayer(canPlay: PlayerTypes) {
+    console.debug('Finding player for', canPlay)
+    let lowest: [Player | undefined, number] = [undefined, vxm.playerRepo.allPlayers.length]
+    for (const p of vxm.playerRepo.allPlayers) {
+      const index = p.provides().indexOf(canPlay)
+      if (index >= 0 && index < lowest[1]) {
+        lowest = [p, index]
+      }
+    }
+
+    return lowest[0]
   }
 }

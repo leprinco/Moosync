@@ -24,7 +24,8 @@ export enum IpcEvents {
   NOTIFIER = 'notifier',
   EXTENSION_HOST = 'extensionHost',
   UPDATE = 'update',
-  MPRIS = 'mpris'
+  MPRIS = 'mpris',
+  SPOTIFY = 'spotify'
 }
 
 export enum StoreEvents {
@@ -174,6 +175,15 @@ export enum LoggerEvents {
   WATCH_LOGS = 'watchLogs',
   UNWATCH_LOGS = 'unwatchLogs',
   TOGGLE_DEBUG = 'toggleDebug'
+}
+
+export enum SpotifyEvents {
+  CONNECT = 'connect',
+  LISTEN_EVENT = 'listenEvent',
+  REMOVE_EVENT = 'removeEvent',
+  COMMAND = 'command',
+  CLOSE = 'close',
+  GET_TOKEN = 'getToken'
 }
 
 export enum NotifierEvents {

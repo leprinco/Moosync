@@ -7,11 +7,57 @@
  *  See LICENSE in the project root for license information.
  */
 
+function checkInitialized(target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value
+
+  descriptor.value = function (...args: unknown[]) {
+    if ((this as Player).isInitialized) {
+      return originalMethod.bind(this)(...args)
+    } else {
+      throw new Error('Player has not been initialized yet')
+    }
+  }
+
+  return descriptor
+}
+
 export abstract class Player {
-  abstract load(src?: string, volume?: number, autoplay?: boolean): void
-  abstract play(): Promise<void>
-  abstract pause(): void
-  abstract stop(): void
+  public isInitialized = false
+
+  protected abstract _initialize(config?: unknown): Promise<void>
+  public abstract provides(): PlayerTypes[]
+
+  public async initialize(...config: Parameters<typeof this._initialize>) {
+    await this._initialize(...config)
+    this.isInitialized = true
+  }
+
+  abstract readonly key: string
+
+  protected abstract _load(src?: string, volume?: number, autoplay?: boolean): void
+  protected abstract _play(): Promise<void>
+  protected abstract _pause(): void
+  protected abstract _stop(): void
+
+  @checkInitialized
+  public load(src?: string, volume?: number, autoplay?: boolean) {
+    return this._load(src, volume, autoplay)
+  }
+
+  @checkInitialized
+  public play() {
+    return this._play()
+  }
+
+  @checkInitialized
+  public pause() {
+    return this._pause()
+  }
+
+  @checkInitialized
+  public stop() {
+    return this._stop()
+  }
 
   abstract get currentTime(): number
   abstract set currentTime(time: number)
@@ -61,4 +107,8 @@ export abstract class Player {
   abstract connectAudioContextNode(node: AudioNode): void
 
   abstract preload(src: string): void
+
+  public async close() {
+    return
+  }
 }

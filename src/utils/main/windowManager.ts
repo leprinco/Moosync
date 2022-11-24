@@ -31,7 +31,7 @@ import puppeteer from 'puppeteer-core'
 import { getExtensionHostChannel } from './ipc'
 import { SongDB } from './db/index'
 import { Readable } from 'stream'
-import { getMprisChannel } from './ipc/index'
+import { getMprisChannel, getSpotifyPlayerChannel } from './ipc/index'
 import { ButtonEnum, PlayerButtons } from 'media-controller'
 import { nativeTheme } from 'electron'
 
@@ -292,6 +292,7 @@ export class WindowHandler {
   }
 
   public async stopAll() {
+    getSpotifyPlayerChannel().closePlayer()
     // Stop extension Host
     await getExtensionHostChannel().closeExtensionHost()
     SongDB.close()
@@ -313,6 +314,10 @@ export class WindowHandler {
 
     window.on('show', () => {
       this.handleWindowShow(window)
+    })
+
+    window.webContents.on('did-start-loading', () => {
+      getSpotifyPlayerChannel().closePlayer()
     })
 
     window.webContents.on(

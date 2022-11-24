@@ -8,7 +8,15 @@ export class InvidiousPlayer extends LocalPlayer {
 
   private errorTries = 0
 
-  async load(src?: string, volume?: number, autoplay?: boolean, errorTries?: number) {
+  public provides(): PlayerTypes[] {
+    return ['YOUTUBE', 'SPOTIFY']
+  }
+
+  get key() {
+    return 'YOUTUBE'
+  }
+
+  protected async _load(src?: string, volume?: number, autoplay?: boolean, errorTries?: number) {
     this.customLoadEventEmitter.emit('loading')
     let playbackURL = await this.fetchPlaybackURL(src)
     if (playbackURL) {

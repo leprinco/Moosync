@@ -92,6 +92,21 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     this.registerFileDragListener()
     this.handleInitialSetup()
     this.checkUpdate()
+    this.watchLibrespotUserChange()
+  }
+
+  private watchLibrespotUserChange() {
+    window.PreferenceUtils.listenPreferenceChanged('spotify.username', true, async () => {
+      if (await vxm.providers.spotifyProvider.updateConfig()) {
+        bus.$emit(EventBus.REFRESH_ACCOUNTS, vxm.providers.spotifyProvider.key)
+      }
+    })
+
+    window.PreferenceUtils.listenPreferenceChanged('secure.spotify.password', true, async () => {
+      if (await vxm.providers.spotifyProvider.updateConfig()) {
+        bus.$emit(EventBus.REFRESH_ACCOUNTS, vxm.providers.spotifyProvider.key)
+      }
+    })
   }
 
   private fetchProviderExtensions() {

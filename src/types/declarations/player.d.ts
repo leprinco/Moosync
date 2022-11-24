@@ -33,6 +33,8 @@ interface CustomAudioInstance {
   paused: boolean
   srcObject: unknown
 
+  isCustomAudio: boolean
+
   public pause(): void
   public play(): Promise<void>
   public stop(): void
