@@ -15,23 +15,23 @@
     <b-row align-h="around">
       <b-col cols="auto">
         <YoutubeBig
-          @click.native="handleClick('Youtube')"
+          @click.native="handleClick(providers[0])"
           class="button-grow"
-          :active="this.providers[0].provider.loggedIn"
+          :active="providers[0].provider.loggedIn"
         />
       </b-col>
       <b-col cols="auto">
         <SpotifyBig
           class="button-grow"
-          @click.native="handleClick('Spotify')"
-          :active="this.providers[1].provider.loggedIn"
+          @click.native="handleClick(providers[1])"
+          :active="providers[1].provider.loggedIn"
         />
       </b-col>
       <b-col cols="auto">
         <LastFMBig
           class="button-grow"
-          @click.native="handleClick('LastFM')"
-          :active="this.providers[2].provider.loggedIn"
+          @click.native="handleClick(providers[2])"
+          :active="providers[2].provider.loggedIn"
         />
       </b-col>
     </b-row>
@@ -51,7 +51,7 @@
     </b-row>
     <ConfirmationModal
       keyword="signout from"
-      :itemName="activeSignout.provider.Title"
+      :itemName="activeSignout?.provider.Title"
       id="signoutSetupModal"
       @confirm="signout"
     />
@@ -84,6 +84,7 @@ export default class AccountsSetup extends mixins(AccountsMixin) {
 
   async mounted() {
     this.signoutMethod = this.showSignoutModal
+    console.log(this.providers)
   }
 
   private next() {
