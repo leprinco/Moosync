@@ -59,6 +59,9 @@ export class LastFMProvider extends GenericProvider {
   }
 
   public async getLoggedIn() {
+    if (!this._session) {
+      this._session = (await this.fetchStoredToken()) ?? undefined
+    }
     this.setLoggedInStatus()
     return !!this._session
   }
