@@ -69,7 +69,7 @@ export class YoutubeProvider extends GenericProvider {
   public async updateConfig(): Promise<boolean> {
     const conf = (await window.PreferenceUtils.loadSelective('youtube')) as { client_id: string; client_secret: string }
 
-    if (conf || this.isEnvExists()) {
+    if ((conf && conf.client_id && conf.client_secret) || this.isEnvExists()) {
       const channel = await window.WindowUtils.registerOAuthCallback('ytoauth2callback')
 
       const secret = process.env.YoutubeClientSecret ?? conf.client_secret
@@ -84,9 +84,10 @@ export class YoutubeProvider extends GenericProvider {
       })
 
       this.auth = new AuthFlow(this._config, serviceConfig)
+      return true
     }
 
-    return !!(conf && conf.client_id && conf.client_secret) || this.isEnvExists()
+    return false
   }
 
   private api = new FetchWrapper()
