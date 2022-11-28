@@ -22,13 +22,13 @@ import { NotifierChannel } from './notifier'
 import { MprisChannel } from './mpris'
 import { SpotifyPlayerChannel } from './spotifyPlayer'
 
-let scannerChannel: ScannerChannel | undefined
-let updateChannel: UpdateChannel | undefined
-let extensionChannel: ExtensionHostChannel | undefined
-let preferenceChannel: PreferenceChannel | undefined
-let storeChannel: StoreChannel | undefined
-let mprisChannel: MprisChannel | undefined
-let spotifyPlayerChannel: SpotifyPlayerChannel | undefined
+let scannerChannel: ScannerChannel | undefined = undefined
+let updateChannel: UpdateChannel | undefined = undefined
+let extensionChannel: ExtensionHostChannel | undefined = undefined
+let preferenceChannel: PreferenceChannel | undefined = undefined
+let storeChannel: StoreChannel | undefined = undefined
+let mprisChannel: MprisChannel | undefined = undefined
+let spotifyPlayerChannel: SpotifyPlayerChannel | undefined = undefined
 
 export function registerIpcChannels() {
   const ipcChannels = [
