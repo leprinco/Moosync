@@ -290,6 +290,11 @@ async function getInfo(data: mm.IAudioMetadata, stats: stats, hash: string): Pro
     }
   }
 
+  if (!data.common.lyrics) {
+    const uslt = data.native['ID3v2.3']?.find((val) => val.id === 'USLT')
+    data.common.lyrics = [uslt?.value?.text]
+  }
+
   return {
     _id: v4(),
     title: data.common.title ? data.common.title : path.basename(stats.path, path.extname(stats.path)),
