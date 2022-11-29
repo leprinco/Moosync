@@ -220,6 +220,7 @@ export default class AudioStream extends mixins(
     else {
       this.unloadAudio()
       this.showYTPlayer = 0
+      this.lastLoadedSong = undefined
     }
   }
 
@@ -734,6 +735,8 @@ export default class AudioStream extends mixins(
         song = tmp
       }
     }
+
+    console.debug('Got duplicate song', song)
 
     if (song._id === this.lastLoadedSong?._id) {
       return
