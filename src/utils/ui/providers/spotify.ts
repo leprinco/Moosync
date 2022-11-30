@@ -56,20 +56,18 @@ export class SpotifyProvider extends GenericProvider {
   }
 
   provides(): ProviderScopes[] {
-    if (vxm.providers.loggedInSpotify)
-      return [
-        ProviderScopes.SEARCH,
-        ProviderScopes.PLAYLISTS,
-        ProviderScopes.PLAYLIST_SONGS,
-        ProviderScopes.ARTIST_SONGS,
-        ProviderScopes.ALBUM_SONGS,
-        ProviderScopes.RECOMMENDATIONS,
-        ProviderScopes.PLAYLIST_FROM_URL,
-        ProviderScopes.SONG_FROM_URL,
-        ProviderScopes.SEARCH_ALBUM,
-        ProviderScopes.SEARCH_ARTIST
-      ]
-    else return []
+    return [
+      ProviderScopes.SEARCH,
+      ProviderScopes.PLAYLISTS,
+      ProviderScopes.PLAYLIST_SONGS,
+      ProviderScopes.ARTIST_SONGS,
+      ProviderScopes.ALBUM_SONGS,
+      ProviderScopes.RECOMMENDATIONS,
+      ProviderScopes.PLAYLIST_FROM_URL,
+      ProviderScopes.SONG_FROM_URL,
+      ProviderScopes.SEARCH_ALBUM,
+      ProviderScopes.SEARCH_ARTIST
+    ]
   }
 
   private api = new FetchWrapper()
@@ -130,6 +128,8 @@ export class SpotifyProvider extends GenericProvider {
               expires_in: token.expires_in.toString(),
               issued_at: token.expiry_from_epoch - token.expires_in
             })
+
+            bus.$emit(EventBus.REFRESH_ACCOUNTS, this.key)
 
             return true
           }
@@ -281,6 +281,7 @@ export class SpotifyProvider extends GenericProvider {
         playlist_name: 'Liked Songs',
         playlist_coverPath: 'https://t.scdn.co/images/3099b3803ad9496896c43f22fe9be8c4.png'
       })
+
       while (hasNext) {
         const resp = await this.populateRequest(
           ApiResources.PLAYLISTS,
@@ -429,7 +430,6 @@ export class SpotifyProvider extends GenericProvider {
 
   public async validatePlaybackURL(playbackUrl: string): Promise<boolean> {
     await this.getUser(false)
-    console.log(this._isPremium)
     if (this._isPremium && playbackUrl.startsWith('spotify:track:')) return true
     if (!this._isPremium && !playbackUrl.startsWith('spotify:track:')) return true
     return false
