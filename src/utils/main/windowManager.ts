@@ -316,10 +316,6 @@ export class WindowHandler {
       this.handleWindowShow(window)
     })
 
-    window.webContents.on('did-start-loading', () => {
-      getSpotifyPlayerChannel().closePlayer()
-    })
-
     window.webContents.on(
       'did-frame-navigate',
       async (event, url, code, status, isMainFrame, frameProcessId, frameRoutingId) => {
