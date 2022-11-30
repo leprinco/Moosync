@@ -128,8 +128,7 @@ class SpotifyPlayerProcess {
   }
 
   private isMessage(val: unknown): val is PlayerChannelMessage {
-    if ((val as { channel: string }).channel) return true
-    return false
+    return !!(val as { channel: string }).channel
   }
 
   private async handleCommand(command: string, args: unknown[]) {
@@ -139,7 +138,7 @@ class SpotifyPlayerProcess {
   private async getToken(scopes: TokenScope[], tries = 0): Promise<Token | undefined> {
     await this.waitForPlayerInitialize()
     try {
-      return this.player?.getToken(...scopes)
+      return await this.player?.getToken(...scopes)
     } catch (e) {
       if (tries < 3) {
         await sleep(500)
