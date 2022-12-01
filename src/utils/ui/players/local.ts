@@ -23,7 +23,8 @@ export class LocalPlayer extends Player {
     return 'LOCAL'
   }
 
-  public async canPlay(src: string): Promise<boolean> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public async canPlay(_: string): Promise<boolean> {
     return true
   }
 

@@ -27,7 +27,7 @@ export class DashPlayer extends Player {
     return 'DASH'
   }
 
-  public async canPlay(src: string): Promise<boolean> {
+  public async canPlay(): Promise<boolean> {
     return true
   }
 

@@ -25,7 +25,7 @@ export class HLSPlayer extends Player {
     return 'HLS'
   }
 
-  public async canPlay(src: string): Promise<boolean> {
+  public async canPlay(): Promise<boolean> {
     return true
   }
 
