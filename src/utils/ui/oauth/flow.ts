@@ -227,6 +227,8 @@ export class AuthFlow {
 
   public setToken(resp: TokenResponseJson) {
     this.accessTokenResponse = new TokenResponse(resp)
-    if (this.fetchedTokenResolver) this.fetchedTokenResolver()
+    if (this.fetchedTokenResolver) {
+      this.fetchedTokenResolver()
+    }
   }
 }

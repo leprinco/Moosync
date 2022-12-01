@@ -69,6 +69,8 @@ import SearchIcon from '@/icons/SearchIcon.vue'
 import NextIcon from '@/icons/NavForwardIcon.vue'
 import PrevIcon from '@/icons/NavBackIcon.vue'
 import { vxm } from '@/mainWindow/store'
+import { bus } from '@/mainWindow/main'
+import { EventBus } from '@/utils/main/ipc/constants'
 
 @Component({
   components: {
@@ -203,6 +205,10 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
         this.onProviderSelected(this.defaultSelected)
       }
     }
+
+    bus.$on(EventBus.UPDATE_OPTIONAL_PROVIDER, (providerKey: string) => {
+      this.selectedProviders.push(providerKey)
+    })
   }
 
   private get computedGradient() {

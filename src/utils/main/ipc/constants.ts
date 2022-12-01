@@ -245,5 +245,6 @@ export enum EventBus {
   SHOW_FORM_MODAL = 'show-form-modal',
   REFRESH_ACCOUNTS = 'refresh-accounts',
   REFRESH_PAGE = 'refresh-page',
-  REFRESH_LYRICS = 'refresh-lyrics'
+  REFRESH_LYRICS = 'refresh-lyrics',
+  UPDATE_OPTIONAL_PROVIDER = 'update-optional-provider'
 }

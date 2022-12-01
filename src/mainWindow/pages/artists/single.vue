@@ -45,6 +45,8 @@ import Vue from 'vue'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
 import { getRandomFromArray } from '@/utils/common'
+import { bus } from '@/mainWindow/main'
+import { EventBus } from '@/utils/main/ipc/constants'
 
 @Component({
   components: {
@@ -57,6 +59,8 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
   private artist: Artists | null = null
 
   private loadingMap: Record<string, boolean> = {}
+
+  private fetchArtistPromise: Promise<void> | undefined
 
   private activeProviders: Record<string, boolean> = {
     local: true
@@ -123,17 +127,31 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
 
   @Watch('$route.query.id')
   private async onArtistChange() {
+    const promises: Promise<void>[] = []
     if (typeof this.$route.query.id === 'string') {
       this.artist = null
       this.nextPageToken = undefined
       this.songList = []
-      this.fetchArtists()
-      this.fetchSongList()
+      promises.push(this.fetchArtists())
+      promises.push(this.fetchSongList())
     }
+    await Promise.all(promises)
   }
 
   created() {
-    this.onArtistChange()
+    this.fetchArtistPromise = this.onArtistChange()
+  }
+
+  async mounted() {
+    await this.fetchArtistPromise
+    if (this.$route.query.defaultProviders) {
+      for (const p of this.$route.query.defaultProviders) {
+        if (p) {
+          this.onArtistProviderChanged({ key: p, checked: true })
+          bus.$emit(EventBus.UPDATE_OPTIONAL_PROVIDER, p)
+        }
+      }
+    }
   }
 
   private async fetchArtists() {

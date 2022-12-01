@@ -317,13 +317,17 @@ export default class SearchPage extends mixins(
   private async fetchProviderSongList(provider: GenericProvider) {
     Vue.set(this.fetchMap, provider.key, true)
 
-    Vue.set(this.results, provider.key, {
-      songs: await provider.searchSongs(this.searchTerm),
-      artists: await provider.searchArtists(this.searchTerm),
-      playlists: await provider.searchPlaylists(this.searchTerm),
-      albums: await provider.searchAlbum(this.searchTerm),
-      genres: []
-    })
+    try {
+      Vue.set(this.results, provider.key, {
+        songs: await provider.searchSongs(this.searchTerm),
+        artists: await provider.searchArtists(this.searchTerm),
+        playlists: await provider.searchPlaylists(this.searchTerm),
+        albums: await provider.searchAlbum(this.searchTerm),
+        genres: []
+      })
+    } catch (e) {
+      console.error(e)
+    }
     Vue.set(this.fetchMap, provider.key, false)
   }
 
@@ -360,13 +364,13 @@ export default class SearchPage extends mixins(
   private onCardClick(item: typeof this.currentEntityList[0]) {
     switch (this.activeSubcategory) {
       case 'artists':
-        this.gotoArtist(item as Artists)
+        this.gotoArtist(item as Artists, [this.activeProvider])
         break
       case 'playlists':
         this.gotoPlaylist(item as Playlist)
         break
       case 'albums':
-        this.gotoAlbum(item as Album)
+        this.gotoAlbum(item as Album, [this.activeProvider])
         break
       case 'genres':
         this.gotoGenre(item as Genre)
