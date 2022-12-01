@@ -177,7 +177,7 @@ export default class AudioStream extends mixins(
    * This method is responsible of detaching old player
    * and setting new player as active
    */
-  private async onPlayerTypesChanged(newType: PlayerTypes): Promise<PlayerTypes | undefined> {
+  private async onPlayerTypesChanged(newType: PlayerTypes, src?: string): Promise<string | undefined> {
     if (this.activePlayerTypes !== newType) {
       console.debug('Changing player type to', newType)
       this.unloadAudio()
@@ -185,7 +185,19 @@ export default class AudioStream extends mixins(
       // Old active player may be null when window loads
       this.activePlayer?.removeAllListeners()
 
-      const player = this.findPlayer(newType)
+      const blacklist = []
+      let player: Player | undefined = undefined
+
+      while (!player) {
+        player = this.findPlayer(newType, blacklist)
+        if (player && src) {
+          if (!(await player.canPlay(src))) {
+            blacklist.push(player.key)
+            player = undefined
+          }
+        }
+      }
+
       if (player) {
         this.activePlayer = player
         await this.initializePlayer(this.activePlayer)
@@ -198,15 +210,17 @@ export default class AudioStream extends mixins(
         }
 
         this.showYTPlayer =
-          this.useEmbed && vxm.providers.youtubeAlt === YoutubeAlts.YOUTUBE && this.activePlayerTypes === 'YOUTUBE'
+          this.useEmbed && vxm.providers.youtubeAlt === YoutubeAlts.YOUTUBE && this.activePlayer.key === 'YOUTUBE'
             ? 2
             : 0
         this.analyserNode = undefined
+
+        return player.key
       } else {
-        return undefined
+        return
       }
     }
-    return newType
+    return this.activePlayer?.key
   }
 
   /**
@@ -645,7 +659,22 @@ export default class AudioStream extends mixins(
         return
       }
 
-      const audioPlayer = this.findPlayer(nextSong.type)
+      const blacklist = []
+      let audioPlayer: Player | undefined = undefined
+
+      while (!audioPlayer) {
+        audioPlayer = this.findPlayer(nextSong.type, blacklist)
+        if (audioPlayer && nextSong.playbackUrl) {
+          if (!(await audioPlayer.canPlay(nextSong.playbackUrl))) {
+            blacklist.push(audioPlayer.key)
+            audioPlayer = undefined
+          }
+        }
+      }
+
+      if (!audioPlayer) {
+        console.error('Failed to find player for song', nextSong, 'not preloading')
+      }
       audioPlayer?.preload(nextSong.playbackUrl)
     }
 
@@ -746,15 +775,7 @@ export default class AudioStream extends mixins(
 
     this.unloadAudio()
 
-    // Increment play count for song
-    window.DBUtils.incrementPlayCount(song._id)
-
-    const PlayerTypes = await this.onPlayerTypesChanged(song.type)
-
-    if (!PlayerTypes) {
-      console.debug('Could not find player type')
-      return
-    }
+    const PlayerTypes = song.type
 
     this.lastLoadedSong = song
 
@@ -763,6 +784,12 @@ export default class AudioStream extends mixins(
     // Playback url and duration fetching needed only for non-local songs
     if (PlayerTypes !== 'LOCAL') {
       await this.setPlaybackURLAndDuration(song)
+    }
+
+    const switchedPlayer = await this.onPlayerTypesChanged(song.type, song.playbackUrl)
+    if (!switchedPlayer) {
+      console.error('Could not find player to play song', song)
+      return
     }
 
     if (!song.path && (!song.playbackUrl || !song.duration)) {
@@ -801,6 +828,9 @@ export default class AudioStream extends mixins(
     await window.MprisUtils.updatePlaybackState(
       vxm.player.playAfterLoad || this.playerState !== 'PAUSED' ? 'PLAYING' : 'PAUSED'
     )
+
+    // Increment play count for song
+    window.DBUtils.incrementPlayCount(song._id)
   }
 
   private unloadAudio() {

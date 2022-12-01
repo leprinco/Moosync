@@ -23,6 +23,10 @@ export class LocalPlayer extends Player {
     return 'LOCAL'
   }
 
+  public async canPlay(src: string): Promise<boolean> {
+    return true
+  }
+
   // TODO: Typecheck playerInstance somehow
   protected async _initialize(playerInstance: unknown): Promise<void> {
     if (

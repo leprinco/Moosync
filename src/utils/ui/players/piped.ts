@@ -13,6 +13,10 @@ export class PipedPlayer extends LocalPlayer {
     return 'YOUTUBE'
   }
 
+  public async canPlay(src: string): Promise<boolean> {
+    return src.length === 11
+  }
+
   protected async _load(src?: string | undefined, volume?: number | undefined, autoplay?: boolean | undefined) {
     this.customLoadEventEmitter.emit('loading')
     if (src) {

@@ -108,6 +108,8 @@ export abstract class Player {
 
   abstract preload(src: string): void
 
+  public abstract canPlay(src: string): Promise<boolean>
+
   public async close() {
     return
   }

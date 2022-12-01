@@ -24,6 +24,10 @@ export class YoutubePlayer extends LocalPlayer {
     return 'YOUTUBE'
   }
 
+  public async canPlay(src: string): Promise<boolean> {
+    return src.length === 11
+  }
+
   private sponsorBlock = new SponsorBlock(v4())
   private cacheStore = localforage.createInstance({
     driver: [localforage.INDEXEDDB],

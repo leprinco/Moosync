@@ -25,6 +25,10 @@ export class HLSPlayer extends Player {
     return 'HLS'
   }
 
+  public async canPlay(src: string): Promise<boolean> {
+    return true
+  }
+
   protected async _initialize(element: HTMLVideoElement) {
     this.htmlElement = element
     this.playerInstance = new Hls()

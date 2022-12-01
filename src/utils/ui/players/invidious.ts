@@ -16,6 +16,10 @@ export class InvidiousPlayer extends LocalPlayer {
     return 'YOUTUBE'
   }
 
+  public async canPlay(src: string): Promise<boolean> {
+    return src.length === 11
+  }
+
   protected async _load(src?: string, volume?: number, autoplay?: boolean, errorTries?: number) {
     this.customLoadEventEmitter.emit('loading')
     let playbackURL = await this.fetchPlaybackURL(src)

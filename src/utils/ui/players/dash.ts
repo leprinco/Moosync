@@ -27,6 +27,10 @@ export class DashPlayer extends Player {
     return 'DASH'
   }
 
+  public async canPlay(src: string): Promise<boolean> {
+    return true
+  }
+
   protected async _initialize(element: HTMLVideoElement): Promise<void> {
     this.htmlElement = element
     this.playerInstance = dashjs.MediaPlayer().create()

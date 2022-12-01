@@ -161,12 +161,12 @@ export default class PlayerControls extends Vue {
     this.volume = this.oldVolume
   }
 
-  public findPlayer(canPlay: PlayerTypes) {
+  public findPlayer(canPlay: PlayerTypes, blacklist: string[] = []) {
     console.debug('Finding player for', canPlay)
     let lowest: [Player | undefined, number] = [undefined, vxm.playerRepo.allPlayers.length]
     for (const p of vxm.playerRepo.allPlayers) {
       const index = p.provides().indexOf(canPlay)
-      if (index >= 0 && index < lowest[1]) {
+      if (index >= 0 && index < lowest[1] && !blacklist.includes(p.key)) {
         lowest = [p, index]
       }
     }
