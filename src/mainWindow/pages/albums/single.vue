@@ -94,7 +94,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
   get buttonGroups(): SongDetailButtons {
     return {
       enableContainer: true,
-      enableLibraryStore: false,
+      enableLibraryStore: this.hasRemoteSongs,
       playRandom: this.songList.length > 150
     }
   }
@@ -121,6 +121,10 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
       }
       return false
     })
+  }
+
+  get hasRemoteSongs() {
+    return Object.keys(this.activeProviders).some((val) => val !== 'local' && this.activeProviders[val])
   }
 
   async created() {
