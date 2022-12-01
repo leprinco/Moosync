@@ -12,6 +12,7 @@ import { v4 } from 'uuid'
 import { YTPlayerWrapper } from './wrapper/ytPlayer'
 import { LocalPlayer } from './local'
 import localforage from 'localforage'
+import { vxm } from '@/mainWindow/store'
 
 type YouTubePlayerQuality = 'small' | 'medium' | 'large' | 'hd720' | 'hd1080' | 'highres' | 'default'
 
@@ -25,7 +26,7 @@ export class YoutubePlayer extends LocalPlayer {
   }
 
   public async canPlay(src: string): Promise<boolean> {
-    return src.length === 11
+    return src.length === 11 || vxm.providers.youtubeProvider.matchSongUrl(src)
   }
 
   private sponsorBlock = new SponsorBlock(v4())

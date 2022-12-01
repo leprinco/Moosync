@@ -14,7 +14,7 @@ export class PipedPlayer extends LocalPlayer {
   }
 
   public async canPlay(src: string): Promise<boolean> {
-    return src.length === 11
+    return src.length === 11 || vxm.providers.youtubeProvider.matchSongUrl(src)
   }
 
   protected async _load(src?: string | undefined, volume?: number | undefined, autoplay?: boolean | undefined) {

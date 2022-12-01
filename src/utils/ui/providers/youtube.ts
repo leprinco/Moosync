@@ -315,7 +315,7 @@ export class YoutubeProvider extends GenericProvider {
           },
           date: new Date(v.item.snippet.publishedAt).toISOString().slice(0, 10),
           date_added: Date.parse(v.date ?? ''),
-          duration: parseISO8601Duration(v.item.contentDetails.duration),
+          duration: parseISO8601Duration(v.item.contentDetails.duration) || -1, // -1 indicates live music
           url: v.item.id,
           playbackUrl: v.item.id,
           type: 'YOUTUBE'
@@ -431,16 +431,18 @@ export class YoutubeProvider extends GenericProvider {
     return window.SearchUtils.searchYT(term, undefined, matchTitle, true, true)
   }
 
-  public matchSongURL(url: string) {
-    return url.match(
+  public matchSongUrl(url: string): boolean {
+    return !!url.match(
       /^((?:https?:)?\/\/)?((?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/
     )
   }
 
   public async getSongDetails(url: string, invalidateCache = false): Promise<Song | undefined> {
-    if (this.matchSongURL(url)) {
+    if (this.matchSongUrl(url)) {
       const parsedUrl = new URL(url)
       const videoID = parsedUrl.searchParams.get('v')
+
+      console.log('got video ID', videoID)
 
       if (videoID) {
         const details = await this.getSongDetailsFromID(invalidateCache, { id: videoID })

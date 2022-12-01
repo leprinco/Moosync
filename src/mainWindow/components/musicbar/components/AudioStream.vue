@@ -192,6 +192,7 @@ export default class AudioStream extends mixins(
       while (!player && tries > 0) {
         player = this.findPlayer(newType, blacklist)
         if (player && src) {
+          console.debug('Checking player', player.key, 'for', src)
           if (!(await player.canPlay(src))) {
             blacklist.push(player.key)
             player = undefined
@@ -794,6 +795,9 @@ export default class AudioStream extends mixins(
     const switchedPlayer = await this.onPlayerTypesChanged(song.type, song.playbackUrl)
     if (!switchedPlayer) {
       console.error('Could not find player to play song', song)
+      await this.nextSong()
+      await this.removeFromQueue(vxm.player.queueIndex - 1)
+      vxm.player.loading = false
       return
     } else {
       console.debug('Found player', switchedPlayer)

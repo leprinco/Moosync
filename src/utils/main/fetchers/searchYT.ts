@@ -141,7 +141,7 @@ export class YTScraper extends CacheHandler {
               }
             }
           })) ?? [],
-        duration: s.duration?.totalSeconds ?? 0,
+        duration: s.duration?.totalSeconds || -1,
         url: s.youtubeId,
         playbackUrl: s.youtubeId,
         date_added: Date.now(),
@@ -234,7 +234,7 @@ export class YTScraper extends CacheHandler {
             }
           ]
         : undefined,
-      duration: vid.duration ? this.parseYoutubeDuration(vid.duration ?? '') : 0,
+      duration: vid.duration ? this.parseYoutubeDuration(vid.duration ?? '') || -1 : -1,
       url: vid.url,
       playbackUrl: vid.url,
       date_added: Date.now(),

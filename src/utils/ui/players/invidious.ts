@@ -17,7 +17,7 @@ export class InvidiousPlayer extends LocalPlayer {
   }
 
   public async canPlay(src: string): Promise<boolean> {
-    return src.length === 11
+    return src.length === 11 || vxm.providers.youtubeProvider.matchSongUrl(src)
   }
 
   protected async _load(src?: string, volume?: number, autoplay?: boolean, errorTries?: number) {
