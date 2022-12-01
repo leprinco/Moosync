@@ -8,6 +8,9 @@ export class SpotifyPlayer extends Player {
 
   private ignorePause = false
 
+  private loadingCallback: (() => void) | undefined
+  private autoPlayQueued = false
+
   public provides(): PlayerTypes[] {
     return ['SPOTIFY']
   }
@@ -22,9 +25,10 @@ export class SpotifyPlayer extends Player {
   }
 
   async _load(src?: string | undefined, volume?: number | undefined, autoplay?: boolean | undefined): Promise<void> {
+    this.loadingCallback && this.loadingCallback()
     await window.SpotifyPlayer.command('LOAD', [src])
     volume && (this.volume = volume)
-    autoplay && (await window.SpotifyPlayer.command('PLAY'))
+    autoplay && (this.autoPlayQueued = true)
   }
 
   async _play(): Promise<void> {
@@ -75,7 +79,13 @@ export class SpotifyPlayer extends Player {
   }
 
   protected listenOnLoad(callback: () => void): void {
-    this.registerListener('TrackChanged', () => callback())
+    this.registerListener('TrackChanged', async () => {
+      callback()
+      if (this.autoPlayQueued) {
+        this.autoPlayQueued = false
+        await window.SpotifyPlayer.command('PLAY')
+      }
+    })
   }
 
   protected listenOnError(callback: (err: Error) => void): void {
