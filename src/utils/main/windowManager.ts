@@ -17,7 +17,8 @@ import {
   webFrameMain,
   ThumbarButton,
   nativeImage,
-  net
+  net,
+  shell
 } from 'electron'
 import { SongEvents, WindowEvents } from './ipc/constants'
 import { getWindowSize, setWindowSize, loadPreferences } from './db/preferences'
@@ -315,6 +316,25 @@ export class WindowHandler {
     window.on('show', () => {
       this.handleWindowShow(window)
     })
+
+    window.webContents.setWindowOpenHandler((details) => {
+      if (['new-window', 'foreground-tab', 'background-tab', 'default'].includes(details.disposition)) {
+        shell.openExternal(details.url, {
+          activate: true
+        })
+        return {
+          action: 'deny'
+        }
+      } else {
+        return {
+          action: 'allow'
+        }
+      }
+    })
+    // window.webContents.on('', (event, url) {
+    //   event.preventDefault()
+    //   open(url)
+    // })
 
     window.webContents.on(
       'did-frame-navigate',
