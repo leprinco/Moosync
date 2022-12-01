@@ -49,7 +49,7 @@ export class SpotifyProvider extends GenericProvider {
   private auth!: AuthFlow
   private _config!: ReturnType<SpotifyProvider['getConfig']>
 
-  private _isPremium = false
+  public canPlayPremium = false
 
   public get key() {
     return 'spotify'
@@ -130,6 +130,7 @@ export class SpotifyProvider extends GenericProvider {
             })
 
             bus.$emit(EventBus.REFRESH_ACCOUNTS, this.key)
+            this.canPlayPremium = true
 
             return true
           }
@@ -192,7 +193,7 @@ export class SpotifyProvider extends GenericProvider {
 
   public async signOut() {
     this.auth?.signOut()
-    this._isPremium = false
+    this.canPlayPremium = false
     await this.getLoggedIn()
   }
 
@@ -241,11 +242,10 @@ export class SpotifyProvider extends GenericProvider {
     return resp.json()
   }
 
-  public async getUser(invalidateCache = true): Promise<SpotifyResponses.UserDetails.UserDetails | undefined> {
+  private async getUser(invalidateCache = true): Promise<SpotifyResponses.UserDetails.UserDetails | undefined> {
     const validRefreshToken = await this.auth?.hasValidRefreshToken()
     if ((await this.getLoggedIn()) || validRefreshToken) {
       const resp = await this.populateRequest(ApiResources.USER_DETAILS, { params: undefined }, invalidateCache)
-      this._isPremium = resp.product?.toLowerCase() === 'premium'
       return resp
     }
   }
@@ -430,13 +430,13 @@ export class SpotifyProvider extends GenericProvider {
 
   public async validatePlaybackURL(playbackUrl: string): Promise<boolean> {
     await this.getUser(false)
-    if (this._isPremium && playbackUrl.startsWith('spotify:track:')) return true
-    if (!this._isPremium && !playbackUrl.startsWith('spotify:track:')) return true
+    if (this.canPlayPremium && playbackUrl.startsWith('spotify:track:')) return true
+    if (!this.canPlayPremium && !playbackUrl.startsWith('spotify:track:')) return true
     return false
   }
 
   public async getPlaybackUrlAndDuration(song: Song) {
-    if (this._isPremium) {
+    if (this.canPlayPremium) {
       return { url: `spotify:track:${song.url}`, duration: song.duration }
     }
 
