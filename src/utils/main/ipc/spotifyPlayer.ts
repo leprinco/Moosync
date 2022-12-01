@@ -18,18 +18,23 @@ import { app } from 'electron'
 
 const defaultLogPath = path.join(app.getPath('logs'))
 
-function spawn_child(target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
-  const originalMethod = descriptor.value
+function spawn_child(forceKill = false) {
+  return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value
 
-  descriptor.value = async function (...args: unknown[]) {
-    if (
-      this instanceof SpotifyPlayerChannel &&
-      (!this.playerProcess || this.playerProcess.killed || !this.playerProcess.connected)
-    ) {
-      await this.spawnProcess()
+    descriptor.value = async function (...args: unknown[]) {
+      if (
+        this instanceof SpotifyPlayerChannel &&
+        (!this.playerProcess || this.playerProcess.killed || !this.playerProcess.connected || forceKill)
+      ) {
+        if (forceKill) {
+          this.config = undefined
+        }
+        await this.spawnProcess()
+      }
+
+      return originalMethod.bind(this)(...args)
     }
-
-    return originalMethod.bind(this)(...args)
   }
 }
 
@@ -37,7 +42,7 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
   name = IpcEvents.SPOTIFY
   public playerProcess?: ChildProcess
 
-  private config: ConstructorConfig | undefined
+  public config: ConstructorConfig | undefined
   private isConnected = false
 
   private eventEmitter = new EventEmitter()
@@ -133,13 +138,13 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
     }
   }
 
-  @spawn_child
+  @spawn_child()
   private async command(event: Electron.IpcMainEvent, request: IpcRequest<SpotifyRequests.Command>) {
     await this.sendAsync({ type: 'COMMAND', args: request.params })
     event.reply(request.responseChannel)
   }
 
-  @spawn_child
+  @spawn_child()
   private on(event: Electron.IpcMainEvent, request: IpcRequest<SpotifyRequests.EventListener>) {
     const listener = (e: PlayerEvent) => event.sender.send(request.responseChannel ?? '', e)
     this.eventEmitter.on(request.params.event, listener)
@@ -155,7 +160,7 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
     event.reply(request.responseChannel)
   }
 
-  @spawn_child
+  @spawn_child(true)
   private async connect(event: Electron.IpcMainEvent, request: IpcRequest<SpotifyRequests.Config>) {
     request.params.cache_path = path.join(app.getPath('sessionData'), app.getName())
     request.params.save_tokens = true
@@ -167,7 +172,7 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
     event.reply(request.responseChannel, ret)
   }
 
-  @spawn_child
+  @spawn_child()
   private async getToken(event: Electron.IpcMainEvent, request: IpcRequest<SpotifyRequests.Token>) {
     const token = await this.sendAsync({ type: 'TOKEN', args: request.params.scopes })
     event.reply(request.responseChannel, token)
