@@ -165,6 +165,7 @@ module.exports = {
             repo: 'moosync'
           }
         ],
+        files: ['**/*', '!node_modules/librespot-node/native/target/*'],
         asarUnpack: ['*.worker.js', 'sandbox.js', 'spotify.js', '**/node_modules/**/*.node'],
         protocols: [
           {
