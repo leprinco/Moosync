@@ -106,6 +106,8 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
     if (this.playerProcess) {
       this.playerProcess.removeAllListeners()
       this.playerProcess.kill()
+      this.eventEmitter.removeAllListeners()
+      this.listeners = {}
       this.playerProcess = undefined
     }
 
@@ -117,11 +119,7 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
   }
 
   public async spawnProcess() {
-    if (this.playerProcess) {
-      this.playerProcess.removeAllListeners()
-      this.playerProcess.kill()
-    }
-
+    this.closePlayer()
     this.playerProcess = fork(__dirname + '/spotify.js', ['logPath', defaultLogPath])
 
     this.playerProcess.on('message', (message) => {
