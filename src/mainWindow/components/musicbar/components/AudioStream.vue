@@ -188,7 +188,8 @@ export default class AudioStream extends mixins(
       const blacklist = []
       let player: Player | undefined = undefined
 
-      while (!player) {
+      let tries = vxm.playerRepo.allPlayers.length
+      while (!player && tries > 0) {
         player = this.findPlayer(newType, blacklist)
         if (player && src) {
           if (!(await player.canPlay(src))) {
@@ -196,6 +197,7 @@ export default class AudioStream extends mixins(
             player = undefined
           }
         }
+        tries -= 1
       }
 
       if (player) {
@@ -662,7 +664,9 @@ export default class AudioStream extends mixins(
       const blacklist = []
       let audioPlayer: Player | undefined = undefined
 
-      while (!audioPlayer) {
+      let tries = vxm.playerRepo.allPlayers.length
+
+      while (!audioPlayer && tries > 0) {
         audioPlayer = this.findPlayer(nextSong.type, blacklist)
         if (audioPlayer && nextSong.playbackUrl) {
           if (!(await audioPlayer.canPlay(nextSong.playbackUrl))) {
@@ -670,6 +674,7 @@ export default class AudioStream extends mixins(
             audioPlayer = undefined
           }
         }
+        tries -= 1
       }
 
       if (!audioPlayer) {
