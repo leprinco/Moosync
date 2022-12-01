@@ -790,6 +790,8 @@ export default class AudioStream extends mixins(
     if (!switchedPlayer) {
       console.error('Could not find player to play song', song)
       return
+    } else {
+      console.debug('Found player', switchedPlayer)
     }
 
     if (!song.path && (!song.playbackUrl || !song.duration)) {
