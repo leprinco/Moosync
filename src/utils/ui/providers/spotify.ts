@@ -99,6 +99,8 @@ export class SpotifyProvider extends GenericProvider {
       (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('spotify.options.use_librespot')).enabled ?? false
 
     if (useUserPass) {
+      console.debug('Trying to login using librespot')
+
       const username = await window.PreferenceUtils.loadSelective<string>('spotify.username')
       const password = await window.Store.getSecure('spotify.password')
 
@@ -132,6 +134,9 @@ export class SpotifyProvider extends GenericProvider {
             bus.$emit(EventBus.REFRESH_ACCOUNTS, this.key)
             this.canPlayPremium = true
 
+            console.debug('Can use librespot')
+
+            this.authInitializedResolver()
             return true
           }
         } catch (e) {
@@ -142,13 +147,16 @@ export class SpotifyProvider extends GenericProvider {
 
     if (conf && conf.client_id && conf.client_secret) {
       this.auth = new AuthFlow(this._config, serviceConfig)
+      this.authInitializedResolver()
       return true
     }
 
+    this.authInitializedResolver()
     return false
   }
 
   public async getLoggedIn() {
+    await this.authInitialized
     if (this.auth) {
       const validRefreshToken = await this.auth.hasValidRefreshToken()
       if ((await this.auth.loggedIn()) || validRefreshToken) {
@@ -429,7 +437,8 @@ export class SpotifyProvider extends GenericProvider {
   }
 
   public async validatePlaybackURL(playbackUrl: string): Promise<boolean> {
-    await this.getUser(false)
+    await this.getLoggedIn()
+    console.log(this.canPlayPremium)
     if (this.canPlayPremium && playbackUrl.startsWith('spotify:track:')) return true
     if (!this.canPlayPremium && !playbackUrl.startsWith('spotify:track:')) return true
     return false

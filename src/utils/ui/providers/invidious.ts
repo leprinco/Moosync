@@ -38,6 +38,8 @@ export class InvidiousProvider extends GenericProvider {
   public async updateConfig(): Promise<boolean> {
     const AUTH_BASE_URL = await window.PreferenceUtils.loadSelective('invidious_instance')
     this._token = (await this.fetchStoredToken()) ?? undefined
+
+    this.authInitializedResolver()
     return !!AUTH_BASE_URL
   }
 
@@ -54,6 +56,7 @@ export class InvidiousProvider extends GenericProvider {
   }
 
   public async getLoggedIn() {
+    await this.authInitialized
     vxm.providers.loggedInYoutube = !!this._token
     return !!this._token
   }

@@ -84,15 +84,18 @@ export class YoutubeProvider extends GenericProvider {
       })
 
       this.auth = new AuthFlow(this._config, serviceConfig)
+      this.authInitializedResolver()
       return true
     }
 
+    this.authInitializedResolver()
     return false
   }
 
   private api = new FetchWrapper()
 
   public async getLoggedIn() {
+    await this.authInitialized
     if (this.auth) {
       const validRefreshToken = await this.auth.hasValidRefreshToken()
       if ((await this.auth.loggedIn()) || validRefreshToken) {

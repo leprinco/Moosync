@@ -59,6 +59,7 @@ export class LastFMProvider extends GenericProvider {
   }
 
   public async getLoggedIn() {
+    await this.authInitialized
     if (!this._session) {
       this._session = (await this.fetchStoredToken()) ?? undefined
     }
@@ -74,9 +75,11 @@ export class LastFMProvider extends GenericProvider {
       this._config = { key, secret }
 
       this._session = (await this.fetchStoredToken()) ?? undefined
+      this.authInitializedResolver()
       return true
     }
 
+    this.authInitializedResolver()
     return false
   }
 

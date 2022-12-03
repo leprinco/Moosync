@@ -17,8 +17,12 @@ function MethodMetadataDecorator(target: unknown, propertyKey: string, descripto
   return descriptor
 }
 export abstract class GenericProvider {
+  protected authInitialized: Promise<void>
+  protected authInitializedResolver!: () => void
+
   constructor() {
     this.updateConfig()
+    this.authInitialized = new Promise<void>((r) => (this.authInitializedResolver = r))
   }
 
   public get canLogin() {
