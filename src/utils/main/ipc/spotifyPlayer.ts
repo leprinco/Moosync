@@ -127,6 +127,10 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
     this.closePlayer()
     this.playerProcess = fork(__dirname + '/spotify.js', ['logPath', defaultLogPath])
 
+    await new Promise<void>((r) => {
+      this.playerProcess?.once('spawn', () => r())
+    })
+
     this.playerProcess.on('message', (message) => {
       if (this.isEvent(message)) {
         this.eventEmitter.emit(message.event, message)
