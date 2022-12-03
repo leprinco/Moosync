@@ -166,8 +166,10 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
 
   @spawn_child(true)
   private async connect(event: Electron.IpcMainEvent, request: IpcRequest<SpotifyRequests.Config>) {
-    request.params.cache_path = path.join(app.getPath('sessionData'), app.getName())
-    request.params.save_tokens = true
+    request.params.cache = {
+      credentials_location: path.join(app.getPath('sessionData'), app.getName()),
+      audio_location: path.join(app.getPath('sessionData'), app.getName(), 'audio_cache')
+    }
 
     const ret = await this.sendAsync({ type: 'CONNECT', args: request.params })
     if (!(ret instanceof Error)) {

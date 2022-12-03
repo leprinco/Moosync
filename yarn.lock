@@ -7727,7 +7727,7 @@ levn@^0.4.1:
 
 "librespot-node@git+https://github.com/Moosync/librespot-node.git":
   version "1.0.0"
-  resolved "git+https://github.com/Moosync/librespot-node.git#94bf11c21a1cc1d78870e44335eadc012c7e028a"
+  resolved "git+https://github.com/Moosync/librespot-node.git#3dac49c89172e34b2f86f69e369da49d4959abad"
   dependencies:
     "@types/bindings" "^1.5.1"
     "@types/node" "^18.11.9"

@@ -113,6 +113,10 @@ class SpotifyPlayerProcess {
         await (this.player?.load as (...args: unknown[]) => Promise<void>)(...args)
       }
 
+      if (command === 'ADD_TO_QUEUE') {
+        await this.player?.addToQueue(args[0] as string)
+      }
+
       if (command === 'VOLUME') {
         if (args.length > 0) {
           await this.player?.setVolume(args[0] as number, false)
@@ -177,7 +181,7 @@ class SpotifyPlayerProcess {
       }
 
       if (type === 'COMMAND') {
-        await this.handleCommand(args.command, args.args)
+        ret.data = await this.handleCommand(args.command, args.args)
       }
 
       if (type === 'TOKEN') {

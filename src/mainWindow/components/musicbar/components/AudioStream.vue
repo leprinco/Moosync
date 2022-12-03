@@ -407,11 +407,12 @@ export default class AudioStream extends mixins(
     }
 
     if (this.activePlayer) {
+      const preloadDuration = this.activePlayer.key === 'SPOTIFY' ? 45 : 10
       this.activePlayer.onTimeUpdate = async (time) => {
         this.$emit('onTimeUpdate', time)
 
         if (this.currentSong) {
-          if (time >= this.currentSong.duration - 10) {
+          if (time >= this.currentSong.duration - preloadDuration) {
             await this.preloadNextSong()
             if (this.isSilent()) {
               this.onSongEnded()

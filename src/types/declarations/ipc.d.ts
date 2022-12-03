@@ -89,7 +89,7 @@ declare namespace SpotifyRequests {
     scopes: import('librespot-node').TokenScope[]
   }
 
-  type SpotifyCommands = 'PLAY' | 'PAUSE' | 'SEEK' | 'VOLUME' | 'LOAD'
+  type SpotifyCommands = 'PLAY' | 'PAUSE' | 'SEEK' | 'VOLUME' | 'LOAD' | 'ADD_TO_QUEUE'
 
   interface Command {
     command: SpotifyCommands
