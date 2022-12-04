@@ -708,40 +708,26 @@ export default class AudioStream extends mixins(
       provider = this.getProviderByKey(song.type.toLowerCase())
     }
 
-    let shouldUseCache = true
+    let res: { url?: string; duration?: number } | undefined = { url: song.playbackUrl, duration: song.duration }
+
     if (song.playbackUrl && !isEmpty(song.duration)) {
-      if (await provider?.validatePlaybackURL(song.playbackUrl)) {
-        return true
-      } else {
-        shouldUseCache = false
-      }
-    }
-
-    let res: { url?: string; duration?: number } | undefined
-
-    if (shouldUseCache) {
       res = this.getItem(`url_duration:${song._id}`)
       console.debug('cache url and duration', res)
     }
 
-    if (!res) {
+    let shouldRefetch = true
+    if (res?.url && res?.duration && (await provider?.validatePlaybackURL(res.url))) {
+      shouldRefetch = false
+    }
+
+    if (shouldRefetch) {
       console.debug('playback url and duration not in cache or missing')
       res = await this.getPlaybackUrlAndDuration(provider, song)
-    } else {
-      if (!song.playbackUrl && !res.url) {
-        console.debug('playback url missing from cache entry, trying to re-fetch')
-        res = await this.getPlaybackUrlAndDuration(provider, song)
-      }
-
-      if (!song.duration && !res?.duration) {
-        console.debug('duration missing from cache entry, trying to re-fetch')
-        res = await this.getPlaybackUrlAndDuration(provider, song)
-      }
     }
 
     console.debug('Got playback url and duration', res)
 
-    if (res && res.duration) {
+    if (res && res.duration && res.url) {
       // song is a reference to vxm.player.currentSong or vxm.sync.currentSong.
       // Mutating those properties should also mutate song and vice-versa
       if (vxm.player.currentSong && song) {
