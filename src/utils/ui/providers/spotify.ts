@@ -332,7 +332,7 @@ export class SpotifyProvider extends GenericProvider {
   }
 
   private parseSong(track: SpotifyResponses.PlaylistItems.Track): Song {
-    return {
+    const song: Song = {
       _id: `spotify:${track.id}`,
       title: track.name,
       album: {
@@ -354,6 +354,23 @@ export class SpotifyProvider extends GenericProvider {
       date_added: Date.now(),
       type: 'SPOTIFY'
     }
+
+    if (track.album.images?.length > 0) {
+      const high = track.album.images[0].url
+      let low = high
+      if (track.album.images[1]) low = track.album.images[1].url
+
+      song.album = {
+        ...song.album,
+        album_coverPath_high: high,
+        album_coverPath_low: low
+      }
+
+      song.song_coverPath_high = high
+      song.song_coverPath_low = low
+    }
+
+    return song
   }
 
   private async parsePlaylistItems(items: SpotifyResponses.PlaylistItems.Item[]) {
@@ -438,7 +455,10 @@ export class SpotifyProvider extends GenericProvider {
 
   public async validatePlaybackURL(playbackUrl: string): Promise<boolean> {
     await this.getLoggedIn()
-    if (this.canPlayPremium && playbackUrl.startsWith('spotify:track:')) return true
+    if (this.canPlayPremium && playbackUrl.startsWith('spotify:track:')) {
+      if (playbackUrl === 'spotify:track:undefined') return false
+      return true
+    }
     if (!this.canPlayPremium && !playbackUrl.startsWith('spotify:track:')) return true
     return false
   }
@@ -513,58 +533,8 @@ export class SpotifyProvider extends GenericProvider {
   private parseRecommendations(recommendations: SpotifyResponses.RecommendationDetails.Recommendations) {
     const songList: Song[] = []
     for (const track of recommendations.tracks) {
-      const song: Song = {
-        _id: `spotify:${track.id}`,
-        title: track.name,
-        artists: track.artists.map((val) => ({
-          artist_id: `spotify-author:${val.id}`,
-          artist_name: val.name,
-          artist_extra_info: {
-            spotify: {
-              artist_id: val.id
-            }
-          }
-        })),
-        album: {
-          album_name: track.album.name,
-          album_artist: track.album.artists && track.album.artists.length > 0 ? track.album.artists[0].name : undefined
-        },
-        duration: track.duration_ms / 1000,
-        date_added: Date.now(),
-        type: 'SPOTIFY'
-      }
-
-      if (track.artists?.length > 0) {
-        song.artists = []
-        for (const artist of track.artists) {
-          song.artists.push({
-            artist_id: `spotify-author:${artist.id}`,
-            artist_name: artist.name,
-            artist_coverPath: artist.images?.at(0)?.url,
-            artist_extra_info: {
-              spotify: {
-                artist_id: artist.id
-              }
-            }
-          })
-        }
-      }
-
-      if (track.album.images?.length > 0) {
-        const high = track.album.images[0].url
-        let low = high
-        if (track.album.images[1]) low = track.album.images[1].url
-
-        song.album = {
-          ...song.album,
-          album_coverPath_high: high,
-          album_coverPath_low: low
-        }
-
-        song.song_coverPath_high = high
-        song.song_coverPath_low = low
-      }
-
+      const song: Song = this.parseSong(track)
+      console.log(song)
       songList.push(song)
     }
     return songList
@@ -619,6 +589,8 @@ export class SpotifyProvider extends GenericProvider {
           seed_tracks: seedTracks
         }
       })
+
+      console.log('got reocm resp', recommendationsResp)
       yield this.parseRecommendations(recommendationsResp)
     }
   }
