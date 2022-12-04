@@ -14,7 +14,7 @@
         :items="providers"
         :showExtraSongListActions="false"
         :singleSelectMode="true"
-        :defaultSelected="providers[0].key"
+        :defaultSelected="activeProvider"
         :showBackgroundOnSelect="true"
         @onItemsChanged="onProviderChanged"
       />
@@ -23,7 +23,7 @@
         :items="subCategories"
         :showExtraSongListActions="false"
         :singleSelectMode="true"
-        :defaultSelected="subCategories[0].key"
+        :defaultSelected="activeSubcategory"
         :showBackgroundOnSelect="true"
         @onItemsChanged="onSubcategoriesChanged"
       />
@@ -124,14 +124,28 @@ export default class SearchPage extends mixins(
   RouterPushes,
   ProviderMixin
 ) {
-  private activeProvider = ''
-  private activeSubcategory: keyof SearchResult = 'songs'
   private oldSubcategory = this.activeSubcategory
 
   private fetchMap: Record<string, boolean> = {}
 
   private get isFetching() {
     return this.fetchMap[this.activeProvider]
+  }
+
+  private get activeProvider() {
+    return vxm.themes.lastSearchTab[0]
+  }
+
+  private set activeProvider(item: string) {
+    vxm.themes.lastSearchTab = [item, this.activeSubcategory]
+  }
+
+  private get activeSubcategory() {
+    return vxm.themes.lastSearchTab[1]
+  }
+
+  private set activeSubcategory(item: keyof SearchResult) {
+    vxm.themes.lastSearchTab = [this.activeProvider, item]
   }
 
   private get noResultsReason() {
