@@ -268,7 +268,6 @@ export class YTScraper extends CacheHandler {
   private async scrapeYoutube(title: string, artists?: string[], matchTitle = true) {
     const term = `${artists ? artists.join(', ') + ' - ' : ''}${title}`
 
-    console.log(term)
     const resp = await ytsr(term)
     const ret: SearchResult = {
       songs: [],

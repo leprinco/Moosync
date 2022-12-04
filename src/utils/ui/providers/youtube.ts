@@ -445,8 +445,6 @@ export class YoutubeProvider extends GenericProvider {
       const parsedUrl = new URL(url)
       const videoID = parsedUrl.searchParams.get('v')
 
-      console.log('got video ID', videoID)
-
       if (videoID) {
         const details = await this.getSongDetailsFromID(invalidateCache, { id: videoID })
         if (details && details.length > 0) {

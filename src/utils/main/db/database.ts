@@ -56,7 +56,6 @@ export class SongDBInstance extends DBUtils {
     const newList: Song[] = []
     const existingList: Song[] = []
     for (const newDoc of songsToAdd) {
-      console.log('verifying', newDoc, this.verifySong(newDoc))
       if (this.verifySong(newDoc)) {
         const existing = this.getSongByOptions({ song: { _id: newDoc._id } })[0]
         if (existing) {
@@ -172,8 +171,6 @@ export class SongDBInstance extends DBUtils {
                   }
                 }) as Artists[]
               )[0]
-
-              console.log('removing artist', artist.artist_name)
 
               this.db.delete('artists', { artist_id: id.artist })
               if (artist?.artist_coverPath) pathsToRemove.push(artist.artist_coverPath)

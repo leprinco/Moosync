@@ -438,7 +438,6 @@ export class SpotifyProvider extends GenericProvider {
 
   public async validatePlaybackURL(playbackUrl: string): Promise<boolean> {
     await this.getLoggedIn()
-    console.log(this.canPlayPremium)
     if (this.canPlayPremium && playbackUrl.startsWith('spotify:track:')) return true
     if (!this.canPlayPremium && !playbackUrl.startsWith('spotify:track:')) return true
     return false

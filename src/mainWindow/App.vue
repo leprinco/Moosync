@@ -292,7 +292,6 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
         for (const f of event.dataTransfer.files) {
           if (f) {
             const song = await this.getSongFromPath(f.path)
-            console.log(song)
             if (song) {
               await this.playTop([song])
             }
