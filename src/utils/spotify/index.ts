@@ -97,7 +97,7 @@ class SpotifyPlayerProcess {
     })
   }
 
-  private async queueCommand(command: string, args?: unknown[]) {
+  private async queueCommand(command: SpotifyRequests.SpotifyCommands, args?: unknown[]) {
     await this.waitForPlayerInitialize()
 
     if (command === 'PLAY') {
@@ -118,15 +118,16 @@ class SpotifyPlayerProcess {
       }
 
       if (command === 'VOLUME') {
-        if (args.length > 0) {
-          await this.player?.setVolume(args[0] as number, false)
-        }
+        await this.player?.setVolume(args[0] as number, false)
       }
 
       if (command === 'SEEK') {
-        if (args.length > 0) {
-          await this.player?.seek(args[0] as number)
-        }
+        await this.player?.seek(args[0] as number)
+      }
+
+      if (command === 'GET_CANVAS') {
+        console.log('got canvas request', args[0])
+        return await this.player?.getMetadata(args[0] as string)
       }
     }
   }
@@ -135,7 +136,7 @@ class SpotifyPlayerProcess {
     return !!(val as { channel: string }).channel
   }
 
-  private async handleCommand(command: string, args: unknown[]) {
+  private async handleCommand(command: SpotifyRequests.SpotifyCommands, args: unknown[]) {
     return await this.queueCommand(command, args)
   }
 

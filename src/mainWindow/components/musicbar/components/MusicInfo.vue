@@ -15,9 +15,10 @@
       enter-active-class="animate__animated animate__fadeIn"
       leave-active-class="animate__animated animate__fadeOut animate__faster"
     >
+      <video v-if="spotifyCanvas" class="bg-img" :src="spotifyCanvas" :key="spotifyCanvas" autoplay loop />
       <b-img
         class="bg-img"
-        v-if="computedImg"
+        v-else-if="computedImg"
         :src="computedImg"
         :key="computedImg"
         referrerPolicy="no-referrer"
@@ -134,6 +135,8 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   private ignoreScroll = false
   private lyrics = ''
 
+  private spotifyCanvas: string | null = null
+
   get queueProvider() {
     return vxm.sync.mode !== PeerMode.UNDEFINED ? vxm.sync : vxm.player
   }
@@ -200,6 +203,13 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
     this.lyrics = ''
 
     if (this.currentSong) {
+      if (this.currentSong.type === 'SPOTIFY') {
+        if ((await vxm.providers.spotifyProvider.getLoggedIn()) && vxm.providers.spotifyProvider.canPlayPremium) {
+          const resp = await window.SpotifyPlayer.command('GET_CANVAS', [`spotify:track:${this.currentSong.url}`])
+          this.spotifyCanvas = resp.canvases?.at(0)?.url ?? null
+        }
+      }
+
       if (this.currentSong.lyrics) {
         this.lyrics = this.currentSong.lyrics
       } else {

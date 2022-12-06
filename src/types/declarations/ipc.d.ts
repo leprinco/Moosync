@@ -89,7 +89,11 @@ declare namespace SpotifyRequests {
     scopes: import('librespot-node').TokenScope[]
   }
 
-  type SpotifyCommands = 'PLAY' | 'PAUSE' | 'SEEK' | 'VOLUME' | 'LOAD' | 'ADD_TO_QUEUE'
+  type SpotifyCommands = 'PLAY' | 'PAUSE' | 'SEEK' | 'VOLUME' | 'LOAD' | 'ADD_TO_QUEUE' | 'GET_CANVAS'
+
+  type ReturnType<T extends SpotifyCommands> = T extends 'GET_CANVAS'
+    ? import('librespot-node').CanvazResponse
+    : undefined
 
   interface Command {
     command: SpotifyCommands

@@ -144,8 +144,8 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
 
   @spawn_child()
   private async command(event: Electron.IpcMainEvent, request: IpcRequest<SpotifyRequests.Command>) {
-    await this.sendAsync({ type: 'COMMAND', args: request.params })
-    event.reply(request.responseChannel)
+    const resp = await this.sendAsync({ type: 'COMMAND', args: request.params })
+    event.reply(request.responseChannel, resp)
   }
 
   @spawn_child()
