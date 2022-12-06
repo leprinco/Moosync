@@ -87,7 +87,11 @@ export class SpotifyProvider extends GenericProvider {
   public async updateConfig() {
     const conf = (await window.PreferenceUtils.loadSelective('spotify')) as { client_id: string; client_secret: string }
     const channel = await window.WindowUtils.registerOAuthCallback('spotifyoauthcallback')
-    this._config = this.getConfig(channel, conf?.client_id, conf?.client_secret)
+
+    const id = conf?.client_id ?? process.env.SpotifyClientID
+    const secret = conf?.client_secret ?? process.env.SpotifyClientSecret
+
+    this._config = this.getConfig(channel, id, secret)
 
     const serviceConfig = new AuthorizationServiceConfiguration({
       authorization_endpoint: this._config.openIdConnectUrl,
@@ -145,7 +149,7 @@ export class SpotifyProvider extends GenericProvider {
       }
     }
 
-    if (conf && conf.client_id && conf.client_secret) {
+    if (id && secret) {
       this.auth = new AuthFlow(this._config, serviceConfig)
       this.authInitializedResolver()
       return true
