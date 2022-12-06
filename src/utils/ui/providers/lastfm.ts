@@ -68,9 +68,11 @@ export class LastFMProvider extends GenericProvider {
   }
 
   public async updateConfig(): Promise<boolean> {
-    const conf = (await window.PreferenceUtils.loadSelective('lastfm')) as { client_id: string; client_secret: string }
-    const key = conf.client_id ?? process.env.LastFmApiKey
-    const secret = conf.client_secret ?? process.env.LastFmSecret
+    const conf = (await window.PreferenceUtils.loadSelective('lastfm')) as
+      | { client_id: string; client_secret: string }
+      | undefined
+    const key = conf?.client_id ?? process.env.LastFmApiKey
+    const secret = conf?.client_secret ?? process.env.LastFmSecret
     if (key && secret) {
       this._config = { key, secret }
 
