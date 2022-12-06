@@ -87,7 +87,7 @@ export class SpotifyProvider extends GenericProvider {
   public async updateConfig() {
     const conf = (await window.PreferenceUtils.loadSelective('spotify')) as { client_id: string; client_secret: string }
     const channel = await window.WindowUtils.registerOAuthCallback('spotifyoauthcallback')
-    this._config = this.getConfig(channel, conf.client_id, conf.client_secret)
+    this._config = this.getConfig(channel, conf?.client_id, conf?.client_secret)
 
     const serviceConfig = new AuthorizationServiceConfiguration({
       authorization_endpoint: this._config.openIdConnectUrl,
@@ -96,7 +96,7 @@ export class SpotifyProvider extends GenericProvider {
     })
 
     const useUserPass =
-      (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('spotify.options.use_librespot')).enabled ?? false
+      (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('spotify.options.use_librespot'))?.enabled ?? false
 
     if (useUserPass) {
       console.debug('Trying to login using librespot')
