@@ -410,7 +410,7 @@ export default class System extends Vue {
       {
         key: 'use_librespot',
         title: this.$tc('settings.system.spotify.librespot.enable'),
-        enabled: true
+        enabled: false
       }
     ]
   }
