@@ -27,6 +27,7 @@ import { setupUpdateCheckTask } from '@/utils/main/scheduler/index'
 import pie from 'puppeteer-in-electron'
 import { loadSelectiveArrayPreference } from './utils/main/db/preferences'
 import { exit } from 'process'
+import { createFavoritesPlaylist } from './utils/main/db'
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -181,6 +182,8 @@ async function onReady() {
   createProtocol('moosync')
 
   interceptHttp()
+
+  createFavoritesPlaylist()
 
   await _windowHandler.createWindow(true)
 

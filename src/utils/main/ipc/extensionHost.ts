@@ -9,7 +9,7 @@
 
 import { MainHostIPCHandler } from '@/utils/extensions'
 import { ExtensionHostEvents, IpcEvents } from './constants'
-import { SongDB } from '../db/index'
+import { getSongDB } from '../db/index'
 import { createWriteStream } from 'fs'
 import path from 'path'
 import { app } from 'electron'
@@ -112,16 +112,16 @@ export class ExtensionHostChannel implements IpcChannelInterface {
         .then(() => event.reply(request.responseChannel))
 
       // Remove all song added by this extension
-      const songs = SongDB.getSongByOptions({ song: { extension: request.params.packageName } })
-      await SongDB.removeSong(...songs)
+      const songs = getSongDB().getSongByOptions({ song: { extension: request.params.packageName } })
+      await getSongDB().removeSong(...songs)
 
-      const playlists = SongDB.getEntityByOptions<Playlist>({
+      const playlists = getSongDB().getEntityByOptions<Playlist>({
         playlist: {
           extension: request.params.packageName
         }
       })
 
-      SongDB.removePlaylist(...playlists)
+      getSongDB().removePlaylist(...playlists)
     }
     event.reply(request.responseChannel)
   }

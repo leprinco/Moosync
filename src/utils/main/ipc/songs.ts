@@ -9,7 +9,7 @@
 
 import { IpcEvents, SongEvents } from './constants'
 
-import { SongDB } from '../db'
+import { getSongDB } from '../db'
 import { app } from 'electron'
 import fs from 'fs'
 import path from 'path'
@@ -58,7 +58,7 @@ export class SongsChannel implements IpcChannelInterface {
     const promises: Promise<void>[] = []
     if (request.params.songs) {
       const songs = request.params.songs as Song[]
-      promises.push(SongDB.removeSong(...songs))
+      promises.push(getSongDB().removeSong(...songs))
     }
     Promise.all(promises)
       .then((data) => {
@@ -74,7 +74,7 @@ export class SongsChannel implements IpcChannelInterface {
     const results: (Song | undefined)[] = []
     if (request.params.songs) {
       const songs = request.params.songs
-      results.push(...SongDB.store(...songs))
+      results.push(...getSongDB().store(...songs))
     }
 
     event.reply(request.responseChannel, results)
@@ -84,7 +84,7 @@ export class SongsChannel implements IpcChannelInterface {
     if (request.params.songs) {
       const songs = request.params.songs as Song[]
       for (const s of songs) {
-        await SongDB.updateSong(s)
+        await getSongDB().updateSong(s)
       }
     }
 
@@ -92,12 +92,12 @@ export class SongsChannel implements IpcChannelInterface {
   }
 
   private async updateArtists(event: Electron.IpcMainEvent, request: IpcRequest<SongRequests.UpdateArtist>) {
-    await SongDB.updateArtists(request.params.artist)
+    await getSongDB().updateArtists(request.params.artist)
     event.reply(request.responseChannel)
   }
 
   private async updateAlbum(event: Electron.IpcMainEvent, request: IpcRequest<SongRequests.UpdateAlbum>) {
-    await SongDB.updateAlbum(request.params.album)
+    await getSongDB().updateAlbum(request.params.album)
     event.reply(request.responseChannel)
   }
 
@@ -152,14 +152,14 @@ export class SongsChannel implements IpcChannelInterface {
 
   private updateLyrics(event: Electron.IpcMainEvent, request: IpcRequest<SongRequests.Lyrics>) {
     if (request.params && request.params.lyrics && request.params.id) {
-      SongDB.updateSongLyrics(request.params.id, request.params.lyrics)
+      getSongDB().updateSongLyrics(request.params.id, request.params.lyrics)
     }
     event.reply(request.responseChannel)
   }
 
   private incrementPlayCount(event: Electron.IpcMainEvent, request: IpcRequest<SongRequests.PlayCount>) {
     if (request.params.song_id) {
-      SongDB.incrementPlayCount(request.params.song_id)
+      getSongDB().incrementPlayCount(request.params.song_id)
     }
     event.reply(request.responseChannel)
   }

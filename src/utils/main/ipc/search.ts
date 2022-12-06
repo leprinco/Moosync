@@ -10,7 +10,7 @@
 import { IpcEvents, SearchEvents } from './constants'
 import { getDisabledPaths } from '@/utils/main/db/preferences'
 
-import { SongDB } from '@/utils/main/db'
+import { getSongDB } from '@/utils/main/db'
 import { YTScraper } from '../fetchers/searchYT'
 import { AZLyricsFetcher } from '../fetchers/lyrics'
 import { LastFMScraper } from '../fetchers/lastfm'
@@ -67,7 +67,7 @@ export class SearchChannel implements IpcChannelInterface {
 
   private async searchAll(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.Search>) {
     if (request.params && request.params.searchTerm) {
-      event.reply(request.responseChannel, SongDB.searchAll(request.params.searchTerm, getDisabledPaths()))
+      event.reply(request.responseChannel, getSongDB().searchAll(request.params.searchTerm, getDisabledPaths()))
     }
     event.reply(request.responseChannel)
   }
@@ -124,7 +124,7 @@ export class SearchChannel implements IpcChannelInterface {
   }
 
   private searchSongByOptions(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.SongOptions>) {
-    const data = SongDB.getSongByOptions(request.params.options, getDisabledPaths())
+    const data = getSongDB().getSongByOptions(request.params.options, getDisabledPaths())
     event.reply(request.responseChannel, data)
   }
 
@@ -147,7 +147,7 @@ export class SearchChannel implements IpcChannelInterface {
 
   private async searchEntityByOptions(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.EntityOptions>) {
     if (request.params && request.params.options) {
-      event.reply(request.responseChannel, SongDB.getEntityByOptions(request.params.options))
+      event.reply(request.responseChannel, getSongDB().getEntityByOptions(request.params.options))
     }
   }
 
@@ -180,7 +180,7 @@ export class SearchChannel implements IpcChannelInterface {
 
   private getPlayCount(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.PlayCount>) {
     if (request.params.songIds) {
-      const data = SongDB.getPlayCount(...request.params.songIds)
+      const data = getSongDB().getPlayCount(...request.params.songIds)
       event.reply(request.responseChannel, data)
     }
     event.reply(request.responseChannel)

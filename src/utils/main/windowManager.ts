@@ -30,7 +30,7 @@ import { getActiveTheme } from './themes/preferences'
 import pie from 'puppeteer-in-electron'
 import puppeteer from 'puppeteer-core'
 import { getExtensionHostChannel } from './ipc'
-import { SongDB } from './db/index'
+import { getSongDB } from './db/index'
 import { Readable } from 'stream'
 import { getMprisChannel, getSpotifyPlayerChannel } from './ipc/index'
 import { ButtonEnum, PlayerButtons } from 'media-controller'
@@ -296,7 +296,7 @@ export class WindowHandler {
     getSpotifyPlayerChannel().closePlayer()
     // Stop extension Host
     await getExtensionHostChannel().closeExtensionHost()
-    SongDB.close()
+    getSongDB().close()
   }
 
   private handleWindowShow(window: BrowserWindow) {
