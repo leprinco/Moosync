@@ -59,27 +59,28 @@ class SpotifyPlayerProcess {
     return new Promise<void>((resolve, reject) => {
       this.player = new SpotifyPlayerSpirc(config)
       const errorListener = (e: PlayerEvent<'InitializationError'>) => {
+        this.player?.removeAllListeners()
         reject(e)
       }
 
       const successListener = () => {
-        this.player?.off('InitializationError', errorListener)
+        this.player?.removeAllListeners()
+
+        this.player?.on('Playing', this.sendEvent.bind(this))
+        this.player?.on('Paused', this.sendEvent.bind(this))
+        this.player?.on('Stopped', this.sendEvent.bind(this))
+        this.player?.on('TrackChanged', this.sendEvent.bind(this))
+        this.player?.on('EndOfTrack', this.sendEvent.bind(this))
+        this.player?.on('VolumeChanged', this.sendEvent.bind(this))
+        this.player?.on('Seeked', this.sendEvent.bind(this))
+        this.player?.on('Loading', this.sendEvent.bind(this))
+        this.player?.on('Unavailable', this.sendEvent.bind(this))
+        this.player?.on('TimeUpdated', this.sendEvent.bind(this))
         resolve()
       }
 
       this.player.once('InitializationError', errorListener)
       this.player.once('PlayerInitialized', successListener)
-
-      this.player.on('Playing', this.sendEvent.bind(this))
-      this.player.on('Paused', this.sendEvent.bind(this))
-      this.player.on('Stopped', this.sendEvent.bind(this))
-      this.player.on('TrackChanged', this.sendEvent.bind(this))
-      this.player.on('EndOfTrack', this.sendEvent.bind(this))
-      this.player.on('VolumeChanged', this.sendEvent.bind(this))
-      this.player.on('Seeked', this.sendEvent.bind(this))
-      this.player.on('Loading', this.sendEvent.bind(this))
-      this.player.on('Unavailable', this.sendEvent.bind(this))
-      this.player.on('TimeUpdated', this.sendEvent.bind(this))
     })
   }
 
@@ -89,7 +90,10 @@ class SpotifyPlayerProcess {
 
   private async waitForPlayerInitialize() {
     await new Promise<void>((resolve) => {
-      if (this.player?.isInitialized) resolve()
+      if (this.player?.isInitialized) {
+        resolve()
+        return
+      }
 
       this.player?.once('PlayerInitialized', () => {
         resolve()
@@ -126,7 +130,6 @@ class SpotifyPlayerProcess {
       }
 
       if (command === 'GET_CANVAS') {
-        console.log('got canvas request', args[0])
         return await this.player?.getMetadata(args[0] as string)
       }
     }
