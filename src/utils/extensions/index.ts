@@ -341,7 +341,7 @@ class ExtensionRequestHandler {
 
     if (message.type === 'set-preferences') {
       const { packageName, key, value }: { packageName: string; key: string; value: unknown } = message.data
-      resp.data = saveSelectivePreference(this.getPreferenceKey(packageName, key), value, true, true)
+      resp.data = saveSelectivePreference(this.getPreferenceKey(packageName, key), value, true)
     }
 
     if (message.type === 'set-secure-preferences') {

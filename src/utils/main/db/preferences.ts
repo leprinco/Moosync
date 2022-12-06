@@ -83,7 +83,7 @@ export function getWindowSize(windowName: string, defaultValue: { width: number;
  * @param value
  * @param [isExtension] true if preference is of an extension. false otherwise
  */
-export function saveSelectivePreference(key: string, value: unknown, isExtension = false, notify = false) {
+export function saveSelectivePreference(key: string, value: unknown, isExtension = false) {
   if (typeof value !== 'undefined' && value !== null) {
     store.set(`prefs.${isExtension ? 'extension.' : ''}${key}`, value)
   } else {
