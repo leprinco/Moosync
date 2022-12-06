@@ -157,7 +157,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
   }
 
   private async setYoutubeAlt() {
-    const youtubeAlt = await window.PreferenceUtils.loadSelective<Checkbox[]>('youtubeAlt')
+    const youtubeAlt = (await window.PreferenceUtils.loadSelective<Checkbox[]>('youtubeAlt', false, [])) as Checkbox[]
     for (const val of youtubeAlt) {
       if (val.enabled) {
         switch (val.key) {

@@ -21,7 +21,7 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
 
   async created() {
     this.keyboardHotKeyMap = Object.freeze(
-      await window.PreferenceUtils.loadSelective('hotkeys', false, defaultKeybinds)
+      (await window.PreferenceUtils.loadSelective('hotkeys', false, defaultKeybinds)) as HotkeyPair[]
     )
 
     window.PreferenceUtils.listenPreferenceChanged('hotkeys', true, (_, val: HotkeyPair[]) => {

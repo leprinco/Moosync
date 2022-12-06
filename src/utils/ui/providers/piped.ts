@@ -80,7 +80,7 @@ export class PipedProvider extends GenericProvider {
     tries = 0
   ): Promise<PipedResponses.ResponseType<T, K> | undefined> {
     let BASE_URL = await window.PreferenceUtils.loadSelective<string>('piped_instance')
-    if (!BASE_URL.endsWith('/')) {
+    if (!BASE_URL?.endsWith('/')) {
       BASE_URL += '/'
     }
 

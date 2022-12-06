@@ -98,7 +98,9 @@ export default class TopBar extends mixins(JukeboxMixin) {
       }
     }
 
-    setJukeboxIconVisibility(await window.PreferenceUtils.loadSelective<Checkbox[]>('system', false, []))
+    setJukeboxIconVisibility(
+      (await window.PreferenceUtils.loadSelective<Checkbox[]>('system', false, [])) as Checkbox[]
+    )
     window.PreferenceUtils.listenPreferenceChanged('system', true, (_, value: Checkbox[]) =>
       setJukeboxIconVisibility(value)
     )
