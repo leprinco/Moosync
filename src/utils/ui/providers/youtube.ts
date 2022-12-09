@@ -72,8 +72,8 @@ export class YoutubeProvider extends GenericProvider {
     if ((conf && conf.client_id && conf.client_secret) || this.isEnvExists()) {
       const channel = await window.WindowUtils.registerOAuthCallback('ytoauth2callback')
 
-      const secret = conf.client_secret ?? process.env.YoutubeClientSecret
-      const id = conf.client_id ?? process.env.YoutubeClientID
+      const secret = conf?.client_secret ?? process.env.YoutubeClientSecret
+      const id = conf?.client_id ?? process.env.YoutubeClientID
       this._config = this.getConfig(channel, id, secret)
 
       const serviceConfig = new AuthorizationServiceConfiguration({
