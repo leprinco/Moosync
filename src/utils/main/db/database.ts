@@ -613,7 +613,7 @@ export class SongDBInstance extends DBUtils {
         this.db.run(
           `INSERT INTO albums (album_id, album_name, album_coverPath_low, album_coverPath_high, album_artist) VALUES(?, ?, ?, ?, ?)`,
           id,
-          album.album_name,
+          album.album_name.trim(),
           album.album_coverPath_low,
           album.album_coverPath_high,
           album.album_artist
