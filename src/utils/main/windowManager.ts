@@ -42,7 +42,7 @@ export class WindowHandler {
 
   private trayHandler = new TrayHandler()
   private isDevelopment = process.env.NODE_ENV !== 'production'
-  private _isMainWindowMounted = true
+  private _isMainWindowMounted = false
   private pathQueue: string[] = []
 
   public static getWindow(mainWindow = true) {

@@ -179,6 +179,8 @@ async function onReady() {
   await _windowHandler.installExtensions()
   _windowHandler.registerMediaProtocol()
   _windowHandler.registerExtensionProtocol()
+  _windowHandler.handleFileOpen()
+
   createProtocol('moosync')
 
   interceptHttp()
@@ -189,8 +191,6 @@ async function onReady() {
 
   // Notify extension host of main window creation
   getExtensionHostChannel().onMainWindowCreated()
-
-  _windowHandler.handleFileOpen()
 
   // Setup scheduler tasks
   const scheduler = new ToadScheduler()
