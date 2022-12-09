@@ -6,9 +6,18 @@
         enter-active-class="animate__animated animate__fadeIn"
         leave-active-class="animate__animated animate__fadeOut animate__faster"
       >
+        <video
+          v-if="spotifyCanvas"
+          class="bg-img w-100 h-100"
+          :src="spotifyCanvas"
+          :key="spotifyCanvas"
+          autoplay
+          loop
+        />
+
         <b-img
-          class="bg-img"
-          v-if="computedImg"
+          class="bg-img w-100 h-100"
+          v-else-if="computedImg"
           :src="computedImg"
           :key="computedImg"
           referrerPolicy="no-referrer"
@@ -113,6 +122,10 @@ export default class App extends mixins(ImgLoader) {
   private scrollTop = 0
   private scrollHeight = 0
   private lyricsHeight = 0
+
+  private get spotifyCanvas() {
+    return vxm.themes.currentSpotifyCanvas
+  }
 
   @Ref('lyrics-container')
   private lyricsContainer?: HTMLDivElement

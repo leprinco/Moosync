@@ -22,6 +22,8 @@ export class ThemeStore extends VuexModule.With({ namespaced: 'themes' }) {
   public entitySortBy: NormalSortOptions = { type: 'name', asc: true }
   public queueSortBy?: SongSortOptions
 
+  public currentSpotifyCanvas: string | null = null
+
   public showPlayer = 0
 
   get isUpdateAvailable() {
