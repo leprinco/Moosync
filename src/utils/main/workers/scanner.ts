@@ -409,7 +409,14 @@ async function startScan(paths: togglePaths, existingFiles: string[], observer: 
   const allFiles: string[] = []
 
   const excludePaths = paths.filter((val) => !val.enabled)
-  const excludeRegex = new RegExp(excludePaths.length > 0 ? excludePaths.map((val) => val.path).join('|') : /(?!)/)
+  const excludeRegex = new RegExp(
+    excludePaths.length > 0
+      ? excludePaths
+          .map((val) => val.path)
+          .join('|')
+          .replaceAll('\\', '\\\\')
+      : /(?!)/
+  )
 
   for (const p of paths) {
     allFiles.push(...(await getAllFiles(p.path, excludeRegex)))
