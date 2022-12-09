@@ -24,7 +24,8 @@ export enum IpcEvents {
   NOTIFIER = 'notifier',
   EXTENSION_HOST = 'extensionHost',
   UPDATE = 'update',
-  MPRIS = 'mpris'
+  MPRIS = 'mpris',
+  SPOTIFY = 'spotify'
 }
 
 export enum StoreEvents {
@@ -176,6 +177,15 @@ export enum LoggerEvents {
   TOGGLE_DEBUG = 'toggleDebug'
 }
 
+export enum SpotifyEvents {
+  CONNECT = 'connect',
+  LISTEN_EVENT = 'listenEvent',
+  REMOVE_EVENT = 'removeEvent',
+  COMMAND = 'command',
+  CLOSE = 'close',
+  GET_TOKEN = 'getToken'
+}
+
 export enum NotifierEvents {
   LIBVIPS_INSTALLED = 'isLibvipsInstalled'
 }
@@ -235,5 +245,6 @@ export enum EventBus {
   SHOW_FORM_MODAL = 'show-form-modal',
   REFRESH_ACCOUNTS = 'refresh-accounts',
   REFRESH_PAGE = 'refresh-page',
-  REFRESH_LYRICS = 'refresh-lyrics'
+  REFRESH_LYRICS = 'refresh-lyrics',
+  UPDATE_OPTIONAL_PROVIDER = 'update-optional-provider'
 }

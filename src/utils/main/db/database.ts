@@ -10,7 +10,7 @@
 import { DBUtils } from './utils'
 import { promises as fsP } from 'fs'
 import { v4 } from 'uuid'
-import { sanitizeArtistName } from '../../common'
+import { isEmpty, sanitizeArtistName } from '../../common'
 
 import { loadPreferences } from './preferences'
 import path from 'path'
@@ -28,7 +28,7 @@ export class SongDBInstance extends DBUtils {
      ============================= */
 
   private verifySong(song: Partial<Song>) {
-    return !!(song._id && song.title && song.date_added && song.duration && song.type)
+    return !!(song._id && song.title && song.date_added && !isEmpty(song.duration) && song.type)
   }
 
   private getSongId(oldId: string, providerExtension?: string) {
@@ -68,9 +68,10 @@ export class SongDBInstance extends DBUtils {
         const genreID = newDoc.genre ? this.storeGenre(...newDoc.genre) : []
 
         newDoc._id = this.getSongId(newDoc._id ?? v4(), newDoc.providerExtension)
+
         const marshaledSong = this.marshalSong(newDoc)
 
-        this.db.insert('allsongs', marshaledSong)
+        this.db.insert('allsongs', { ...marshaledSong, duration: marshaledSong.duration || -1 })
         this.storeArtistBridge(artistID, marshaledSong._id)
         this.storeGenreBridge(genreID, marshaledSong._id)
         this.storeAlbumBridge(albumID, marshaledSong._id)
@@ -170,8 +171,6 @@ export class SongDBInstance extends DBUtils {
                   }
                 }) as Artists[]
               )[0]
-
-              console.log('removing artist', artist.artist_name)
 
               this.db.delete('artists', { artist_id: id.artist })
               if (artist?.artist_coverPath) pathsToRemove.push(artist.artist_coverPath)

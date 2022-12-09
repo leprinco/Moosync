@@ -30,6 +30,9 @@ interface Preferences {
   spotify?: {
     client_id?: string
     client_secret?: string
+    options?: {
+      use_librespot?: boolean
+    }
   }
   piped_instance?: string
   system_language?: Checkbox[]

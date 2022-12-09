@@ -5,7 +5,19 @@ import { vxm } from '@/mainWindow/store'
 export class PipedPlayer extends LocalPlayer {
   private customLoadEventEmitter = new EventEmitter()
 
-  async load(src?: string | undefined, volume?: number | undefined, autoplay?: boolean | undefined) {
+  public provides(): PlayerTypes[] {
+    return ['YOUTUBE', 'SPOTIFY']
+  }
+
+  get key() {
+    return 'YOUTUBE'
+  }
+
+  public async canPlay(src: string): Promise<boolean> {
+    return src.length === 11 || vxm.providers.youtubeProvider.matchSongUrl(src)
+  }
+
+  protected async _load(src?: string | undefined, volume?: number | undefined, autoplay?: boolean | undefined) {
     this.customLoadEventEmitter.emit('loading')
     if (src) {
       const playbackUrl = await vxm.providers._pipedProvider.getStreamUrl(src)

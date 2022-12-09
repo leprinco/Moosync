@@ -59,21 +59,29 @@ export class LastFMProvider extends GenericProvider {
   }
 
   public async getLoggedIn() {
+    await this.authInitialized
+    if (!this._session) {
+      this._session = (await this.fetchStoredToken()) ?? undefined
+    }
     this.setLoggedInStatus()
     return !!this._session
   }
 
   public async updateConfig(): Promise<boolean> {
-    const conf = (await window.PreferenceUtils.loadSelective('lastfm')) as { client_id: string; client_secret: string }
-    const key = conf.client_id ?? process.env.LastFmApiKey
-    const secret = conf.client_secret ?? process.env.LastFmSecret
+    const conf = (await window.PreferenceUtils.loadSelective('lastfm')) as
+      | { client_id: string; client_secret: string }
+      | undefined
+    const key = conf?.client_id ?? process.env.LastFmApiKey
+    const secret = conf?.client_secret ?? process.env.LastFmSecret
     if (key && secret) {
       this._config = { key, secret }
 
       this._session = (await this.fetchStoredToken()) ?? undefined
+      this.authInitializedResolver()
       return true
     }
 
+    this.authInitializedResolver()
     return false
   }
 

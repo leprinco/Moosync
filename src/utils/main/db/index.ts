@@ -10,22 +10,28 @@
 import { FAVORITES_PLAYLIST_ID } from '@/utils/commonConstants'
 import { SongDBInstance } from './database'
 
-export const SongDB = new SongDBInstance()
+let _songDB: SongDBInstance | undefined
 
-function createFavoritesPlaylist() {
-  const isExist = !!SongDB.getEntityByOptions<Playlist>({
+export function getSongDB() {
+  if (!_songDB) {
+    _songDB = new SongDBInstance()
+  }
+
+  return _songDB
+}
+
+export function createFavoritesPlaylist() {
+  const isExist = !!getSongDB().getEntityByOptions<Playlist>({
     playlist: {
       playlist_id: FAVORITES_PLAYLIST_ID
     }
   })[0]
 
   if (!isExist) {
-    SongDB.createPlaylist({
+    getSongDB().createPlaylist({
       playlist_id: FAVORITES_PLAYLIST_ID,
       playlist_name: 'Favorites',
       playlist_desc: 'Playlist containing your favorite songs'
     })
   }
 }
-
-createFavoritesPlaylist()

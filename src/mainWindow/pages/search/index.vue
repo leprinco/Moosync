@@ -14,7 +14,7 @@
         :items="providers"
         :showExtraSongListActions="false"
         :singleSelectMode="true"
-        :defaultSelected="providers[0].key"
+        :defaultSelected="activeProvider"
         :showBackgroundOnSelect="true"
         @onItemsChanged="onProviderChanged"
       />
@@ -23,7 +23,7 @@
         :items="subCategories"
         :showExtraSongListActions="false"
         :singleSelectMode="true"
-        :defaultSelected="subCategories[0].key"
+        :defaultSelected="activeSubcategory"
         :showBackgroundOnSelect="true"
         @onItemsChanged="onSubcategoriesChanged"
       />
@@ -124,14 +124,28 @@ export default class SearchPage extends mixins(
   RouterPushes,
   ProviderMixin
 ) {
-  private activeProvider = ''
-  private activeSubcategory: keyof SearchResult = 'songs'
   private oldSubcategory = this.activeSubcategory
 
   private fetchMap: Record<string, boolean> = {}
 
   private get isFetching() {
     return this.fetchMap[this.activeProvider]
+  }
+
+  private get activeProvider() {
+    return vxm.themes.lastSearchTab[0]
+  }
+
+  private set activeProvider(item: string) {
+    vxm.themes.lastSearchTab = [item, this.activeSubcategory]
+  }
+
+  private get activeSubcategory() {
+    return vxm.themes.lastSearchTab[1]
+  }
+
+  private set activeSubcategory(item: keyof SearchResult) {
+    vxm.themes.lastSearchTab = [this.activeProvider, item]
   }
 
   private get noResultsReason() {
@@ -317,13 +331,17 @@ export default class SearchPage extends mixins(
   private async fetchProviderSongList(provider: GenericProvider) {
     Vue.set(this.fetchMap, provider.key, true)
 
-    Vue.set(this.results, provider.key, {
-      songs: await provider.searchSongs(this.searchTerm),
-      artists: await provider.searchArtists(this.searchTerm),
-      playlists: await provider.searchPlaylists(this.searchTerm),
-      albums: await provider.searchAlbum(this.searchTerm),
-      genres: []
-    })
+    try {
+      Vue.set(this.results, provider.key, {
+        songs: await provider.searchSongs(this.searchTerm),
+        artists: await provider.searchArtists(this.searchTerm),
+        playlists: await provider.searchPlaylists(this.searchTerm),
+        albums: await provider.searchAlbum(this.searchTerm),
+        genres: []
+      })
+    } catch (e) {
+      console.error(e)
+    }
     Vue.set(this.fetchMap, provider.key, false)
   }
 
@@ -360,13 +378,13 @@ export default class SearchPage extends mixins(
   private onCardClick(item: typeof this.currentEntityList[0]) {
     switch (this.activeSubcategory) {
       case 'artists':
-        this.gotoArtist(item as Artists)
+        this.gotoArtist(item as Artists, [this.activeProvider])
         break
       case 'playlists':
         this.gotoPlaylist(item as Playlist)
         break
       case 'albums':
-        this.gotoAlbum(item as Album)
+        this.gotoAlbum(item as Album, [this.activeProvider])
         break
       case 'genres':
         this.gotoGenre(item as Genre)

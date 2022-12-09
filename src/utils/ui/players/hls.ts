@@ -11,19 +11,30 @@ import { Player } from './player'
 import Hls from 'hls.js'
 
 export class HLSPlayer extends Player {
-  private playerInstance: Hls
-  private htmlElement: HTMLVideoElement
+  private playerInstance!: Hls
+  private htmlElement!: HTMLVideoElement
 
   private track: MediaElementAudioSourceNode | undefined
   private context: AudioContext | undefined
 
-  constructor(element: HTMLVideoElement) {
-    super()
+  public provides(): PlayerTypes[] {
+    return ['HLS']
+  }
+
+  get key() {
+    return 'HLS'
+  }
+
+  public async canPlay(): Promise<boolean> {
+    return true
+  }
+
+  protected async _initialize(element: HTMLVideoElement) {
     this.htmlElement = element
     this.playerInstance = new Hls()
   }
 
-  load(src?: string, volume?: number, autoplay?: boolean): void {
+  _load(src?: string, volume?: number, autoplay?: boolean): void {
     if (src) {
       this.playerInstance.loadSource(src)
       this.playerInstance.attachMedia(this.htmlElement)
@@ -35,15 +46,15 @@ export class HLSPlayer extends Player {
     }
   }
 
-  async play(): Promise<void> {
+  async _play(): Promise<void> {
     this.htmlElement?.play()
   }
 
-  pause(): void {
+  _pause(): void {
     this.htmlElement?.pause()
   }
 
-  stop(): void {
+  _stop(): void {
     this.playerInstance.stopLoad()
     this.htmlElement.pause()
   }

@@ -92,6 +92,21 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     this.registerFileDragListener()
     this.handleInitialSetup()
     this.checkUpdate()
+    this.watchLibrespotUserChange()
+  }
+
+  private watchLibrespotUserChange() {
+    window.PreferenceUtils.listenPreferenceChanged('spotify.username', true, async () => {
+      if (await vxm.providers.spotifyProvider.updateConfig()) {
+        bus.$emit(EventBus.REFRESH_ACCOUNTS, vxm.providers.spotifyProvider.key)
+      }
+    })
+
+    window.PreferenceUtils.listenPreferenceChanged('secure.spotify.password', true, async () => {
+      if (await vxm.providers.spotifyProvider.updateConfig()) {
+        bus.$emit(EventBus.REFRESH_ACCOUNTS, vxm.providers.spotifyProvider.key)
+      }
+    })
   }
 
   private fetchProviderExtensions() {
@@ -142,7 +157,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
   }
 
   private async setYoutubeAlt() {
-    const youtubeAlt = await window.PreferenceUtils.loadSelective<Checkbox[]>('youtubeAlt')
+    const youtubeAlt = (await window.PreferenceUtils.loadSelective<Checkbox[]>('youtubeAlt', false, [])) as Checkbox[]
     for (const val of youtubeAlt) {
       if (val.enabled) {
         switch (val.key) {
@@ -277,7 +292,6 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
         for (const f of event.dataTransfer.files) {
           if (f) {
             const song = await this.getSongFromPath(f.path)
-            console.log(song)
             if (song) {
               await this.playTop([song])
             }

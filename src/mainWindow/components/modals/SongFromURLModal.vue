@@ -112,6 +112,7 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong, Prov
 
     const providers = this.getProvidersByScope(ProviderScopes.SONG_FROM_URL)
     for (const p of providers) {
+      console.debug('matching url to', p, p.matchSongUrl(url))
       if (p.matchSongUrl(url)) {
         this.parsedSong = await p.getSongDetails(url)
         if (this.parsedSong) {

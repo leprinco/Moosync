@@ -17,6 +17,10 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-18.04]
 
+    env:
+      ELECTRON_CACHE: ${{ github.workspace }}/.cache/electron
+      ELECTRON_BUILDER_CACHE: ${{ github.workspace }}/.cache/electron-builder
+
     steps:
       - name: Check out Git repository
         uses: actions/checkout@v1
@@ -27,13 +31,37 @@ jobs:
           node-version: "16"
           cache: "yarn"
 
+      - name: Get yarn cache
+        id: yarn-cache
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+
+      - name: Cache Electron
+        uses: actions/cache@v2
+        with:
+          path: ${{ github.workspace }}/.cache/electron
+          key: ${{ runner.os }}-electron-cache-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
+          restore-keys: |
+            ${{ runner.os }}-electron-cache-
+
+      - name: Cache Electron-Builder
+        uses: actions/cache@v2
+        with:
+          path: ${{ github.workspace }}/.cache/electron-builder
+          key: ${{ runner.os }}-electron-builder-cache-${{ hashFiles(format('{0}{1}', github.workspace, '/yarn.lock')) }}
+          restore-keys: |
+            ${{ runner.os }}-electron-builder-cache-
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: node_modules/librespot-node/native
+
       - uses: maxim-lobanov/setup-xcode@v1
         if: ${{ runner.os == 'macOS' }}
         with:
           xcode-version: latest-stable
 
       - if: ${{ runner.os == 'Linux' }}
-        run: sudo apt-get update -y && sudo apt-get install -y libarchive-tools rpm
+        run: sudo apt-get update -y && sudo apt-get install -y libarchive-tools rpm libasound2-dev
 
       - name: yarn install
         run: yarn install --immutable

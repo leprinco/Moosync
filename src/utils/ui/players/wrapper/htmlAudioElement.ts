@@ -4,6 +4,7 @@ type WrappedAudioInstance = {
   play: () => void
   load: () => void
   stop: () => void
+  addEventListener: (ev: string, listener: (...args: unknown[]) => void) => void
   removeAttribute: (key: string) => void
   srcObject: unknown
 }

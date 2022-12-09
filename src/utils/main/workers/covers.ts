@@ -24,7 +24,8 @@ export async function writeBuffer(bufferDesc: Buffer, basePath: string, hash?: s
     } catch (e) {
       importFailed = true
       console.error(
-        'Failed to import sharp. Probably missing libvips-cpp.so or libffi.so.7. Read more at https://moosync.app/wiki/#known-bugs'
+        'Failed to import sharp. Probably missing libvips-cpp.so or libffi.so.7. Read more at https://moosync.app/wiki/#known-bugs',
+        e
       )
     }
   }
@@ -37,7 +38,7 @@ export async function writeBuffer(bufferDesc: Buffer, basePath: string, hash?: s
   try {
     await access(highPath)
   } catch {
-    if (sharpInstance) {
+    if (sharpInstance && typeof sharpInstance === 'function') {
       await sharpInstance(Buffer.from(bufferDesc)).resize(800, 800).toFile(highPath)
     } else {
       await writeNoResize(bufferDesc, highPath)

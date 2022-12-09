@@ -28,6 +28,8 @@ import { IpcRendererHolder } from '@/utils/preload/ipc/index'
 import { LogLevelDesc } from 'loglevel'
 import { ButtonEnum, PlayerButtons } from 'media-controller'
 import ytpl from 'ytpl'
+import { ConstructorConfig, PlayerEvent, PlayerEventTypes, TokenScope } from 'librespot-node'
+import { SpotifyEvents } from '../main/ipc/constants'
 
 const ipcRendererHolder = new IpcRendererHolder(ipcRenderer)
 
@@ -143,9 +145,7 @@ contextBridge.exposeInMainWorld('PreferenceUtils', {
         type: PreferenceEvents.LISTEN_PREFERENCE,
         params: { key, isMainWindow }
       })
-      .then((channel) => {
-        ipcRendererHolder.on(channel as string, callback)
-      })
+      .then((channel) => ipcRendererHolder.on(channel as string, callback))
   },
   resetToDefault: () =>
     ipcRendererHolder.send(IpcEvents.PREFERENCES, {
@@ -672,4 +672,56 @@ contextBridge.exposeInMainWorld('MprisUtils', {
 
   listenMediaButtonPress: (callback: (args: typeof ButtonEnum) => void) =>
     ipcRendererHolder.on(MprisEvents.ON_BUTTON_PRESSED, callback)
+})
+
+contextBridge.exposeInMainWorld('SpotifyPlayer', {
+  connect: (config: ConstructorConfig) =>
+    ipcRendererHolder.send<SpotifyRequests.Config>(IpcEvents.SPOTIFY, {
+      type: SpotifyEvents.CONNECT,
+      params: config
+    }),
+
+  on: <T extends PlayerEventTypes>(event: T, listener: (event: PlayerEvent<T>) => void) => {
+    const responseChannel = window.crypto?.randomUUID() ?? Date.now().toString()
+    ipcRendererHolder.send<SpotifyRequests.EventListener>(IpcEvents.SPOTIFY, {
+      type: SpotifyEvents.LISTEN_EVENT,
+      params: { event },
+      responseChannel
+    })
+
+    ipcRendererHolder.on(responseChannel, listener)
+    return responseChannel
+  },
+
+  off: <T extends PlayerEventTypes>(responseChannel: string, event: T, listener: (event: PlayerEvent<T>) => void) => {
+    ipcRendererHolder.send<SpotifyRequests.EventListener>(IpcEvents.SPOTIFY, {
+      type: SpotifyEvents.REMOVE_EVENT,
+      params: { event }
+    })
+
+    ipcRendererHolder.off(responseChannel, listener)
+  },
+
+  command: (command: SpotifyRequests.SpotifyCommands, args: never[]) =>
+    ipcRendererHolder.send<SpotifyRequests.Command>(IpcEvents.SPOTIFY, {
+      type: SpotifyEvents.COMMAND,
+      params: {
+        command,
+        args
+      }
+    }),
+
+  close: () =>
+    ipcRendererHolder.send(IpcEvents.SPOTIFY, {
+      type: SpotifyEvents.CLOSE,
+      params: undefined
+    }),
+
+  getToken: (scopes: TokenScope[]) =>
+    ipcRendererHolder.send<SpotifyRequests.Token>(IpcEvents.SPOTIFY, {
+      type: SpotifyEvents.GET_TOKEN,
+      params: {
+        scopes
+      }
+    })
 })

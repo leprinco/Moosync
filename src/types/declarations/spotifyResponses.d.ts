@@ -141,7 +141,7 @@ declare namespace SpotifyResponses {
     ? AlbumTracksRequest
     : T extends ApiResources.LIKED_SONGS
     ? LikedSongsRequest
-    : undefined
+    : void
 
   interface Image {
     height?: number

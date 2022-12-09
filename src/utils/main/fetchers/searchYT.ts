@@ -141,7 +141,7 @@ export class YTScraper extends CacheHandler {
               }
             }
           })) ?? [],
-        duration: s.duration?.totalSeconds ?? 0,
+        duration: s.duration?.totalSeconds || -1,
         url: s.youtubeId,
         playbackUrl: s.youtubeId,
         date_added: Date.now(),
@@ -234,7 +234,7 @@ export class YTScraper extends CacheHandler {
             }
           ]
         : undefined,
-      duration: vid.duration ? this.parseYoutubeDuration(vid.duration ?? '') : 0,
+      duration: vid.duration ? this.parseYoutubeDuration(vid.duration ?? '') || -1 : -1,
       url: vid.url,
       playbackUrl: vid.url,
       date_added: Date.now(),
@@ -268,7 +268,6 @@ export class YTScraper extends CacheHandler {
   private async scrapeYoutube(title: string, artists?: string[], matchTitle = true) {
     const term = `${artists ? artists.join(', ') + ' - ' : ''}${title}`
 
-    console.log(term)
     const resp = await ytsr(term)
     const ret: SearchResult = {
       songs: [],
@@ -492,7 +491,7 @@ export class YTScraper extends CacheHandler {
     id: string,
     page?: ytpl.Continuation
   ): Promise<{ songs: Song[]; nextPageToken?: ytpl.Continuation }> {
-    const cache = this.getCache(`playlistContent:${id}:page:${JSON.stringify((page as any[])?.at(1))}`)
+    const cache = this.getCache(`playlistContent:${id}:page:${JSON.stringify((page as unknown[])?.at(1))}`)
     if (cache) {
       return JSON.parse(cache)
     }
@@ -522,7 +521,7 @@ export class YTScraper extends CacheHandler {
     }
 
     const ret = { songs: songList, nextPageToken: songs.continuation ?? undefined }
-    this.addToCache(`playlistContent:${id}:page:${JSON.stringify((page as any[])?.at(1))}`, JSON.stringify(ret))
+    this.addToCache(`playlistContent:${id}:page:${JSON.stringify((page as unknown[])?.at(1))}`, JSON.stringify(ret))
     return ret
   }
 }

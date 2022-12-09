@@ -69,11 +69,11 @@ export class YoutubeProvider extends GenericProvider {
   public async updateConfig(): Promise<boolean> {
     const conf = (await window.PreferenceUtils.loadSelective('youtube')) as { client_id: string; client_secret: string }
 
-    if (conf || this.isEnvExists()) {
+    if ((conf && conf.client_id && conf.client_secret) || this.isEnvExists()) {
       const channel = await window.WindowUtils.registerOAuthCallback('ytoauth2callback')
 
-      const secret = process.env.YoutubeClientSecret ?? conf.client_secret
-      const id = process.env.YoutubeClientID ?? conf.client_id
+      const secret = conf.client_secret ?? process.env.YoutubeClientSecret
+      const id = conf.client_id ?? process.env.YoutubeClientID
       this._config = this.getConfig(channel, id, secret)
 
       const serviceConfig = new AuthorizationServiceConfiguration({
@@ -84,14 +84,18 @@ export class YoutubeProvider extends GenericProvider {
       })
 
       this.auth = new AuthFlow(this._config, serviceConfig)
+      this.authInitializedResolver()
+      return true
     }
 
-    return !!(conf && conf.client_id && conf.client_secret) || this.isEnvExists()
+    this.authInitializedResolver()
+    return false
   }
 
   private api = new FetchWrapper()
 
   public async getLoggedIn() {
+    await this.authInitialized
     if (this.auth) {
       const validRefreshToken = await this.auth.hasValidRefreshToken()
       if ((await this.auth.loggedIn()) || validRefreshToken) {
@@ -314,7 +318,7 @@ export class YoutubeProvider extends GenericProvider {
           },
           date: new Date(v.item.snippet.publishedAt).toISOString().slice(0, 10),
           date_added: Date.parse(v.date ?? ''),
-          duration: parseISO8601Duration(v.item.contentDetails.duration),
+          duration: parseISO8601Duration(v.item.contentDetails.duration) || -1, // -1 indicates live music
           url: v.item.id,
           playbackUrl: v.item.id,
           type: 'YOUTUBE'
@@ -430,14 +434,14 @@ export class YoutubeProvider extends GenericProvider {
     return window.SearchUtils.searchYT(term, undefined, matchTitle, true, true)
   }
 
-  public matchSongURL(url: string) {
-    return url.match(
+  public matchSongUrl(url: string): boolean {
+    return !!url.match(
       /^((?:https?:)?\/\/)?((?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/
     )
   }
 
   public async getSongDetails(url: string, invalidateCache = false): Promise<Song | undefined> {
-    if (this.matchSongURL(url)) {
+    if (this.matchSongUrl(url)) {
       const parsedUrl = new URL(url)
       const videoID = parsedUrl.searchParams.get('v')
 

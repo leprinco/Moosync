@@ -20,6 +20,7 @@ import Vuex from 'vuex'
 import { createPersist } from '@/utils/ui/store/persist'
 import { getProxy } from './vuexProvider'
 import { ProxyWatchers } from 'vuex-class-component/dist/interfaces'
+import { PlayerRepositoryStore } from './playersRepo'
 
 Vue.use(Vuex)
 
@@ -30,7 +31,8 @@ export const store = new Vuex.Store({
     ...extractVuexModule(SyncStore),
     ...extractVuexModule(ProviderStore),
     ...extractVuexModule(NotifierStore),
-    ...extractVuexModule(ThemeStore)
+    ...extractVuexModule(ThemeStore),
+    ...extractVuexModule(PlayerRepositoryStore)
   },
   plugins: [createPersist()]
 })
@@ -43,11 +45,13 @@ export const vxm: {
   providers: InstanceType<typeof ProviderStore> & ProxyWatchers
   notifier: InstanceType<typeof NotifierStore> & ProxyWatchers
   themes: InstanceType<typeof ThemeStore> & ProxyWatchers
+  playerRepo: InstanceType<typeof PlayerRepositoryStore> & ProxyWatchers
 } = {
   player: getProxy(store, PlayerStore),
   playlist: getProxy(store, PlaylistStore),
   sync: getProxy(store, SyncStore),
   providers: getProxy(store, ProviderStore),
   notifier: getProxy(store, NotifierStore),
-  themes: getProxy(store, ThemeStore)
+  themes: getProxy(store, ThemeStore),
+  playerRepo: getProxy(store, PlayerRepositoryStore)
 }

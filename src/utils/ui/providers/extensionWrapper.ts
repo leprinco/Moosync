@@ -92,7 +92,7 @@ export class ExtensionProvider extends GenericProvider {
   private isForwardRequest<T extends ExtraExtensionEventTypes>(
     data: ExtraExtensionEventReturnType<T> | ForwardRequestReturnType<T>
   ): data is ForwardRequestReturnType<T> {
-    return !!(data as ForwardRequestReturnType<T>).forwardTo
+    return !!(data as ForwardRequestReturnType<T>)?.forwardTo
   }
 
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -227,7 +227,7 @@ export class ExtensionProvider extends GenericProvider {
         }
         return
       }
-      yield { songs: resp.songs }
+      yield { songs: resp?.songs }
     }
   }
 
@@ -246,7 +246,7 @@ export class ExtensionProvider extends GenericProvider {
           this.getExecStack(...arguments)
         )
       }
-      yield { songs: resp.songs }
+      yield { songs: resp?.songs }
     }
   }
 
@@ -260,7 +260,7 @@ export class ExtensionProvider extends GenericProvider {
       if (this.isForwardRequest(resp)) {
         return this.handleForwardRequest('getAlbumSongs', resp, [album, nextPageToken], this.getExecStack(...arguments))
       }
-      yield { songs: resp.songs }
+      yield { songs: resp?.songs }
     }
   }
 
@@ -276,7 +276,7 @@ export class ExtensionProvider extends GenericProvider {
           this.getExecStack(...arguments)
         )
       }
-      return resp.playlist
+      return resp?.playlist
     }
   }
 
@@ -287,7 +287,7 @@ export class ExtensionProvider extends GenericProvider {
 
   public async getSongDetails(url: string, invalidateCache?: boolean | undefined): Promise<Song | undefined> {
     const resp = await this.sendExtensionEventRequest('requestedSongFromURL', [url, invalidateCache ?? false])
-    return (resp as SongReturnType).song
+    return (resp as SongReturnType)?.song
   }
 
   private _lastSearchResult: Record<string, SearchReturnType> = {}
@@ -388,7 +388,7 @@ export class ExtensionProvider extends GenericProvider {
       if (this.isForwardRequest(resp)) {
         return this.handleForwardRequest('getRecommendations', resp, [], this.getExecStack(...arguments))
       }
-      yield resp.songs
+      yield resp?.songs
     }
   }
 

@@ -14,25 +14,13 @@
     </b-row>
     <b-row align-h="around">
       <b-col cols="auto">
-        <YoutubeBig
-          @click.native="handleClick('Youtube')"
-          class="button-grow"
-          :active="this.providers[0].provider.loggedIn"
-        />
+        <YoutubeBig @click.native="handleClick(providers[0])" class="button-grow" :active="loggedInYoutube" />
       </b-col>
       <b-col cols="auto">
-        <SpotifyBig
-          class="button-grow"
-          @click.native="handleClick('Spotify')"
-          :active="this.providers[1].provider.loggedIn"
-        />
+        <SpotifyBig class="button-grow" @click.native="handleClick(providers[1])" :active="loggedInSpotify" />
       </b-col>
       <b-col cols="auto">
-        <LastFMBig
-          class="button-grow"
-          @click.native="handleClick('LastFM')"
-          :active="this.providers[2].provider.loggedIn"
-        />
+        <LastFMBig class="button-grow" @click.native="handleClick(providers[2])" :active="loggedInLastFM" />
       </b-col>
     </b-row>
     <b-row class="mt-4">
@@ -51,7 +39,7 @@
     </b-row>
     <ConfirmationModal
       keyword="signout from"
-      :itemName="activeSignout.provider.Title"
+      :itemName="activeSignout?.provider.Title"
       id="signoutSetupModal"
       @confirm="signout"
     />
@@ -68,6 +56,7 @@ import LastFMBig from '@/icons/LastFMBigIcon.vue'
 import { mixins } from 'vue-class-component'
 import AccountsMixin from '@/utils/ui/mixins/AccountsMixin'
 import ConfirmationModal from '../../../commonComponents/ConfirmationModal.vue'
+import { vxm } from '@/mainWindow/store'
 
 @Component({
   components: {
@@ -92,6 +81,18 @@ export default class AccountsSetup extends mixins(AccountsMixin) {
 
   private skip() {
     this.$emit('prev')
+  }
+
+  private get loggedInYoutube() {
+    return vxm.providers.loggedInYoutube
+  }
+
+  private get loggedInSpotify() {
+    return vxm.providers.loggedInSpotify
+  }
+
+  private get loggedInLastFM() {
+    return vxm.providers.loggedInLastFM
   }
 
   protected async signout() {

@@ -18,6 +18,7 @@ import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
 import { ProviderScopes } from '@/utils/commonConstants'
 import { FetchWrapper } from './generics/fetchWrapper'
+import { TokenScope } from 'librespot-node'
 
 /**
  * Spotify API base URL
@@ -48,25 +49,25 @@ export class SpotifyProvider extends GenericProvider {
   private auth!: AuthFlow
   private _config!: ReturnType<SpotifyProvider['getConfig']>
 
+  public canPlayPremium = false
+
   public get key() {
     return 'spotify'
   }
 
   provides(): ProviderScopes[] {
-    if (vxm.providers.loggedInSpotify)
-      return [
-        ProviderScopes.SEARCH,
-        ProviderScopes.PLAYLISTS,
-        ProviderScopes.PLAYLIST_SONGS,
-        ProviderScopes.ARTIST_SONGS,
-        ProviderScopes.ALBUM_SONGS,
-        ProviderScopes.RECOMMENDATIONS,
-        ProviderScopes.PLAYLIST_FROM_URL,
-        ProviderScopes.SONG_FROM_URL,
-        ProviderScopes.SEARCH_ALBUM,
-        ProviderScopes.SEARCH_ARTIST
-      ]
-    else return []
+    return [
+      ProviderScopes.SEARCH,
+      ProviderScopes.PLAYLISTS,
+      ProviderScopes.PLAYLIST_SONGS,
+      ProviderScopes.ARTIST_SONGS,
+      ProviderScopes.ALBUM_SONGS,
+      ProviderScopes.RECOMMENDATIONS,
+      ProviderScopes.PLAYLIST_FROM_URL,
+      ProviderScopes.SONG_FROM_URL,
+      ProviderScopes.SEARCH_ALBUM,
+      ProviderScopes.SEARCH_ARTIST
+    ]
   }
 
   private api = new FetchWrapper()
@@ -77,7 +78,7 @@ export class SpotifyProvider extends GenericProvider {
       clientId: id,
       clientSecret: secret,
       redirectUri: 'https://moosync.app/spotify',
-      scope: 'playlist-read-private user-top-read user-library-read',
+      scope: 'playlist-read-private user-top-read user-library-read user-read-private',
       keytarService: 'MoosyncSpotifyRefreshToken',
       oAuthChannel: oauthChannel
     }
@@ -85,24 +86,81 @@ export class SpotifyProvider extends GenericProvider {
 
   public async updateConfig() {
     const conf = (await window.PreferenceUtils.loadSelective('spotify')) as { client_id: string; client_secret: string }
+    const channel = await window.WindowUtils.registerOAuthCallback('spotifyoauthcallback')
 
-    if (conf) {
-      const channel = await window.WindowUtils.registerOAuthCallback('spotifyoauthcallback')
-      this._config = this.getConfig(channel, conf.client_id, conf.client_secret)
+    const id = conf?.client_id ?? process.env.SpotifyClientID
+    const secret = conf?.client_secret ?? process.env.SpotifyClientSecret
 
-      const serviceConfig = new AuthorizationServiceConfiguration({
-        authorization_endpoint: this._config.openIdConnectUrl,
-        token_endpoint: 'https://accounts.spotify.com/api/token',
-        revocation_endpoint: this._config.openIdConnectUrl
-      })
+    this._config = this.getConfig(channel, id, secret)
 
-      this.auth = new AuthFlow(this._config, serviceConfig)
+    const serviceConfig = new AuthorizationServiceConfiguration({
+      authorization_endpoint: this._config.openIdConnectUrl,
+      token_endpoint: 'https://accounts.spotify.com/api/token',
+      revocation_endpoint: this._config.openIdConnectUrl
+    })
+
+    const useUserPass =
+      (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('spotify.options.use_librespot'))?.enabled ?? false
+
+    if (useUserPass) {
+      console.debug('Trying to login using librespot')
+
+      const username = await window.PreferenceUtils.loadSelective<string>('spotify.username')
+      const password = await window.Store.getSecure('spotify.password')
+
+      if (username && password) {
+        this.auth = new AuthFlow(this._config, serviceConfig, false)
+
+        try {
+          await window.SpotifyPlayer.connect({
+            auth: {
+              username,
+              password
+            },
+            connectConfig: {
+              name: 'Moosync',
+              deviceType: 'computer',
+              initialVolume: vxm.player.volume,
+              hasVolumeControl: true
+            }
+          })
+
+          const token = await window.SpotifyPlayer.getToken(this._config.scope.split(' ') as TokenScope[])
+          if (token) {
+            this.auth.setToken({
+              ...token,
+              scope: token.scopes.join(' '),
+              token_type: 'bearer',
+              expires_in: token.expires_in.toString(),
+              issued_at: token.expiry_from_epoch - token.expires_in
+            })
+
+            bus.$emit(EventBus.REFRESH_ACCOUNTS, this.key)
+            this.canPlayPremium = true
+
+            console.debug('Can use librespot')
+
+            this.authInitializedResolver()
+            return true
+          }
+        } catch (e) {
+          console.error('Error while fetching token from librespot', e)
+        }
+      }
     }
 
-    return !!(conf && conf.client_id && conf.client_secret)
+    if (id && secret) {
+      this.auth = new AuthFlow(this._config, serviceConfig)
+      this.authInitializedResolver()
+      return true
+    }
+
+    this.authInitializedResolver()
+    return false
   }
 
   public async getLoggedIn() {
+    await this.authInitialized
     if (this.auth) {
       const validRefreshToken = await this.auth.hasValidRefreshToken()
       if ((await this.auth.loggedIn()) || validRefreshToken) {
@@ -147,6 +205,7 @@ export class SpotifyProvider extends GenericProvider {
 
   public async signOut() {
     this.auth?.signOut()
+    this.canPlayPremium = false
     await this.getLoggedIn()
   }
 
@@ -195,15 +254,16 @@ export class SpotifyProvider extends GenericProvider {
     return resp.json()
   }
 
-  public async getUserDetails(): Promise<string | undefined> {
+  private async getUser(invalidateCache = true): Promise<SpotifyResponses.UserDetails.UserDetails | undefined> {
     const validRefreshToken = await this.auth?.hasValidRefreshToken()
     if ((await this.getLoggedIn()) || validRefreshToken) {
-      const resp = await this.populateRequest(ApiResources.USER_DETAILS, {
-        params: undefined
-      })
-
-      return resp.display_name
+      const resp = await this.populateRequest(ApiResources.USER_DETAILS, { params: undefined }, invalidateCache)
+      return resp
     }
+  }
+
+  public async getUserDetails(): Promise<string | undefined> {
+    return (await this.getUser())?.display_name
   }
 
   private parsePlaylists(items: SpotifyResponses.UserPlaylists.Item[]) {
@@ -233,6 +293,7 @@ export class SpotifyProvider extends GenericProvider {
         playlist_name: 'Liked Songs',
         playlist_coverPath: 'https://t.scdn.co/images/3099b3803ad9496896c43f22fe9be8c4.png'
       })
+
       while (hasNext) {
         const resp = await this.populateRequest(
           ApiResources.PLAYLISTS,
@@ -259,7 +320,7 @@ export class SpotifyProvider extends GenericProvider {
     const res = await vxm.providers.youtubeProvider.searchSongs(
       `${item.artists?.map((val) => val.artist_name ?? '').join(', ') ?? ''} ${item.title}`,
       1,
-      true
+      false
     )
 
     console.debug(
@@ -275,7 +336,7 @@ export class SpotifyProvider extends GenericProvider {
   }
 
   private parseSong(track: SpotifyResponses.PlaylistItems.Track): Song {
-    return {
+    const song: Song = {
       _id: `spotify:${track.id}`,
       title: track.name,
       album: {
@@ -297,6 +358,23 @@ export class SpotifyProvider extends GenericProvider {
       date_added: Date.now(),
       type: 'SPOTIFY'
     }
+
+    if (track.album.images?.length > 0) {
+      const high = track.album.images[0].url
+      let low = high
+      if (track.album.images[1]) low = track.album.images[1].url
+
+      song.album = {
+        ...song.album,
+        album_coverPath_high: high,
+        album_coverPath_low: low
+      }
+
+      song.song_coverPath_high = high
+      song.song_coverPath_low = low
+    }
+
+    return song
   }
 
   private async parsePlaylistItems(items: SpotifyResponses.PlaylistItems.Item[]) {
@@ -379,8 +457,23 @@ export class SpotifyProvider extends GenericProvider {
     return
   }
 
+  public async validatePlaybackURL(playbackUrl: string): Promise<boolean> {
+    await this.getLoggedIn()
+    if (this.canPlayPremium && playbackUrl.startsWith('spotify:track:')) {
+      if (playbackUrl === 'spotify:track:undefined') return false
+      return true
+    }
+    if (!this.canPlayPremium && !playbackUrl.startsWith('spotify:track:')) return true
+    return false
+  }
+
   public async getPlaybackUrlAndDuration(song: Song) {
+    if (this.canPlayPremium) {
+      return { url: `spotify:track:${song.url}`, duration: song.duration }
+    }
+
     console.debug(`Searching for ${song.title} on youtube`)
+
     const ytItem = await this.spotifyToYoutube(song)
     if (ytItem) {
       return { url: ytItem.playbackUrl ?? ytItem.url, duration: ytItem.duration ?? 0 }
@@ -444,58 +537,8 @@ export class SpotifyProvider extends GenericProvider {
   private parseRecommendations(recommendations: SpotifyResponses.RecommendationDetails.Recommendations) {
     const songList: Song[] = []
     for (const track of recommendations.tracks) {
-      const song: Song = {
-        _id: `spotify:${track.id}`,
-        title: track.name,
-        artists: track.artists.map((val) => ({
-          artist_id: `spotify-author:${val.id}`,
-          artist_name: val.name,
-          artist_extra_info: {
-            spotify: {
-              artist_id: val.id
-            }
-          }
-        })),
-        album: {
-          album_name: track.album.name,
-          album_artist: track.album.artists && track.album.artists.length > 0 ? track.album.artists[0].name : undefined
-        },
-        duration: track.duration_ms / 1000,
-        date_added: Date.now(),
-        type: 'SPOTIFY'
-      }
-
-      if (track.artists?.length > 0) {
-        song.artists = []
-        for (const artist of track.artists) {
-          song.artists.push({
-            artist_id: `spotify-author:${artist.id}`,
-            artist_name: artist.name,
-            artist_coverPath: artist.images?.at(0)?.url,
-            artist_extra_info: {
-              spotify: {
-                artist_id: artist.id
-              }
-            }
-          })
-        }
-      }
-
-      if (track.album.images?.length > 0) {
-        const high = track.album.images[0].url
-        let low = high
-        if (track.album.images[1]) low = track.album.images[1].url
-
-        song.album = {
-          ...song.album,
-          album_coverPath_high: high,
-          album_coverPath_low: low
-        }
-
-        song.song_coverPath_high = high
-        song.song_coverPath_low = low
-      }
-
+      const song: Song = this.parseSong(track)
+      console.log(song)
       songList.push(song)
     }
     return songList
@@ -550,6 +593,8 @@ export class SpotifyProvider extends GenericProvider {
           seed_tracks: seedTracks
         }
       })
+
+      console.log('got reocm resp', recommendationsResp)
       yield this.parseRecommendations(recommendationsResp)
     }
   }

@@ -57,6 +57,8 @@ import { YoutubeAlts } from '@/mainWindow/store/providers'
 import { PipedPlayer } from '@/utils/ui/players/piped'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
+import { SpotifyPlayer } from '@/utils/ui/players/spotify'
+import { isEmpty } from '@/utils/common'
 
 @Component({})
 export default class AudioStream extends mixins(
@@ -92,7 +94,7 @@ export default class AudioStream extends mixins(
    * Player responsible for handling current song
    * May switch between youtube and local
    */
-  private activePlayer!: Player
+  private activePlayer?: Player
 
   /**
    * Instance of youtube embed player
@@ -117,7 +119,7 @@ export default class AudioStream extends mixins(
   /**
    * Holds type of player which is current active
    */
-  private activePlayerTypes!: PlayerTypes
+  private activePlayerTypes?: PlayerTypes
 
   /**
    * True is page has just loaded and a new song is to be loaded into the player
@@ -170,65 +172,58 @@ export default class AudioStream extends mixins(
     this.ignoreStateChange = false
   }
 
-  private parsePlayerTypes(type: PlayerTypes): 'LOCAL' | 'YOUTUBE' | 'DASH' | 'HLS' {
-    switch (type) {
-      case 'LOCAL':
-      case 'URL':
-      default:
-        return 'LOCAL'
-      case 'SPOTIFY':
-      case 'YOUTUBE':
-        return 'YOUTUBE'
-      case 'DASH':
-        return 'DASH'
-      case 'HLS':
-        return 'HLS'
-    }
-  }
-
-  private getAudioPlayer(parsedType: 'LOCAL' | 'YOUTUBE' | 'DASH' | 'HLS'): Player {
-    switch (parsedType) {
-      case 'LOCAL':
-        return this.localPlayer
-      case 'YOUTUBE':
-        return this.ytPlayer
-      case 'DASH':
-        return this.dashPlayer
-      case 'HLS':
-        return this.hlsPlayer
-    }
-  }
-
   /**
    * Method called when player type changes
    * This method is responsible of detaching old player
    * and setting new player as active
    */
-  private onPlayerTypesChanged(newType: PlayerTypes): PlayerTypes {
-    const parsedType = this.parsePlayerTypes(newType)
-    if (this.activePlayerTypes !== parsedType) {
+  private async onPlayerTypesChanged(newType: PlayerTypes, src?: string): Promise<string | undefined> {
+    if (this.activePlayerTypes !== newType) {
       console.debug('Changing player type to', newType)
       this.unloadAudio()
 
       // Old active player may be null when window loads
       this.activePlayer?.removeAllListeners()
 
-      this.activePlayer = this.getAudioPlayer(parsedType)
+      const blacklist = []
+      let player: Player | undefined = undefined
 
-      // Players might not have been initialized
-      if (this.activePlayer) {
-        this.activePlayer.volume = vxm.player.volume
-        this.registerPlayerListeners()
-        this.activePlayerTypes = parsedType
+      let tries = vxm.playerRepo.allPlayers.length
+      while (!player && tries > 0) {
+        player = this.findPlayer(newType, blacklist)
+        if (player && src) {
+          console.debug('Checking player', player.key, 'for', src)
+          if (!(await player.canPlay(src))) {
+            blacklist.push(player.key)
+            player = undefined
+          }
+        }
+        tries -= 1
       }
 
-      this.analyserNode = undefined
+      if (player) {
+        this.activePlayer = player
+        await this.initializePlayer(this.activePlayer)
+
+        // Players might not have been initialized
+        if (this.activePlayer) {
+          this.activePlayer.volume = vxm.player.volume
+          this.registerPlayerListeners()
+          this.activePlayerTypes = newType
+        }
+
+        this.showYTPlayer =
+          this.useEmbed && vxm.providers.youtubeAlt === YoutubeAlts.YOUTUBE && this.activePlayer.key === 'YOUTUBE'
+            ? 2
+            : 0
+        this.analyserNode = undefined
+
+        return player.key
+      } else {
+        return
+      }
     }
-
-    this.showYTPlayer =
-      this.useEmbed && vxm.providers.youtubeAlt === YoutubeAlts.YOUTUBE && this.activePlayerTypes === 'YOUTUBE' ? 2 : 0
-
-    return newType
+    return this.activePlayer?.key
   }
 
   /**
@@ -242,6 +237,7 @@ export default class AudioStream extends mixins(
     else {
       this.unloadAudio()
       this.showYTPlayer = 0
+      this.lastLoadedSong = undefined
     }
   }
 
@@ -249,19 +245,24 @@ export default class AudioStream extends mixins(
    * Method triggered when vuex volume changes
    */
   onVolumeChanged(newValue: number) {
-    this.activePlayer.volume = newValue
+    if (this.activePlayer) {
+      this.activePlayer.volume = newValue
+    }
   }
 
   /**
    * Method triggered when user seeks on timeline and forceSeek prop changes
    */
   @Watch('forceSeek') onSeek(newValue: number) {
-    this.activePlayer.currentTime = newValue
-    if (this.isSyncing) this.remoteSeek(newValue)
+    if (this.activePlayer) {
+      this.activePlayer.currentTime = newValue
+      if (this.isSyncing) this.remoteSeek(newValue)
+    }
   }
 
   async mounted() {
     await this.setupPlayers()
+
     this.playersInitialized = true
 
     this.setupSync()
@@ -270,25 +271,25 @@ export default class AudioStream extends mixins(
     if (this.currentSong) this.loadAudio(this.currentSong, true)
   }
 
-  private useEmbed = true
-
-  private async setupYoutubePlayer() {
-    this.useEmbed =
-      (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('youtubeOptions.youtube_embeds'))?.enabled ?? true
-
-    return new YoutubePlayer(this.ytAudioElement, this.useEmbed)
+  closePlayers() {
+    for (const p of vxm.playerRepo.allPlayers) {
+      p.close()
+    }
   }
+
+  private useEmbed = true
 
   /**
    * Initial setup for all players
    */
-  private setupPlayers(): Promise<void> {
-    return new Promise<void>((resolve) => {
-      this.localPlayer = new LocalPlayer(this.audioElement)
-      this.dashPlayer = new DashPlayer(this.dashPlayerDiv)
-      this.hlsPlayer = new HLSPlayer(this.hlsPlayerDiv)
-      this.activePlayer = this.localPlayer
-      this.activePlayerTypes = 'LOCAL'
+  private async setupPlayers(): Promise<void> {
+    const players = await new Promise<Player[]>((resolve) => {
+      const players: Player[] = []
+
+      players.push(new LocalPlayer())
+      players.push(new DashPlayer())
+      players.push(new HLSPlayer())
+      players.push(new SpotifyPlayer())
 
       // youtubeAlt might be set after setupPlayer, so we watch it change
       vxm.providers.$watch(
@@ -299,26 +300,65 @@ export default class AudioStream extends mixins(
 
           switch (val) {
             case YoutubeAlts.YOUTUBE:
-              this.ytPlayer = await this.setupYoutubePlayer()
+              players.push(new YoutubePlayer())
               break
             case YoutubeAlts.INVIDIOUS:
-              this.ytPlayer = new InvidiousPlayer(this.audioElement)
+              players.push(new InvidiousPlayer())
               break
             case YoutubeAlts.PIPED:
-              this.ytPlayer = new PipedPlayer(this.audioElement)
+              players.push(new PipedPlayer())
               break
           }
 
-          resolve()
+          resolve(players)
         },
         { deep: false, immediate: true }
       )
     })
+
+    vxm.playerRepo.clear()
+    vxm.playerRepo.push(players)
+  }
+
+  private async initializePlayer(player: Player) {
+    if (player.isInitialized) return
+
+    if (player instanceof YoutubePlayer) {
+      this.useEmbed =
+        (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('youtubeOptions.youtube_embeds'))?.enabled ??
+        true
+
+      await player.initialize({
+        playerInstance: this.ytAudioElement,
+        useEmbed: this.useEmbed
+      })
+
+      return
+    }
+
+    if (player instanceof InvidiousPlayer || player instanceof PipedPlayer || player instanceof LocalPlayer) {
+      await player.initialize(this.audioElement)
+      return
+    }
+
+    if (player instanceof SpotifyPlayer) {
+      await player.initialize()
+    }
+
+    if (player instanceof HLSPlayer) {
+      await player.initialize(this.hlsPlayerDiv)
+      return
+    }
+
+    if (player instanceof DashPlayer) {
+      await player.initialize(this.dashPlayerDiv)
+      return
+    }
   }
 
   private setupSync() {
-    this.setSongSrcCallback = (src: string) => this.activePlayer.load(src)
-    this.onSeekCallback = (time: number) => (this.activePlayer.currentTime = time)
+    this.setSongSrcCallback = (src: string) => this.activePlayer && this.activePlayer.load(src)
+    this.onSeekCallback = (time: number) => this.activePlayer && (this.activePlayer.currentTime = time)
   }
 
   private registerRoomListeners() {
@@ -364,68 +404,76 @@ export default class AudioStream extends mixins(
       vxm.player.loading = false
     }
 
-    this.activePlayer.onTimeUpdate = async (time) => {
-      this.$emit('onTimeUpdate', time)
+    if (this.activePlayer) {
+      const preloadDuration = this.activePlayer.key === 'SPOTIFY' ? 45 : 10
+      this.activePlayer.onTimeUpdate = async (time) => {
+        this.$emit('onTimeUpdate', time)
 
-      if (this.currentSong) {
-        if (time >= this.currentSong.duration - 10) {
-          await this.preloadNextSong()
-          if (this.isSilent()) {
-            this.onSongEnded()
-          }
-        }
-      }
-    }
-
-    this.activePlayer.onError = async (err) => {
-      console.error('Player error', err.message, 'while playing', this.currentSong?.playbackUrl)
-      console.error(`${this.currentSong?._id}: ${this.currentSong?.title} unplayable, skipping.`)
-      await this.nextSong()
-      await this.removeFromQueue(vxm.player.queueIndex - 1)
-      vxm.player.loading = false
-    }
-
-    this.activePlayer.onStateChange = (state) => {
-      // Cued event of youtube embed seems to fire only once and is not reliable
-      // Stop loading when state of player changes
-      vxm.player.loading = false
-      this.cancelBufferTrap()
-
-      if (state === 'STOPPED') {
-        this.onSongEnded()
-        return
-      }
-
-      if (state !== vxm.player.playerState) {
-        this.ignoreStateChange = true
-        vxm.player.playerState = state
-      }
-    }
-
-    this.activePlayer.onLoad = async () => {
-      const preferences = await window.PreferenceUtils.loadSelective<Checkbox[]>('audio')
-      if (preferences) {
-        const gapless = preferences.find((val) => val.key === 'gapless_playback')
-        if (gapless && gapless.enabled) {
-          if (!this.analyserNode) {
-            const context = this.activePlayer.createAudioContext()
-            if (context) {
-              this.analyserNode = context.createAnalyser()
-              this.activePlayer.connectAudioContextNode(this.analyserNode)
+        if (this.currentSong) {
+          if (time >= this.currentSong.duration - preloadDuration) {
+            await this.preloadNextSong()
+            if (this.isSilent()) {
+              this.onSongEnded()
             }
           }
-        } else {
-          this.analyserNode = undefined
         }
+      }
+
+      this.activePlayer.onError = async (err) => {
+        console.error('Player error', err.message, 'while playing', this.currentSong?.playbackUrl)
+        console.error(`${this.currentSong?._id}: ${this.currentSong?.title} unplayable, skipping.`)
+        await this.nextSong()
+        await this.removeFromQueue(vxm.player.queueIndex - 1)
+        vxm.player.loading = false
+      }
+
+      this.activePlayer.onStateChange = (state) => {
+        // Cued event of youtube embed seems to fire only once and is not reliable
+        // Stop loading when state of player changes
+        vxm.player.loading = false
+        this.cancelBufferTrap()
+
+        if (state === 'STOPPED') {
+          // this.onSongEnded()
+          return
+        }
+
+        if (state !== vxm.player.playerState) {
+          this.ignoreStateChange = true
+          vxm.player.playerState = state
+        }
+      }
+
+      this.activePlayer.onLoad = async () => {
+        const preferences = await window.PreferenceUtils.loadSelective<Checkbox[]>('audio')
+        if (preferences) {
+          const gapless = preferences.find((val) => val.key === 'gapless_playback')
+          if (gapless && gapless.enabled) {
+            if (!this.analyserNode) {
+              const context = this.activePlayer?.createAudioContext()
+              if (context) {
+                this.analyserNode = context.createAnalyser()
+                this.activePlayer?.connectAudioContextNode(this.analyserNode)
+              }
+            }
+          } else {
+            this.analyserNode = undefined
+          }
+        }
+        vxm.player.loading = false
       }
 
       vxm.player.loading = false
       this.cancelBufferTrap()
-    }
 
-    this.activePlayer.onBuffer = () => {
-      vxm.player.loading = true
-      this.setBufferTrap()
+      this.activePlayer.onBuffer = () => {
+        vxm.player.loading = true
+        this.setBufferTrap()
+      }
+
+      this.activePlayer.onEnded = () => {
+        this.onSongEnded()
+      }
     }
 
     vxm.player.$watch('volume', this.onVolumeChanged)
@@ -443,7 +491,11 @@ export default class AudioStream extends mixins(
   private setBufferTrap() {
     if (!this._bufferTrap) {
       this._bufferTrap = setTimeout(() => {
-        if (this.activePlayerTypes === 'YOUTUBE' && this.activePlayer instanceof YoutubePlayer) {
+        if (
+          this.activePlayerTypes &&
+          this.activePlayer?.provides().includes(this.activePlayerTypes) &&
+          this.activePlayer instanceof YoutubePlayer
+        ) {
           // this.activePlayer.setPlaybackQuality('small')
           this?.pause()
           Vue.nextTick(() => this.play())
@@ -490,7 +542,6 @@ export default class AudioStream extends mixins(
   }
 
   private registerListeners() {
-    this.registerPlayerListeners()
     this.registerRoomListeners()
     this.registerMediaControlListener()
 
@@ -510,15 +561,9 @@ export default class AudioStream extends mixins(
   }
 
   private async getPlaybackUrlAndDuration(
+    provider: GenericProvider | undefined,
     song: Song
   ): Promise<{ url: string | undefined; duration?: number } | undefined> {
-    let provider: GenericProvider | undefined
-    if (song.providerExtension) {
-      provider = this.getProviderByKey(song.providerExtension)
-    } else {
-      provider = this.getProviderByKey(song.type.toLowerCase())
-    }
-
     if (provider) {
       return provider.getPlaybackUrlAndDuration(song)
     }
@@ -609,15 +654,33 @@ export default class AudioStream extends mixins(
 
     const nextSong = vxm.player.queueData[vxm.player.queueOrder[vxm.player.queueIndex + 1]?.songID]
     if (nextSong && !nextSong.path) {
-      if (!nextSong.playbackUrl || !nextSong.duration) await this.setPlaybackURLAndDuration(nextSong)
+      await this.setPlaybackURLAndDuration(nextSong)
 
       if (!nextSong.playbackUrl || !nextSong.duration) {
         await this.removeFromQueue(vxm.player.queueIndex + 1)
         return
       }
 
-      const audioPlayer = this.getAudioPlayer(this.parsePlayerTypes(nextSong.type))
-      audioPlayer.preload(nextSong.playbackUrl)
+      const blacklist = []
+      let audioPlayer: Player | undefined = undefined
+
+      let tries = vxm.playerRepo.allPlayers.length
+
+      while (!audioPlayer && tries > 0) {
+        audioPlayer = this.findPlayer(nextSong.type, blacklist)
+        if (audioPlayer && nextSong.playbackUrl) {
+          if (!(await audioPlayer.canPlay(nextSong.playbackUrl))) {
+            blacklist.push(audioPlayer.key)
+            audioPlayer = undefined
+          }
+        }
+        tries -= 1
+      }
+
+      if (!audioPlayer) {
+        console.error('Failed to find player for song', nextSong, 'not preloading')
+      }
+      audioPlayer?.preload(nextSong.playbackUrl)
     }
 
     this.preloadStatus = 'PRELOADED'
@@ -638,27 +701,33 @@ export default class AudioStream extends mixins(
   }
 
   private async setPlaybackURLAndDuration(song: Song) {
-    let res: { url?: string; duration?: number } | undefined = this.getItem(`url_duration:${song._id}`)
-    console.debug('cache url and duration', res)
-
-    if (!res) {
-      console.debug('playback url and duration not in cache or missing')
-      res = await this.getPlaybackUrlAndDuration(song)
+    let provider: GenericProvider | undefined
+    if (song.providerExtension) {
+      provider = this.getProviderByKey(song.providerExtension)
     } else {
-      if (!song.playbackUrl && !res.url) {
-        console.debug('playback url missing from cache entry, trying to re-fetch')
-        res = await this.getPlaybackUrlAndDuration(song)
-      }
+      provider = this.getProviderByKey(song.type.toLowerCase())
+    }
 
-      if (!song.duration && !res?.duration) {
-        console.debug('duration missing from cache entry, trying to re-fetch')
-        res = await this.getPlaybackUrlAndDuration(song)
-      }
+    let res: { url?: string; duration?: number } | undefined = { url: song.playbackUrl, duration: song.duration }
+
+    if (song.playbackUrl && !isEmpty(song.duration)) {
+      res = this.getItem(`url_duration:${song._id}`)
+      console.debug('cache url and duration', res)
+    }
+
+    let shouldRefetch = true
+    if (res?.url && res?.duration && (await provider?.validatePlaybackURL(res.url))) {
+      shouldRefetch = false
+    }
+
+    if (shouldRefetch) {
+      console.debug('playback url and duration not in cache or missing')
+      res = await this.getPlaybackUrlAndDuration(provider, song)
     }
 
     console.debug('Got playback url and duration', res)
 
-    if (res && res.duration) {
+    if (res && res.duration && res.url) {
       // song is a reference to vxm.player.currentSong or vxm.sync.currentSong.
       // Mutating those properties should also mutate song and vice-versa
       if (vxm.player.currentSong && song) {
@@ -687,26 +756,36 @@ export default class AudioStream extends mixins(
       }
     }
 
+    console.debug('Got duplicate song', song)
+
     if (song._id === this.lastLoadedSong?._id) {
       return
     }
-    this.lastLoadedSong = song
 
     console.debug('Loading new song', song)
 
     this.unloadAudio()
 
-    // Increment play count for song
-    window.DBUtils.incrementPlayCount(song._id)
+    const PlayerTypes = song.type
 
-    const PlayerTypes = this.onPlayerTypesChanged(song.type)
+    this.lastLoadedSong = song
 
     vxm.player.loading = true
 
     // Playback url and duration fetching needed only for non-local songs
-    if (PlayerTypes !== 'LOCAL' && (!song.playbackUrl || !song.duration)) {
-      console.debug('PlaybackUrl or Duration empty for', song._id)
+    if (PlayerTypes !== 'LOCAL') {
       await this.setPlaybackURLAndDuration(song)
+    }
+
+    const switchedPlayer = await this.onPlayerTypesChanged(song.type, song.playbackUrl)
+    if (!switchedPlayer) {
+      console.error('Could not find player to play song', song)
+      await this.nextSong()
+      await this.removeFromQueue(vxm.player.queueIndex - 1)
+      vxm.player.loading = false
+      return
+    } else {
+      console.debug('Found player', switchedPlayer)
     }
 
     if (!song.path && (!song.playbackUrl || !song.duration)) {
@@ -745,6 +824,9 @@ export default class AudioStream extends mixins(
     await window.MprisUtils.updatePlaybackState(
       vxm.player.playAfterLoad || this.playerState !== 'PAUSED' ? 'PLAYING' : 'PAUSED'
     )
+
+    // Increment play count for song
+    window.DBUtils.incrementPlayCount(song._id)
   }
 
   private unloadAudio() {

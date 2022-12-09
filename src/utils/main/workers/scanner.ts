@@ -290,6 +290,36 @@ async function getInfo(data: mm.IAudioMetadata, stats: stats, hash: string): Pro
     }
   }
 
+  if (!data.common.lyrics || data.common.lyrics.length === 0) {
+    const uslt = data.native['ID3v2.3']?.find((val) => val.id === 'USLT')
+    if (uslt) {
+      data.common.lyrics = [uslt?.value?.text]
+    }
+  }
+
+  if (!data.common.lyrics || data.common.lyrics.length === 0) {
+    const lrcFile = stats.path.replace(`${path.extname(stats.path)}`, '.lrc')
+    console.debug('Trying to find LRC file at', lrcFile)
+
+    try {
+      await access(lrcFile)
+      if (lrcFile) {
+        const lrcRegex = /\[\d{2}:\d{2}.\d{2}\]/gm
+        const lyricsContent = await readFile(lrcFile, { encoding: 'utf-8' })
+        let parsedLyrics = ''
+        for (const line of lyricsContent.split('\n')) {
+          if (line.match(lrcRegex)) {
+            parsedLyrics += line.replaceAll(lrcRegex, '') + '\n'
+          }
+        }
+
+        data.common.lyrics = [parsedLyrics]
+      }
+    } catch {
+      console.debug('Could not find LRC file')
+    }
+  }
+
   return {
     _id: v4(),
     title: data.common.title ? data.common.title : path.basename(stats.path, path.extname(stats.path)),

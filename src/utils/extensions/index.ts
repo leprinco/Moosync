@@ -13,7 +13,7 @@ import { extensionUIRequestsKeys, mainRequests, providerFetchRequests } from '@/
 import { loadSelectivePreference, saveSelectivePreference } from '../main/db/preferences'
 
 import { ExtensionHostEvents } from '@/utils/main/ipc/constants'
-import { SongDB } from '@/utils/main/db/index'
+import { getSongDB } from '@/utils/main/db/index'
 import { WindowHandler } from '../main/windowManager'
 import { async } from 'node-stream-zip'
 import { promises as fsP } from 'fs'
@@ -284,12 +284,12 @@ class ExtensionRequestHandler {
     message.type && console.debug('Received message from extension', message.extensionName, message.type)
     const resp: extensionReplyMessage = { ...message, data: undefined }
     if (message.type === 'get-songs') {
-      const songs = SongDB.getSongByOptions(message.data)
+      const songs = getSongDB().getSongByOptions(message.data)
       resp.data = songs
     }
 
     if (message.type === 'get-entity') {
-      const entity = SongDB.getEntityByOptions(message.data)
+      const entity = getSongDB().getEntityByOptions(message.data)
       resp.data = entity
     }
 
@@ -297,22 +297,22 @@ class ExtensionRequestHandler {
       resp.data = []
       for (const s of message.data) {
         if (s) {
-          resp.data.push(SongDB.store(...sanitizeSong(message.extensionName, s)))
+          resp.data.push(getSongDB().store(...sanitizeSong(message.extensionName, s)))
         }
       }
     }
 
     if (message.type === 'add-playlist') {
       const playlist = message.data as Playlist
-      resp.data = SongDB.createPlaylist(sanitizePlaylist(message.extensionName, playlist)[0])
+      resp.data = getSongDB().createPlaylist(sanitizePlaylist(message.extensionName, playlist)[0])
     }
 
     if (message.type === 'add-song-to-playlist') {
-      SongDB.addToPlaylist(message.data.playlistID, ...sanitizeSong(message.extensionName, ...message.data.songs))
+      getSongDB().addToPlaylist(message.data.playlistID, ...sanitizeSong(message.extensionName, ...message.data.songs))
     }
 
     if (message.type === 'remove-song') {
-      await SongDB.removeSong(
+      await getSongDB().removeSong(
         ...(message.data as Song[]).filter((val) => val._id.startsWith(`${message.extensionName}:`))
       )
     }
@@ -341,7 +341,7 @@ class ExtensionRequestHandler {
 
     if (message.type === 'set-preferences') {
       const { packageName, key, value }: { packageName: string; key: string; value: unknown } = message.data
-      resp.data = saveSelectivePreference(this.getPreferenceKey(packageName, key), value, true, true)
+      resp.data = saveSelectivePreference(this.getPreferenceKey(packageName, key), value, true)
     }
 
     if (message.type === 'set-secure-preferences') {
@@ -366,13 +366,13 @@ class ExtensionRequestHandler {
 
     if (message.type === 'set-artist-editable-info') {
       if (typeof message.data.artist_id === 'string' && message.data.object) {
-        SongDB.updateArtistExtraInfo(message.data.artist_id, message.data.object, message.extensionName)
+        getSongDB().updateArtistExtraInfo(message.data.artist_id, message.data.object, message.extensionName)
       }
     }
 
     if (message.type === 'set-album-editable-info') {
       if (typeof message.data.album_id === 'string' && message.data.object) {
-        SongDB.updateAlbumExtraInfo(message.data.album_id, message.data.object, message.extensionName)
+        getSongDB().updateAlbumExtraInfo(message.data.album_id, message.data.object, message.extensionName)
       }
     }
 

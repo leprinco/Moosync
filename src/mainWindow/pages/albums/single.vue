@@ -43,6 +43,8 @@ import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 import { ProviderScopes } from '@/utils/commonConstants'
 import { getRandomFromArray } from '@/utils/common'
+import { bus } from '@/mainWindow/main'
+import { EventBus } from '@/utils/main/ipc/constants'
 
 @Component({
   components: {
@@ -94,7 +96,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
   get buttonGroups(): SongDetailButtons {
     return {
       enableContainer: true,
-      enableLibraryStore: false,
+      enableLibraryStore: this.hasRemoteSongs,
       playRandom: this.songList.length > 150
     }
   }
@@ -123,12 +125,27 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     })
   }
 
+  get hasRemoteSongs() {
+    return Object.keys(this.activeProviders).some((val) => val !== 'local' && this.activeProviders[val])
+  }
+
   async created() {
     this.fetchAlbum()
     this.fetchAlbumCover()
     this.fetchSongList()
 
     this.onProvidersChanged(() => this.fetchAlbumCover())
+  }
+
+  mounted() {
+    if (this.$route.query.defaultProviders) {
+      for (const p of this.$route.query.defaultProviders) {
+        if (p) {
+          this.onAlbumProviderChanged({ key: p, checked: true })
+          bus.$emit(EventBus.UPDATE_OPTIONAL_PROVIDER, p)
+        }
+      }
+    }
   }
 
   private fetchAlbum() {

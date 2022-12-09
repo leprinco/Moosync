@@ -21,7 +21,7 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
 
   async created() {
     this.keyboardHotKeyMap = Object.freeze(
-      await window.PreferenceUtils.loadSelective('hotkeys', false, defaultKeybinds)
+      (await window.PreferenceUtils.loadSelective('hotkeys', false, defaultKeybinds)) as HotkeyPair[]
     )
 
     window.PreferenceUtils.listenPreferenceChanged('hotkeys', true, (_, val: HotkeyPair[]) => {
@@ -83,7 +83,7 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
         this.toggleRepeat()
         break
       case HotkeyEvents.RELOAD_PAGE:
-        location.reload()
+        window.SpotifyPlayer.close().then(() => location.reload())
         break
       case HotkeyEvents.DEVTOOLS_TOGGLE:
         window.WindowUtils.toggleDevTools(true)

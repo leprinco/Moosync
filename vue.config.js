@@ -58,7 +58,8 @@ module.exports = {
     externals: {
       'better-sqlite3': 'commonjs better-sqlite3',
       vm2: "require('vm2')",
-      sharp: "require('sharp')"
+      sharp: "require('sharp')",
+      'librespot-node': 'commonjs librespot-node'
     },
     devtool: 'source-map',
     resolve: {
@@ -81,7 +82,7 @@ module.exports = {
   },
   pluginOptions: {
     electronBuilder: {
-      mainProcessWatch: ['src/utils/main', 'src/utils/extensions', 'src/utils/common.ts'],
+      mainProcessWatch: ['src/utils/main', 'src/utils/extensions', 'src/utils/common.ts', 'src/utils/spotify'],
       customFileProtocol: 'moosync://./',
       builderOptions: {
         ...archElectronConfig,
@@ -164,7 +165,8 @@ module.exports = {
             repo: 'moosync'
           }
         ],
-        asarUnpack: ['*.worker.js', 'sandbox.js', '**/node_modules/**/*.node'],
+        files: ['**/*', '!node_modules/librespot-node/native/target/*'],
+        asarUnpack: ['*.worker.js', 'sandbox.js', 'spotify.js', '**/node_modules/**/*.node'],
         protocols: [
           {
             name: 'Default protocol',
@@ -210,6 +212,12 @@ module.exports = {
           .entry('sandbox')
           .add(__dirname + '/src/utils/extensions/sandbox/index.ts')
           .end()
+
+        config
+          .entry('spotify')
+          .add(__dirname + '/src/utils/spotify/index.ts')
+          .end()
+
         config.plugin('thread').use(ThreadsPlugin, [{ target: 'electron-node-worker' }])
 
         config.plugin('copy').use(CopyWebpackPlugin, [{ patterns: [{ from: resolve('dev-app-update.yml') }] }])

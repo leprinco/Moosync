@@ -11,7 +11,7 @@ import { IpcEvents, ScannerEvents } from './constants'
 import { Thread, TransferDescriptor, Worker, spawn } from 'threads'
 
 import { IpcMainEvent, app } from 'electron'
-import { SongDB } from '@/utils/main/db/index'
+import { getSongDB } from '@/utils/main/db/index'
 import fs from 'fs'
 import { getCombinedMusicPaths, loadPreferences } from '@/utils/main/db/preferences'
 import { writeBuffer } from '@/utils/main/workers/covers'
@@ -106,7 +106,7 @@ export class ScannerChannel implements IpcChannelInterface {
 
   private async checkDuplicateAndStore(song: Song, cover: TransferDescriptor<Buffer> | undefined) {
     if (song.hash) {
-      const existing = SongDB.getByHash(song.hash)
+      const existing = getSongDB().getByHash(song.hash)
       if (existing.length === 0) {
         const res = cover && (await this.storeCover(cover, song.hash))
         if (res) {
@@ -119,7 +119,7 @@ export class ScannerChannel implements IpcChannelInterface {
           song.song_coverPath_low = res.low
         }
 
-        SongDB.store(song)
+        getSongDB().store(song)
       } else {
         const s = existing[0]
         const albumCoverExists = await this.checkAlbumCovers(s)
@@ -128,8 +128,8 @@ export class ScannerChannel implements IpcChannelInterface {
         if (!albumCoverExists || !songCoverExists) {
           const res = cover && (await this.storeCover(cover, song.hash))
           if (res) {
-            if (!songCoverExists) SongDB.updateSongCover(s._id, res.high, res.low)
-            if (!albumCoverExists) SongDB.updateAlbumCovers(s._id, res.high, res.low)
+            if (!songCoverExists) getSongDB().updateSongCover(s._id, res.high, res.low)
+            if (!albumCoverExists) getSongDB().updateAlbumCovers(s._id, res.high, res.low)
           }
         }
       }
@@ -158,26 +158,26 @@ export class ScannerChannel implements IpcChannelInterface {
   }
 
   private storePlaylist(playlist: ScannedPlaylist) {
-    const existing = SongDB.getPlaylistByPath(playlist.filePath)[0]
+    const existing = getSongDB().getPlaylistByPath(playlist.filePath)[0]
     const songs: Song[] = []
     for (const h of playlist.songHashes) {
-      songs.push(...SongDB.getByHash(h))
+      songs.push(...getSongDB().getByHash(h))
     }
 
     if (songs.length > 0) {
       if (!existing) {
         console.debug('Storing scanned playlist', playlist)
-        const id = SongDB.createPlaylist({
+        const id = getSongDB().createPlaylist({
           playlist_name: playlist.title,
           playlist_path: playlist.filePath
         })
-        SongDB.addToPlaylist(id, ...songs)
+        getSongDB().addToPlaylist(id, ...songs)
       } else {
-        const playlistSongs = SongDB.getSongByOptions({ playlist: { playlist_id: existing.playlist_id } })
+        const playlistSongs = getSongDB().getSongByOptions({ playlist: { playlist_id: existing.playlist_id } })
         console.debug('Found existing playlist, updating')
         for (const s of songs) {
           if (playlistSongs.findIndex((val) => val._id === s._id) === -1) {
-            SongDB.addToPlaylist(existing.playlist_id, s)
+            getSongDB().addToPlaylist(existing.playlist_id, s)
           }
         }
       }
@@ -194,7 +194,7 @@ export class ScannerChannel implements IpcChannelInterface {
 
   private scanSongs(paths: togglePaths, forceScan = false) {
     return new Promise<void>((resolve, reject) => {
-      this.scannerWorker?.start(paths, forceScan ? [] : SongDB.getAllPaths(), loggerPath).subscribe(
+      this.scannerWorker?.start(paths, forceScan ? [] : getSongDB().getAllPaths(), loggerPath).subscribe(
         (result) => {
           if (this.isProgress(result)) {
             this.totalScanFiles = result.total
@@ -223,7 +223,7 @@ export class ScannerChannel implements IpcChannelInterface {
       this.scraperWorker.fetchMBID(allArtists, loggerPath).subscribe(
         async (result: Artists) => {
           if (result) {
-            await SongDB.updateArtists(result)
+            await getSongDB().updateArtists(result)
             pendingPromises.push(this.fetchArtworks([result]))
           }
         },
@@ -243,10 +243,10 @@ export class ScannerChannel implements IpcChannelInterface {
       ret.artist_coverPath = cover
     } else {
       console.debug('Getting default cover for', artist.artist_name)
-      ret.artist_coverPath = await SongDB.getDefaultCoverByArtist(artist.artist_id)
+      ret.artist_coverPath = await getSongDB().getDefaultCoverByArtist(artist.artist_id)
     }
 
-    await SongDB.updateArtists(ret)
+    await getSongDB().updateArtists(ret)
   }
 
   private async fetchArtworks(allArtists: Artists[]) {
@@ -274,21 +274,21 @@ export class ScannerChannel implements IpcChannelInterface {
   }
 
   private async destructiveScan(paths: togglePaths) {
-    const allSongs = SongDB.getSongByOptions()
+    const allSongs = getSongDB().getSongByOptions()
     const excludePaths = paths.filter((val) => !val.enabled).map((val) => val.path)
     const excludeRegex = new RegExp(excludePaths.length > 0 ? excludePaths.join('|') : /(?!)/)
 
     for (const s of allSongs) {
       if (s.type == 'LOCAL') {
         if (paths.length == 0 || !s.path || s.path?.match(excludeRegex)) {
-          await SongDB.removeSong(s)
+          await getSongDB().removeSong(s)
           continue
         }
 
         try {
           await fs.promises.access(s.path, fs.constants.F_OK)
         } catch (e) {
-          await SongDB.removeSong(s)
+          await getSongDB().removeSong(s)
         }
       }
     }
@@ -303,7 +303,7 @@ export class ScannerChannel implements IpcChannelInterface {
       return
     }
 
-    const allArtists = SongDB.getEntityByOptions<Artists>({
+    const allArtists = getSongDB().getEntityByOptions<Artists>({
       artist: true
     })
 

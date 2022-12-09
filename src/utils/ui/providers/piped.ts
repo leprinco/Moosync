@@ -3,6 +3,7 @@ import { GenericProvider } from './generics/genericProvider'
 import qs from 'qs'
 import { vxm } from '@/mainWindow/store'
 import { FetchWrapper } from './generics/fetchWrapper'
+import { sleep } from '../../common'
 
 enum PipedResources {
   SEARCH = 'search',
@@ -12,9 +13,6 @@ enum PipedResources {
   CHANNEL_DETAILS_NEXT = 'nextpage/channel/${channel_id}',
   STREAM_DETAILS = 'streams/${video_id}'
 }
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
-
 export class PipedProvider extends GenericProvider {
   key = 'piped'
 
@@ -82,7 +80,7 @@ export class PipedProvider extends GenericProvider {
     tries = 0
   ): Promise<PipedResponses.ResponseType<T, K> | undefined> {
     let BASE_URL = await window.PreferenceUtils.loadSelective<string>('piped_instance')
-    if (!BASE_URL.endsWith('/')) {
+    if (!BASE_URL?.endsWith('/')) {
       BASE_URL += '/'
     }
 

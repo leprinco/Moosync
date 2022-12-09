@@ -17,8 +17,12 @@ function MethodMetadataDecorator(target: unknown, propertyKey: string, descripto
   return descriptor
 }
 export abstract class GenericProvider {
+  protected authInitialized: Promise<void>
+  protected authInitializedResolver!: () => void
+
   constructor() {
     this.updateConfig()
+    this.authInitialized = new Promise<void>((r) => (this.authInitializedResolver = r))
   }
 
   public get canLogin() {
@@ -166,6 +170,10 @@ export abstract class GenericProvider {
 
   public async scrobble(song: Song): Promise<void> {
     return
+  }
+
+  public async validatePlaybackURL(playbackUrl: string): Promise<boolean> {
+    return true
   }
 
   public abstract matchEntityId(id: string): boolean

@@ -15,6 +15,7 @@ export class ThemeStore extends VuexModule.With({ namespaced: 'themes' }) {
   private _sidebarOpen = true
   private _updateAvailable = false
   private _jukeboxMode = false
+  private _lastSearchTab: [string, keyof SearchResult] = ['local', 'songs']
 
   public songSortBy: SongSortOptions = { type: 'date_added', asc: true }
   public playlistSortBy: PlaylistSortOptions = { type: 'name', asc: true }
@@ -61,5 +62,13 @@ export class ThemeStore extends VuexModule.With({ namespaced: 'themes' }) {
 
   set jukeboxMode(val: boolean) {
     this._jukeboxMode = val
+  }
+
+  get lastSearchTab() {
+    return this._lastSearchTab
+  }
+
+  set lastSearchTab(item: [string, keyof SearchResult]) {
+    this._lastSearchTab = item
   }
 }

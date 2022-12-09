@@ -10,7 +10,7 @@
 import { IpcEvents, PlaylistEvents } from './constants'
 import { loadPreferences } from '@/utils/main/db/preferences'
 
-import { SongDB } from '@/utils/main/db'
+import { getSongDB } from '@/utils/main/db'
 import fs from 'fs'
 import path from 'path'
 import { v4 } from 'uuid'
@@ -47,7 +47,7 @@ export class PlaylistsChannel implements IpcChannelInterface {
 
   private createPlaylist(event: Electron.IpcMainEvent, request: IpcRequest<PlaylistRequests.CreatePlaylist>) {
     try {
-      const data = SongDB.createPlaylist(request.params.playlist)
+      const data = getSongDB().createPlaylist(request.params.playlist)
       event.reply(request.responseChannel, data)
     } catch (e) {
       console.error(e)
@@ -56,12 +56,12 @@ export class PlaylistsChannel implements IpcChannelInterface {
   }
 
   private async updatePlaylist(event: Electron.IpcMainEvent, request: IpcRequest<PlaylistRequests.CreatePlaylist>) {
-    await SongDB.updatePlaylist(request.params.playlist)
+    await getSongDB().updatePlaylist(request.params.playlist)
     event.reply(request.responseChannel)
   }
 
   private addToPlaylist(event: Electron.IpcMainEvent, request: IpcRequest<PlaylistRequests.AddToPlaylist>) {
-    SongDB.addToPlaylist(request.params.playlist_id, ...request.params.song_ids)
+    getSongDB().addToPlaylist(request.params.playlist_id, ...request.params.song_ids)
     event.reply(request.responseChannel)
   }
 
@@ -89,7 +89,7 @@ export class PlaylistsChannel implements IpcChannelInterface {
     request: IpcRequest<PlaylistRequests.RemoveExportPlaylist>
   ) {
     if (request.params.playlist) {
-      SongDB.removePlaylist(request.params.playlist)
+      getSongDB().removePlaylist(request.params.playlist)
       event.reply(request.responseChannel)
     }
     event.reply(request.responseChannel)
@@ -142,7 +142,7 @@ export class PlaylistsChannel implements IpcChannelInterface {
 
   private async parsePlaylistSongs(playlist: Playlist) {
     let ret = ''
-    const playlistSongs = SongDB.getSongByOptions({ playlist: { playlist_id: playlist.playlist_id } })
+    const playlistSongs = getSongDB().getSongByOptions({ playlist: { playlist_id: playlist.playlist_id } })
     for (const s of playlistSongs) {
       if (s.path || s.url) {
         ret += `#EXTINF:${s.duration ?? 0},${this.getSongTitleParsed(s)}
@@ -168,7 +168,7 @@ ${(s.path && 'file://' + s.path) ?? s.url}\n`
 
   private removeFromPlaylist(event: Electron.IpcMainEvent, request: IpcRequest<PlaylistRequests.AddToPlaylist>) {
     if (request.params.playlist_id && request.params.song_ids) {
-      SongDB.removeFromPlaylist(request.params.playlist_id, ...request.params.song_ids)
+      getSongDB().removeFromPlaylist(request.params.playlist_id, ...request.params.song_ids)
     }
     event.reply(request.responseChannel)
   }

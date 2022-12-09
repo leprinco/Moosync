@@ -38,7 +38,7 @@ import EventEmitter from 'events'
 import { StringMap } from '@openid/appauth/built/types'
 import { TokenRequestHandler } from '@openid/appauth/built/token_request_handler'
 import { TokenRequestHandlerWClientSecret } from './tokenHandler'
-import { TokenResponse } from '@openid/appauth/built/token_response'
+import { TokenResponse, TokenResponseJson } from '@openid/appauth/built/token_response'
 import { WebCrypto } from './crypto_utils'
 
 export class AuthStateEmitter extends EventEmitter {
@@ -62,8 +62,9 @@ export class AuthFlow {
   config: OAuthProviderConfig
 
   private fetchedToken: Promise<void>
+  private fetchedTokenResolver?: () => void
 
-  constructor(config: OAuthProviderConfig, serviceConfig: AuthorizationServiceConfiguration) {
+  constructor(config: OAuthProviderConfig, serviceConfig: AuthorizationServiceConfiguration, refreshToken = true) {
     if (!config.oAuthChannel && process.env.NODE_ENV === 'production')
       throw new Error('oAuth callback failed to register')
 
@@ -84,7 +85,11 @@ export class AuthFlow {
     // make refresh and access token requests.
 
     this.fetchedToken = new Promise<void>((resolve) => {
-      this.fetchRefreshToken().then(resolve)
+      if (refreshToken) {
+        this.fetchRefreshToken().then(resolve)
+      } else {
+        this.fetchedTokenResolver = resolve
+      }
     })
 
     this.notifier.setAuthorizationListener((request, response) => {
@@ -195,9 +200,10 @@ export class AuthFlow {
 
     if (!this.fetchedToken) return Promise.reject('Service not initialized')
 
-    if (!this.refreshToken) {
+    if (!this.refreshToken && !this.accessTokenResponse) {
       return Promise.resolve('Missing refreshToken.')
     }
+
     if (this.accessTokenResponse && this.accessTokenResponse.isValid()) {
       return this.accessTokenResponse.accessToken
     }
@@ -216,6 +222,13 @@ export class AuthFlow {
     } catch (err) {
       console.error(err)
       this.signOut()
+    }
+  }
+
+  public setToken(resp: TokenResponseJson) {
+    this.accessTokenResponse = new TokenResponse(resp)
+    if (this.fetchedTokenResolver) {
+      this.fetchedTokenResolver()
     }
   }
 }
