@@ -276,7 +276,7 @@ export class ScannerChannel implements IpcChannelInterface {
   private async destructiveScan(paths: togglePaths) {
     const allSongs = getSongDB().getSongByOptions()
     const excludePaths = paths.filter((val) => !val.enabled).map((val) => val.path)
-    const excludeRegex = new RegExp(excludePaths.length > 0 ? excludePaths.join('|') : /(?!)/)
+    const excludeRegex = new RegExp(excludePaths.length > 0 ? excludePaths.join('|').replaceAll('\\', '\\\\') : /(?!)/)
 
     for (const s of allSongs) {
       if (s.type == 'LOCAL') {
@@ -361,8 +361,6 @@ export class ScannerChannel implements IpcChannelInterface {
 
     const scanPaths = getCombinedMusicPaths()
 
-    await this.destructiveScan(scanPaths)
-
     try {
       await this.scanSongs(scanPaths, request?.params.forceScan)
     } catch (e) {
@@ -381,6 +379,9 @@ export class ScannerChannel implements IpcChannelInterface {
     if (this.isScanQueued()) {
       await this.scanAll(event, request)
     }
+
+    console.debug('Starting destructive scan')
+    await this.destructiveScan(scanPaths)
 
     // Run scraping task only if all subsequent scanning tasks are completed
     // And if no other scraping task is ongoing
