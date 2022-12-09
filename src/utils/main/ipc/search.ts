@@ -12,7 +12,7 @@ import { getDisabledPaths } from '@/utils/main/db/preferences'
 
 import { getSongDB } from '@/utils/main/db'
 import { YTScraper } from '../fetchers/searchYT'
-import { AZLyricsFetcher } from '../fetchers/lyrics'
+import { LyricsFetcher } from '../fetchers/lyrics'
 import { LastFMScraper } from '../fetchers/lastfm'
 import { InvidiousRequester } from '../fetchers/invidious'
 import { loadSelectivePreference } from '../db/preferences'
@@ -22,7 +22,7 @@ export class SearchChannel implements IpcChannelInterface {
   private ytScraper = new YTScraper()
   private lastFmScraper = new LastFMScraper()
   private invidiousRequester = new InvidiousRequester()
-  private azLyricsFetcher = new AZLyricsFetcher()
+  private azLyricsFetcher = new LyricsFetcher()
 
   handle(event: Electron.IpcMainEvent, request: IpcRequest): void {
     switch (request.type) {
@@ -159,8 +159,8 @@ export class SearchChannel implements IpcChannelInterface {
   }
 
   private async scrapeLyrics(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.LyricsScrape>) {
-    if (request.params && request.params.artists && request.params.title) {
-      const resp = await this.azLyricsFetcher.getLyrics(request.params.artists, request.params.title)
+    if (request.params && request.params.song) {
+      const resp = await this.azLyricsFetcher.getLyrics(request.params.song)
       event.reply(request.responseChannel, resp)
     }
   }

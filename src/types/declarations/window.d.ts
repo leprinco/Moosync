@@ -123,7 +123,7 @@ interface searchUtils {
    */
   scrapeLastFM: (url: string) => Promise<unknown>
 
-  searchLyrics: (artists: string[], title: string) => Promise<string>
+  searchLyrics: (song: Song) => Promise<string>
 
   requestInvidious: <T extends InvidiousResponses.InvidiousApiResources, K extends InvidiousResponses.SearchTypes>(
     resource: T,

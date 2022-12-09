@@ -217,11 +217,10 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
       } else {
         this.lyrics = 'Searching Lyrics...'
 
-        const { _id, title, artists } = this.currentSong
-        const resp =
-          (await this.getLyricsFromExtension()) ??
-          (await window.SearchUtils.searchLyrics(artists?.map((val) => val.artist_name ?? '') ?? [], title))
+        const { _id } = this.currentSong
+        const resp = (await this.getLyricsFromExtension()) ?? (await window.SearchUtils.searchLyrics(this.currentSong))
 
+        // Don't update lyrics if song has changed while fetching lyrics
         if (this.currentSong._id === _id) {
           this.currentSong.lyrics = resp as string
           this.lyrics = (resp as string) || 'No lyrics found...'

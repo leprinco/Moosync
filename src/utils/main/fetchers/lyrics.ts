@@ -2,6 +2,7 @@ import { app } from 'electron'
 import https from 'https'
 import path from 'path'
 import { loadSelectiveArrayPreference } from '../db/preferences'
+import { getSpotifyPlayerChannel } from '../ipc'
 import { CacheHandler } from './cacheFile'
 
 interface AZSuggestions {
@@ -12,31 +13,35 @@ interface AZSuggestions {
   }[]
 }
 
-export class AZLyricsFetcher extends CacheHandler {
+export class LyricsFetcher extends CacheHandler {
   private blocked = false
 
   constructor() {
     super(path.join(app.getPath('sessionData'), app.getName(), 'azlyrics.cache'), false)
   }
 
-  public async getLyrics(artists: string[], title: string) {
+  public async getLyrics(song: Song) {
     const useAzLyrics = loadSelectiveArrayPreference<Checkbox>('lyrics_fetchers.az_lyrics')?.enabled ?? true
     const useGoogleLyrics = loadSelectiveArrayPreference<Checkbox>('lyrics_fetchers.az_lyrics')?.enabled ?? true
 
     let lyrics: string | undefined
 
-    if (useAzLyrics) {
+    const artists = song.artists?.map((val) => val.artist_name ?? '') ?? []
+    const title = song.title
+
+    lyrics = await this.querySpotify(song)
+
+    if (!lyrics && useAzLyrics) {
       lyrics = await this.queryAZLyrics(artists, title)
     }
 
-    if (!lyrics) {
-      if (useGoogleLyrics) {
-        lyrics = await this.queryGoogle(artists, title)
-      }
+    if (!lyrics && useGoogleLyrics) {
+      lyrics = await this.queryGoogle(artists, title)
     }
 
     return lyrics
   }
+
   private async queryAZLyrics(artists: string[], title: string) {
     if (!this.blocked) {
       const baseURL = 'https://search.azlyrics.com/suggest.php?q='
@@ -171,5 +176,38 @@ export class AZLyricsFetcher extends CacheHandler {
       console.debug('Found lyrics on google', url)
       return final
     }
+  }
+
+  private async querySpotify(song: Song): Promise<string | undefined> {
+    const isSpotifySong = song._id.startsWith('spotify:')
+    const spotifyChannel = getSpotifyPlayerChannel()
+    if (isSpotifySong && spotifyChannel.isConnected) {
+      const trackId = song.url
+
+      const data = await spotifyChannel.command(undefined, {
+        type: '',
+        responseChannel: '',
+        params: {
+          command: 'GET_LYRICS',
+          args: [`spotify:track:${trackId}`]
+        }
+      })
+
+      if (data) {
+        if (data instanceof Error) {
+          console.error(data.message)
+          return
+        }
+
+        let ret = ''
+        for (const line of data.lyrics.lines) {
+          ret += line.words + '\n'
+        }
+
+        return ret
+      }
+    }
+
+    return
   }
 }

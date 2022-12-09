@@ -43,7 +43,7 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
   public playerProcess?: ChildProcess
 
   public config: ConstructorConfig | undefined
-  private isConnected = false
+  public isConnected = false
 
   private eventEmitter = new EventEmitter()
 
@@ -72,10 +72,12 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
     }
   }
 
-  private sendAsync(message: SpotifyMessage) {
+  private async sendAsync<T extends SpotifyRequests.SpotifyCommands>(
+    message: SpotifyMessage
+  ): Promise<SpotifyRequests.ReturnType<T> | Error | undefined> {
     if (this.playerProcess && !this.playerProcess.killed && this.playerProcess.connected) {
       // Don't reject error instead resolve it. Makes it easier to pass it to renderer
-      return new Promise<unknown>((resolve) => {
+      return new Promise<SpotifyRequests.ReturnType<T> | Error>((resolve) => {
         const id = v1()
         let resolved = false
         const listener = (message: PlayerChannelMessage) => {
@@ -88,7 +90,7 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
               resolve(new Error(message.error))
               return
             }
-            resolve(message.data)
+            resolve(message.data as SpotifyRequests.ReturnType<T>)
           }
         }
 
@@ -105,10 +107,13 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
         this.playerProcess?.send({ data: message, channel: id })
       })
     }
+
+    return undefined
   }
 
   public closePlayer(event?: Electron.IpcMainEvent, request?: IpcRequest) {
     if (this.playerProcess) {
+      this.isConnected = false
       this.playerProcess.removeAllListeners()
       this.playerProcess.kill()
       this.eventEmitter.removeAllListeners()
@@ -143,9 +148,13 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
   }
 
   @spawn_child()
-  private async command(event: Electron.IpcMainEvent, request: IpcRequest<SpotifyRequests.Command>) {
-    const resp = await this.sendAsync({ type: 'COMMAND', args: request.params })
-    event.reply(request.responseChannel, resp)
+  public async command<T extends SpotifyRequests.SpotifyCommands>(
+    event: Electron.IpcMainEvent | undefined,
+    request: IpcRequest<SpotifyRequests.Command<T>>
+  ) {
+    const resp = await this.sendAsync<T>({ type: 'COMMAND', args: request.params })
+    event?.reply(request.responseChannel, resp)
+    return resp
   }
 
   @spawn_child()
@@ -174,7 +183,11 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
     const ret = await this.sendAsync({ type: 'CONNECT', args: request.params })
     if (!(ret instanceof Error)) {
       this.config = request.params
+      this.isConnected = true
+    } else {
+      this.isConnected = false
     }
+
     event.reply(request.responseChannel, ret)
   }
 

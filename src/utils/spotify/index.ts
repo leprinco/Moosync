@@ -130,7 +130,11 @@ class SpotifyPlayerProcess {
       }
 
       if (command === 'GET_CANVAS') {
-        return await this.player?.getMetadata(args[0] as string)
+        return await this.player?.getCanvas(args[0] as string)
+      }
+
+      if (command === 'GET_LYRICS') {
+        return await this.player?.getLyrics(args[0] as string)
       }
     }
   }

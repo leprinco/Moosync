@@ -89,14 +89,16 @@ declare namespace SpotifyRequests {
     scopes: import('librespot-node').TokenScope[]
   }
 
-  type SpotifyCommands = 'PLAY' | 'PAUSE' | 'SEEK' | 'VOLUME' | 'LOAD' | 'ADD_TO_QUEUE' | 'GET_CANVAS'
+  type SpotifyCommands = 'PLAY' | 'PAUSE' | 'SEEK' | 'VOLUME' | 'LOAD' | 'ADD_TO_QUEUE' | 'GET_CANVAS' | 'GET_LYRICS'
 
   type ReturnType<T extends SpotifyCommands> = T extends 'GET_CANVAS'
     ? import('librespot-node').CanvazResponse
+    : T extends 'GET_LYRICS'
+    ? import('librespot-node').LyricsResponse
     : undefined
 
-  interface Command {
-    command: SpotifyCommands
+  interface Command<T extends SpotifyCommands> {
+    command: T
     args: unknown[]
   }
 }
@@ -218,8 +220,7 @@ declare namespace SearchRequests {
   }
 
   interface LyricsScrape {
-    artists: string[]
-    title: string
+    song: Song
   }
 
   interface InvidiousRequest {

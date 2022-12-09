@@ -294,10 +294,10 @@ contextBridge.exposeInMainWorld('SearchUtils', {
       params: { url }
     }),
 
-  searchLyrics: (artists: string[], title: string) =>
+  searchLyrics: (song: Song) =>
     ipcRendererHolder.send<SearchRequests.LyricsScrape>(IpcEvents.SEARCH, {
       type: SearchEvents.SCRAPE_LYRICS,
-      params: { artists, title }
+      params: { song }
     }),
 
   requestInvidious: <T extends InvidiousResponses.InvidiousApiResources, K extends InvidiousResponses.SearchTypes>(
@@ -702,8 +702,8 @@ contextBridge.exposeInMainWorld('SpotifyPlayer', {
     ipcRendererHolder.off(responseChannel, listener)
   },
 
-  command: (command: SpotifyRequests.SpotifyCommands, args: never[]) =>
-    ipcRendererHolder.send<SpotifyRequests.Command>(IpcEvents.SPOTIFY, {
+  command: <T extends SpotifyRequests.SpotifyCommands>(command: T, args: never[]) =>
+    ipcRendererHolder.send<SpotifyRequests.Command<T>>(IpcEvents.SPOTIFY, {
       type: SpotifyEvents.COMMAND,
       params: {
         command,
