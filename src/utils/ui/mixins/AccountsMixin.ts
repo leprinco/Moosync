@@ -38,7 +38,7 @@ export default class AccountsMixin extends mixins(ProviderMixin) {
   protected providers: Provider[] = this.fetchProviders()
 
   protected async getUserDetails(provider: Provider) {
-    const username = (await provider?.provider.getUserDetails()) ?? ''
+    const username = (await provider?.provider.getUserDetails()) ?? 'Failed to get username'
     this.$set(provider, 'username', username)
     // if (!provider.username) {
     //   provider.provider.signOut()
