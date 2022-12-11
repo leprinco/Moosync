@@ -39,7 +39,7 @@
           <CheckboxGroup
             :title="$t('settings.system.queueSettings.title')"
             class="mt-4"
-            :tooltip="$t('settings.system.queueSettings_tooltip')"
+            :tooltip="$t('settings.system.queueSettings.tooltip')"
             :isExtension="false"
             :defaultValue="queueCheckboxValues"
             key="queue"
@@ -418,7 +418,7 @@ export default class System extends Vue {
     return [
       {
         key: 'use_librespot',
-        title: this.$tc('settings.system.spotify.librespot.enable'),
+        title: this.$tc('settings.system.spotify.librespotEnable'),
         enabled: false
       }
     ]
@@ -560,7 +560,7 @@ export default class System extends Vue {
     return [
       {
         key: 'clear_queue_playlist',
-        title: 'Clear queue before adding playing a playlist',
+        title: this.$tc('settings.system.queueSettings.clearQueue'),
         enabled: false
       }
     ]

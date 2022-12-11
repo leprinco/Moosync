@@ -124,10 +124,13 @@ function interceptHttp() {
   // Essentially spoofing window.location.origin to become http://localhost
   if (!process.env.WEBPACK_DEV_SERVER_URL) {
     session.defaultSession.protocol.interceptFileProtocol('http', async (request, callback) => {
-      let pathName = new URL(request.url).pathname
-      pathName = decodeURI(pathName)
+      const parsedUrl = new URL(request.url)
+      const host = parsedUrl.hostname
+      const pathName = decodeURI(parsedUrl.pathname)
 
       const filePath = path.join(__dirname, pathName)
+
+      console.log('serving', filePath, host, pathName)
 
       // deregister intercept after we handle index.js
       if (request.url.includes('index.html')) {
