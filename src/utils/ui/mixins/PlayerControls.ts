@@ -67,6 +67,10 @@ export default class PlayerControls extends Vue {
     this.$toasted.show(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
   }
 
+  public clearQueue() {
+    vxm.player.clearQueue()
+  }
+
   public play() {
     vxm.player.playerState = 'PLAYING'
   }

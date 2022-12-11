@@ -37,6 +37,15 @@
           </b-col>
 
           <CheckboxGroup
+            :title="$t('settings.system.queueSettings.title')"
+            class="mt-4"
+            :tooltip="$t('settings.system.queueSettings_tooltip')"
+            :isExtension="false"
+            :defaultValue="queueCheckboxValues"
+            key="queue"
+          />
+
+          <CheckboxGroup
             :title="$t('settings.system.audioSettings.title')"
             class="mt-4"
             :tooltip="$t('settings.system.audioSettings_tooltip')"
@@ -545,6 +554,16 @@ export default class System extends Vue {
       title: this.$tc('settings.system.systemSettings.watchFileChanges'),
       enabled: false
     }
+  }
+
+  get queueCheckboxValues(): SystemSettings[] {
+    return [
+      {
+        key: 'clear_queue_playlist',
+        title: 'Clear queue before adding playing a playlist',
+        enabled: false
+      }
+    ]
   }
 
   private openSpotifyHelp() {

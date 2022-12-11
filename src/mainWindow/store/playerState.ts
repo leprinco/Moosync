@@ -297,4 +297,13 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
     const playCounts = await window.SearchUtils.getPlayCount(...Object.keys(this.queueData))
     this.setPlayCounts(playCounts)
   }
+
+  @mutation
+  clearQueue() {
+    if (this.songQueue.order.length > 0) {
+      this.songQueue.order = []
+      this.songQueue.index = -1
+      this.playerState = 'STOPPED'
+    }
+  }
 }

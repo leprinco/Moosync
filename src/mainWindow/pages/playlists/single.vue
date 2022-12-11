@@ -215,6 +215,12 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   }
 
   private async playPlaylist() {
+    const clearQueue = (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('queue.clear_queue_playlist'))
+      ?.enabled
+    if (clearQueue) {
+      this.clearQueue()
+    }
+
     this.playTop(this.songList)
     this.fetchAll(this.queueSong)
   }

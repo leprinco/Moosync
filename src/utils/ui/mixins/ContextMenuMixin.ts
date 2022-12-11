@@ -193,6 +193,13 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
         }
       },
       {
+        label: this.$tc('contextMenu.song.clearAndPlay'),
+        handler: () => {
+          this.clearQueue()
+          this.playTop(item)
+        }
+      },
+      {
         label: this.$tc('contextMenu.song.addToQueue'),
         handler: () => {
           this.queueSong(item)

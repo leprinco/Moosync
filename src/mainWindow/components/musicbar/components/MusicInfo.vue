@@ -120,6 +120,7 @@ import SongDetailsCompact from '@/mainWindow/components/songView/components/Song
 import { PeerMode } from '@/mainWindow/store/syncState'
 import CrossIcon from '@/icons/CrossIcon.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
+import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 
 @Component({
   components: {
@@ -130,7 +131,7 @@ import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
     CrossIcon
   }
 })
-export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxMixin) {
+export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxMixin, PlayerControls) {
   private hasFrame = false
   private ignoreScroll = false
   private lyrics = ''
