@@ -63,6 +63,11 @@ jobs:
       - if: ${{ runner.os == 'Linux' }}
         run: sudo apt-get update -y && sudo apt-get install -y libarchive-tools rpm libasound2-dev
 
+      - name: Remove postinstall
+        run: |
+          sed -i -e 's/\"postinstall\":.*/\"postinstall\": \"patch-package\",/' package.json
+        shell: bash
+
       - name: yarn install
         run: yarn install --immutable
 
