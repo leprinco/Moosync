@@ -130,17 +130,12 @@ function interceptHttp() {
 
       const filePath = path.join(__dirname, pathName)
 
-      console.log('serving', filePath, host, pathName)
-
-      // deregister intercept after we handle index.js
-      if (request.url.includes('index.html')) {
-        session.defaultSession.protocol.uninterceptProtocol('http')
-      }
-
-      try {
-        callback(filePath)
-      } catch (e) {
-        logger.error(e)
+      if (host === 'localhost') {
+        try {
+          callback(filePath)
+        } catch (e) {
+          logger.error(e)
+        }
       }
     })
   }
