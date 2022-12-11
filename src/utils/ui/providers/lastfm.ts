@@ -247,8 +247,13 @@ export class LastFMProvider extends GenericProvider {
   }
 
   public async getUserDetails() {
-    const resp = await this.populateRequest('GET', ApiResources.GET_USER_INFO)
-    return (this.username = resp?.user?.name ?? '')
+    try {
+      const resp = await this.populateRequest('GET', ApiResources.GET_USER_INFO)
+      return (this.username = resp?.user?.name ?? '')
+    } catch (e) {
+      console.error(e)
+      return 'Failed to get username'
+    }
   }
 
   private async parseTrack(track: string, artist: string) {

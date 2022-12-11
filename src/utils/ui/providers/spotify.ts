@@ -263,7 +263,12 @@ export class SpotifyProvider extends GenericProvider {
   }
 
   public async getUserDetails(): Promise<string | undefined> {
-    return (await this.getUser())?.display_name
+    try {
+      return (await this.getUser())?.display_name
+    } catch (e) {
+      console.error(e)
+      return 'Failed to get username'
+    }
   }
 
   private parsePlaylists(items: SpotifyResponses.UserPlaylists.Item[]) {

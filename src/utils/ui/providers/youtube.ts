@@ -175,8 +175,12 @@ export class YoutubeProvider extends GenericProvider {
       )
 
       const username = resp?.items?.at(0)?.snippet?.title
-      if (username || retries > 0) {
+      if (username) {
         return username
+      }
+
+      if (retries > 0) {
+        return 'Failed to get username'
       }
 
       return this.getUserDetails(true, retries + 1)
