@@ -60,6 +60,8 @@ export class ExtensionManager extends AbstractExtensionManager {
 
     env['MOOSYNC_VERSION'] = process.env.MOOSYNC_VERSION
     env['installPath'] = this.installPath
+
+    return env
   }
 
   private async getVM(entryFilePath: string, extensionPath: string) {
