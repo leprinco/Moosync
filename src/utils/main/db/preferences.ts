@@ -21,29 +21,32 @@ import { defaultKeybinds } from '@/utils/commonConstants'
 
 type MusicPaths = { path: string; enabled: boolean }
 
-const defaultPreferences: Preferences = {
-  isFirstLaunch: true,
-  musicPaths: [{ path: getDefaultMusicPaths(), enabled: true }],
-  exclude_musicPaths: [],
-  thumbnailPath: path.join(app.getPath('appData'), app.getName(), '.thumbnails'),
-  artworkPath: path.join(app.getPath('appData'), app.getName(), '.thumbnails'),
-  youtubeAlt: [],
-  youtubeOptions: [],
-  invidious: [],
-  system: [],
-  audio: [],
-  zoomFactor: '100',
-  themes: {},
-  activeTheme: 'default',
-  hotkeys: defaultKeybinds,
-  logs: [],
-  lyrics_fetchers: []
+const getDefaultPreferences = () => {
+  const musicPath = getDefaultMusicPaths()
+  return {
+    isFirstLaunch: true,
+    musicPaths: musicPath ? [{ path: musicPath, enabled: true }] : [],
+    exclude_musicPaths: [],
+    thumbnailPath: path.join(app.getPath('appData'), app.getName(), '.thumbnails'),
+    artworkPath: path.join(app.getPath('appData'), app.getName(), '.thumbnails'),
+    youtubeAlt: [],
+    youtubeOptions: [],
+    invidious: [],
+    system: [],
+    audio: [],
+    zoomFactor: '100',
+    themes: {},
+    activeTheme: 'default',
+    hotkeys: defaultKeybinds,
+    logs: [],
+    lyrics_fetchers: []
+  } as Preferences
 }
 
 let ac: AbortController
 
 export const store = new Store({
-  defaults: { prefs: defaultPreferences },
+  defaults: { prefs: getDefaultPreferences() },
   serialize: (value) => JSON.stringify(value)
 })
 
@@ -236,7 +239,7 @@ export function setupScanWatcher(dirs: MusicPaths[]) {
  */
 function validatePrefs(prefs: Preferences): Preferences {
   if (prefs) {
-    for (const [key, value] of Object.entries(defaultPreferences)) {
+    for (const [key, value] of Object.entries(getDefaultPreferences())) {
       if (isEmpty(prefs[key as keyof Preferences])) {
         prefs[key as keyof Preferences] = value as never
       }
@@ -245,7 +248,7 @@ function validatePrefs(prefs: Preferences): Preferences {
     return prefs
   }
 
-  return defaultPreferences
+  return getDefaultPreferences()
 }
 
 /**
@@ -263,7 +266,7 @@ export function loadPreferences(): Preferences {
   } catch (e) {
     console.error(e)
   }
-  return defaultPreferences
+  return getDefaultPreferences()
 }
 
 export function getCombinedMusicPaths() {
@@ -290,7 +293,11 @@ export function getDisabledPaths(): string[] {
 }
 
 function getDefaultMusicPaths() {
-  return app.getPath('music')
+  try {
+    return app.getPath('music')
+  } catch (e) {
+    console.error(e)
+  }
 }
 
 export function setPreferenceListenKey(key: string, isMainWindow = false) {
