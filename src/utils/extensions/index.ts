@@ -73,7 +73,14 @@ export class MainHostIPCHandler {
   }
 
   private createExtensionHost() {
-    const process = fork(__dirname + '/sandbox.js', ['extensionPath', defaultExtensionPath, 'logPath', defaultLogPath])
+    const process = fork(__dirname + '/sandbox.js', [
+      'extensionPath',
+      defaultExtensionPath,
+      'logPath',
+      defaultLogPath,
+      'installPath',
+      app.getAppPath()
+    ])
     this.isAlive = true
     return process
   }

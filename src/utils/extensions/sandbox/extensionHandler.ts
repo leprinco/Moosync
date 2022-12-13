@@ -23,9 +23,9 @@ export class ExtensionHandler {
   // eslint-disable-next-line @typescript-eslint/ban-types
   private preInitializedCalls: { func: Function; args?: unknown[] }[]
 
-  constructor(searchPaths: string[], logsPath: string) {
+  constructor(searchPaths: string[], logsPath: string, installPath: string) {
     this.preInitializedCalls = []
-    this.extensionManager = new ExtensionManager(logsPath)
+    this.extensionManager = new ExtensionManager(logsPath, installPath)
     this.extensionFinder = new ExtensionFinder(searchPaths)
 
     this.registerPlugins().then(() => {

@@ -26,6 +26,7 @@ class ExtensionHostIPCHandler {
   constructor() {
     let extensionPath = ''
     let logsPath = ''
+    let installPath = ''
     for (const [index, arg] of process.argv.entries()) {
       if (process.argv[index + 1]) {
         if (arg === 'extensionPath') {
@@ -35,13 +36,17 @@ class ExtensionHostIPCHandler {
         if (arg === 'logPath') {
           logsPath = process.argv[index + 1]
         }
+
+        if (arg === 'installPath') {
+          installPath = process.argv[index + 1]
+        }
       }
     }
 
     this.logsPath = logsPath
     this.setupLogger()
 
-    this.extensionHandler = new ExtensionHandler([extensionPath], logsPath)
+    this.extensionHandler = new ExtensionHandler([extensionPath], logsPath, installPath)
     this.mainRequestHandler = new MainRequestHandler(this.extensionHandler)
 
     this.registerListeners()

@@ -25,10 +25,12 @@ export abstract class AbstractExtensionManager {
 export class ExtensionManager extends AbstractExtensionManager {
   private extensionRegistry = new InMemoryRegistry()
   private logsPath: string
+  private installPath: string
 
-  constructor(logsPath: string) {
+  constructor(logsPath: string, installPath: string) {
     super()
     this.logsPath = logsPath
+    this.installPath = installPath
   }
 
   private register(extensionItem: ExtensionItem) {
@@ -57,7 +59,7 @@ export class ExtensionManager extends AbstractExtensionManager {
     delete env['GH_TOKEN']
 
     env['MOOSYNC_VERSION'] = process.env.MOOSYNC_VERSION
-    return env
+    env['installPath'] = this.installPath
   }
 
   private async getVM(entryFilePath: string, extensionPath: string) {
