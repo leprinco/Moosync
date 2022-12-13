@@ -237,6 +237,9 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
   }
 
   @mutation loadSong(song: Song | null | undefined) {
+    if (this.currentSong?._id === song?._id) {
+      this.currentSong = null
+    }
     this.currentSong = song
   }
 

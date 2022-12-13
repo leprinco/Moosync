@@ -12,7 +12,7 @@ import { Component, Vue } from 'vue-property-decorator'
 
 @Component
 export default class JukeboxMixin extends Vue {
-  protected get isJukeboxModeActive() {
+  public get isJukeboxModeActive() {
     return vxm.themes.jukeboxMode
   }
 }

@@ -87,8 +87,9 @@ export default class AudioStream extends mixins(
   @Prop({ default: 0 })
   forceSeek!: number
 
-  @Prop({ default: null })
-  currentSong!: Song | null | undefined
+  get currentSong(): Song | null | undefined {
+    return vxm.player.currentSong
+  }
 
   /**
    * Player responsible for handling current song
@@ -369,6 +370,7 @@ export default class AudioStream extends mixins(
   private async onSongEnded() {
     vxm.player.playAfterLoad = true
     this.lastLoadedSong = undefined
+    vxm.player.currentSong = undefined
     if (this.repeat && this.currentSong) {
       // Re load entire audio instead of setting current time to 0
       this.loadAudio(this.currentSong, false)
@@ -745,6 +747,7 @@ export default class AudioStream extends mixins(
   private lastLoadedSong?: Song
 
   private async loadAudio(song: Song, loadedState: boolean) {
+    console.log('trying to load', song)
     if (!this.playersInitialized) {
       return
     }
@@ -756,9 +759,8 @@ export default class AudioStream extends mixins(
       }
     }
 
-    console.debug('Got duplicate song', song)
-
     if (song._id === this.lastLoadedSong?._id) {
+      console.debug('Got duplicate song', song)
       return
     }
 

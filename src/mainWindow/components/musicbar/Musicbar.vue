@@ -56,12 +56,7 @@
       :style="{ height: `calc(100% - ${!hasFrame ? '7.5rem' : '6rem'})` }"
     >
       <MusicInfo :currentSong="currentSong">
-        <AudioStream
-          :playerState="playerState"
-          :currentSong="currentSong"
-          @onTimeUpdate="updateTimestamp"
-          :forceSeek="forceSeek"
-        />
+        <AudioStream :playerState="playerState" @onTimeUpdate="updateTimestamp" :forceSeek="forceSeek" />
       </MusicInfo>
     </div>
   </div>
