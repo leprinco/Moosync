@@ -35,7 +35,9 @@ const enum ButtonEnum {
   ChannelUp = 8,
   ChannelDown = 9,
   Shuffle = 10,
-  Repeat = 11
+  Repeat = 11,
+  Seek = 12,
+  PlayPause = 13
 }
 
 import { Component, Prop, Ref, Watch } from 'vue-property-decorator'
@@ -538,6 +540,9 @@ export default class AudioStream extends mixins(
           break
         case ButtonEnum.Repeat:
           this.toggleRepeat()
+          break
+        case ButtonEnum.PlayPause:
+          this.togglePlay()
           break
       }
     })
