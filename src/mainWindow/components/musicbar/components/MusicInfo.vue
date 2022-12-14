@@ -201,18 +201,25 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
     bus.$emit(EventBus.REFRESH_LYRICS, this.lyrics)
   }
 
-  @Watch('currentSong', { immediate: true })
-  async onSongChange() {
-    this.lyrics = ''
+  private async fetchSpotifyCanvas() {
+    if (this.currentSong?.type === 'SPOTIFY') {
+      const shouldFetchCanvas =
+        (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('spotify.librespot.options.use_spotify_canvas'))
+          ?.enabled ?? true
 
-    if (this.currentSong) {
-      if (this.currentSong.type === 'SPOTIFY') {
-        if ((await vxm.providers.spotifyProvider.getLoggedIn()) && vxm.providers.spotifyProvider.canPlayPremium) {
-          const resp = await window.SpotifyPlayer.command('GET_CANVAS', [`spotify:track:${this.currentSong.url}`])
-          vxm.themes.currentSpotifyCanvas = resp.canvases?.at(0)?.url ?? null
-        }
+      if (
+        shouldFetchCanvas &&
+        (await vxm.providers.spotifyProvider.getLoggedIn()) &&
+        vxm.providers.spotifyProvider.canPlayPremium
+      ) {
+        const resp = await window.SpotifyPlayer.command('GET_CANVAS', [`spotify:track:${this.currentSong.url}`])
+        vxm.themes.currentSpotifyCanvas = resp.canvases?.at(0)?.url ?? null
       }
+    }
+  }
 
+  private async fetchLyrics() {
+    if (this.currentSong) {
       if (this.currentSong.lyrics) {
         this.lyrics = this.currentSong.lyrics
       } else {
@@ -229,6 +236,14 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
         window.DBUtils.updateLyrics(_id, resp as string)
       }
     }
+  }
+
+  @Watch('currentSong', { immediate: true })
+  async onSongChange() {
+    this.lyrics = ''
+
+    this.fetchSpotifyCanvas()
+    this.fetchLyrics()
   }
 
   @Watch('currentIndex')

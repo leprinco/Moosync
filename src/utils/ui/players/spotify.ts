@@ -17,7 +17,8 @@ export class SpotifyPlayer extends Player {
 
   public async canPlay(src: string): Promise<boolean> {
     await vxm.providers.spotifyProvider.getLoggedIn()
-    if (vxm.providers.spotifyProvider.canPlayPremium && src.startsWith('spotify:track:')) {
+    const shouldPlay = await vxm.providers.spotifyProvider.shouldPlayPremium()
+    if (vxm.providers.spotifyProvider.canPlayPremium && shouldPlay && src.startsWith('spotify:track:')) {
       return true
     }
     return false

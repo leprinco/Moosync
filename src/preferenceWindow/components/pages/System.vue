@@ -142,6 +142,15 @@
               :tooltip="$t('settings.system.spotify.password_tooltip')"
               type="password"
             />
+
+            <CheckboxGroup
+              :title="$t('settings.system.spotify.librespot.title')"
+              :tooltip="$t('settings.system.spotify.librespot.tooltip')"
+              class="mt-4"
+              key="spotify.librespot.options"
+              :defaultValue="librespotOptions"
+              :isExtension="false"
+            />
           </b-col>
 
           <b-row v-if="showRestartButton">
@@ -420,6 +429,21 @@ export default class System extends Vue {
         key: 'use_librespot',
         title: this.$tc('settings.system.spotify.librespotEnable'),
         enabled: false
+      }
+    ]
+  }
+
+  get librespotOptions(): Checkbox[] {
+    return [
+      {
+        key: 'use_spotify_canvas',
+        title: this.$tc('settings.system.spotify.useSpotifyCanvas'),
+        enabled: true
+      },
+      {
+        key: 'use_librespot_playback',
+        title: this.$tc('settings.system.spotify.useLibrespotPlayback'),
+        enabled: true
       }
     ]
   }

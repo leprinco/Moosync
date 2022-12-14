@@ -50,6 +50,15 @@ export class SpotifyProvider extends GenericProvider {
   private _config!: ReturnType<SpotifyProvider['getConfig']>
 
   public canPlayPremium = false
+  public async shouldPlayPremium() {
+    return (
+      (
+        await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>(
+          'spotify.librespot.options.use_librespot_playback'
+        )
+      )?.enabled ?? true
+    )
+  }
 
   public get key() {
     return 'spotify'
@@ -464,16 +473,20 @@ export class SpotifyProvider extends GenericProvider {
 
   public async validatePlaybackURL(playbackUrl: string): Promise<boolean> {
     await this.getLoggedIn()
-    if (this.canPlayPremium && playbackUrl.startsWith('spotify:track:')) {
-      if (playbackUrl === 'spotify:track:undefined') return false
-      return true
+    if (this.canPlayPremium && (await this.shouldPlayPremium())) {
+      if (playbackUrl.startsWith('spotify:track:')) {
+        if (playbackUrl === 'spotify:track:undefined') return false
+        return true
+      }
+      return false
+    } else {
+      if (!playbackUrl.startsWith('spotify:track:')) return true
+      return false
     }
-    if (!this.canPlayPremium && !playbackUrl.startsWith('spotify:track:')) return true
-    return false
   }
 
   public async getPlaybackUrlAndDuration(song: Song) {
-    if (this.canPlayPremium) {
+    if (this.canPlayPremium && (await this.shouldPlayPremium())) {
       return { url: `spotify:track:${song.url}`, duration: song.duration }
     }
 
