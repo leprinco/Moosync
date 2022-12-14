@@ -23,13 +23,16 @@ export class LyricsFetcher extends CacheHandler {
   public async getLyrics(song: Song) {
     const useAzLyrics = loadSelectiveArrayPreference<Checkbox>('lyrics_fetchers.az_lyrics')?.enabled ?? true
     const useGoogleLyrics = loadSelectiveArrayPreference<Checkbox>('lyrics_fetchers.az_lyrics')?.enabled ?? true
+    const useSpotifyLyrics = loadSelectiveArrayPreference<Checkbox>('lyrics_fetchers.spotify_lyrics')?.enabled ?? true
 
     let lyrics: string | undefined
 
     const artists = song.artists?.map((val) => val.artist_name ?? '') ?? []
     const title = song.title
 
-    lyrics = await this.querySpotify(song)
+    if (!lyrics && useSpotifyLyrics) {
+      lyrics = await this.querySpotify(song)
+    }
 
     if (!lyrics && useAzLyrics) {
       lyrics = await this.queryAZLyrics(artists, title)
