@@ -158,7 +158,7 @@ export class YTScraper extends CacheHandler {
       artists.push({
         artist_id: `youtube-author:${a.artistId}`,
         artist_name: a.name,
-        artist_coverPath: a.thumbnails?.find((val) => val),
+        artist_coverPath: this.getHighResThumbnail((a as Record<string, string>).thumbnailUrl),
         artist_extra_info: {
           youtube: {
             channel_id: a.artistId
