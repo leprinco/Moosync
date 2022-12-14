@@ -137,8 +137,8 @@ export class SpotifyPlayer extends Player {
     undefined
   }
 
-  preload(src: string): void {
-    window.SpotifyPlayer.command('ADD_TO_QUEUE', [src])
+  preload(): void {
+    // window.SpotifyPlayer.command('ADD_TO_QUEUE', [src])
   }
 
   async close() {
