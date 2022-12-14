@@ -96,6 +96,7 @@ import ImageLoader from '@/utils/ui/mixins/ImageLoader'
 import FileMixin from '@/utils/ui/mixins/FileMixin'
 import { convertDuration } from '@/utils/common'
 import TabCarousel from '../../generic/TabCarousel.vue'
+import RandomIcon from '@/icons/RandomIcon.vue'
 
 @Component({
   components: {
@@ -105,7 +106,8 @@ import TabCarousel from '../../generic/TabCarousel.vue'
     AddToQueue,
     YoutubeIcon,
     SpotifyIcon,
-    TabCarousel
+    TabCarousel,
+    RandomIcon
   }
 })
 export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileMixin) {
