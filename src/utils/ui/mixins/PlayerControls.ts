@@ -53,6 +53,7 @@ export default class PlayerControls extends Vue {
     if (!this.isSyncing) vxm.player.playAfterLoad = true
 
     this.$toasted.show(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
+    this.play()
   }
 
   public async playNext(songs: Song[]) {
