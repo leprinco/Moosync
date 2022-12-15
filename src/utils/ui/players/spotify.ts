@@ -9,6 +9,7 @@ export class SpotifyPlayer extends Player {
   private ignorePause = false
 
   private loadingCallback: (() => void) | undefined
+  private timeUpdateCallback: ((pos: number) => void) | undefined
   private autoPlayQueued = false
 
   public provides(): PlayerTypes[] {
@@ -38,6 +39,9 @@ export class SpotifyPlayer extends Player {
     await window.SpotifyPlayer.command('LOAD', [src])
     volume && (this.volume = volume)
     autoplay && (this.autoPlayQueued = true)
+
+    // Emit time as 0 after loading song
+    this.timeUpdateCallback && this.timeUpdateCallback(0)
   }
 
   async _play(): Promise<void> {
@@ -84,6 +88,7 @@ export class SpotifyPlayer extends Player {
   }
 
   protected listenOnTimeUpdate(callback: (time: number) => void): void {
+    this.timeUpdateCallback = callback
     this.registerListener('TimeUpdated', (e) => callback(e.position_ms / 1000))
   }
 
