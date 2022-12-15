@@ -93,10 +93,11 @@ export function saveSelectivePreference(key: string, value: unknown, isExtension
     store.delete(`prefs.${isExtension ? 'extension.' : ''}${key}` as unknown as 'prefs')
   }
 
-  const listenKey = preferenceListenKeys.find((val) => val.key === key)
-  if (listenKey) {
-    getPreferenceChannel().notifyWindow(listenKey.key, value, listenKey.isMainWindow, listenKey.channel)
-  }
+  const listenKeys = preferenceListenKeys.filter((val) => val.key === key)
+  for (const l of listenKeys)
+    if (listenKeys) {
+      getPreferenceChannel().notifyWindow(l.key, value, l.isMainWindow, l.channel)
+    }
 }
 
 /**
@@ -302,6 +303,7 @@ function getDefaultMusicPaths() {
 
 export function setPreferenceListenKey(key: string, isMainWindow = false) {
   const channel = `${key}:mainWindow:${isMainWindow}`
+  console.debug('listening', channel)
   preferenceListenKeys.push({ key, isMainWindow, channel })
   return channel
 }

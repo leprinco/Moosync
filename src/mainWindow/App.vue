@@ -423,7 +423,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     )
   }
 
-  private listenThemeChanges() {
+  private async listenThemeChanges() {
     window.PreferenceUtils.listenPreferenceChanged('activeTheme', true, async () => {
       const theme = await window.ThemeUtils.getActiveTheme()
       this.setColorsToRoot(theme)
@@ -431,6 +431,16 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
 
     window.PreferenceUtils.listenPreferenceChanged('songView', true, (_, value) => {
       vxm.themes.songView = value
+    })
+
+    vxm.themes.showSpotifyCanvas =
+      (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('spotify.librespot.options.use_spotify_canvas'))
+        ?.enabled ?? true
+
+    window.PreferenceUtils.listenPreferenceChanged('spotify.librespot.options', true, (_, value) => {
+      console.log(value)
+      vxm.themes.showSpotifyCanvas =
+        (value as Checkbox[]).find((val) => val.key === 'use_spotify_canvas')?.enabled ?? true
     })
   }
 

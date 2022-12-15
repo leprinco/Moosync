@@ -7,7 +7,7 @@
         leave-active-class="animate__animated animate__fadeOut animate__faster"
       >
         <video
-          v-if="spotifyCanvas"
+          v-if="showSpotifyCanvas && spotifyCanvas"
           class="bg-img w-100 h-100"
           :src="spotifyCanvas"
           :key="spotifyCanvas"
@@ -125,6 +125,10 @@ export default class App extends mixins(ImgLoader) {
 
   private get spotifyCanvas() {
     return vxm.themes.currentSpotifyCanvas
+  }
+
+  private get showSpotifyCanvas() {
+    return vxm.themes.showSpotifyCanvas
   }
 
   @Ref('lyrics-container')

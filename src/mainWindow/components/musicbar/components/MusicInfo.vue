@@ -15,7 +15,14 @@
       enter-active-class="animate__animated animate__fadeIn"
       leave-active-class="animate__animated animate__fadeOut animate__faster"
     >
-      <video v-if="spotifyCanvas" class="bg-img w-100 h-100" :src="spotifyCanvas" :key="spotifyCanvas" autoplay loop />
+      <video
+        v-if="showSpotifyCanvas && spotifyCanvas"
+        class="bg-img w-100 h-100"
+        :src="spotifyCanvas"
+        :key="spotifyCanvas"
+        autoplay
+        loop
+      />
       <b-img
         class="bg-img"
         v-else-if="computedImg"
@@ -201,14 +208,14 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
     bus.$emit(EventBus.REFRESH_LYRICS, this.lyrics)
   }
 
+  private get showSpotifyCanvas() {
+    return vxm.themes.showSpotifyCanvas
+  }
+
   private async fetchSpotifyCanvas() {
     if (this.currentSong?.type === 'SPOTIFY') {
-      const shouldFetchCanvas =
-        (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('spotify.librespot.options.use_spotify_canvas'))
-          ?.enabled ?? true
-
       if (
-        shouldFetchCanvas &&
+        this.showSpotifyCanvas &&
         (await vxm.providers.spotifyProvider.getLoggedIn()) &&
         vxm.providers.spotifyProvider.canPlayPremium
       ) {

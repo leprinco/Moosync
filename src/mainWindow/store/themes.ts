@@ -23,6 +23,7 @@ export class ThemeStore extends VuexModule.With({ namespaced: 'themes' }) {
   public queueSortBy?: SongSortOptions
 
   public currentSpotifyCanvas: string | null = null
+  public showSpotifyCanvas = true
 
   public showPlayer = 0
 
