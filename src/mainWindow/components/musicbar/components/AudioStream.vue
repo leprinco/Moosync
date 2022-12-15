@@ -181,31 +181,31 @@ export default class AudioStream extends mixins(
    * and setting new player as active
    */
   private async onPlayerTypesChanged(newType: PlayerTypes, src?: string): Promise<string | undefined> {
-    if (this.activePlayerTypes !== newType) {
+    const blacklist = []
+    let player: Player | undefined = undefined
+
+    let tries = vxm.playerRepo.allPlayers.length
+    while (!player && tries > 0) {
+      player = this.findPlayer(newType, blacklist)
+      if (player && src) {
+        console.debug('Checking player', player.key, 'for', src)
+        if (!(await player.canPlay(src))) {
+          blacklist.push(player.key)
+          player = undefined
+        }
+      }
+      tries -= 1
+    }
+
+    if (player && this.activePlayer !== player) {
       console.debug('Changing player type to', newType)
       this.unloadAudio()
 
       // Old active player may be null when window loads
       this.activePlayer?.removeAllListeners()
-
-      const blacklist = []
-      let player: Player | undefined = undefined
-
-      let tries = vxm.playerRepo.allPlayers.length
-      while (!player && tries > 0) {
-        player = this.findPlayer(newType, blacklist)
-        if (player && src) {
-          console.debug('Checking player', player.key, 'for', src)
-          if (!(await player.canPlay(src))) {
-            blacklist.push(player.key)
-            player = undefined
-          }
-        }
-        tries -= 1
-      }
+      this.activePlayer = player
 
       if (player) {
-        this.activePlayer = player
         await this.initializePlayer(this.activePlayer)
 
         // Players might not have been initialized
