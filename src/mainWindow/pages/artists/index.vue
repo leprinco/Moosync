@@ -9,27 +9,25 @@
 
 <template>
   <div class="h-100 w-100 parent" @contextmenu="contextHandler">
-    <b-container fluid>
-      <b-row no-gutters class="page-title">{{ $t('pages.artists') }}</b-row>
-      <b-row class="d-flex">
-        <b-col col xl="2" md="3" v-for="artist in artistList" :key="artist.artist_id">
-          <CardView
-            :title="artist.artist_name"
-            :imgSrc="artist.artist_coverPath"
-            @click.native="gotoArtist(artist)"
-            @CardContextMenu="singleItemContextHandler(artist, arguments[0])"
-          >
-            <template #defaultCover> <ArtistDefault /></template>
-          </CardView>
-        </b-col>
-      </b-row>
-    </b-container>
+    <CardRecycleScroller
+      :title="$t('pages.artists')"
+      :itemList="artistList"
+      :titleKey="'artist_name'"
+      :imageKey="'artist_coverPath'"
+      :keyField="'artist_id'"
+      @click="gotoArtist"
+      @CardContextMenu="singleItemContextHandler"
+    >
+      <template #defaultCover>
+        <ArtistDefault />
+      </template>
+    </CardRecycleScroller>
   </div>
 </template>
 
 <script lang="ts">
 import { Component } from 'vue-property-decorator'
-import CardView from '@/mainWindow/components/generic/CardView.vue'
+import CardRecycleScroller from '@/mainWindow/components/generic/CardRecycleScroller.vue'
 import { mixins } from 'vue-class-component'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
 import ArtistDefault from '@/icons/ArtistDefaultIcon.vue'
@@ -38,12 +36,12 @@ import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 
 @Component({
   components: {
-    CardView,
+    CardRecycleScroller,
     ArtistDefault
   }
 })
 export default class ArtistsPage extends mixins(RouterPushes, ContextMenuMixin) {
-  private artistList: Artists[] = []
+  public artistList: Artists[] = []
   private async getArtists() {
     this.artistList = await window.SearchUtils.searchEntityByOptions({
       artist: true
@@ -69,7 +67,7 @@ export default class ArtistsPage extends mixins(RouterPushes, ContextMenuMixin) 
     vxm.themes.entitySortBy = options
   }
 
-  private singleItemContextHandler(artist: Artists, event: MouseEvent) {
+  public singleItemContextHandler(artist: Artists, event: MouseEvent) {
     this.getContextMenu(event, {
       type: 'ARTIST',
       args: {
@@ -78,7 +76,7 @@ export default class ArtistsPage extends mixins(RouterPushes, ContextMenuMixin) 
     })
   }
 
-  private contextHandler(event: MouseEvent) {
+  public contextHandler(event: MouseEvent) {
     this.getContextMenu(event, {
       type: 'ENTITY_SORT',
       args: {
