@@ -240,11 +240,36 @@ contextBridge.exposeInMainWorld('FileUtils', {
 })
 
 contextBridge.exposeInMainWorld('SearchUtils', {
-  searchSongsByOptions: (options?: SongAPIOptions) =>
-    ipcRendererHolder.send<SearchRequests.SongOptions>(IpcEvents.SEARCH, {
+  searchSongsByOptions: async (options?: SongAPIOptions, fullFetch = false) => {
+    const songs = (await ipcRendererHolder.send<SearchRequests.SongOptions>(IpcEvents.SEARCH, {
       type: SearchEvents.SEARCH_SONGS_BY_OPTIONS,
       params: { options }
-    }),
+    })) as Song[]
+
+    if (!fullFetch) {
+      return songs.map((val) => ({
+        _id: val._id,
+        album: val.album,
+        artists: val.artists,
+        date: val.date,
+        date_added: val.date_added,
+        duration: val.duration,
+        genre: val.genre,
+        icon: val.icon,
+        path: val.path,
+        playCount: val.playCount,
+        playbackUrl: val.playbackUrl,
+        providerExtension: val.providerExtension,
+        showInLibrary: val.showInLibrary,
+        song_coverPath_high: val.song_coverPath_high,
+        song_coverPath_low: val.song_coverPath_low,
+        title: val.title,
+        type: val.type,
+        url: val.url
+      }))
+    }
+    return songs
+  },
 
   searchEntityByOptions: <T extends Artists | Album | Genre | Playlist>(options: EntityApiOptions<T>) =>
     ipcRendererHolder.send<SearchRequests.EntityOptions>(IpcEvents.SEARCH, {

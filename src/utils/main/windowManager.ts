@@ -142,7 +142,6 @@ export class WindowHandler {
         return callback(decodeURIComponent(url))
       } catch (error) {
         console.error(error)
-        app.quit()
       }
     })
   }

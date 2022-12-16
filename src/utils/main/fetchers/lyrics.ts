@@ -4,6 +4,7 @@ import path from 'path'
 import { loadSelectiveArrayPreference } from '../db/preferences'
 import { getSpotifyPlayerChannel } from '../ipc'
 import { CacheHandler } from './cacheFile'
+import { getSongDB } from '@/utils/main/db/index'
 
 interface AZSuggestions {
   term?: string
@@ -21,6 +22,14 @@ export class LyricsFetcher extends CacheHandler {
   }
 
   public async getLyrics(song: Song) {
+    const dbLyrics = getSongDB().getSongByOptions({
+      song: {
+        _id: song._id
+      }
+    })[0]?.lyrics
+
+    if (dbLyrics) return dbLyrics
+
     const useAzLyrics = loadSelectiveArrayPreference<Checkbox>('lyrics_fetchers.az_lyrics')?.enabled ?? true
     const useGoogleLyrics = loadSelectiveArrayPreference<Checkbox>('lyrics_fetchers.az_lyrics')?.enabled ?? true
     const useSpotifyLyrics = loadSelectiveArrayPreference<Checkbox>('lyrics_fetchers.spotify_lyrics')?.enabled ?? true

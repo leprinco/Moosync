@@ -75,7 +75,7 @@ interface searchUtils {
   /**
    * Search song by options
    */
-  searchSongsByOptions: (options: SongAPIOptions) => Promise<Song[]>
+  searchSongsByOptions: (options?: SongAPIOptions, fullFetch?: boolean) => Promise<Song[]>
 
   /**
    * Search entities like album, artists, playlists, genre by options

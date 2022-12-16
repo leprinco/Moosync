@@ -339,8 +339,22 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     }
   }
 
+  private async fetchSongDetails(id: string) {
+    return (
+      await window.SearchUtils.searchSongsByOptions(
+        {
+          song: {
+            _id: id
+          }
+        },
+        true
+      )
+    )[0]
+  }
+
   mounted() {
-    bus.$on(EventBus.SHOW_SONG_INFO_MODAL, (song: Song) => {
+    bus.$on(EventBus.SHOW_SONG_INFO_MODAL, async (song: Song) => {
+      song = await this.fetchSongDetails(song._id)
       this.fetchDatalist()
       this.forceEmptyImg = false
       this.song = song
