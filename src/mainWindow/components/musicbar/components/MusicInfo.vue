@@ -78,13 +78,13 @@
                   class="w-100 h-100"
                   :items="queueOrder"
                   :item-size="94"
+                  ref="recycle-scroller"
                   key-field="id"
                   :direction="'vertical'"
                 >
                   <template v-slot="{ item, index }">
                     <QueueItem
                       :id="`queue-item-${item.id}`"
-                      :ref="`queue-item-${item.id}`"
                       :songID="item.songID"
                       :index="index"
                       :current="index === currentIndex"
@@ -120,6 +120,7 @@ import { PeerMode } from '@/mainWindow/store/syncState'
 import CrossIcon from '@/icons/CrossIcon.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
+import Vue from 'vue/types/umd'
 
 @Component({
   components: {
@@ -166,14 +167,10 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
       return
     }
 
-    const elem = this.$refs[`queue-item-${this.queueOrder[this.currentIndex]?.id}`]
-    if (elem) {
-      ;((elem as (Vue | Element)[])[0] as Vue).$el.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-        inline: 'center'
-      })
-    }
+    ;(this.$refs['recycle-scroller'] as Vue).$el.scrollTo({
+      top: this.currentIndex * 94,
+      behavior: 'smooth'
+    })
   }
 
   async created() {
@@ -229,7 +226,6 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
 
         // Don't update lyrics if song has changed while fetching lyrics
         if (this.currentSong._id === _id) {
-          this.currentSong.lyrics = resp as string
           this.lyrics = (resp as string) || 'No lyrics found...'
         }
         window.DBUtils.updateLyrics(_id, resp as string)
