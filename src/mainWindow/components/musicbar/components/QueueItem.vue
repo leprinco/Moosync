@@ -11,10 +11,14 @@
   <b-container fluid class="item-container" @contextmenu="getItemContextMenu">
     <b-row class="item-row">
       <b-col cols="auto" class="img-container h-100 d-flex justify-content-start">
-        <LowImageCol @click.native="playSong" height="56px" width="56px" :src="getValidImageLow(song)" />
-        <div v-if="current" class="now-playing d-flex justify-content-center">
-          <AnimatedEqualizer :isRunning="isSongPlaying" class="animated-playing" />
-        </div>
+        <LowImageCol
+          @click.native="playSong"
+          height="56px"
+          width="56px"
+          :src="getValidImageLow(song)"
+          :showEqualizer="current"
+          :isSongPlaying="isSongPlaying"
+        />
       </b-col>
       <b-col xl="8" lg="7" cols="5">
         <div class="d-flex">
@@ -42,11 +46,9 @@ import { Component, Prop } from 'vue-property-decorator'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
 import { vxm } from '@/mainWindow/store'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
-import Play2 from '@/icons/PlayIcon2.vue'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import TrashIcon from '@/icons/TrashIcon.vue'
 
-import AnimatedEqualizer from '@/icons/AnimatedEqualizerIcon.vue'
 import LowImageCol from '@/mainWindow/components/generic/LowImageCol.vue'
 import IconHandler from '@/mainWindow/components/generic/IconHandler.vue'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
@@ -55,9 +57,7 @@ import ErrorHandler from '@/utils/ui/mixins/errorHandler'
 @Component({
   components: {
     SongDefault,
-    Play2,
     IconHandler,
-    AnimatedEqualizer,
     TrashIcon,
     LowImageCol
   }
@@ -174,8 +174,4 @@ export default class MusicInfo extends mixins(ImgLoader, PlayerControls, Context
 
 .text-content
   min-width: 0%
-
-.animated-playing
-  padding-top: 14px
-  padding-bottom: 14px
 </style>
