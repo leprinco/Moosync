@@ -74,31 +74,23 @@
             </b-row>
             <b-row class="queue-container-outer">
               <b-col class="h-100 queue-container mr-4">
-                <draggable
-                  class="h-100"
-                  v-model="queueOrder"
-                  ghost-class="ghost"
-                  @start="drag = true"
-                  @end="
-                    () => {
-                      drag = false
-                      onDragEnd()
-                    }
-                  "
-                  @change="handleIndexChange"
+                <RecycleScroller
+                  class="w-100 h-100"
+                  :items="queueOrder"
+                  :item-size="94"
+                  key-field="id"
+                  :direction="'vertical'"
                 >
-                  <transition-group name="flip-list">
+                  <template v-slot="{ item, index }">
                     <QueueItem
-                      v-for="(element, index) in queueOrder"
-                      :key="element.id"
-                      :id="`queue-item-${element.id}`"
-                      :ref="`queue-item-${element.id}`"
-                      :songID="element.songID"
+                      :id="`queue-item-${item.id}`"
+                      :ref="`queue-item-${item.id}`"
+                      :songID="item.songID"
                       :index="index"
                       :current="index === currentIndex"
                     />
-                  </transition-group>
-                </draggable>
+                  </template>
+                </RecycleScroller>
               </b-col>
             </b-row>
           </div>
@@ -268,6 +260,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   }
 
   get queueOrder() {
+    console.log(this.queueProvider.queueOrder)
     return this.queueProvider.queueOrder
   }
 
