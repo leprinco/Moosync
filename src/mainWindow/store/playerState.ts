@@ -10,7 +10,7 @@
 import { action, mutation } from 'vuex-class-component'
 
 import { VuexModule } from './module'
-import { v1 } from 'uuid'
+import { v4 } from 'uuid'
 
 class Queue implements GenericQueue<Song> {
   data: QueueData<Song> = {}
@@ -155,7 +155,7 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
   private addInSongQueue(item: Song[]) {
     this.songQueue.order.push(
       ...item.map((obj) => {
-        return { id: v1(), songID: obj._id }
+        return { id: v4(), songID: obj._id }
       })
     )
   }
@@ -184,7 +184,7 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
       this.songQueue.index + 1,
       0,
       ...item.map((obj) => {
-        return { id: v1(), songID: obj._id }
+        return { id: v4(), songID: obj._id }
       })
     )
   }
