@@ -11,17 +11,7 @@
   <b-container fluid class="item-container" @contextmenu="getItemContextMenu">
     <b-row class="item-row">
       <b-col cols="auto" class="img-container h-100 d-flex justify-content-start">
-        <b-img
-          class="h-100 image"
-          v-if="!forceEmptyImg && image"
-          :src="image"
-          @error="handlerImageError(arguments[0], handlerError)"
-          referrerPolicy="no-referrer"
-        />
-        <SongDefault v-else class="h-100 image" />
-        <div @click="playSong" class="play-button d-flex justify-content-center">
-          <Play2 class="align-self-center" />
-        </div>
+        <LowImageCol @click.native="playSong" height="56px" width="56px" :src="getValidImageLow(song)" />
         <div v-if="current" class="now-playing d-flex justify-content-center">
           <AnimatedEqualizer :isRunning="isSongPlaying" class="animated-playing" />
         </div>
@@ -29,33 +19,7 @@
       <b-col xl="8" lg="7" cols="5">
         <div class="d-flex">
           <div class="text-left song-title text-truncate">{{ song.title }}</div>
-          <YoutubeIcon
-            v-if="iconType === 'YOUTUBE'"
-            :color="'#E62017'"
-            :filled="true"
-            :dropShadow="true"
-            class="provider-icon"
-          />
-          <SpotifyIcon
-            v-if="iconType === 'SPOTIFY'"
-            :color="'#1ED760'"
-            :filled="true"
-            :dropShadow="true"
-            class="provider-icon"
-          />
-
-          <inline-svg
-            class="provider-icon"
-            v-if="iconURL && iconType === 'URL' && iconURL.endsWith('svg')"
-            :src="iconURL"
-          />
-          <img
-            referrerPolicy="no-referrer"
-            v-if="iconURL && iconType === 'URL' && !iconURL.endsWith('svg')"
-            :src="iconURL"
-            alt="provider icon"
-            class="provider-icon"
-          />
+          <IconHandler :song="song" />
         </div>
 
         <div class="text-left song-subtitle text-truncate">
@@ -80,12 +44,11 @@ import { vxm } from '@/mainWindow/store'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import Play2 from '@/icons/PlayIcon2.vue'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
-import YoutubeIcon from '@/icons/YoutubeIcon.vue'
-import SpotifyIcon from '@/icons/SpotifyIcon.vue'
 import TrashIcon from '@/icons/TrashIcon.vue'
 
 import AnimatedEqualizer from '@/icons/AnimatedEqualizerIcon.vue'
-
+import LowImageCol from '@/mainWindow/components/generic/LowImageCol.vue'
+import IconHandler from '@/mainWindow/components/generic/IconHandler.vue'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import ErrorHandler from '@/utils/ui/mixins/errorHandler'
 
@@ -93,15 +56,15 @@ import ErrorHandler from '@/utils/ui/mixins/errorHandler'
   components: {
     SongDefault,
     Play2,
-    YoutubeIcon,
-    SpotifyIcon,
+    IconHandler,
     AnimatedEqualizer,
-    TrashIcon
+    TrashIcon,
+    LowImageCol
   }
 })
 export default class MusicInfo extends mixins(ImgLoader, PlayerControls, ContextMenuMixin, ErrorHandler) {
   @Prop({ default: '' })
-  private songID!: string
+  private song!: Song
 
   @Prop({ default: false })
   private current!: boolean
@@ -109,43 +72,12 @@ export default class MusicInfo extends mixins(ImgLoader, PlayerControls, Context
   @Prop({ default: -1 })
   private index!: number
 
-  private image: string | null = null
-
-  private iconType = ''
-  private iconURL = ''
-
   get queueProvider() {
     return this.isSyncing ? vxm.sync : vxm.player
   }
 
   get isSongPlaying() {
     return vxm.player.playerState === 'PLAYING'
-  }
-
-  private async getIconType() {
-    this.iconURL = ''
-    if (this.song.providerExtension) {
-      const icon = await window.ExtensionUtils.getExtensionIcon(this.song.providerExtension)
-      if (icon) {
-        this.iconURL = 'media://' + icon
-        return 'URL'
-      }
-    }
-
-    return this.song.type
-  }
-
-  async created() {
-    this.iconType = (await this.getIconType()) ?? ''
-    if (this.isSyncing) {
-      const tmp = await window.FileUtils.isImageExists(this.songID)
-      if (tmp) this.image = 'media://' + tmp
-    }
-    if (!this.image) this.image = this.getImgSrc(this.getValidImageLow(this.song))
-  }
-
-  get song() {
-    return this.queueProvider.queueData[this.songID]
   }
 
   private playSong() {
@@ -174,12 +106,6 @@ export default class MusicInfo extends mixins(ImgLoader, PlayerControls, Context
         }
       }
     })
-  }
-
-  private forceEmptyImg = false
-
-  private handlerError() {
-    this.forceEmptyImg = true
   }
 }
 </script>

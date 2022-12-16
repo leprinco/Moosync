@@ -16,33 +16,7 @@
               {{ item.title }}
             </div>
 
-            <YoutubeIcon
-              v-if="iconType === 'YOUTUBE'"
-              :color="'#E62017'"
-              :filled="true"
-              :dropShadow="true"
-              class="provider-icon"
-            />
-            <SpotifyIcon
-              v-if="iconType === 'SPOTIFY'"
-              :color="'#1ED760'"
-              :filled="true"
-              :dropShadow="true"
-              class="provider-icon"
-            />
-
-            <inline-svg
-              class="provider-icon"
-              v-if="iconURL && iconType === 'URL' && iconURL.endsWith('svg')"
-              :src="iconURL"
-            />
-            <img
-              referrerPolicy="no-referrer"
-              v-if="iconURL && iconType === 'URL' && !iconURL.endsWith('svg')"
-              :src="iconURL"
-              alt="provider icon"
-              class="provider-icon"
-            />
+            <IconHandler :song="item" />
           </b-col>
         </b-row>
         <b-row no-gutters class="flex-nowrap">
@@ -83,19 +57,18 @@ import { mixins } from 'vue-class-component'
 import { Component, Prop } from 'vue-property-decorator'
 import LowImageCol from '@/mainWindow/components/generic/LowImageCol.vue'
 import Ellipsis from '@/icons/EllipsisIcon.vue'
-import YoutubeIcon from '@/icons/YoutubeIcon.vue'
-import SpotifyIcon from '@/icons/SpotifyIcon.vue'
+
 import AddToQueue from '@/icons/AddToQueueIcon.vue'
 import PlainPlay from '@/icons/AddToLibraryIcon.vue'
 import { vxm } from '@/mainWindow/store'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
+import IconHandler from '@/mainWindow/components/generic/IconHandler.vue'
 
 @Component({
   components: {
     LowImageCol,
     Ellipsis,
-    YoutubeIcon,
-    SpotifyIcon,
+    IconHandler,
     PlainPlay,
     AddToQueue
   }

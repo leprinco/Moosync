@@ -85,7 +85,7 @@
                   <template v-slot="{ item, index }">
                     <QueueItem
                       :id="`queue-item-${item.id}`"
-                      :songID="item.songID"
+                      :song="getSong(item.songID)"
                       :index="index"
                       :current="index === currentIndex"
                     />
@@ -135,6 +135,10 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   private hasFrame = false
   private ignoreScroll = false
   private lyrics = ''
+
+  public getSong(songId: string) {
+    return this.queueProvider.queueData[songId]
+  }
 
   private get spotifyCanvas() {
     return vxm.themes.currentSpotifyCanvas
