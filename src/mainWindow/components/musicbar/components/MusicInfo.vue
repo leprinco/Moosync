@@ -132,15 +132,15 @@ import Vue from 'vue/types/umd'
   }
 })
 export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxMixin, PlayerControls) {
-  private hasFrame = false
+  hasFrame = false
   private ignoreScroll = false
-  private lyrics = ''
+  lyrics = ''
 
   public getSong(songId: string) {
     return this.queueProvider.queueData[songId]
   }
 
-  private get spotifyCanvas() {
+  get spotifyCanvas() {
     return vxm.themes.currentSpotifyCanvas
   }
 
@@ -156,11 +156,11 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
     return vxm.themes.showPlayer
   }
 
-  private close() {
+  close() {
     bus.$emit('onToggleSlider', false)
   }
 
-  private onDragEnd() {
+  onDragEnd() {
     this.ignoreScroll = true
     vxm.themes.queueSortBy = undefined
   }
@@ -201,7 +201,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
     bus.$emit(EventBus.REFRESH_LYRICS, this.lyrics)
   }
 
-  private get showSpotifyCanvas() {
+  get showSpotifyCanvas() {
     return vxm.themes.showSpotifyCanvas
   }
 
@@ -275,7 +275,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
     return this.remoteCover ?? this.getImgSrc(this.getValidImageHigh(this.currentSong))
   }
 
-  private clear() {
+  clear() {
     if (this.queueOrder.length > 0) {
       if (this.queueOrder.length === 1) {
         this.queueOrder = []
@@ -296,7 +296,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
     return songs
   }
 
-  private saveAsPlaylist() {
+  saveAsPlaylist() {
     bus.$emit(EventBus.SHOW_NEW_PLAYLIST_MODAL, this.parseQueueItems())
   }
 
@@ -311,11 +311,11 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   }
 
   @Prop({ default: () => null })
-  private currentSong!: Song | null
+  currentSong!: Song | null
 
   private formattedDuration = convertDuration
 
-  private onToggleLyrics() {
+  onToggleLyrics() {
     vxm.themes.showPlayer = vxm.themes.showPlayer === 1 ? 2 : 1
   }
 }

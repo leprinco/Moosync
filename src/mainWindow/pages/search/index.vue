@@ -128,27 +128,27 @@ export default class SearchPage extends mixins(
 
   private fetchMap: Record<string, boolean> = {}
 
-  private get isFetching() {
+  get isFetching() {
     return this.fetchMap[this.activeProvider]
   }
 
-  private get activeProvider() {
+  get activeProvider() {
     return vxm.themes.lastSearchTab[0]
   }
 
-  private set activeProvider(item: string) {
+  set activeProvider(item: string) {
     vxm.themes.lastSearchTab = [item, this.activeSubcategory]
   }
 
-  private get activeSubcategory() {
+  get activeSubcategory() {
     return vxm.themes.lastSearchTab[1]
   }
 
-  private set activeSubcategory(item: keyof SearchResult) {
+  set activeSubcategory(item: keyof SearchResult) {
     vxm.themes.lastSearchTab = [this.activeProvider, item]
   }
 
-  private get noResultsReason() {
+  get noResultsReason() {
     if (this.activeProvider === vxm.providers.youtubeProvider.key) {
       if (vxm.providers.youtubeAlt === YoutubeAlts.INVIDIOUS) {
         if (this.activeSubcategory === 'albums') {
@@ -178,7 +178,7 @@ export default class SearchPage extends mixins(
     return false
   }
 
-  private get defaultCoverComponent() {
+  get defaultCoverComponent() {
     switch (this.activeSubcategory) {
       case 'artists':
         return 'ArtistDefault'
@@ -210,11 +210,11 @@ export default class SearchPage extends mixins(
     return parsedProviders
   }
 
-  private get providers() {
+  get providers() {
     return this.fetchProviders()
   }
 
-  private get subCategories(): TabCarouselItem[] {
+  get subCategories(): TabCarouselItem[] {
     return [
       {
         title: 'Songs',
@@ -235,7 +235,7 @@ export default class SearchPage extends mixins(
     ]
   }
 
-  private get currentSongList() {
+  get currentSongList() {
     if (this.activeProvider) {
       return this.results[this.activeProvider]?.songs ?? []
     }
@@ -243,7 +243,7 @@ export default class SearchPage extends mixins(
     return []
   }
 
-  private get currentEntityList() {
+  get currentEntityList() {
     if (this.activeProvider) {
       const providerResults = this.results[this.activeProvider]
       if (providerResults) {
@@ -269,7 +269,7 @@ export default class SearchPage extends mixins(
     }
   }
 
-  private get entityTitleField() {
+  get entityTitleField() {
     switch (this.activeSubcategory) {
       default:
       case 'songs':
@@ -285,7 +285,7 @@ export default class SearchPage extends mixins(
     }
   }
 
-  private get entityImageField() {
+  get entityImageField() {
     switch (this.activeSubcategory) {
       default:
       case 'songs':
@@ -301,8 +301,8 @@ export default class SearchPage extends mixins(
     }
   }
 
-  private transitionEnterActiveClass = 'animate__slideInLeft'
-  private transitionExitActiveClass = 'animate__slideOutLeft'
+  transitionEnterActiveClass = 'animate__slideInLeft'
+  transitionExitActiveClass = 'animate__slideOutLeft'
 
   private results: Record<string, SearchResult> = {}
 
@@ -345,11 +345,11 @@ export default class SearchPage extends mixins(
     Vue.set(this.fetchMap, provider.key, false)
   }
 
-  private onProviderChanged({ key, checked }: { key: string; checked: boolean }) {
+  onProviderChanged({ key, checked }: { key: string; checked: boolean }) {
     if (checked) this.activeProvider = key
   }
 
-  private onSubcategoriesChanged({ key, checked }: { key: string; checked: boolean }) {
+  onSubcategoriesChanged({ key, checked }: { key: string; checked: boolean }) {
     if (checked) {
       this.activeSubcategory = key as keyof SearchResult
 
@@ -375,7 +375,7 @@ export default class SearchPage extends mixins(
     })
   }
 
-  private onCardClick(item: typeof this.currentEntityList[0]) {
+  onCardClick(item: typeof this.currentEntityList[0]) {
     switch (this.activeSubcategory) {
       case 'artists':
         this.gotoArtist(item as Artists, [this.activeProvider])
@@ -392,7 +392,7 @@ export default class SearchPage extends mixins(
     }
   }
 
-  private onCardContextMenu(event: PointerEvent, item: typeof this.currentEntityList[0]) {
+  onCardContextMenu(event: PointerEvent, item: typeof this.currentEntityList[0]) {
     switch (this.activeSubcategory) {
       case 'playlists':
         this.getContextMenu(event, {

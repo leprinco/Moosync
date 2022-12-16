@@ -16,6 +16,6 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class PLayButton extends Vue {
   @Prop({ default: true })
-  private filled!: boolean
+  filled!: boolean
 }
 </script>

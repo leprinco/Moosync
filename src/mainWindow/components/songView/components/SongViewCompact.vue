@@ -41,23 +41,23 @@ import SongDetailsCompact from './SongDetailsCompact.vue'
 })
 export default class SongViewCompact extends mixins(PlayerControls, RemoteSong, ImgLoader) {
   @Prop({ default: () => [] })
-  private songList!: Song[]
+  songList!: Song[]
 
   @Prop({ default: false })
-  private currentSong!: Song | undefined | null
+  currentSong!: Song | undefined | null
 
   @Prop({ default: false })
-  private isLoading!: boolean
+  isLoading!: boolean
 
   @Prop({ default: () => [] })
-  private optionalProviders!: TabCarouselItem[]
+  optionalProviders!: TabCarouselItem[]
 
   @Prop({
     default: () => {
       return { defaultTitle: '', defaultSubtitle: '', defaultCover: '' }
     }
   })
-  private defaultDetails!: SongDetailDefaults
+  defaultDetails!: SongDetailDefaults
 
   @Prop({
     default: () => {
@@ -68,6 +68,6 @@ export default class SongViewCompact extends mixins(PlayerControls, RemoteSong, 
       }
     }
   })
-  private detailsButtonGroup!: SongDetailButtons
+  detailsButtonGroup!: SongDetailButtons
 }
 </script>

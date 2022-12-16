@@ -46,14 +46,14 @@ import MiniPlayer from '@/mainWindow/components/miniplayer/MiniPlayer.vue'
   }
 })
 export default class DefaultLayout extends mixins(ContextMenuMixin) {
-  private refreshPage = false
-  private showRefreshIcon = false
+  refreshPage = false
+  showRefreshIcon = false
 
   get isSidebarOpen() {
     return vxm.themes.sidebarOpen
   }
 
-  private enableRefreshIcon() {
+  enableRefreshIcon() {
     this.showRefreshIcon = true
   }
 

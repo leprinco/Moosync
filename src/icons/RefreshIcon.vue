@@ -23,7 +23,7 @@ import { Vue, Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class RefreshIcon extends Vue {
   @Prop({ default: '' })
-  private title!: string
+  title!: string
 }
 </script>
 

@@ -117,7 +117,7 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, Juk
   @Prop({ default: null })
   private currentSong!: Song | null | undefined
 
-  private subtitle: string = this.getConcatedSubtitle()
+  subtitle: string = this.getConcatedSubtitle()
 
   @Prop({ default: () => null })
   private defaultDetails!: SongDetailDefaults | null
@@ -127,7 +127,7 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, Juk
 
   private forceShowDefaultImage = false
 
-  private pinHoverText = false
+  pinHoverText = false
 
   @Prop({
     default: () => {
@@ -137,22 +137,22 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, Juk
       }
     }
   })
-  private buttonGroup!: SongDetailButtons
+  buttonGroup!: SongDetailButtons
 
   @Prop({ default: false })
-  private forceWhiteText!: boolean
+  forceWhiteText!: boolean
 
   @Prop({ default: '' })
-  private cardHoverText!: string
-  private parsedCardHoverText = ''
+  cardHoverText!: string
+  parsedCardHoverText = ''
 
   @Prop({ default: 0 })
-  private isShowLyricsActive!: number
+  isShowLyricsActive!: number
 
   @Prop({ default: false })
-  private isLoading!: boolean
+  isLoading!: boolean
 
-  private handleImageError() {
+  handleImageError() {
     this.forceShowDefaultImage = true
   }
 
@@ -191,7 +191,7 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, Juk
     return !!(this.currentSong?.artists && this.currentSong.artists.length > 0 && this.currentSong?.album?.album_name)
   }
 
-  private getParsedSubtitle() {
+  getParsedSubtitle() {
     if (this.currentSong && (this.currentSong.artists?.length || this.currentSong.album?.album_name)) {
       return (
         ((this.currentSong?.artists && this.currentSong?.artists?.map((val) => val.artist_name).join(', ')) ?? '') +
@@ -201,28 +201,28 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, Juk
     }
   }
 
-  private getConcatedSubtitle() {
+  getConcatedSubtitle() {
     return this.getParsedSubtitle() ?? this.defaultDetails?.defaultSubtitle ?? ''
   }
 
-  private playAll() {
+  playAll() {
     this.$emit('playAll')
   }
 
-  private addToQueue() {
+  addToQueue() {
     this.$emit('addToQueue')
   }
 
-  private addToLibrary() {
+  addToLibrary() {
     this.$emit('addToLibrary')
   }
 
-  private onShowLyricsClicked() {
+  onShowLyricsClicked() {
     this.pinHoverText = true
     this.$emit('toggleLyrics')
   }
 
-  private playRandom() {
+  playRandom() {
     this.$emit('playRandom')
   }
 }

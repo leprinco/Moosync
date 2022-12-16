@@ -54,9 +54,9 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   @Prop({ default: () => () => undefined })
   private enableRefresh!: () => void
 
-  private songList: Song[] = []
+  songList: Song[] = []
 
-  private isLoading = false
+  isLoading = false
   private isAddedInLibrary = false
 
   private invalidateCache = false
@@ -101,7 +101,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
     return this.$route.query.extension
   }
 
-  private isRemote() {
+  isRemote() {
     return !!(this.isYoutube || this.isSpotify || this.isExtension)
   }
 
@@ -191,7 +191,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
     }
   }
 
-  private async loadNextPage() {
+  async loadNextPage() {
     if (this.nextPageToken) {
       await this.fetchSongListAsync()
     }
@@ -214,7 +214,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
     }
   }
 
-  private async playPlaylist() {
+  async playPlaylist() {
     const clearQueue = (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('queue.clear_queue_playlist'))
       ?.enabled
     if (clearQueue) {
@@ -225,27 +225,27 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
     this.fetchAll(this.queueSong)
   }
 
-  private async addPlaylistToQueue() {
+  async addPlaylistToQueue() {
     this.queueSong(this.songList)
     this.fetchAll(this.queueSong)
   }
 
-  private addPlaylistToLibrary() {
+  addPlaylistToLibrary() {
     window.DBUtils.createPlaylist(this.playlist)
     this.$toasted.show(`Added ${this.playlist.playlist_name} to library`)
   }
 
-  private onSearchChange() {
+  onSearchChange() {
     this.fetchAll()
   }
 
-  private async playRandom() {
+  async playRandom() {
     await this.fetchAll()
     const randomSongs = getRandomFromArray(this.songList, 100)
     this.queueSong(randomSongs)
   }
 
-  private onSongContextMenuOverride(event: PointerEvent, songs: Song[]) {
+  onSongContextMenuOverride(event: PointerEvent, songs: Song[]) {
     this.getContextMenu(event, {
       type: 'PLAYLIST_SONGS',
       args: {

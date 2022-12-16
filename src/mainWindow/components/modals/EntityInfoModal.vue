@@ -77,18 +77,18 @@ import { dotIndex } from '@/utils/common'
 })
 export default class EntityInfoModal extends Vue {
   @Prop({ default: 'EntityInfoModal' })
-  private id!: string
+  id!: string
 
-  private tmpEntity: Artists | Album | Playlist | null = null
-  private entity: Artists | Album | Playlist | null = null
+  tmpEntity: Artists | Album | Playlist | null = null
+  entity: Artists | Album | Playlist | null = null
 
-  private forceEmptyImg = false
+  forceEmptyImg = false
 
-  private handleImageError() {
+  handleImageError() {
     this.forceEmptyImg = true
   }
 
-  private get imgSrc() {
+  get imgSrc() {
     const src =
       (this.tmpEntity as Artists).artist_coverPath ??
       (this.tmpEntity as Album).album_coverPath_high ??
@@ -101,13 +101,13 @@ export default class EntityInfoModal extends Vue {
     return src
   }
 
-  private getValue(key: string) {
+  getValue(key: string) {
     if (this.entity) {
       return dotIndex(this.entity, key)
     }
   }
 
-  private isEditable(field: string) {
+  isEditable(field: string) {
     switch (field) {
       case 'album_artist':
       case 'artist_mbid':
@@ -120,7 +120,7 @@ export default class EntityInfoModal extends Vue {
     return false
   }
 
-  private get title() {
+  get title() {
     return (
       (this.tmpEntity as Artists).artist_name ??
       (this.tmpEntity as Album).album_name ??
@@ -128,7 +128,7 @@ export default class EntityInfoModal extends Vue {
     )
   }
 
-  private get filterFields() {
+  get filterFields() {
     const fields = []
     if (this.tmpEntity) {
       for (const key of Object.keys(this.tmpEntity)) {
@@ -165,13 +165,13 @@ export default class EntityInfoModal extends Vue {
     return fields
   }
 
-  private close() {
+  close() {
     this.tmpEntity = null
     this.entity = null
     this.$bvModal.hide(this.id)
   }
 
-  private async save() {
+  async save() {
     if (this.tmpEntity) {
       if ((this.tmpEntity as Artists).artist_id) {
         window.DBUtils.updateArtist(this.tmpEntity as Artists)
@@ -199,7 +199,7 @@ export default class EntityInfoModal extends Vue {
     }
   }
 
-  private async changeEntityCover() {
+  async changeEntityCover() {
     if (this.tmpEntity) {
       const file = await window.WindowUtils.openFileBrowser(true, true, [
         {
@@ -225,13 +225,13 @@ export default class EntityInfoModal extends Vue {
     }
   }
 
-  private changeEntityField(field: never, value: never) {
+  changeEntityField(field: string, value: never) {
     if (this.tmpEntity) {
       dotIndex(this.tmpEntity, field, value)
     }
   }
 
-  private changeTitle(value: never) {
+  changeTitle(value: never) {
     if (this.tmpEntity) {
       if ((this.tmpEntity as Artists).artist_id) {
         ;(this.tmpEntity as Artists).artist_name = value
@@ -247,7 +247,7 @@ export default class EntityInfoModal extends Vue {
     }
   }
 
-  private getParsedFieldTitle(field: string) {
+  getParsedFieldTitle(field: string) {
     switch (field.toLowerCase()) {
       case 'artist_extra_info.spotify.artist_id':
         return 'spotify artist id'

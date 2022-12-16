@@ -69,11 +69,11 @@ import ImgLoader from '@/utils/ui/mixins/ImageLoader'
   }
 })
 export default class Sidebar extends mixins(PlayerControls, ImgLoader) {
-  private showSearchResults = false
-  private results: Song[] = []
-  private inputText = ''
+  showSearchResults = false
+  results: Song[] = []
+  inputText = ''
 
-  private handleInputFocus(event: FocusEvent) {
+  handleInputFocus(event: FocusEvent) {
     switch (event.type) {
       case 'blur':
         this.showSearchResults = false
@@ -84,11 +84,11 @@ export default class Sidebar extends mixins(PlayerControls, ImgLoader) {
     }
   }
 
-  private handleClick(index: number) {
+  handleClick(index: number) {
     this.playTop([this.results[index]])
   }
 
-  private openSearchPage() {
+  openSearchPage() {
     this.$router
       .push({
         name: 'search',
@@ -100,7 +100,7 @@ export default class Sidebar extends mixins(PlayerControls, ImgLoader) {
       .catch((e) => console.error(e))
     this.showSearchResults = false
   }
-  private async onTextChange(value: string) {
+  async onTextChange(value: string) {
     if (value) {
       value = `%${value}%`
       this.showSearchResults = true

@@ -69,33 +69,33 @@ import { vxm } from '@/mainWindow/store'
   }
 })
 export default class AccountsSetup extends mixins(AccountsMixin) {
-  protected activeSignout: Provider | null = null
+  activeSignout: Provider | null = null
 
   async mounted() {
     this.signoutMethod = this.showSignoutModal
   }
 
-  private next() {
+  next() {
     this.$emit('next')
   }
 
-  private skip() {
+  skip() {
     this.$emit('prev')
   }
 
-  private get loggedInYoutube() {
+  get loggedInYoutube() {
     return vxm.providers.loggedInYoutube
   }
 
-  private get loggedInSpotify() {
+  get loggedInSpotify() {
     return vxm.providers.loggedInSpotify
   }
 
-  private get loggedInLastFM() {
+  get loggedInLastFM() {
     return vxm.providers.loggedInLastFM
   }
 
-  protected async signout() {
+  async signout() {
     if (this.activeSignout) {
       if (this.activeSignout.provider) {
         await this.activeSignout.provider.signOut()

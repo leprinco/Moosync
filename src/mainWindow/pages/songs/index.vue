@@ -37,8 +37,8 @@ import { getRandomFromArray } from '@/utils/common'
   }
 })
 export default class AllSongs extends mixins(ContextMenuMixin) {
-  private songList: Song[] = []
-  private currentSong: Song | null | undefined = null
+  songList: Song[] = []
+  currentSong: Song | null | undefined = null
 
   get playlists() {
     return vxm.playlist.playlists
@@ -62,7 +62,7 @@ export default class AllSongs extends mixins(ContextMenuMixin) {
     this.requestSongs()
   }
 
-  private async requestSongs(showHidden = false) {
+  async requestSongs(showHidden = false) {
     this.songList = await window.SearchUtils.searchSongsByOptions({
       sortBy: vxm.themes.songSortBy,
       song: {
@@ -78,7 +78,7 @@ export default class AllSongs extends mixins(ContextMenuMixin) {
 
   private showingHidden = false
 
-  private getGeneralSongsMenu(event: Event) {
+  getGeneralSongsMenu(event: Event) {
     this.getContextMenu(event, {
       type: 'GENERAL_SONGS',
       args: {
@@ -93,15 +93,15 @@ export default class AllSongs extends mixins(ContextMenuMixin) {
     })
   }
 
-  private playSongs() {
+  playSongs() {
     this.playTop(this.songList)
   }
 
-  private addSongsToQueue() {
+  addSongsToQueue() {
     this.queueSong(this.songList)
   }
 
-  private async playRandom() {
+  async playRandom() {
     const randomSongs = getRandomFromArray(this.songList, 100)
     this.queueSong(randomSongs)
   }

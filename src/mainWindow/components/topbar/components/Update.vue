@@ -9,7 +9,7 @@
 
 <template>
   <div>
-    <UpdateIcon v-if="showIcon" @click.native="confirmUpdate" />
+    <UpdateIcon @click.native="confirmUpdate" />
     <ConfirmationModal keyword="update Moosync" id="updateConfirmationModal" @confirm="updateNow" />
   </div>
 </template>
@@ -26,7 +26,7 @@ import ConfirmationModal from '@/commonComponents/ConfirmationModal.vue'
   }
 })
 export default class Update extends Vue {
-  private confirmUpdate() {
+  confirmUpdate() {
     this.$bvModal.show('updateConfirmationModal')
   }
 

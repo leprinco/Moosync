@@ -87,21 +87,21 @@ import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
   }
 })
 export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
-  private forceSeek = 0
-  private PlayerState: PlayerState = 'PAUSED'
-  private sliderPosition = false
-  private hasFrame = false
+  forceSeek = 0
+  PlayerState: PlayerState = 'PAUSED'
+  sliderPosition = false
+  hasFrame = false
 
-  private iconType = ''
-  private iconURL = ''
+  iconType = ''
+  iconURL = ''
 
-  private get disableSeekbar() {
+  get disableSeekbar() {
     return (
       this.isJukeboxModeActive || !isFinite(this.currentSong?.duration ?? 0) || (this.currentSong?.duration ?? 0) < 0
     )
   }
 
-  private get maxInterval() {
+  get maxInterval() {
     if (this.currentSong) {
       if (isFinite(this.currentSong.duration) && this.currentSong.duration > 0) {
         return Math.ceil((this.currentSong.duration + 1) * 1000)
@@ -111,7 +111,7 @@ export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
     return 2
   }
 
-  private get currentTimestamp() {
+  get currentTimestamp() {
     return Math.min(Math.ceil(this.timestamp * 1000), this.maxInterval)
   }
 
@@ -147,7 +147,7 @@ export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
     return vxm.player.currentTime
   }
 
-  private updateTimestmp(value: number) {
+  updateTimestmp(value: number) {
     bus.$emit('forceSeek', value / 1000)
     this.forceSeek = value / 1000
   }
@@ -172,7 +172,7 @@ export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
     this.sliderPosition = position
   }
 
-  private updateTimestamp(timestamp: number) {
+  updateTimestamp(timestamp: number) {
     vxm.player.currentTime = timestamp
   }
 

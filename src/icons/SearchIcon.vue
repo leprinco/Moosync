@@ -25,6 +25,6 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class Playlists extends Vue {
   @Prop({ default: true })
-  private accent!: boolean
+  accent!: boolean
 }
 </script>

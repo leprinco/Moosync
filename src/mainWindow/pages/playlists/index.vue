@@ -90,7 +90,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   @Prop({ default: () => () => undefined })
   private enableRefresh!: () => void
 
-  private get allPlaylists(): ExtendedPlaylist[] {
+  get allPlaylists(): ExtendedPlaylist[] {
     return [...this.localPlaylists, ...this.remotePlaylists]
   }
 
@@ -99,13 +99,13 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
 
   private playlistInAction: Playlist | undefined
 
-  private FAVORITES_PLAYLIST_ID = FAVORITES_PLAYLIST_ID
+  FAVORITES_PLAYLIST_ID = FAVORITES_PLAYLIST_ID
 
   private get providers() {
     return this.getProvidersByScope(ProviderScopes.PLAYLISTS)
   }
 
-  private getIconBgColor(playlist: Playlist) {
+  getIconBgColor(playlist: Playlist) {
     for (const p of this.getAllProviders()) {
       if (p.matchEntityId(playlist.playlist_id)) {
         return p.BgColor
@@ -174,7 +174,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
     })
   }
 
-  private contextHandler(event: MouseEvent) {
+  contextHandler(event: MouseEvent) {
     this.getContextMenu(event, {
       type: 'GENERAL_PLAYLIST',
       args: {
@@ -187,12 +187,12 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
     })
   }
 
-  private deletePlaylist() {
+  deletePlaylist() {
     if (this.playlistInAction) window.DBUtils.removePlaylist(this.playlistInAction)
     this.refresh()
   }
 
-  private newPlaylist() {
+  newPlaylist() {
     bus.$emit(EventBus.SHOW_NEW_PLAYLIST_MODAL, [], () => this.refresh())
   }
 
@@ -214,7 +214,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
     })
   }
 
-  private getPlaylistMenu(event: Event, playlist: Playlist) {
+  getPlaylistMenu(event: Event, playlist: Playlist) {
     this.playlistInAction = playlist
     this.getContextMenu(event, {
       type: 'PLAYLIST',

@@ -74,7 +74,7 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     }))
   }
 
-  private get artistSongProviders(): TabCarouselItem[] {
+  get artistSongProviders(): TabCarouselItem[] {
     return this.fetchProviders()
   }
 
@@ -114,7 +114,7 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
   }
 
   // TODO: Find some better method to check if song is remote
-  private isRemote(songs: Song[]) {
+  isRemote(songs: Song[]) {
     for (const s of songs) {
       for (const op of Object.values(this.optionalSongList)) {
         if (op.findIndex((val) => s._id === val) !== -1) {
@@ -236,22 +236,22 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     }
   }
 
-  private playArtist() {
+  playArtist() {
     this.playTop(this.songList)
     this.fetchAll(this.queueSong)
   }
 
-  private addArtistToQueue() {
+  addArtistToQueue() {
     this.queueSong(this.songList)
     this.fetchAll(this.queueSong)
   }
 
-  private addArtistToLibrary() {
+  addArtistToLibrary() {
     this.addSongsToLibrary(...this.songList)
     this.fetchAll((songs) => this.addSongsToLibrary(...songs))
   }
 
-  private async playRandom() {
+  async playRandom() {
     await this.fetchAll()
     const randomSongs = getRandomFromArray(this.songList, 100)
     this.queueSong(randomSongs)
@@ -265,14 +265,14 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     }
   }
 
-  private onArtistProviderChanged({ key, checked }: { key: string; checked: boolean }) {
+  onArtistProviderChanged({ key, checked }: { key: string; checked: boolean }) {
     Vue.set(this.activeProviders, key, checked)
     if (checked) {
       this.fetchRemoteProviderByKey(key)
     }
   }
 
-  private async loadNextPage() {
+  async loadNextPage() {
     if (this.nextPageToken) {
       for (const [key, checked] of Object.entries(this.activeProviders)) {
         if (checked) {
@@ -282,7 +282,7 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     }
   }
 
-  private onSearchChange() {
+  onSearchChange() {
     this.fetchAll()
   }
 }

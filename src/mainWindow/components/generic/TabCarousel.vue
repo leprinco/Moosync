@@ -83,10 +83,10 @@ import { EventBus } from '@/utils/main/ipc/constants'
 })
 export default class TabCarousel extends mixins(ContextMenuMixin) {
   @Prop({ default: () => [] })
-  private items!: TabCarouselItem[]
+  items!: TabCarouselItem[]
 
   @Prop({ default: true })
-  private showExtraSongListActions!: boolean
+  showExtraSongListActions!: boolean
 
   @Prop({ default: false })
   private singleSelectMode!: boolean
@@ -111,22 +111,22 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
 
   private selectedProviders: string[] = []
 
-  private showSearchbar = false
-  private searchText = ''
+  showSearchbar = false
+  searchText = ''
 
-  private get showNextIcon() {
+  get showNextIcon() {
     return this.scrollLeft + this.containerSize < this.providerContainer?.scrollWidth
   }
 
-  private get showPrevIcon() {
+  get showPrevIcon() {
     return this.providerContainer?.scrollWidth > this.containerSize && this.scrollLeft > 0
   }
 
-  private get isSortAsc() {
+  get isSortAsc() {
     return vxm.themes.songSortBy.asc
   }
 
-  private getItemBackgroundColor(provider: TabCarouselItem) {
+  getItemBackgroundColor(provider: TabCarouselItem) {
     if (this.selectedProviders.includes(provider.key)) {
       if (!this.showBackgroundOnSelect) return ''
       return 'var(--textSecondary)'
@@ -136,7 +136,7 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
     }
   }
 
-  private getItemTextColor(provider: TabCarouselItem) {
+  getItemTextColor(provider: TabCarouselItem) {
     if (this.selectedProviders.includes(provider.key)) {
       if (!this.showBackgroundOnSelect) return 'var(--textPrimary)'
       return ''
@@ -146,7 +146,7 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
     }
   }
 
-  private onProviderSelected(key: string) {
+  onProviderSelected(key: string) {
     const isSelected = this.selectedProviders.findIndex((val) => val === key)
 
     if (!this.singleSelectMode) {
@@ -162,7 +162,7 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
     this.$emit('onItemsChanged', { key, checked: isSelected === -1 })
   }
 
-  private showSortMenu(event: PointerEvent) {
+  showSortMenu(event: PointerEvent) {
     event.preventDefault()
     event.stopPropagation()
     this.$emit(
@@ -174,7 +174,7 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
     )
   }
 
-  private toggleSearch() {
+  toggleSearch() {
     this.showSearchbar = !this.showSearchbar
 
     if (this.showSearchbar) {
@@ -184,7 +184,7 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
     }
   }
 
-  private onSearchChange() {
+  onSearchChange() {
     this.$emit('onSearchChange', this.searchText)
   }
 
@@ -211,19 +211,19 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
     })
   }
 
-  private get computedGradient() {
+  get computedGradient() {
     return `linear-gradient(90deg, var(--primary) 0% , rgba(255,255,255,0) ${
       this.showPrevIcon ? '10%' : '0%'
     }, rgba(255,255,255,0) ${this.showNextIcon ? '90%' : '100%'}, var(--primary) 100%)`
   }
 
-  private onNextClick() {
+  onNextClick() {
     const scrollLeft = this.providerContainer.scrollLeft + 100
     this.providerContainer.scrollTo({ left: scrollLeft, behavior: 'smooth' })
     this.scrollLeft = scrollLeft
   }
 
-  private onPrevClick() {
+  onPrevClick() {
     const scrollLeft = this.providerContainer.scrollLeft - 100
     this.providerContainer.scrollTo({ left: scrollLeft, behavior: 'smooth' })
     this.scrollLeft = scrollLeft

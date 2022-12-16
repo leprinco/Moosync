@@ -64,13 +64,13 @@ import ErrorHandler from '@/utils/ui/mixins/errorHandler'
 })
 export default class MusicInfo extends mixins(ImgLoader, PlayerControls, ContextMenuMixin, ErrorHandler) {
   @Prop({ default: '' })
-  private song!: Song
+  song!: Song
 
   @Prop({ default: false })
-  private current!: boolean
+  current!: boolean
 
   @Prop({ default: -1 })
-  private index!: number
+  index!: number
 
   get queueProvider() {
     return this.isSyncing ? vxm.sync : vxm.player
@@ -80,11 +80,11 @@ export default class MusicInfo extends mixins(ImgLoader, PlayerControls, Context
     return vxm.player.playerState === 'PLAYING'
   }
 
-  private playSong() {
+  playSong() {
     this.playFromQueue(this.index)
   }
 
-  private removeSong() {
+  removeSong() {
     this.removeFromQueue(this.index)
   }
 
@@ -92,7 +92,7 @@ export default class MusicInfo extends mixins(ImgLoader, PlayerControls, Context
     vxm.themes.queueSortBy = options
   }
 
-  private getItemContextMenu(event: Event) {
+  getItemContextMenu(event: Event) {
     this.getContextMenu(event, {
       type: 'QUEUE_ITEM',
       args: {

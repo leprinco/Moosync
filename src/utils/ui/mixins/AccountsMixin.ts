@@ -27,7 +27,7 @@ export default class AccountsMixin extends mixins(ProviderMixin) {
     return this._signoutProvider
   }
 
-  protected fetchProviders(): Provider[] {
+  fetchProviders(): Provider[] {
     const p = this.getProvidersByScope()
     return p.map((val) => ({
       username: '',
@@ -35,9 +35,9 @@ export default class AccountsMixin extends mixins(ProviderMixin) {
     }))
   }
 
-  protected providers: Provider[] = this.fetchProviders()
+  providers: Provider[] = this.fetchProviders()
 
-  protected async getUserDetails(provider: Provider) {
+  async getUserDetails(provider: Provider) {
     const username = (await provider?.provider.getUserDetails()) ?? ''
     this.$set(provider, 'username', username)
     // if (!provider.username) {
@@ -45,7 +45,7 @@ export default class AccountsMixin extends mixins(ProviderMixin) {
     // }
   }
 
-  protected async handleClick(provider: Provider) {
+  async handleClick(provider: Provider) {
     if (!(await provider?.provider.getLoggedIn())) {
       const success = await provider?.provider.updateConfig()
       if (!success) {
@@ -57,7 +57,7 @@ export default class AccountsMixin extends mixins(ProviderMixin) {
     this._signoutProvider && this._signoutProvider(provider)
   }
 
-  protected async login(provider: Provider) {
+  async login(provider: Provider) {
     if (await provider.provider.login()) {
       try {
         await this.getUserDetails(provider)

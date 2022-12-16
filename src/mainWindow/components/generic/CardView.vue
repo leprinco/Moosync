@@ -54,26 +54,26 @@ import Play2 from '@/icons/PlayIcon2.vue'
 })
 export default class CardView extends mixins(ImageLoader, ErrorHandler) {
   @Prop({ default: '' })
-  private title!: string
+  title!: string
 
   @Prop({ default: '' })
-  private subtitle!: string
+  subtitle!: string
 
   @Prop({ default: '' })
   private id!: string
 
   @Prop({ default: '' })
-  private imgSrc!: string
+  imgSrc!: string
 
   @Prop({ default: '200px' })
   public maxWidth!: string
 
   @Prop({ default: 'var(--secondary)' })
-  private iconBgColor!: string
+  iconBgColor!: string
 
-  private forceEmptyImg = false
+  forceEmptyImg = false
 
-  private get isOverlayExists(): boolean {
+  get isOverlayExists(): boolean {
     return !!this.$slots.overlay
   }
 
@@ -81,11 +81,11 @@ export default class CardView extends mixins(ImageLoader, ErrorHandler) {
     this.forceEmptyImg = false
   }
 
-  private handleError() {
+  handleError() {
     this.forceEmptyImg = true
   }
 
-  private emitContext(event: Event) {
+  emitContext(event: Event) {
     event.stopPropagation()
     this.$emit('CardContextMenu', event)
   }

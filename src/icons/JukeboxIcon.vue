@@ -31,7 +31,7 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class JukeboxIcon extends Vue {
   @Prop({ default: false })
-  private isActive!: boolean
+  isActive!: boolean
 }
 </script>
 

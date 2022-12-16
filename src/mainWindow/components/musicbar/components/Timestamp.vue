@@ -21,12 +21,12 @@ import { convertDuration } from '@/utils/common'
 @Component({})
 export default class Timestamp extends Vue {
   @Prop({ default: 0 })
-  private duration!: number
+  duration!: number
 
   @Prop({ default: 0 })
-  private timestamp!: number
+  timestamp!: number
 
-  private formattedDuration = convertDuration
+  formattedDuration = convertDuration
 }
 </script>
 

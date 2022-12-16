@@ -11,7 +11,7 @@ import { Component, Vue } from 'vue-property-decorator'
 
 @Component
 export default class ErrorHandler extends Vue {
-  protected handlerImageError(err: ErrorEvent, callback?: (err: ErrorEvent) => void) {
+  handlerImageError(err: ErrorEvent, callback?: (err: ErrorEvent) => void) {
     callback && callback(err)
   }
 }

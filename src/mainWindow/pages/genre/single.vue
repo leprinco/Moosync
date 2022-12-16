@@ -40,8 +40,8 @@ import { vxm } from '@/mainWindow/store'
   }
 })
 export default class SingleAlbumView extends mixins(ContextMenuMixin) {
-  private songList: Song[] = []
-  private genre: Genre | null = null
+  songList: Song[] = []
+  genre: Genre | null = null
 
   get buttonGroups(): SongDetailButtons {
     return {
@@ -82,7 +82,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin) {
     })
   }
 
-  private getSongMenu(event: Event, songs: Song[], exclude: string | undefined) {
+  getSongMenu(event: Event, songs: Song[], exclude: string | undefined) {
     this.getContextMenu(event, {
       type: 'SONGS',
       args: {
@@ -93,15 +93,15 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin) {
     })
   }
 
-  private playGenre() {
+  playGenre() {
     this.playTop(this.songList)
   }
 
-  private addGenreToQueue() {
+  addGenreToQueue() {
     this.queueSong(this.songList)
   }
 
-  private async playRandom() {
+  async playRandom() {
     const randomSongs = getRandomFromArray(this.songList, 100)
     this.queueSong(randomSongs)
   }

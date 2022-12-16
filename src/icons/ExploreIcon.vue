@@ -25,6 +25,6 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class Explore extends Vue {
   @Prop({ default: false })
-  private active!: boolean
+  active!: boolean
 }
 </script>

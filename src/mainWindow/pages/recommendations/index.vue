@@ -75,12 +75,12 @@ export default class Albums extends mixins(
   JukeboxMixin,
   PlayerControls
 ) {
-  private get providers() {
+  get providers() {
     return this.fetchProviders()
   }
 
-  private recommendationList: Record<string, Song[]> = {}
-  private loadingMap: Record<string, boolean> = {}
+  recommendationList: Record<string, Song[]> = {}
+  loadingMap: Record<string, boolean> = {}
 
   private fetchProviders() {
     const providers = this.getProvidersByScope(ProviderScopes.RECOMMENDATIONS)
@@ -93,19 +93,19 @@ export default class Albums extends mixins(
     }
   }
 
-  private hasRecommendations(key: string) {
+  hasRecommendations(key: string) {
     return this.recommendationList[key] && this.recommendationList[key].length > 0
   }
 
-  private addToQueue(key: string) {
+  addToQueue(key: string) {
     this.queueSong(this.recommendationList[key] ?? [])
   }
 
-  private playAll(key: string) {
+  playAll(key: string) {
     this.playTop(this.recommendationList[key] ?? [])
   }
 
-  private addToLibrary(key: string) {
+  addToLibrary(key: string) {
     this.addSongsToLibrary(...(this.recommendationList[key] ?? []))
   }
   mounted() {

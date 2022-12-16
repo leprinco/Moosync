@@ -106,7 +106,7 @@ export default class Sidebar extends Vue {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private getOnClick(item: typeof this.componentNames[0], navigate: (...args: any[]) => void, ...args: any[]) {
+  getOnClick(item: typeof this.componentNames[0], navigate: (...args: any[]) => void, ...args: any[]) {
     if (item.custom) {
       item.custom()
       return
@@ -119,7 +119,7 @@ export default class Sidebar extends Vue {
   }
 
   @Prop({ default: true })
-  private isOpen!: boolean
+  isOpen!: boolean
 }
 </script>
 

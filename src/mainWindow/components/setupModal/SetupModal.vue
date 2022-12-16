@@ -50,25 +50,25 @@ enum SetupModalStates {
   }
 })
 export default class SetupModal extends Vue {
-  private state: SetupModalStates = SetupModalStates.WELCOME
-  private SetupModalState = SetupModalStates
+  state: SetupModalStates = SetupModalStates.WELCOME
+  SetupModalState = SetupModalStates
 
   @Prop({ default: 'SetupModal' })
-  private id!: string
+  id!: string
 
-  private close() {
+  close() {
     this.$bvModal.hide(this.id)
   }
 
-  private nextState() {
+  nextState() {
     if (this.state < SetupModalStates.ACCOUNTS) this.state += 1
   }
 
-  private prevState() {
+  prevState() {
     if (this.state > SetupModalStates.WELCOME) this.state -= 1
   }
 
-  private getWidth() {
+  getWidth() {
     switch (this.state) {
       case SetupModalStates.WELCOME:
         return 'sm'

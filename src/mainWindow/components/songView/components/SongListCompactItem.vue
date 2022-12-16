@@ -32,7 +32,7 @@
         </b-row>
       </b-col>
       <b-col cols="auto" align-self="center" offset="1" class="ml-auto timestamp">
-        {{ item._id === currentSong && currentSong._id ? 'Now Playing' : formattedDuration(item.duration) }}
+        {{ item._id === currentSong?._id && currentSong._id ? 'Now Playing' : formattedDuration(item.duration) }}
       </b-col>
       <b-col cols="auto" align-self="center" class="button-icon ml-5">
         <AddToQueue title="Add song to queue" @click.native="onRowDoubleClicked(item)"
@@ -74,10 +74,10 @@ import IconHandler from '@/mainWindow/components/generic/IconHandler.vue'
   }
 })
 export default class SongListCompactItem extends mixins(ImgLoader, JukeboxMixin) {
-  private formattedDuration = convertDuration
+  formattedDuration = convertDuration
 
-  private iconType = ''
-  private iconURL = ''
+  iconType = ''
+  iconURL = ''
 
   private async getIconType() {
     this.iconURL = ''
@@ -99,36 +99,36 @@ export default class SongListCompactItem extends mixins(ImgLoader, JukeboxMixin)
   }
 
   @Prop({ default: () => [] })
-  private selected!: number[]
+  selected!: number[]
 
   @Prop({ default: () => null })
-  private item!: Song
+  item!: Song
 
   @Prop({ default: 0 })
-  private index!: number
+  index!: number
 
-  private get currentSong() {
+  get currentSong() {
     return vxm.player.currentSong
   }
 
-  private onRowDoubleClicked(item: Song) {
+  onRowDoubleClicked(item: Song) {
     this.$emit('onRowDoubleClicked', item)
   }
 
-  private onRowContext(event: MouseEvent, item: Song) {
+  onRowContext(event: MouseEvent, item: Song) {
     event.stopPropagation()
     this.$emit('onRowContext', event, item)
   }
 
-  private onRowSelected(index: number) {
+  onRowSelected(index: number) {
     this.$emit('onRowSelected', index)
   }
 
-  private onPlayNowClicked(item: Song) {
+  onPlayNowClicked(item: Song) {
     this.$emit('onPlayNowClicked', item)
   }
 
-  private async onSubtitleClicked(artist: Artists) {
+  async onSubtitleClicked(artist: Artists) {
     this.$emit('onArtistClicked', artist)
   }
 

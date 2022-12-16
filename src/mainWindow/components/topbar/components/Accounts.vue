@@ -68,9 +68,9 @@ import { vxm } from '@/mainWindow/store'
   }
 })
 export default class TopBar extends mixins(AccountsMixin) {
-  protected activeSignout: Provider | null = null
+  activeSignout: Provider | null = null
 
-  private isIconComponent(src: string) {
+  isIconComponent(src: string) {
     switch (src) {
       case vxm.providers.youtubeProvider.IconComponent:
       case vxm.providers.spotifyProvider.IconComponent:
@@ -85,7 +85,7 @@ export default class TopBar extends mixins(AccountsMixin) {
     this.signoutMethod = this.showSignoutModal
   }
 
-  protected async signout() {
+  async signout() {
     if (this.activeSignout) {
       if (this.activeSignout) {
         this.activeSignout.provider.signOut()

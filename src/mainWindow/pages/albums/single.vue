@@ -67,7 +67,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
   }
 
   // TODO: Find some better method to check if song is remote
-  private isRemote(songs: Song[]) {
+  isRemote(songs: Song[]) {
     for (const s of songs) {
       for (const op of Object.values(this.optionalSongList)) {
         if (op.findIndex((val) => s._id === val) !== -1) {
@@ -89,7 +89,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
   // TODO: Separate pageToken for each provider
   private nextPageToken?: unknown
 
-  private get albumSongProviders(): TabCarouselItem[] {
+  get albumSongProviders(): TabCarouselItem[] {
     return this.fetchProviders()
   }
 
@@ -199,15 +199,15 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     Vue.set(this.loadingMap, 'local', false)
   }
 
-  private playAlbum() {
+  playAlbum() {
     this.playTop(this.songList)
   }
 
-  private addAlbumToQueue() {
+  addAlbumToQueue() {
     this.queueSong(this.songList)
   }
 
-  private async playRandom() {
+  async playRandom() {
     const randomSongs = getRandomFromArray(this.songList, 100)
     this.queueSong(randomSongs)
   }
@@ -234,7 +234,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     Vue.set(this.loadingMap, provider.key, false)
   }
 
-  private onAlbumProviderChanged({ key, checked }: { key: string; checked: boolean }) {
+  onAlbumProviderChanged({ key, checked }: { key: string; checked: boolean }) {
     Vue.set(this.activeProviders, key, checked)
     if (checked) {
       const provider = this.getProviderByKey(key)

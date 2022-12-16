@@ -15,6 +15,6 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class RandomIcon extends Vue {
   @Prop({ default: '' })
-  private title!: string
+  title!: string
 }
 </script>

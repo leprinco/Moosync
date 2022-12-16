@@ -17,6 +17,6 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class TickIcon extends Vue {
   @Prop({ default: 'var(--textPrimary)' })
-  private color!: string
+  color!: string
 }
 </script>

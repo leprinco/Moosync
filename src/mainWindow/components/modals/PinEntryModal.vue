@@ -70,14 +70,14 @@ import TickIcon from '@/icons/TickIcon.vue'
 })
 export default class PinEntryModal extends Vue {
   @Prop({ default: 'PinEntry' })
-  private id!: string
+  id!: string
 
   private pin: (number | null)[] = []
   private currentIndex = 1
 
-  private pinLength = 4
+  pinLength = 4
 
-  private showError = false
+  showError = false
 
   private confirmCallback?: (pin: string) => boolean
 
@@ -87,7 +87,7 @@ export default class PinEntryModal extends Vue {
     elem?.focus()
   }
 
-  private onInputClick(index: number, ev: PointerEvent) {
+  onInputClick(index: number, ev: PointerEvent) {
     ev.preventDefault()
     const elem = ev.target as HTMLInputElement
     elem.setSelectionRange(1, 1)
@@ -122,7 +122,7 @@ export default class PinEntryModal extends Vue {
     }
   }
 
-  private validateInputAndPush(index: number, event: InputEvent) {
+  validateInputAndPush(index: number, event: InputEvent) {
     const input = (event.target as HTMLInputElement).value
     if (input) {
       const num = parseInt(input[input.length - 1])
@@ -137,7 +137,7 @@ export default class PinEntryModal extends Vue {
     ;(event.target as HTMLInputElement).value = this.pin[index - 1]?.toString() ?? ''
   }
 
-  private numClick(num: number) {
+  numClick(num: number) {
     this.pin.splice(this.currentIndex - 1, 1, num)
     const elem = this.getElement(this.currentIndex)
     if (elem) {
@@ -146,7 +146,7 @@ export default class PinEntryModal extends Vue {
     }
   }
 
-  private cancel() {
+  cancel() {
     this.confirmCallback = undefined
     this.pin = []
 
@@ -167,7 +167,7 @@ export default class PinEntryModal extends Vue {
     return (this.$refs[`pin-input-${index}`] as HTMLInputElement[])?.at(0)
   }
 
-  private confirm() {
+  confirm() {
     if (this.confirmCallback) {
       if (this.confirmCallback(this.pin.join(''))) {
         this.cancel()

@@ -47,13 +47,13 @@ import AnimatedEqualizer from '@/icons/AnimatedEqualizerIcon.vue'
 })
 export default class LowImageCol extends mixins(ImgLoader) {
   @Prop({ default: '' })
-  private src!: string
+  src!: string
 
   @Prop({ default: '' })
-  private height!: string
+  height!: string
 
   @Prop({ default: '' })
-  private width!: string
+  width!: string
 
   @Prop({ default: false })
   showEqualizer!: boolean
@@ -61,18 +61,18 @@ export default class LowImageCol extends mixins(ImgLoader) {
   @Prop({ default: false })
   isSongPlaying!: boolean
 
-  private forceEmptyImg = false
+  forceEmptyImg = false
 
   @Watch('src')
-  private onSrcChange() {
+  onSrcChange() {
     this.forceEmptyImg = false
   }
 
-  private handleCoverError() {
+  handleCoverError() {
     this.forceEmptyImg = true
   }
 
-  private emitClick() {
+  emitClick() {
     this.$emit('imgClicked')
   }
 }

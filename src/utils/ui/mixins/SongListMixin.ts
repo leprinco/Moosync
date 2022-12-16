@@ -12,20 +12,20 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 @Component
 export default class SongListMixin extends Vue {
   private lastSelect = ''
-  protected selected: number[] = []
+  selected: number[] = []
 
   private keyPressed: 'Control' | 'Shift' | undefined
 
   @Prop({ default: () => [] })
-  protected songList!: Song[]
+  songList!: Song[]
 
   // Clear selection after table loses focus
-  private clearSelection() {
+  clearSelection() {
     this.$emit('onRowSelectionClear')
     this.selected = []
   }
 
-  private selectAll() {
+  selectAll() {
     this.selected = Array.from({ length: this.songList.length }, (_, i) => i)
   }
 
@@ -50,7 +50,7 @@ export default class SongListMixin extends Vue {
     document.removeEventListener('keyup', this.onKeyUp)
   }
 
-  private onRowSelected(index: number) {
+  onRowSelected(index: number) {
     if (this.keyPressed === 'Control') {
       const i = this.selected.findIndex((val) => val === index)
       if (i === -1) {

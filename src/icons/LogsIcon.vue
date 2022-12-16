@@ -27,6 +27,6 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class LogsIcon extends Vue {
   @Prop({ default: false })
-  private active!: boolean
+  active!: boolean
 }
 </script>

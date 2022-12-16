@@ -27,7 +27,7 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class PlainPlay extends Vue {
   @Prop({ default: '' })
-  private title!: string
+  title!: string
 }
 </script>
 

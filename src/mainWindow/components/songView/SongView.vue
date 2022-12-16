@@ -76,10 +76,10 @@ export default class AllSongs extends mixins(
   private ignoreSort = false
 
   @Prop({ default: false })
-  private isLoading!: boolean
+  isLoading!: boolean
 
   @Prop({ default: () => [] })
-  private optionalProviders!: TabCarouselItem[]
+  optionalProviders!: TabCarouselItem[]
 
   @Prop()
   private afterSongAddRefreshCallback!: ((showHidden?: boolean) => void) | undefined
@@ -89,7 +89,7 @@ export default class AllSongs extends mixins(
 
   private searchText = ''
 
-  private get filteredSongList(): Song[] {
+  get filteredSongList(): Song[] {
     let songList = this.songList.filter((val) => !!val.title.match(new RegExp(this.searchText, 'i')))
     songList = vxm.themes.songSortBy && sortSongList(songList, vxm.themes.songSortBy)
     return songList
@@ -107,21 +107,21 @@ export default class AllSongs extends mixins(
     }
   }
 
-  private get songView() {
+  get songView() {
     return vxm.themes.songView === 'compact' ? 'SongViewCompact' : 'SongViewClassic'
   }
 
   private selected: Song[] | null = null
   private selectedCopy: Song[] | null = null
 
-  private currentSong: Song | null | undefined = null
+  currentSong: Song | null | undefined = null
 
   @Prop({
     default: () => {
       return { defaultTitle: '', defaultSubtitle: '', defaultCover: '' }
     }
   })
-  private defaultDetails!: SongDetailDefaults
+  defaultDetails!: SongDetailDefaults
 
   @Prop({
     default: () => {
@@ -132,7 +132,7 @@ export default class AllSongs extends mixins(
       }
     }
   })
-  private detailsButtonGroup!: SongDetailButtons
+  detailsButtonGroup!: SongDetailButtons
 
   @Prop({ default: null })
   private onSongContextMenuOverride!: ((event: PointerEvent, songs: Song[]) => void) | null
@@ -140,13 +140,13 @@ export default class AllSongs extends mixins(
   @Prop({ default: null })
   private onGeneralSongContextMenuOverride!: ((event: PointerEvent) => void) | null
 
-  private clearSelection() {
+  clearSelection() {
     this.currentSong = null
     this.selected = this.selectedCopy
     this.selectedCopy = null
   }
 
-  private updateCoverDetails(items: Song[]) {
+  updateCoverDetails(items: Song[]) {
     if (items) this.currentSong = items[items.length - 1]
     this.selected = items
     this.selectedCopy = items
@@ -156,7 +156,7 @@ export default class AllSongs extends mixins(
     vxm.themes.songSortBy = options
   }
 
-  private onSongContextMenu(event: PointerEvent, songs: Song[]) {
+  onSongContextMenu(event: PointerEvent, songs: Song[]) {
     if (this.onSongContextMenuOverride) {
       this.onSongContextMenuOverride(event, songs)
     } else {
@@ -171,7 +171,7 @@ export default class AllSongs extends mixins(
     }
   }
 
-  private showSortMenu(event: Event) {
+  showSortMenu(event: Event) {
     this.getContextMenu(event, {
       type: 'SONG_SORT',
       args: {
@@ -180,7 +180,7 @@ export default class AllSongs extends mixins(
     })
   }
 
-  private onGeneralContextMenu(event: PointerEvent) {
+  onGeneralContextMenu(event: PointerEvent) {
     if (this.onGeneralSongContextMenuOverride) {
       this.onGeneralSongContextMenuOverride(event)
     } else {
@@ -197,7 +197,7 @@ export default class AllSongs extends mixins(
     }
   }
 
-  private playAll() {
+  playAll() {
     if (this.selected) {
       this.playTop(this.selected)
       this.selected = this.selectedCopy
@@ -206,7 +206,7 @@ export default class AllSongs extends mixins(
     this.$emit('playAll')
   }
 
-  private addToQueue() {
+  addToQueue() {
     if (this.selected) {
       this.queueSong(this.selected)
       this.selected = this.selectedCopy
@@ -215,7 +215,7 @@ export default class AllSongs extends mixins(
     this.$emit('addToQueue')
   }
 
-  private addToLibrary() {
+  addToLibrary() {
     if (this.selected) {
       this.addSongsToLibrary(...this.selected)
       this.selected = this.selectedCopy
@@ -224,20 +224,20 @@ export default class AllSongs extends mixins(
     this.$emit('addToLibrary')
   }
 
-  private playRandom() {
+  playRandom() {
     this.$emit('playRandom')
   }
 
-  private onOptionalProviderChanged(...args: unknown[]) {
+  onOptionalProviderChanged(...args: unknown[]) {
     this.$emit('onOptionalProviderChanged', ...args)
   }
 
-  private onSearchChange(text: string) {
+  onSearchChange(text: string) {
     this.searchText = text
     this.$emit('onSearchChange', text)
   }
 
-  private onScroll(e: MouseEvent) {
+  onScroll(e: MouseEvent) {
     const { scrollTop, clientHeight, scrollHeight } = e.target as HTMLDivElement
     if (scrollTop + clientHeight >= scrollHeight - 1) {
       this.$emit('onScrollEnd')

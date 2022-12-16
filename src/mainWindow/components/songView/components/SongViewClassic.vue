@@ -53,23 +53,23 @@ import ModelHelper from '@/utils/ui/mixins/ModelHelper'
 })
 export default class SongViewClassic extends mixins(ImgLoader, ModelHelper) {
   @Prop({ default: () => [] })
-  private songList!: Song[]
+  songList!: Song[]
 
   @Prop({ default: false })
-  private currentSong!: Song | undefined | null
+  currentSong!: Song | undefined | null
 
   @Prop({ default: false })
-  private isLoading!: boolean
+  isLoading!: boolean
 
   @Prop({ default: () => [] })
-  private optionalProviders!: TabCarouselItem[]
+  optionalProviders!: TabCarouselItem[]
 
   @Prop({
     default: () => {
       return { defaultTitle: '', defaultSubtitle: '', defaultCover: '' }
     }
   })
-  private defaultDetails!: SongDetailDefaults
+  defaultDetails!: SongDetailDefaults
 
   @Prop({
     default: () => {
@@ -80,7 +80,7 @@ export default class SongViewClassic extends mixins(ImgLoader, ModelHelper) {
       }
     }
   })
-  private detailsButtonGroup!: SongDetailButtons
+  detailsButtonGroup!: SongDetailButtons
 }
 </script>
 

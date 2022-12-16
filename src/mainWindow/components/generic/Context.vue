@@ -54,7 +54,7 @@ Vue.directive('click-outside', {
   }
 })
 export default class Context extends Vue {
-  private menu: MenuItem[] = []
+  menu: MenuItem[] = []
   mounted() {
     bus.$on(EventBus.SHOW_CONTEXT, (event: Event, items: MenuItem[]) => {
       this.menu = items
@@ -62,7 +62,7 @@ export default class Context extends Vue {
     })
   }
 
-  private hideContextMenu() {
+  hideContextMenu() {
     null
     ;(this.$refs.contextMenu as ContextMenuComponent).close()
   }

@@ -71,7 +71,7 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class AnimatedEqualizerIcon extends Vue {
   @Prop({ default: false })
-  private isRunning!: boolean
+  isRunning!: boolean
 }
 </script>
 

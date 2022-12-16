@@ -78,7 +78,7 @@
                     class="text song-subtitle text-truncate"
                     :class="index !== 0 ? 'ml-1' : ''"
                   >
-                    {{ artist.artist_name }}{{ index !== currentSong.artists.length - 1 ? ',' : '' }}
+                    {{ artist.artist_name }}{{ index !== (currentSong.artists?.length ?? 0) - 1 ? ',' : '' }}
                   </div>
                 </b-col>
               </b-row>
@@ -113,21 +113,21 @@ import { EventBus } from '@/utils/main/ipc/constants'
   }
 })
 export default class App extends mixins(ImgLoader) {
-  private hasFrame = false
-  private forceDefaultImg = false
+  hasFrame = false
+  forceDefaultImg = false
 
-  private iconType = ''
-  private iconURL = ''
+  iconType = ''
+  iconURL = ''
 
   private scrollTop = 0
   private scrollHeight = 0
   private lyricsHeight = 0
 
-  private get spotifyCanvas() {
+  get spotifyCanvas() {
     return vxm.themes.currentSpotifyCanvas
   }
 
-  private get showSpotifyCanvas() {
+  get showSpotifyCanvas() {
     return vxm.themes.showSpotifyCanvas
   }
 
@@ -136,11 +136,11 @@ export default class App extends mixins(ImgLoader) {
 
   private lyricsRaw?: string = ''
 
-  private get lyrics() {
+  get lyrics() {
     return this.lyricsRaw?.replaceAll('\n', '<br/>').trim()
   }
 
-  private get currentSong() {
+  get currentSong() {
     return vxm.player.currentSong
   }
 
@@ -189,7 +189,7 @@ export default class App extends mixins(ImgLoader) {
   }
 
   // TODO: Better gradient calculations
-  private get lyricsGradient() {
+  get lyricsGradient() {
     const adder = (600 - this.lyricsHeight) / 30
     return `linear-gradient(transparent ${this.scrollTop > 0 ? '12%' : '0%'}, currentColor ${
       this.scrollTop > 0 ? 30 + adder + '%' : '0%'
@@ -198,14 +198,14 @@ export default class App extends mixins(ImgLoader) {
     })`
   }
 
-  private onLyricsScroll() {
+  onLyricsScroll() {
     this.scrollTop = this.lyricsContainer?.scrollTop ?? 0
     this.scrollHeight =
       (this.lyricsContainer && this.lyricsContainer.scrollHeight - this.lyricsContainer.clientHeight) ?? 0
     this.lyricsHeight = this.lyricsContainer?.clientHeight ?? 0
   }
 
-  private listenLyricsChanged() {
+  listenLyricsChanged() {
     this.lyricsRaw = this.currentSong?.lyrics
     bus.$on(EventBus.REFRESH_LYRICS, (lyrics: string) => {
       this.lyricsRaw = lyrics

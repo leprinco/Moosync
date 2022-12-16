@@ -86,26 +86,26 @@ import { ProviderScopes } from '@/utils/commonConstants'
 })
 export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong, ProviderMixin) {
   @Prop({ default: 'SongFromURL' })
-  private id!: string
+  id!: string
 
-  private forceEmptyImg = false
+  forceEmptyImg = false
 
-  private parsedSong: Song | undefined | null = null
+  parsedSong: Song | undefined | null = null
 
-  private songTitle = ''
-  private songArtist = ''
+  songTitle = ''
+  songArtist = ''
 
-  private isLoading = false
+  isLoading = false
 
   private refreshCallback?: () => void
 
-  private handleImageError() {
+  handleImageError() {
     this.forceEmptyImg = true
   }
 
-  private isLoggedIn = false
+  isLoggedIn = false
 
-  private async parseURL(url: string) {
+  async parseURL(url: string) {
     this.isLoading = true
 
     this.forceEmptyImg = false
@@ -162,7 +162,7 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong, Prov
     return ret
   }
 
-  private addToLibrary() {
+  addToLibrary() {
     if (this.parsedSong) {
       this.addSongsToLibrary({
         ...this.parsedSong,
@@ -175,7 +175,7 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong, Prov
     }
   }
 
-  private close() {
+  close() {
     this.parsedSong = null
     this.songTitle = ''
     this.songArtist = ''

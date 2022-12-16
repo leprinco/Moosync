@@ -101,28 +101,28 @@ import { ProviderScopes } from '@/utils/commonConstants'
 })
 export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoader, RemoteSong, ProviderMixin) {
   @Prop({ default: 'PlaylistFromURL' })
-  private id!: string
+  id!: string
 
-  private forceEmptyImg = false
+  forceEmptyImg = false
 
-  private songList: Song[] = []
-  private playlist: Playlist | null = null
+  songList: Song[] = []
+  playlist: Playlist | null = null
 
-  private isLoading = false
+  isLoading = false
 
-  private handleImageError() {
+  handleImageError() {
     this.forceEmptyImg = true
   }
 
   private refreshCallback?: () => void
 
-  private close() {
+  close() {
     this.songList = []
     this.playlist = null
     this.$bvModal.hide(this.id)
   }
 
-  private async parseURL(url: string) {
+  async parseURL(url: string) {
     this.isLoading = true
 
     this.songList = []
@@ -155,11 +155,11 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
     this.isLoading = false
   }
 
-  private handleClick(index: number) {
+  handleClick(index: number) {
     this.playTop([this.songList[index]])
   }
 
-  private async addToLibrary() {
+  async addToLibrary() {
     if (this.playlist) {
       const playlistId = await window.DBUtils.createPlaylist(this.playlist)
 

@@ -72,19 +72,19 @@ import { mixins } from 'vue-class-component'
 })
 export default class TopBar extends mixins(JukeboxMixin) {
   @Prop({ default: false })
-  private showRefreshIcon!: boolean
+  showRefreshIcon!: boolean
 
-  private showJukeboxIcon = false
+  showJukeboxIcon = false
 
-  private get showUpdateIcon() {
+  get showUpdateIcon() {
     return vxm.themes.isUpdateAvailable
   }
 
-  private openSettings() {
+  openSettings() {
     window.WindowUtils.openWindow(false)
   }
 
-  private refreshPage() {
+  refreshPage() {
     bus.$emit(EventBus.REFRESH_PAGE)
   }
 
@@ -110,7 +110,7 @@ export default class TopBar extends mixins(JukeboxMixin) {
     this.handleJukeboxIcon()
   }
 
-  private async toggleJukeboxMode() {
+  async toggleJukeboxMode() {
     if (vxm.themes.jukeboxMode) {
       const pin = await window.Store.getSecure('jukebox_pin')
       if (pin) {

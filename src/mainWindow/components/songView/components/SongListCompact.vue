@@ -62,12 +62,12 @@ import TabCarousel from '../../generic/TabCarousel.vue'
 })
 export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
   @Prop({ default: () => [] })
-  private optionalProviders!: TabCarouselItem[]
+  optionalProviders!: TabCarouselItem[]
 
   @Prop({ default: false })
-  private isLoading!: boolean
+  isLoading!: boolean
 
-  private onRowContext(event: Event, item: Song) {
+  onRowContext(event: Event, item: Song) {
     this.$emit(
       'onRowContext',
       event,
@@ -75,19 +75,19 @@ export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
     )
   }
 
-  private onRowDoubleClicked(item: Song) {
+  onRowDoubleClicked(item: Song) {
     this.$emit('onRowDoubleClicked', item)
   }
 
-  private onPlayNowClicked(item: Song) {
+  onPlayNowClicked(item: Song) {
     this.$emit('onRowPlayNowClicked', item)
   }
 
-  private onArtistClicked(item: Artists) {
+  onArtistClicked(item: Artists) {
     this.$emit('onArtistClicked', item)
   }
 
-  private onScroll(e: Event) {
+  onScroll(e: Event) {
     this.$emit('scroll', e)
   }
 }
