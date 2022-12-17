@@ -24,7 +24,7 @@
             @click.native="gotoPlaylist(playlist)"
             @CardContextMenu="getPlaylistMenu(arguments[0], playlist)"
           >
-            <template slot="icon">
+            <template #icon>
               <SpotifyIcon
                 v-if="playlist.playlist_id && playlist.playlist_id.startsWith('spotify')"
                 color="#07C330"
