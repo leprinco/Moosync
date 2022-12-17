@@ -181,7 +181,8 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
     this.hasFrame = await window.WindowUtils.hasFrame()
   }
 
-  mounted() {
+  async mounted() {
+    await this.$nextTick()
     this.scrollToActive()
   }
 
