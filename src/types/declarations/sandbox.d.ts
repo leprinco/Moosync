@@ -165,6 +165,12 @@ interface ExtendedExtensionContextMenuItems<T extends ContextMenuTypes>
   children?: ExtendedExtensionContextMenuItems<T>[]
 }
 
+interface ExtensionCommunicator {
+  extensionRetriever: (options?: getExtensionOptions) => Iterable<ExtensionItem>
+  addPreference: (packageName: string, preference: ExtensionPreferenceGroup) => void
+  removePreference: (packageName: string, key: string) => void
+}
+
 interface NodeRequire {
   (dependencies: string[], callback: (...args: any[]) => any, errorback?: (err: any) => void): any
   config(data: unknown): unknown

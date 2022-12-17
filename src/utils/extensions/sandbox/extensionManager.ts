@@ -27,6 +27,12 @@ export class ExtensionManager extends AbstractExtensionManager {
   private logsPath: string
   private installPath: string
 
+  private extensionCommunicator: ExtensionCommunicator = {
+    extensionRetriever: this.getExtensions.bind(this),
+    addPreference: this.addPreference.bind(this),
+    removePreference: this.removePreference.bind(this)
+  }
+
   constructor(logsPath: string, installPath: string) {
     super()
     this.logsPath = logsPath
@@ -93,7 +99,7 @@ export class ExtensionManager extends AbstractExtensionManager {
     return {
       __dirname: path.dirname(entryFilePath),
       __filename: entryFilePath,
-      api: new ExtensionRequestGenerator(packageName, this.getExtensions.bind(this)),
+      api: new ExtensionRequestGenerator(packageName, this.extensionCommunicator),
       logger: child
     }
   }
@@ -155,7 +161,10 @@ export class ExtensionManager extends AbstractExtensionManager {
     if (vmObj) {
       const global = this.setGlobalObjectToVM(vmObj.vm, extension.packageName, extension.entry)
 
-      const preferences = vmObj.factory.registerPreferences ? await vmObj.factory.registerPreferences() : []
+      const preferences = await (vmObj.factory.registerPreferences?.() ??
+        vmObj.factory.registerUserPreferences?.() ??
+        [])
+
       const instance = await vmObj.factory.create()
 
       console.debug('Instantiated', extension.name)
@@ -182,6 +191,23 @@ export class ExtensionManager extends AbstractExtensionManager {
 
   getExtensions(options?: getExtensionOptions): Iterable<ExtensionItem> {
     return this.extensionRegistry.get(options)
+  }
+
+  private addPreference(packageName: string, preference: ExtensionPreferenceGroup) {
+    for (const e of this.extensionRegistry.get({ packageName })) {
+      e.preferences.push(preference)
+      return
+    }
+  }
+
+  private removePreference(packageName: string, key: string) {
+    for (const e of this.extensionRegistry.get({ packageName })) {
+      const i = e.preferences.findIndex((val) => val.key === key)
+      if (i !== -1) {
+        e.preferences.splice(i, 1)
+      }
+      return
+    }
   }
 
   setStarted(packageName: string, status: boolean) {

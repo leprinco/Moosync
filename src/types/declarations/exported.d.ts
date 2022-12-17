@@ -183,8 +183,13 @@ type ExtensionPreferenceGroup = {
 )
 
 interface ExtensionFactory {
-  // Return an instance of the plugin
+  /**
+   * @deprecated
+   * */
   registerPreferences?(): Promise<ExtensionPreferenceGroup[]>
+
+  // Return an instance of the plugin
+  registerUserPreferences?(): Promise<ExtensionPreferenceGroup[]>
 
   /**
    * This method is necessary for the extension to be loaded into moosync

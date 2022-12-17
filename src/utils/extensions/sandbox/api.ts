@@ -14,7 +14,8 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
   private packageName: string
   player: PlayerControls
   utils: Utils
-  private extensionRetriever: () => Iterable<ExtensionItem>
+
+  #communicator: ExtensionCommunicator
 
   private eventCallbackMap: { [key: string]: unknown } = {}
 
@@ -22,11 +23,11 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
 
   private accountsMap: AccountDetails[] = []
 
-  constructor(packageName: string, extensionRetriever: () => Iterable<ExtensionItem>) {
+  constructor(packageName: string, communicator: ExtensionCommunicator) {
     this.packageName = packageName
     this.player = new PlayerControls(this.packageName)
     this.utils = new Utils(packageName)
-    this.extensionRetriever = extensionRetriever
+    this.#communicator = communicator
   }
 
   public async getSongs(options: SongAPIOptions) {
@@ -229,7 +230,7 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
   }
 
   public getInstalledExtensions() {
-    return Array.from(this.extensionRetriever()).map((val) => val.packageName)
+    return Array.from(this.#communicator.extensionRetriever()).map((val) => val.packageName)
   }
 
   public _getContextMenuItems(): ExtendedExtensionContextMenuItems<ContextMenuTypes>[] {
