@@ -171,7 +171,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
       return
     }
 
-    ;(this.$refs['recycle-scroller'] as Vue).$el.scrollTo({
+    ;(this.$refs['recycle-scroller'] as Vue)?.$el.scrollTo({
       top: this.currentIndex * 94,
       behavior: 'smooth'
     })
