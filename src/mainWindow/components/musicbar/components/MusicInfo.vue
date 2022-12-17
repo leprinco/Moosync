@@ -261,7 +261,6 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   }
 
   get queueOrder() {
-    console.log(this.queueProvider.queueOrder)
     return this.queueProvider.queueOrder
   }
 
