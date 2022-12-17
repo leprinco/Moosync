@@ -556,7 +556,6 @@ export class SpotifyProvider extends GenericProvider {
     const songList: Song[] = []
     for (const track of recommendations.tracks) {
       const song: Song = this.parseSong(track)
-      console.log(song)
       songList.push(song)
     }
     return songList
@@ -612,7 +611,6 @@ export class SpotifyProvider extends GenericProvider {
         }
       })
 
-      console.log('got reocm resp', recommendationsResp)
       yield this.parseRecommendations(recommendationsResp)
     }
   }

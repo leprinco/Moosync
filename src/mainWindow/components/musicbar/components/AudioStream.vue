@@ -752,7 +752,6 @@ export default class AudioStream extends mixins(
   private lastLoadedSong?: Song
 
   private async loadAudio(song: Song, loadedState: boolean) {
-    console.log('trying to load', song)
     if (!this.playersInitialized) {
       return
     }

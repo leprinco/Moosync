@@ -399,7 +399,6 @@ export class ExtensionProvider extends GenericProvider {
     const resp = await this.sendExtensionEventRequest('playbackDetailsRequested', [
       { ...song, _id: this.sanitizeId(song._id) }
     ])
-    console.log(resp)
     if (resp) {
       if (this.isForwardRequest(resp)) {
         return this.handleForwardRequest('getPlaybackUrlAndDuration', resp, [song], this.getExecStack(...arguments))

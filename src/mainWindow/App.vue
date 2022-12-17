@@ -438,7 +438,6 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
         ?.enabled ?? true
 
     window.PreferenceUtils.listenPreferenceChanged('spotify.librespot.options', true, (_, value) => {
-      console.log(value)
       vxm.themes.showSpotifyCanvas =
         (value as Checkbox[]).find((val) => val.key === 'use_spotify_canvas')?.enabled ?? true
     })
