@@ -783,6 +783,11 @@ export default class AudioStream extends mixins(
       await this.setPlaybackURLAndDuration(song)
     }
 
+    // Don't proceed if song has changed while we were fetching playback url and duration
+    if (song._id !== this.currentSong?._id) {
+      return
+    }
+
     const switchedPlayer = await this.onPlayerTypesChanged(song.type, song.playbackUrl)
     if (!switchedPlayer) {
       console.error('Could not find player to play song', song)
