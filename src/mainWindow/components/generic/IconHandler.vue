@@ -44,7 +44,6 @@ export default class IconHandler extends mixins(ImgLoader, ProviderMixin) {
 
   public getIconColor(providerKey: string) {
     const provider = this.getProviderByKey(providerKey.toLowerCase())
-    console.log(provider?.BgColor)
     return provider?.BgColor
   }
 
@@ -68,7 +67,6 @@ export default class IconHandler extends mixins(ImgLoader, ProviderMixin) {
     this.iconURL = ''
 
     if (this.isPlaylist(this.item)) {
-      console.log(this.item)
     }
 
     if (this.item.icon) {
@@ -91,7 +89,6 @@ export default class IconHandler extends mixins(ImgLoader, ProviderMixin) {
 
     if (this.isPlaylist(this.item)) {
       if (this.item.extension) {
-        console.log(this.item)
         window.ExtensionUtils.getExtensionIcon(this.item.extension).then((val) => {
           if (val) {
             this.iconURL = 'media://' + val
