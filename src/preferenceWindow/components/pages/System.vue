@@ -437,12 +437,12 @@ export default class System extends Vue {
     return [
       {
         key: 'use_spotify_canvas',
-        title: this.$tc('settings.system.spotify.useSpotifyCanvas'),
+        title: this.$tc('settings.system.spotify.librespot.useSpotifyCanvas'),
         enabled: true
       },
       {
         key: 'use_librespot_playback',
-        title: this.$tc('settings.system.spotify.useLibrespotPlayback'),
+        title: this.$tc('settings.system.spotify.librespot.useLibrespotPlayback'),
         enabled: true
       }
     ]
