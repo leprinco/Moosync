@@ -44,7 +44,6 @@ export class InvidiousPlayer extends LocalPlayer {
 
   private async fetchPlaybackURL(str: string | undefined) {
     if (str) {
-      console.trace('parsing', str)
       if (str.startsWith('http')) {
         str = vxm.providers._invidiousProvider.getVideoIdFromURL(str)
       }
