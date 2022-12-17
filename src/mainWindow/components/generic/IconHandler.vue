@@ -9,8 +9,8 @@
 
 <template>
   <div class="d-flex provider-icon">
-    <YoutubeIcon v-if="iconType === 'YOUTUBE'" :color="'#E62017'" :filled="true" :dropShadow="true" />
-    <SpotifyIcon v-else-if="iconType === 'SPOTIFY'" :color="'#1ED760'" :filled="true" :dropShadow="true" />
+    <YoutubeIcon v-if="iconType === 'YOUTUBE'" :color="getIconColor(iconType)" :filled="true" :dropShadow="true" />
+    <SpotifyIcon v-else-if="iconType === 'SPOTIFY'" :color="getIconColor(iconType)" :filled="true" :dropShadow="true" />
 
     <inline-svg v-else-if="iconURL && iconType === 'URL' && iconURL.endsWith('svg')" :src="iconURL" />
     <img
@@ -28,6 +28,7 @@ import Component, { mixins } from 'vue-class-component'
 import YoutubeIcon from '@/icons/YoutubeIcon.vue'
 import SpotifyIcon from '@/icons/SpotifyIcon.vue'
 import { Prop } from 'vue-property-decorator'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 
 @Component({
   components: {
@@ -35,30 +36,74 @@ import { Prop } from 'vue-property-decorator'
     SpotifyIcon
   }
 })
-export default class IconHandler extends mixins(ImgLoader) {
-  @Prop({ default: () => ({}) })
-  public song!: Song
+export default class IconHandler extends mixins(ImgLoader, ProviderMixin) {
+  @Prop({ default: null })
+  public item!: Song | Playlist
 
   public iconURL = ''
+
+  public getIconColor(providerKey: string) {
+    const provider = this.getProviderByKey(providerKey.toLowerCase())
+    console.log(provider?.BgColor)
+    return provider?.BgColor
+  }
+
+  private isSong(item: unknown): item is Song {
+    return !!(item as Song)._id
+  }
+
+  private isPlaylist(item: unknown): item is Playlist {
+    return !!(item as Playlist).playlist_id
+  }
+
+  private getTypeFromPlaylist(item: Playlist) {
+    if (item.playlist_id && item.playlist_id.startsWith('spotify')) return 'SPOTIFY'
+
+    if (item.playlist_id && item.playlist_id.startsWith('youtube')) return 'YOUTUBE'
+
+    return 'URL'
+  }
 
   public get iconType() {
     this.iconURL = ''
 
-    if (this.song.icon) {
-      this.iconURL = 'media://' + this.song.icon
+    if (this.isPlaylist(this.item)) {
+      console.log(this.item)
+    }
+
+    if (this.item.icon) {
+      this.iconURL = this.item.icon.startsWith('media://') ? this.item.icon : 'media://' + this.item.icon
       return 'URL'
     }
 
-    if (this.song.providerExtension) {
-      window.ExtensionUtils.getExtensionIcon(this.song.providerExtension).then((val) => {
-        if (val) {
-          this.iconURL = 'media://' + val
-        }
-      })
-      return 'URL'
+    if (this.isSong(this.item)) {
+      if (this.item.providerExtension) {
+        window.ExtensionUtils.getExtensionIcon(this.item.providerExtension).then((val) => {
+          if (val) {
+            this.iconURL = 'media://' + val
+          }
+        })
+        return 'URL'
+      }
+
+      return this.item.type
     }
 
-    return this.song.type
+    if (this.isPlaylist(this.item)) {
+      if (this.item.extension) {
+        console.log(this.item)
+        window.ExtensionUtils.getExtensionIcon(this.item.extension).then((val) => {
+          if (val) {
+            this.iconURL = 'media://' + val
+          }
+        })
+        return 'URL'
+      }
+
+      return this.getTypeFromPlaylist(this.item)
+    }
+
+    return ''
   }
 }
 </script>

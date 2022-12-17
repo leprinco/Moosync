@@ -16,7 +16,7 @@
               {{ item.title }}
             </div>
 
-            <IconHandler :song="item" />
+            <IconHandler :item="item" />
           </b-col>
         </b-row>
         <b-row no-gutters class="flex-nowrap">

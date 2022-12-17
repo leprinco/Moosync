@@ -25,23 +25,7 @@
             @CardContextMenu="getPlaylistMenu(arguments[0], playlist)"
           >
             <template #icon>
-              <SpotifyIcon
-                v-if="playlist.playlist_id && playlist.playlist_id.startsWith('spotify')"
-                color="#07C330"
-                :filled="true"
-              />
-              <YoutubeIcon
-                v-if="playlist.playlist_id && playlist.playlist_id.startsWith('youtube')"
-                color="#E62017"
-                :filled="true"
-              />
-              <inline-svg v-if="playlist.icon && playlist.icon.endsWith('svg')" :src="getImgSrc(playlist.icon)" />
-              <img
-                v-if="playlist.icon && !playlist.icon.endsWith('svg')"
-                :src="playlist.icon"
-                alt="provider logo"
-                referrerPolicy="no-referrer"
-              />
+              <IconHandler class="h-100" :item="playlist" />
             </template>
 
             <template #defaultCover>
@@ -63,8 +47,6 @@ import { mixins } from 'vue-class-component'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import { vxm } from '@/mainWindow/store'
-import SpotifyIcon from '@/icons/SpotifyIcon.vue'
-import YoutubeIcon from '@/icons/YoutubeIcon.vue'
 import PlaylistDefault from '@/icons/PlaylistDefaultIcon.vue'
 import DeleteModal from '../../../commonComponents/ConfirmationModal.vue'
 import { bus } from '@/mainWindow/main'
@@ -74,16 +56,16 @@ import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { FAVORITES_PLAYLIST_ID, ProviderScopes } from '@/utils/commonConstants'
 import FavPlaylistIcon from '@/icons/FavPlaylistIcon.vue'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
+import IconHandler from '../../components/generic/IconHandler.vue'
 
 @Component({
   components: {
     CardView,
-    SpotifyIcon,
-    YoutubeIcon,
     PlaylistDefault,
     DeleteModal,
     PlusIcon,
-    FavPlaylistIcon
+    FavPlaylistIcon,
+    IconHandler
   }
 })
 export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, ProviderMixin, ImgLoader) {

@@ -23,7 +23,7 @@
       <b-col xl="8" lg="7" cols="5">
         <div class="d-flex">
           <div class="text-left song-title text-truncate">{{ song.title }}</div>
-          <IconHandler :song="song" />
+          <IconHandler :item="song" />
         </div>
 
         <div class="text-left song-subtitle text-truncate">

@@ -10,7 +10,7 @@
 <template>
   <div class="card mb-2 card-grow" @contextmenu="emitContext" :style="{ 'max-width': maxWidth }">
     <div class="card-img-top">
-      <div class="icon-container" :style="{ background: iconBgColor }">
+      <div class="icon-container" v-if="iconBgColor" :style="{ background: iconBgColor }">
         <slot name="icon" />
       </div>
       <div class="embed-responsive embed-responsive-1by1">
@@ -68,7 +68,7 @@ export default class CardView extends mixins(ImageLoader, ErrorHandler) {
   @Prop({ default: '200px' })
   public maxWidth!: string
 
-  @Prop({ default: 'var(--secondary)' })
+  @Prop({ default: '' })
   iconBgColor!: string
 
   forceEmptyImg = false

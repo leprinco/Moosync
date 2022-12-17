@@ -26,7 +26,7 @@ export class ExtensionProvider extends GenericProvider {
   private loggedInStatus = false
   private _title = ''
   private _icon = ''
-  private _bgColor = ''
+  private _bgColor = 'var(--secondary)'
   private _username?: string
   private _accountId = ''
   private providerScopes: ProviderScopes[] = []
