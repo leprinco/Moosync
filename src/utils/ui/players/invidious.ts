@@ -17,12 +17,14 @@ export class InvidiousPlayer extends LocalPlayer {
   }
 
   public async canPlay(src: string): Promise<boolean> {
+    console.log('can play', src)
     return src.length === 11 || vxm.providers.youtubeProvider.matchSongUrl(src)
   }
 
   protected async _load(src?: string, volume?: number, autoplay?: boolean, errorTries?: number) {
     this.customLoadEventEmitter.emit('loading')
     let playbackURL = await this.fetchPlaybackURL(src)
+    console.log(src, playbackURL)
     if (playbackURL) {
       const shouldProxy = (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('invidious.always_proxy'))
         ?.enabled
@@ -38,12 +40,13 @@ export class InvidiousPlayer extends LocalPlayer {
         errorTries = 0
       }
 
-      super.load(playbackURL, volume, this.lastAutoPlay)
+      super._load(playbackURL, volume, this.lastAutoPlay)
     }
   }
 
   private async fetchPlaybackURL(str: string | undefined) {
     if (str) {
+      console.trace('parsing', str)
       if (str.startsWith('http')) {
         str = vxm.providers._invidiousProvider.getVideoIdFromURL(str)
       }

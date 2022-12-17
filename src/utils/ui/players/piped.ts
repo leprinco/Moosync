@@ -22,7 +22,7 @@ export class PipedPlayer extends LocalPlayer {
     if (src) {
       const playbackUrl = await vxm.providers._pipedProvider.getStreamUrl(src)
       if (playbackUrl) {
-        super.load(playbackUrl, volume, autoplay)
+        super._load(playbackUrl, volume, autoplay)
       } else {
         this.customLoadEventEmitter.emit('error', new Error('Invalid src: ' + src))
       }

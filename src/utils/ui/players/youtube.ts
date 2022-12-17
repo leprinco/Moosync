@@ -104,7 +104,7 @@ export class YoutubePlayer extends LocalPlayer {
     return url
   }
 
-  async load(src?: string, volume?: number, autoplay?: boolean) {
+  protected async _load(src?: string, volume?: number, autoplay?: boolean) {
     if (src) {
       console.debug('Loading src', src)
       src = this.extractVideoID(src)
@@ -115,7 +115,7 @@ export class YoutubePlayer extends LocalPlayer {
     }
 
     console.debug('Got final youtube video ID', src)
-    super.load(src, volume, autoplay)
+    super._load(src, volume, autoplay)
   }
 
   protected listenOnTimeUpdate(callback: (time: number) => void): void {

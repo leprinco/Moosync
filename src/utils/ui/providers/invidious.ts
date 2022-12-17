@@ -172,11 +172,11 @@ export class InvidiousProvider extends GenericProvider {
   }
 
   public matchPlaylist(url: string) {
-    return !!(
-      url.match(
-        /^((?:https?:)?\/\/)?((?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/
-      ) ?? this.getIDFromURL(url)
-    )
+    return vxm.providers._youtubeProvider.matchPlaylist(url)
+  }
+
+  public matchSongUrl(str: string): boolean {
+    return vxm.providers._youtubeProvider.matchSongUrl(str)
   }
 
   private getIDFromURL(url: string) {

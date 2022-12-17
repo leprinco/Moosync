@@ -284,9 +284,11 @@ export class PipedProvider extends GenericProvider {
   }
 
   public matchPlaylist(str: string): boolean {
-    return !!str.match(
-      /^((?:https?:)?\/\/)?((?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/
-    )
+    return vxm.providers._youtubeProvider.matchPlaylist(str)
+  }
+
+  public matchSongUrl(str: string): boolean {
+    return vxm.providers._youtubeProvider.matchSongUrl(str)
   }
 
   private parseExtendedPlaylist(playlistId: string, playlist: PipedResponses.PlaylistDetailsExtended.Root): Playlist {
