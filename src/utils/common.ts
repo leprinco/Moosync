@@ -285,3 +285,15 @@ export function sanitizeArtists(ext: string, ...artists: Artists[]): Artists[] {
 }
 
 export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+export function isAlbum(data: unknown): data is Album {
+  return !!(data as Album).album_id
+}
+
+export function isArtist(data: unknown): data is Artists {
+  return !!(data as Artists).artist_id
+}
+
+export function isGenre(data: unknown): data is Genre {
+  return !!(data as Genre).genre_id
+}

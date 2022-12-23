@@ -10,12 +10,13 @@
 import { DBUtils } from './utils'
 import { promises as fsP } from 'fs'
 import { v4 } from 'uuid'
-import { isEmpty, sanitizeArtistName } from '../../common'
+import { isArtist, isEmpty, sanitizeArtistName } from '../../common'
 
 import { loadPreferences } from './preferences'
 import path from 'path'
 import { getExtensionHostChannel } from '../ipc'
 import { downloadFile } from '@/utils/main/mainUtils'
+import { isAlbum } from '../../common'
 
 type KeysOfUnion<T> = T extends T ? keyof T : never
 // AvailableKeys will basically be keyof Foo | keyof Bar
@@ -125,10 +126,6 @@ export class SongDBInstance extends DBUtils {
     this.db
       .transaction((song_ids: string[]) => {
         for (const song_id of song_ids) {
-          const album_ids = this.getCountBySong('album_bridge', 'album', song_id)
-          const artist_ids = this.getCountBySong('artist_bridge', 'artist', song_id)
-          const genre_ids = this.getCountBySong('genre_bridge', 'genre', song_id)
-
           const songCoverPath_low = this.db.queryFirstCell(
             `SELECT song_coverPath_low from allsongs WHERE _id = ?`,
             song_id
@@ -145,46 +142,13 @@ export class SongDBInstance extends DBUtils {
           this.db.delete('album_bridge', { song: song_id })
           this.db.delete('genre_bridge', { song: song_id })
           this.db.delete('playlist_bridge', { song: song_id })
+
           this.db.delete('allsongs', { _id: song_id })
-
-          for (const id of album_ids) {
-            if (id.count === 1) {
-              const album: Album = (
-                this.getEntityByOptions({
-                  album: {
-                    album_id: id.album
-                  }
-                }) as Album[]
-              )[0]
-              this.db.delete('albums', { album_id: id.album })
-              if (album?.album_coverPath_low) pathsToRemove.push(album.album_coverPath_low)
-              if (album?.album_coverPath_high) pathsToRemove.push(album.album_coverPath_high)
-            }
-          }
-
-          for (const id of artist_ids) {
-            if (id.count === 1) {
-              const artist = (
-                this.getEntityByOptions({
-                  artist: {
-                    artist_id: id.artist
-                  }
-                }) as Artists[]
-              )[0]
-
-              this.db.delete('artists', { artist_id: id.artist })
-              if (artist?.artist_coverPath) pathsToRemove.push(artist.artist_coverPath)
-            }
-          }
-
-          for (const id of genre_ids) {
-            if (id.count === 1) {
-              this.db.delete('genres', { genre_id: id.genre })
-            }
-          }
         }
       })
       .immediate(songs.map((val) => val._id))
+
+    await this.cleanDb()
 
     for (const path of pathsToRemove) {
       await this.removeFile(path)
@@ -225,7 +189,7 @@ export class SongDBInstance extends DBUtils {
 
       for (const g of oldGenres ?? []) {
         if (!newGenres.includes(g)) {
-          const songCount = this.db.queryFirstCell<number>('SELECT COUNT(id) FROM genres_bridge WHERE genre = ?', g)
+          const songCount = this.db.queryFirstCell<number>('SELECT COUNT(id) FROM genre_bridge WHERE genre = ?', g)
           if (songCount === 0) {
             this.db.delete('genres', { genre_id: g })
           }
@@ -732,7 +696,7 @@ export class SongDBInstance extends DBUtils {
     this.db.transaction(() => {
       for (const row of this.db.query(`SELECT genre_id FROM genres`)) {
         this.db.run(
-          `UPDATE genres SET genre_song_count = (SELECT count(id) FROM genres_bridge WHERE genre = ?) WHERE genre_id = ?`,
+          `UPDATE genres SET genre_song_count = (SELECT count(id) FROM genre_bridge WHERE genre = ?) WHERE genre_id = ?`,
           (row as Genre).genre_id,
           (row as Genre).genre_id
         )
@@ -761,7 +725,7 @@ export class SongDBInstance extends DBUtils {
   private storeGenreBridge(genreID: string[], songID: string) {
     for (const i of genreID) {
       const exists = this.db.queryFirstCell(
-        `SELECT COUNT(id) FROM genres_bridge WHERE genre = ? AND song = ?`,
+        `SELECT COUNT(id) FROM genre_bridge WHERE genre = ? AND song = ?`,
         i,
         songID
       )
@@ -1127,5 +1091,45 @@ export class SongDBInstance extends DBUtils {
       `SELECT song_id, play_count FROM analytics WHERE song_id in (${where})`
     )
     return Object.assign({}, ...res.map((val) => ({ [val.song_id]: val.play_count })))
+  }
+
+  /* ============================= 
+                Destructive
+     ============================= */
+
+  public async cleanDb() {
+    const tables = ['album', 'artist', 'genre']
+    const pathsToRemove: (string | undefined)[] = []
+
+    this.db.transaction(() => {
+      for (const table of tables) {
+        const data: (Album | Artists | Genre)[] = this.db.query(
+          `SELECT * from ${table}s as t1 LEFT JOIN ${table}_bridge t2 ON t1.${table}_id = t2.${table} WHERE t2.${table} IS NULL`
+        )
+
+        console.log(data)
+
+        for (const d of data) {
+          if (isAlbum(d)) {
+            pathsToRemove.push(d.album_coverPath_high, d.album_coverPath_low)
+          }
+
+          if (isArtist(d)) {
+            pathsToRemove.push(d.artist_coverPath)
+          }
+
+          this.db.delete(`${table}s`, {
+            [`${table}_id`]: (d as Record<string, string>)[`${table}_id`]
+          })
+        }
+      }
+    })()
+
+    const promises: Promise<void>[] = []
+    for (const p of pathsToRemove) {
+      if (p) promises.push(this.removeFile(p))
+    }
+
+    await Promise.all(promises)
   }
 }
