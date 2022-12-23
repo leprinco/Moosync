@@ -112,6 +112,23 @@
               :title="$t('settings.system.youtubeAlternative.piped.url')"
               :tooltip="$t('settings.system.youtubeAlternative.piped.url_tooltip')"
             />
+
+            <EditText
+              class="mt-4"
+              :isExtension="false"
+              :title="$t('settings.system.youtubeAlternative.piped.username')"
+              key="piped.username"
+              :tooltip="$t('settings.system.youtubeAlternative.piped.username_tooltip')"
+            />
+
+            <EditText
+              class="mt-2"
+              :isExtension="false"
+              :title="$t('settings.system.youtubeAlternative.piped.password')"
+              key="piped.password"
+              :tooltip="$t('settings.system.youtubeAlternative.piped.password_tooltip')"
+              type="password"
+            />
           </b-col>
 
           <CheckboxGroup

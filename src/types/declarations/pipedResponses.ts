@@ -15,7 +15,9 @@ declare namespace PipedResponses {
     PLAYLIST_DETAILS_NEXT = 'nextpage/playlists/${playlist_id}',
     CHANNEL_DETAILS = 'channel/${channel_id}',
     CHANNEL_DETAILS_NEXT = 'nextpage/channel/${channel_id}',
-    STREAM_DETAILS = 'streams/${video_id}'
+    STREAM_DETAILS = 'streams/${video_id}',
+    LOGIN = 'login',
+    USER_PLAYLISTS = 'user/playlists'
   }
 
   type SearchFilters = 'music_songs' | 'channels' | 'playlists' | 'music_albums'
@@ -37,6 +39,11 @@ declare namespace PipedResponses {
 
   type StreamRequest = {
     videoId: string
+  }
+
+  type LoginRequest = {
+    username: string
+    password: string
   }
 
   interface VideoDetails {
@@ -187,6 +194,20 @@ declare namespace PipedResponses {
     }
   }
 
+  interface TokenResponse {
+    token: string
+  }
+
+  namespace UserPlaylistDetails {
+    interface Root {
+      id: string
+      name: string
+      shortDescription?: string
+      thumbnail: string
+      videos: number
+    }
+  }
+
   type SearchObject<T extends PipedResources, K extends SearchFilters> = T extends PipedResources.SEARCH
     ? SearchRequest<K>
     : T extends PipedResources.PLAYLIST_DETAILS | PipedResources.PLAYLIST_DETAILS_NEXT
@@ -195,6 +216,8 @@ declare namespace PipedResponses {
     ? ChannelDetailsRequest
     : T extends PipedResources.STREAM_DETAILS
     ? StreamRequest
+    : T extends PipedResources.LOGIN
+    ? LoginRequest
     : undefined
 
   type ResponseType<T extends PipedResources, K extends SearchFilters> = T extends PipedResources.SEARCH
@@ -205,5 +228,9 @@ declare namespace PipedResponses {
     ? ChannelDetailsExtended.Root
     : T extends PipedResources.STREAM_DETAILS
     ? VideoStreamDetails.Root
+    : T extends PipedResources.LOGIN
+    ? TokenResponse
+    : T extends PipedResources.USER_PLAYLISTS
+    ? UserPlaylistDetails.Root[]
     : undefined
 }

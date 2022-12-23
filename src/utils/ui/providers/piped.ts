@@ -5,38 +5,103 @@ import { vxm } from '@/mainWindow/store'
 import { FetchWrapper } from './generics/fetchWrapper'
 import { sleep } from '../../common'
 
+const KeytarService = 'MoosyncPipedToken'
+
 enum PipedResources {
   SEARCH = 'search',
   PLAYLIST_DETAILS = 'playlists/${playlist_id}',
   PLAYLIST_DETAILS_NEXT = 'nextpage/playlists/${playlist_id}',
   CHANNEL_DETAILS = 'channel/${channel_id}',
   CHANNEL_DETAILS_NEXT = 'nextpage/channel/${channel_id}',
-  STREAM_DETAILS = 'streams/${video_id}'
+  STREAM_DETAILS = 'streams/${video_id}',
+  LOGIN = 'login',
+  USER_PLAYLISTS = 'user/playlists'
 }
 export class PipedProvider extends GenericProvider {
   key = 'piped'
 
   private api = new FetchWrapper()
+  private _token: string | undefined
 
   public async getLoggedIn(): Promise<boolean> {
-    vxm.providers.loggedInYoutube = true
-    return true
+    vxm.providers.loggedInYoutube = !!this._token
+    return !!this._token
+  }
+
+  private async fetchStoredToken() {
+    return window.Store.getSecure(KeytarService)
   }
 
   public async login(): Promise<boolean> {
-    return true
+    const username = await window.PreferenceUtils.loadSelective('piped.username')
+    const password = await window.Store.getSecure('piped.password')
+
+    if (username && password) {
+      console.log(username, password)
+      const BASE_URL = await this.parseBaseURL()
+      const resp: PipedResponses.TokenResponse = await (
+        await this.api.request(PipedResources.LOGIN, {
+          baseURL: BASE_URL,
+          method: 'POST',
+          body: JSON.stringify({
+            username,
+            password
+          }),
+          invalidateCache: true
+        })
+      ).json()
+
+      this._token = resp.token
+      await window.Store.setSecure(KeytarService, this._token)
+      return true
+    }
+
+    return false
   }
 
   public async signOut(): Promise<void> {
-    return
+    this._token = undefined
+    await window.Store.removeSecure(KeytarService)
   }
 
   public async updateConfig(): Promise<boolean> {
-    return true
+    const username = await window.PreferenceUtils.loadSelective('piped.username')
+    const password = await window.Store.getSecure('piped.password')
+
+    this._token = (await this.fetchStoredToken()) ?? undefined
+
+    this.authInitializedResolver()
+    return !!(username && password)
   }
 
   public async getUserDetails(): Promise<string | undefined> {
-    return 'Anonymous'
+    return this._token && (await window.PreferenceUtils.loadSelective('piped.username'))
+  }
+
+  private parseUserPlaylists(playlists: PipedResponses.UserPlaylistDetails.Root[]) {
+    const ret: Playlist[] = []
+    for (const p of playlists) {
+      ret.push({
+        playlist_id: `youtube-playlist:${p.id}`,
+        playlist_name: p.name,
+        playlist_desc: p.shortDescription,
+        playlist_coverPath: p.thumbnail,
+        playlist_song_count: p.videos
+      })
+    }
+
+    return ret
+  }
+
+  public async getUserPlaylists(invalidateCache?: boolean | undefined): Promise<Playlist[]> {
+    if (await this.getLoggedIn()) {
+      const resp = await this.populateRequest(PipedResources.USER_PLAYLISTS, undefined, this._token, invalidateCache)
+      if (resp) {
+        return this.parseUserPlaylists(resp)
+      }
+    }
+
+    return []
   }
 
   public matchEntityId(id: string): boolean {
@@ -69,20 +134,28 @@ export class PipedProvider extends GenericProvider {
       ProviderScopes.PLAYLIST_SONGS,
       ProviderScopes.ARTIST_SONGS,
       ProviderScopes.ALBUM_SONGS,
-      ProviderScopes.SEARCH_ALBUM
+      ProviderScopes.SEARCH_ALBUM,
+      ProviderScopes.PLAYLISTS
     ]
+  }
+
+  private async parseBaseURL() {
+    let BASE_URL = await window.PreferenceUtils.loadSelective<string>('piped_instance')
+    if (!BASE_URL?.endsWith('/')) {
+      BASE_URL += '/'
+    }
+
+    return BASE_URL
   }
 
   private async populateRequest<T extends PipedResources, K extends PipedResponses.SearchFilters>(
     resource: T,
     search: PipedResponses.SearchObject<T, K>,
+    authorization?: string,
     invalidateCache = false,
     tries = 0
   ): Promise<PipedResponses.ResponseType<T, K> | undefined> {
-    let BASE_URL = await window.PreferenceUtils.loadSelective<string>('piped_instance')
-    if (!BASE_URL?.endsWith('/')) {
-      BASE_URL += '/'
-    }
+    const BASE_URL = await this.parseBaseURL()
 
     let parsedResource: string = resource
 
@@ -98,12 +171,18 @@ export class PipedProvider extends GenericProvider {
       parsedResource = resource.replace('${video_id}', (search as PipedResponses.StreamRequest).videoId)
     }
 
+    const headers: Record<string, string> = {}
+    if (authorization) {
+      headers['Authorization'] = authorization
+    }
+
     try {
       const resp = await this.api.request(parsedResource, {
         baseURL: BASE_URL,
         serialize: (params) => qs.stringify(params, { arrayFormat: 'repeat', encode: false }),
         search,
         method: 'GET',
+        headers,
         invalidateCache
       })
 
@@ -113,7 +192,7 @@ export class PipedProvider extends GenericProvider {
 
       if (tries < 3) {
         await sleep(1000)
-        return this.populateRequest(resource, search, invalidateCache, tries + 1)
+        return this.populateRequest(resource, search, authorization, invalidateCache, tries + 1)
       }
     }
   }
@@ -308,6 +387,7 @@ export class PipedProvider extends GenericProvider {
         {
           playlistId: id
         },
+        this._token,
         invalidateCache
       )
 
@@ -329,6 +409,7 @@ export class PipedProvider extends GenericProvider {
         playlistId: id,
         nextpage: encodeURIComponent(nextPageToken as string)
       },
+      this._token,
       invalidateCache
     )
 
@@ -413,6 +494,7 @@ export class PipedProvider extends GenericProvider {
         {
           videoId
         },
+        this._token,
         true
       )
 
