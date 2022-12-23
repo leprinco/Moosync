@@ -264,7 +264,15 @@ export const migrations = [
   // 24-12-2022
   `
   -- Up
-  ALTER TABLE artists_bridge RENAME TO artist_bridge;;
+  ALTER TABLE artists_bridge RENAME TO artist_bridge;
+  
+  -- Down
+  `,
+
+  // 24-12-2022
+  `
+  -- Up
+  ALTER TABLE genre RENAME TO genres;
   
   -- Down
   `

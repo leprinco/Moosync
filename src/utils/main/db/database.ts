@@ -179,7 +179,7 @@ export class SongDBInstance extends DBUtils {
 
           for (const id of genre_ids) {
             if (id.count === 1) {
-              this.db.delete('genre', { genre_id: id.genre })
+              this.db.delete('genres', { genre_id: id.genre })
             }
           }
         }
@@ -225,9 +225,9 @@ export class SongDBInstance extends DBUtils {
 
       for (const g of oldGenres ?? []) {
         if (!newGenres.includes(g)) {
-          const songCount = this.db.queryFirstCell<number>('SELECT COUNT(id) FROM genre_bridge WHERE genre = ?', g)
+          const songCount = this.db.queryFirstCell<number>('SELECT COUNT(id) FROM genres_bridge WHERE genre = ?', g)
           if (songCount === 0) {
-            this.db.delete('genre', { genre_id: g })
+            this.db.delete('genres', { genre_id: g })
           }
         }
       }
@@ -472,7 +472,7 @@ export class SongDBInstance extends DBUtils {
       case 'artist':
         return 'artists'
       case 'genre':
-        return 'genre'
+        return 'genres'
       case 'playlist':
         return 'playlists'
     }
@@ -730,9 +730,9 @@ export class SongDBInstance extends DBUtils {
    */
   public updateSongCountGenre() {
     this.db.transaction(() => {
-      for (const row of this.db.query(`SELECT genre_id FROM genre`)) {
+      for (const row of this.db.query(`SELECT genre_id FROM genres`)) {
         this.db.run(
-          `UPDATE genre SET genre_song_count = (SELECT count(id) FROM genre_bridge WHERE genre = ?) WHERE genre_id = ?`,
+          `UPDATE genres SET genre_song_count = (SELECT count(id) FROM genres_bridge WHERE genre = ?) WHERE genre_id = ?`,
           (row as Genre).genre_id,
           (row as Genre).genre_id
         )
@@ -745,11 +745,11 @@ export class SongDBInstance extends DBUtils {
     if (genre) {
       for (const a of genre) {
         if (a) {
-          const id = this.db.queryFirstCell(`SELECT genre_id FROM genre WHERE genre_name = ? COLLATE NOCASE`, a)
+          const id = this.db.queryFirstCell(`SELECT genre_id FROM genres WHERE genre_name = ? COLLATE NOCASE`, a)
           if (id) genreID.push(id)
           else {
             const id = v4()
-            this.db.insert('genre', { genre_id: id, genre_name: a.trim() })
+            this.db.insert('genres', { genre_id: id, genre_name: a.trim() })
             genreID.push(id)
           }
         }
@@ -761,7 +761,7 @@ export class SongDBInstance extends DBUtils {
   private storeGenreBridge(genreID: string[], songID: string) {
     for (const i of genreID) {
       const exists = this.db.queryFirstCell(
-        `SELECT COUNT(id) FROM genre_bridge WHERE genre = ? AND song = ?`,
+        `SELECT COUNT(id) FROM genres_bridge WHERE genre = ? AND song = ?`,
         i,
         songID
       )
@@ -1128,8 +1128,4 @@ export class SongDBInstance extends DBUtils {
     )
     return Object.assign({}, ...res.map((val) => ({ [val.song_id]: val.play_count })))
   }
-
-  /* ============================= 
-                Destructive
-     ============================= */
 }

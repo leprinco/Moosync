@@ -155,7 +155,7 @@ export class DBUtils {
   }
 
   private leftJoinGenre(exclude_table?: string) {
-    if (exclude_table !== 'genre') {
+    if (exclude_table !== 'genres') {
       return ` LEFT JOIN genre_bridge ON allsongs._id = genre_bridge.song`
     }
     return ''
@@ -179,7 +179,7 @@ export class DBUtils {
     return ` LEFT JOIN ${tableName} ON ${bridgeTable}.${rowName} = ${tableName}.${rowName}_id`
   }
 
-  protected addLeftJoinClause(bridgeTable?: string, exclude_table?: 'album' | 'artists' | 'genre' | 'allsongs') {
+  protected addLeftJoinClause(bridgeTable?: string, exclude_table?: 'album' | 'artists' | 'genres' | 'allsongs') {
     return (
       this.leftJoinSongs(bridgeTable, exclude_table) +
       this.leftJoinAlbums(exclude_table) +
@@ -189,7 +189,7 @@ export class DBUtils {
       this.leftJoinAnalytics(exclude_table) +
       this.leftJoinCommon('albums', 'album', 'album_bridge') +
       this.leftJoinCommon('artists', 'artist', 'artist_bridge') +
-      this.leftJoinCommon('genre', 'genre', 'genre_bridge') +
+      this.leftJoinCommon('genres', 'genre', 'genre_bridge') +
       this.leftJoinCommon('playlists', 'playlist', 'playlist_bridge')
     )
   }
