@@ -29,6 +29,7 @@ import YoutubeIcon from '@/icons/YoutubeIcon.vue'
 import SpotifyIcon from '@/icons/SpotifyIcon.vue'
 import { Prop } from 'vue-property-decorator'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { vxm } from '@/mainWindow/store'
 
 @Component({
   components: {
@@ -43,7 +44,10 @@ export default class IconHandler extends mixins(ImgLoader, ProviderMixin) {
   public iconURL = ''
 
   public getIconColor(providerKey: string) {
-    const provider = this.getProviderByKey(providerKey.toLowerCase())
+    let provider = this.getProviderByKey(providerKey.toLowerCase())
+    if (!provider && providerKey === 'YOUTUBE') {
+      provider = vxm.providers.youtubeProvider
+    }
     return provider?.BgColor
   }
 
