@@ -510,7 +510,7 @@ export class PipedProvider extends GenericProvider {
   }
 
   public get BgColor(): string {
-    return '#E62017'
+    return '#d93427'
   }
 
   public get IconComponent(): string {
