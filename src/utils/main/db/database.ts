@@ -126,7 +126,7 @@ export class SongDBInstance extends DBUtils {
       .transaction((song_ids: string[]) => {
         for (const song_id of song_ids) {
           const album_ids = this.getCountBySong('album_bridge', 'album', song_id)
-          const artist_ids = this.getCountBySong('artists_bridge', 'artist', song_id)
+          const artist_ids = this.getCountBySong('artist_bridge', 'artist', song_id)
           const genre_ids = this.getCountBySong('genre_bridge', 'genre', song_id)
 
           const songCoverPath_low = this.db.queryFirstCell(
@@ -141,7 +141,7 @@ export class SongDBInstance extends DBUtils {
           if (songCoverPath_low) pathsToRemove.push(songCoverPath_low)
           if (songCoverPath_high) pathsToRemove.push(songCoverPath_high)
 
-          this.db.delete('artists_bridge', { song: song_id })
+          this.db.delete('artist_bridge', { song: song_id })
           this.db.delete('album_bridge', { song: song_id })
           this.db.delete('genre_bridge', { song: song_id })
           this.db.delete('playlist_bridge', { song: song_id })
@@ -197,12 +197,12 @@ export class SongDBInstance extends DBUtils {
 
   private updateSongArtists(newArtists: Artists[], oldArtists: Artists[] | undefined, songID: string) {
     if (JSON.stringify(oldArtists) !== JSON.stringify(newArtists)) {
-      this.db.delete('artists_bridge', { song: songID })
+      this.db.delete('artist_bridge', { song: songID })
 
       for (const a of oldArtists ?? []) {
         if (!newArtists.find((val) => val.artist_name === a.artist_name)) {
           const songCount = this.db.queryFirstCell<number>(
-            'SELECT COUNT(id) FROM artists_bridge WHERE artist = ?',
+            'SELECT COUNT(id) FROM artist_bridge WHERE artist = ?',
             a.artist_id
           )
           if (songCount === 0) {
@@ -879,12 +879,12 @@ export class SongDBInstance extends DBUtils {
   private storeArtistBridge(artistID: string[], songID: string) {
     for (const i of artistID) {
       const exists = this.db.queryFirstCell(
-        `SELECT COUNT(id) FROM artists_bridge WHERE artist = ? AND song = ?`,
+        `SELECT COUNT(id) FROM artist_bridge WHERE artist = ? AND song = ?`,
         i,
         songID
       )
       if (exists === 0) {
-        this.db.insert('artists_bridge', { song: songID, artist: i })
+        this.db.insert('artist_bridge', { song: songID, artist: i })
       }
     }
   }
@@ -902,7 +902,7 @@ export class SongDBInstance extends DBUtils {
     }
 
     const album_cover = this.db.queryFirstCell(
-      `SELECT album_coverPath_high from albums WHERE album_id = (SELECT album FROM album_bridge WHERE song = (SELECT song FROM artists_bridge WHERE artist = ?))`,
+      `SELECT album_coverPath_high from albums WHERE album_id = (SELECT album FROM album_bridge WHERE song = (SELECT song FROM artist_bridge WHERE artist = ?))`,
       id
     ) as marshaledSong
 
@@ -911,7 +911,7 @@ export class SongDBInstance extends DBUtils {
     }
 
     const song_cover = this.db.queryFirstCell(
-      `SELECT song_coverPath_high from allsongs WHERE _id = (SELECT song FROM artists_bridge WHERE artist = ?)`,
+      `SELECT song_coverPath_high from allsongs WHERE _id = (SELECT song FROM artist_bridge WHERE artist = ?)`,
       id
     )
 
@@ -925,7 +925,7 @@ export class SongDBInstance extends DBUtils {
     this.db.transaction(() => {
       for (const row of this.db.query(`SELECT artist_id FROM artists`)) {
         this.db.run(
-          `UPDATE artists SET artist_song_count = (SELECT count(id) FROM artists_bridge WHERE artist = ?) WHERE artist_id = ?`,
+          `UPDATE artists SET artist_song_count = (SELECT count(id) FROM artist_bridge WHERE artist = ?) WHERE artist_id = ?`,
           (row as Artists).artist_id,
           (row as Artists).artist_id
         )
@@ -1128,4 +1128,8 @@ export class SongDBInstance extends DBUtils {
     )
     return Object.assign({}, ...res.map((val) => ({ [val.song_id]: val.play_count })))
   }
+
+  /* ============================= 
+                Destructive
+     ============================= */
 }

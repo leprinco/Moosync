@@ -149,7 +149,7 @@ export class DBUtils {
 
   private leftJoinArtists(exclude_table?: string) {
     if (exclude_table !== 'artists') {
-      return ` LEFT JOIN artists_bridge ON allsongs._id = artists_bridge.song`
+      return ` LEFT JOIN artist_bridge ON allsongs._id = artist_bridge.song`
     }
     return ''
   }
@@ -188,7 +188,7 @@ export class DBUtils {
       this.leftJoinPLaylists(exclude_table) +
       this.leftJoinAnalytics(exclude_table) +
       this.leftJoinCommon('albums', 'album', 'album_bridge') +
-      this.leftJoinCommon('artists', 'artist', 'artists_bridge') +
+      this.leftJoinCommon('artists', 'artist', 'artist_bridge') +
       this.leftJoinCommon('genre', 'genre', 'genre_bridge') +
       this.leftJoinCommon('playlists', 'playlist', 'playlist_bridge')
     )

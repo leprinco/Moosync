@@ -259,5 +259,13 @@ export const migrations = [
   ALTER TABLE allsongs add show_in_library BOOLEAN DEFAULT TRUE;
 
   -- Down
+  `,
+
+  // 24-12-2022
+  `
+  -- Up
+  ALTER TABLE artists_bridge RENAME TO artist_bridge;;
+  
+  -- Down
   `
 ]
