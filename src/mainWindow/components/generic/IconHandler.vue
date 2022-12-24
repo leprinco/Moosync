@@ -12,7 +12,7 @@
     <YoutubeIcon v-if="iconType === 'YOUTUBE'" :color="getIconColor(iconType)" :filled="true" :dropShadow="true" />
     <SpotifyIcon v-else-if="iconType === 'SPOTIFY'" :color="getIconColor(iconType)" :filled="true" :dropShadow="true" />
 
-    <inline-svg v-else-if="iconURL && iconType === 'URL' && iconURL.endsWith('svg')" :src="iconURL" />
+    <inline-svg v-else-if="iconURL && iconType === 'URL' && iconURL.endsWith('svg')" :src="iconURL" class="icon-svg" />
     <img
       referrerPolicy="no-referrer"
       v-else-if="iconURL && iconType === 'URL' && !iconURL.endsWith('svg')"
@@ -106,3 +106,9 @@ export default class IconHandler extends mixins(ImgLoader, ProviderMixin) {
   }
 }
 </script>
+
+<style lang="sass" scoped>
+.icon-svg
+  height: 100% !important
+  width: 100% !important
+</style>
