@@ -18,7 +18,7 @@ enum PipedResources {
   USER_PLAYLISTS = 'user/playlists'
 }
 export class PipedProvider extends GenericProvider {
-  key = 'piped'
+  key = 'youtube'
 
   private api = new FetchWrapper()
   private _token: string | undefined
