@@ -18,10 +18,12 @@ export function downloadFile(url: string, path: string) {
     const request = method(
       {
         hostname: parsedURL.hostname,
-        path: parsedURL.pathname,
+        path: parsedURL.pathname + parsedURL.search,
         headers: { 'User-Agent': agents[Math.floor(Math.random() * agents.length)] }
       },
       function (response) {
+        response.on('error', reject)
+
         if (response.statusCode === 200) {
           const file = fs.createWriteStream(path)
           response.pipe(file)
@@ -34,6 +36,11 @@ export function downloadFile(url: string, path: string) {
 
           file.on('error', reject)
         } else {
+          let data = ''
+          response.on('data', (d) => (data += d))
+          response.on('end', () => {
+            console.error(data)
+          })
           reject('Failed with status code: ' + response.statusCode)
         }
       }

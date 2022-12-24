@@ -352,12 +352,21 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     )[0]
   }
 
+  private validateSong(song: Song) {
+    if (!song.artists) song.artists = []
+    if (!song.genre) song.genre = []
+    if (song.album) song.album = {}
+
+    return song
+  }
+
   mounted() {
     bus.$on(EventBus.SHOW_SONG_INFO_MODAL, async (song: Song) => {
-      song = await this.fetchSongDetails(song._id)
+      song = (await this.fetchSongDetails(song._id)) ?? song
       this.fetchDatalist()
       this.forceEmptyImg = false
-      this.song = song
+      this.song = this.validateSong(song)
+
       this.tmpSong = JSON.parse(JSON.stringify(song))
 
       if (this.song) {

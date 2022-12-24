@@ -172,12 +172,14 @@ export default class EntityInfoModal extends Vue {
   }
 
   async save() {
+    console.log('saving', this.tmpEntity)
     if (this.tmpEntity) {
       if ((this.tmpEntity as Artists).artist_id) {
         window.DBUtils.updateArtist(this.tmpEntity as Artists)
       }
 
       if ((this.tmpEntity as Album).album_id) {
+        console.log('updating album')
         window.DBUtils.updateAlbum(this.tmpEntity as Album)
       }
 

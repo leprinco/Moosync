@@ -609,6 +609,8 @@ export class SongDBInstance extends DBUtils {
   }
 
   public async updateAlbum(album: Album) {
+    console.log(album)
+
     if (album.album_id) {
       const oldAlbum = this.getEntityByOptions<Album>({
         album: {
@@ -629,6 +631,7 @@ export class SongDBInstance extends DBUtils {
           await this.removeFile(oldAlbum.album_coverPath_low)
         }
       }
+
       this.db.updateWithBlackList('albums', album, ['album_id = ?', album.album_id], ['album_id', 'album_extra_info'])
 
       this.updateAlbumExtraInfo(album.album_id, album.album_extra_info)
@@ -748,28 +751,30 @@ export class SongDBInstance extends DBUtils {
    * @returns number of rows updated
    */
   public async updateArtists(artist: Artists) {
-    const oldArtist = this.getEntityByOptions<Artists>({
-      artist: {
-        artist_id: artist.artist_id
+    if (artist) {
+      const oldArtist = this.getEntityByOptions<Artists>({
+        artist: {
+          artist_id: artist.artist_id
+        }
+      })[0]
+
+      if (oldArtist) {
+        const coverPath = await this.getCoverPath(oldArtist.artist_coverPath ?? '', artist.artist_coverPath ?? '')
+        artist.artist_coverPath = coverPath
+
+        this.db.updateWithBlackList(
+          'artists',
+          artist,
+          ['artist_id = ?', artist.artist_id],
+          ['artist_id', 'artist_extra_info']
+        )
+
+        if (oldArtist?.artist_coverPath) {
+          await this.removeFile(oldArtist.artist_coverPath)
+        }
+
+        this.updateArtistExtraInfo(artist.artist_id, artist.artist_extra_info)
       }
-    })[0]
-
-    if (oldArtist) {
-      const coverPath = await this.getCoverPath(oldArtist.artist_coverPath ?? '', artist.artist_coverPath ?? '')
-      artist.artist_coverPath = coverPath
-
-      this.db.updateWithBlackList(
-        'artists',
-        artist,
-        ['artist_id = ?', artist.artist_id],
-        ['artist_id', 'artist_extra_info']
-      )
-
-      if (oldArtist?.artist_coverPath) {
-        await this.removeFile(oldArtist.artist_coverPath)
-      }
-
-      this.updateArtistExtraInfo(artist.artist_id, artist.artist_extra_info)
     }
   }
 

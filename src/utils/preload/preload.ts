@@ -90,7 +90,7 @@ contextBridge.exposeInMainWorld('DBUtils', {
 
   updateAlbum: (album: Album) =>
     ipcRendererHolder.send<SongRequests.UpdateAlbum>(IpcEvents.SONG, {
-      type: SongEvents.UPDATE_ARTIST,
+      type: SongEvents.UPDATE_ALBUM,
       params: { album }
     }),
 
