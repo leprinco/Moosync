@@ -226,6 +226,32 @@ export class PipedProvider extends GenericProvider {
     return this.getParam(this.completeUrl(url), 'list')
   }
 
+  private parseChannelDetails(artist: PipedResponses.ChannelDetailsExtended.Root): Artists {
+    return {
+      artist_id: `youtube-author:${artist.id}`,
+      artist_name: artist.name,
+      artist_coverPath: artist.avatarUrl.replace('hqdefault', 'maxresdefault'),
+      artist_extra_info: {
+        youtube: {
+          channel_id: artist.id
+        }
+      }
+    }
+  }
+
+  public async getArtistDetails(artist: Artists): Promise<Artists | undefined> {
+    if (artist.artist_extra_info?.youtube?.channel_id) {
+      const resp = await this.populateRequest(PipedResources.CHANNEL_DETAILS, {
+        channelId: artist.artist_extra_info?.youtube?.channel_id
+      })
+
+      if (resp) {
+        return this.parseChannelDetails(resp)
+      }
+    }
+    return
+  }
+
   private parseSongs(...videos: PipedResponses.VideoDetails[]): Song[] {
     const songList: Song[] = []
 

@@ -297,7 +297,6 @@ export class InvidiousProvider extends GenericProvider {
     return []
   }
 
-  // TODO: Fetch artist details from invidious
   public async getArtistDetails(artist: Artists): Promise<Artists | undefined> {
     const channelId = artist.artist_extra_info?.youtube?.channel_id
     if (!channelId) {

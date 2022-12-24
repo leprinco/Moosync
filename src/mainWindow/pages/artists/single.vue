@@ -178,6 +178,8 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
         ...this.artist,
         artist_coverPath: fetchedArtist?.artist_coverPath
       }
+
+      await window.DBUtils.updateArtist(this.artist)
     }
   }
 
