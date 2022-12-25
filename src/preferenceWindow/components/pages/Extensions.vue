@@ -102,7 +102,7 @@ export default class Extensions extends Vue {
   created() {
     this.fetchExtensions()
     window.ExtensionUtils.listenRequests((r) => {
-      console.log('got preference update', r)
+      this.fetchExtensions()
     })
   }
 
@@ -165,6 +165,9 @@ export default class Extensions extends Vue {
 
   private async fetchExtensions() {
     this.extensions = await window.ExtensionUtils.getAllExtensions()
+    for (const e of this.extensions) {
+      e.preferences = e.preferences.sort((a, b) => (a.index ?? Infinity) - (b.index ?? Infinity))
+    }
   }
 
   private onExtensionChanged() {

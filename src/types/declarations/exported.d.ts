@@ -151,6 +151,7 @@ type ExtensionPreferenceGroup = {
   key: string
   title: string
   description: string
+  index?: number
 } & (
   | {
       type: 'CheckboxGroup'

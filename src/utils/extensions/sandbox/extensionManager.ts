@@ -205,6 +205,10 @@ export class ExtensionManager extends AbstractExtensionManager {
 
   private addPreference(packageName: string, preference: ExtensionPreferenceGroup) {
     for (const e of this.extensionRegistry.get({ packageName })) {
+      if (e.preferences.find((val) => val.key === preference.key)) {
+        console.warn('Preference already exists, skipping...')
+        return
+      }
       e.preferences.push(preference)
       this.notifyPreferencesChanged(packageName)
       return
@@ -216,8 +220,10 @@ export class ExtensionManager extends AbstractExtensionManager {
       const i = e.preferences.findIndex((val) => val.key === key)
       if (i !== -1) {
         e.preferences.splice(i, 1)
+        this.notifyPreferencesChanged(packageName)
+      } else {
+        console.warn('Preference with key', key, 'does not exist')
       }
-      this.notifyPreferencesChanged(packageName)
       return
     }
   }
