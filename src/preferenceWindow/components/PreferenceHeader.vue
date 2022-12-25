@@ -9,7 +9,7 @@
 
 <template>
   <b-row no-gutters>
-    <b-col cols="auto" align-self="center" class="title d-flex preference-title">
+    <b-col v-if="title" cols="auto" align-self="center" class="title d-flex preference-title">
       {{ title }}
     </b-col>
     <b-col cols="auto" class="ml-2">
