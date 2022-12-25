@@ -58,15 +58,29 @@ export function getSongView(): songMenu {
   return loadSelectivePreference('songView', false, 'compact' as songMenu) ?? 'compact'
 }
 
+const defaultTheme: ThemeDetails = {
+  id: 'default',
+  name: 'Default',
+  author: 'Moosync',
+  theme: {
+    primary: '#212121',
+    secondary: '#282828',
+    tertiary: '#151515',
+    textPrimary: '#ffffff',
+    textSecondary: '#565656',
+    textInverse: '#000000',
+    accent: '#65CB88',
+    divider: 'rgba(79, 79, 79, 0.67)'
+  }
+}
+
 /**
  * Gets active theme
  * @returns details of active theme if exists otherwise undefined
  */
-export function getActiveTheme() {
+export function getActiveTheme(): ThemeDetails {
   const id = loadSelectivePreference('activeTheme', false) as string
-  if (id) {
-    return loadTheme(id)
-  }
+  return id ? loadTheme(id) ?? defaultTheme : defaultTheme
 }
 
 export async function setupSystemThemes() {
