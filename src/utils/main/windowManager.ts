@@ -45,12 +45,14 @@ export class WindowHandler {
   private _isMainWindowMounted = false
   private pathQueue: string[] = []
 
-  public static getWindow(mainWindow = true) {
+  public static getWindow(mainWindow = true): BrowserWindow | null {
     if (mainWindow && this.mainWindow !== undefined) return BrowserWindow.fromId(this.mainWindow)
 
     if (!mainWindow && this.preferenceWindow !== undefined) {
       return BrowserWindow.fromId(this.preferenceWindow)
     }
+
+    return null
   }
 
   public static get hasFrame() {

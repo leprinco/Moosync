@@ -953,6 +953,9 @@ interface extensionAPI {
    */
   getInstalledExtensions(): string[]
 
+  addUserPreference(pref: ExtensionPreferenceGroup): void
+  removeUserPreference(key: string): void
+
   /**
    * Object containing controls for player
    */

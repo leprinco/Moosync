@@ -25,6 +25,7 @@ import { oauthHandler } from '@/utils/main/oauth/handler'
 import { getStoreChannel } from '../main/ipc'
 import { LogLevelDesc } from 'loglevel'
 import { sanitizePlaylist } from '@/utils/common'
+import { BrowserWindow } from 'electron'
 
 export const defaultExtensionPath = path.join(app.getPath('appData'), app.getName(), 'extensions')
 const defaultLogPath = path.join(app.getPath('logs'))
@@ -256,29 +257,39 @@ class ExtensionRequestHandler {
     }
   }
 
-  private requestToMainWindow(message: extensionRequestMessage) {
+  private requestToRenderer(message: extensionRequestMessage) {
+    const fireAndForgetRequests: typeof message['type'][] = ['update-preferences']
     return new Promise((resolve) => {
-      let listener: (event: Electron.IpcMainEvent, data: extensionReplyMessage) => void
-      ipcMain.on(
-        ExtensionHostEvents.EXTENSION_REQUESTS,
-        (listener = (event, data: extensionReplyMessage) => {
-          if (data.channel === message.channel) {
-            ipcMain.off(ExtensionHostEvents.EXTENSION_REQUESTS, listener)
-            resolve(data.data)
-          }
-        })
-      )
+      if (!fireAndForgetRequests.includes(message.type)) {
+        let listener: (event: Electron.IpcMainEvent, data: extensionReplyMessage) => void
+        ipcMain.on(
+          ExtensionHostEvents.EXTENSION_REQUESTS,
+          (listener = (event, data: extensionReplyMessage) => {
+            if (data.channel === message.channel) {
+              ipcMain.off(ExtensionHostEvents.EXTENSION_REQUESTS, listener)
+              resolve(data.data)
+            }
+          })
+        )
+      }
 
       // Defer call till mainWindow is created
-      if (WindowHandler.getWindow(true)) this.sendToMainWindow(message)
+      if (WindowHandler.getWindow(true)) this.sendToRenderer(message)
       else {
-        this.mainWindowCallsQueue.push({ func: this.sendToMainWindow, args: [message] })
+        this.mainWindowCallsQueue.push({ func: this.sendToRenderer, args: [message] })
       }
     })
   }
 
-  private sendToMainWindow(message: extensionRequestMessage) {
-    WindowHandler.getWindow(true)?.webContents.send(ExtensionHostEvents.EXTENSION_REQUESTS, message)
+  private sendToRenderer(message: extensionRequestMessage) {
+    let window: BrowserWindow | null
+    if (message.type === 'update-preferences') {
+      window = WindowHandler.getWindow(false)
+    } else {
+      window = WindowHandler.getWindow(true)
+    }
+
+    window?.webContents.send(ExtensionHostEvents.EXTENSION_REQUESTS, message)
   }
 
   private getPreferenceKey(packageName: string, key?: string) {
@@ -387,7 +398,7 @@ class ExtensionRequestHandler {
       extensionUIRequestsKeys.includes(message.type as typeof extensionUIRequestsKeys[number]) ||
       playerControlRequests.includes(message.type as typeof playerControlRequests[number])
     ) {
-      const data = await this.requestToMainWindow(message)
+      const data = await this.requestToRenderer(message)
       resp.data = data
     }
 

@@ -14,6 +14,7 @@ import log from 'loglevel'
 import path from 'path'
 import { prefixLogger } from '../../main/logger/utils'
 import { readFile } from 'fs/promises'
+import { v4 } from 'uuid'
 
 export abstract class AbstractExtensionManager {
   abstract instantiateAndRegister(extension: UnInitializedExtensionItem): Promise<void>
@@ -193,9 +194,19 @@ export class ExtensionManager extends AbstractExtensionManager {
     return this.extensionRegistry.get(options)
   }
 
+  private notifyPreferencesChanged(packageName: string) {
+    process.send?.({
+      type: 'update-preferences',
+      channel: v4(),
+      data: undefined,
+      extensionName: packageName
+    } as extensionUIRequestMessage)
+  }
+
   private addPreference(packageName: string, preference: ExtensionPreferenceGroup) {
     for (const e of this.extensionRegistry.get({ packageName })) {
       e.preferences.push(preference)
+      this.notifyPreferencesChanged(packageName)
       return
     }
   }
@@ -206,6 +217,7 @@ export class ExtensionManager extends AbstractExtensionManager {
       if (i !== -1) {
         e.preferences.splice(i, 1)
       }
+      this.notifyPreferencesChanged(packageName)
       return
     }
   }

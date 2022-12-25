@@ -101,6 +101,9 @@ export default class Extensions extends Vue {
 
   created() {
     this.fetchExtensions()
+    window.ExtensionUtils.listenRequests((r) => {
+      console.log('got preference update', r)
+    })
   }
 
   get computedTabAmount() {

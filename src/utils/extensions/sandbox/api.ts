@@ -268,6 +268,13 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
   public _isEventCallbackRegistered(key: string) {
     return !!this.eventCallbackMap[key]
   }
+
+  addUserPreference(pref: ExtensionPreferenceGroup): void {
+    this.#communicator.addPreference(this.packageName, pref)
+  }
+  removeUserPreference(key: string): void {
+    this.#communicator.removePreference(this.packageName, key)
+  }
 }
 
 class Utils implements utils {
