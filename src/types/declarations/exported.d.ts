@@ -149,8 +149,8 @@ interface Buttons {
 
 type ExtensionPreferenceGroup = {
   key: string
-  title: string
-  description: string
+  title?: string
+  description?: string
   index?: number
 } & (
   | {
@@ -180,6 +180,10 @@ type ExtensionPreferenceGroup = {
   | {
       type: 'ProgressBar'
       default: number
+    }
+  | {
+      type: 'TextField'
+      default: string
     }
 )
 

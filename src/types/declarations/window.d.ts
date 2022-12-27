@@ -316,7 +316,7 @@ interface themeUtils {
   getTheme: (id?: string) => Promise<ThemeDetails>
   getAllThemes: (id?: string) => Promise<{ [key: string]: ThemeDetails } | undefined>
   setActiveTheme: (id: string) => Promise<void>
-  getActiveTheme: () => Promise<ThemeDetails | undefined>
+  getActiveTheme: () => Promise<ThemeDetails>
   setSongView: (menu: songMenu) => Promise<void>
   getSongView: () => Promise<songMenu>
   setLanguage: (key: string) => Promise<void>

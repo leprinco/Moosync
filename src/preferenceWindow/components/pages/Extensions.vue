@@ -76,6 +76,7 @@ import NextIcon from '@/icons/NextIcon.vue'
 import ExtensionGroup from '../ExtensionGroup.vue'
 import ProgressBar from '../Progressbar.vue'
 import ButtonGroup from '../ButtonGroup.vue'
+import TextField from '../TextField.vue'
 
 @Component({
   components: {
@@ -84,6 +85,7 @@ import ButtonGroup from '../ButtonGroup.vue'
     FilePicker,
     CheckboxGroup,
     ExtensionGroup,
+    TextField,
     ProgressBar,
     ButtonGroup,
     PrevIcon,
