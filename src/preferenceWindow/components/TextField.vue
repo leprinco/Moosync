@@ -95,12 +95,25 @@ export default class TextField extends Mixins<ExtensionPreferenceMixin<string>>(
 
   @Watch('render')
   private async onRenderChange(val: string) {
-    const data = `<html><head>${await this.generateCSSRules()}</head><body>${this.render}</body></html>`
+    const doc = (this.$refs['md-iframe'] as HTMLIFrameElement)?.contentDocument?.body
+    if (doc) {
+      doc.innerHTML = val
 
+      doc.scrollTo({
+        top: doc.scrollHeight,
+        behavior: 'smooth'
+      })
+    }
+  }
+
+  async mounted() {
+    const data = `<html><head>${await this.generateCSSRules()}</head><body></body></html>`
     const doc = (this.$refs['md-iframe'] as HTMLIFrameElement)?.contentDocument
     doc?.open('text/html', 'replace')
     doc?.write(data)
     doc?.close()
+
+    this.onRenderChange(this.render)
   }
 
   @Watch('value')
