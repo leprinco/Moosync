@@ -76,7 +76,9 @@ export class ExtensionManager extends AbstractExtensionManager {
     const events = require('events')
     const vm = new NodeVM({
       console: 'redirect',
-      sandbox: {},
+      sandbox: {
+        URL
+      },
       env: this.getProcessEnv(),
       nesting: true,
       require: {
