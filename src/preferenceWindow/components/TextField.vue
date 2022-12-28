@@ -98,11 +98,12 @@ export default class TextField extends Mixins<ExtensionPreferenceMixin<string>>(
     const doc = (this.$refs['md-iframe'] as HTMLIFrameElement)?.contentDocument?.body
     if (doc) {
       doc.innerHTML = val
-
-      doc.scrollTo({
-        top: doc.scrollHeight,
-        behavior: 'smooth'
-      })
+      if (doc.scrollTop >= doc.scrollHeight - (10 / 100) * doc.scrollHeight) {
+        doc.scrollTo({
+          top: doc.scrollHeight,
+          behavior: 'smooth'
+        })
+      }
     }
   }
 
