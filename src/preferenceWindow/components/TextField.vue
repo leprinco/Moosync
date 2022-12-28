@@ -11,7 +11,7 @@
   <b-container v-if="prefKey" fluid class="path-container w-100">
     <PreferenceHeader v-if="title" :title="title" :tooltip="tooltip" @tooltipClick="emitTooltipClick" />
     <b-row no-gutters class="background w-100 mt-2 d-flex">
-      <b-row no-gutters class="mt-3 item w-100">
+      <b-row no-gutters class="m-1 item w-100">
         <b-col cols="auto" align-self="center" class="w-100 h-100">
           <iframe :title="title" ref="md-iframe" class="w-100 h-100 iframe"> </iframe>
         </b-col>
@@ -98,7 +98,7 @@ export default class TextField extends Mixins<ExtensionPreferenceMixin<string>>(
     const doc = (this.$refs['md-iframe'] as HTMLIFrameElement)?.contentDocument?.body
     if (doc) {
       doc.innerHTML = val
-      if (doc.scrollTop >= doc.scrollHeight - (10 / 100) * doc.scrollHeight) {
+      if (doc.scrollTop >= doc.scrollHeight - (20 / 100) * doc.scrollHeight) {
         doc.scrollTo({
           top: doc.scrollHeight,
           behavior: 'smooth'
@@ -108,7 +108,7 @@ export default class TextField extends Mixins<ExtensionPreferenceMixin<string>>(
   }
 
   async mounted() {
-    const data = `<html><head>${await this.generateCSSRules()}</head><body></body></html>`
+    const data = `<html lang="en"><head>${await this.generateCSSRules()}</head><body></body></html>`
     const doc = (this.$refs['md-iframe'] as HTMLIFrameElement)?.contentDocument
     doc?.open('text/html', 'replace')
     doc?.write(data)
@@ -130,6 +130,9 @@ export default class TextField extends Mixins<ExtensionPreferenceMixin<string>>(
 <style lang="sass" scoped>
 .title
   font-size: 26px
+
+.item
+  height: calc(100% - 1rem)
 
 .background
   align-content: flex-start
