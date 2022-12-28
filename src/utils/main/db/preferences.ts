@@ -304,7 +304,9 @@ function getDefaultMusicPaths() {
 export function setPreferenceListenKey(key: string, isMainWindow = false) {
   const channel = `${key}:mainWindow:${isMainWindow}`
   console.debug('listening', channel)
-  preferenceListenKeys.push({ key, isMainWindow, channel })
+  if (!preferenceListenKeys.some((val) => val.channel === channel)) {
+    preferenceListenKeys.push({ key, isMainWindow, channel })
+  }
   return channel
 }
 
