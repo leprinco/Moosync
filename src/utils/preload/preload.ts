@@ -265,6 +265,7 @@ contextBridge.exposeInMainWorld('SearchUtils', {
         song_coverPath_low: val.song_coverPath_low,
         title: val.title,
         type: val.type,
+        track_no: val.track_no,
         url: val.url
       }))
     }
