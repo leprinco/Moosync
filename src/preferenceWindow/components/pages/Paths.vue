@@ -50,6 +50,14 @@
             :showRefreshIcon="false"
           />
 
+          <EditText
+            :title="$t('settings.paths.splitter')"
+            :tooltip="$t('settings.paths.splitter_tooltip')"
+            class="mt-2"
+            key="scan_splitter"
+            :defaultValue="splitterRegex"
+          />
+
           <FilePicker
             :title="$t('settings.paths.artworkPath')"
             :tooltip="$t('settings.paths.artworkPath_tooltip')"
@@ -73,11 +81,13 @@ import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
 import FilePicker from '../FilePicker.vue'
 import DirectoryGroup from '../DirectoryGroup.vue'
+import EditText from '../EditText.vue'
 
 @Component({
   components: {
     DirectoryGroup,
-    FilePicker
+    FilePicker,
+    EditText
   }
 })
 export default class Paths extends Vue {
@@ -97,6 +107,10 @@ export default class Paths extends Vue {
 
   private openWiki() {
     window.WindowUtils.openExternal('https://moosync.app/wiki/#known-bugs')
+  }
+
+  get splitterRegex() {
+    return ';'
   }
 
   async created() {

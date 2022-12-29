@@ -27,6 +27,7 @@ const getDefaultPreferences = () => {
     isFirstLaunch: true,
     musicPaths: musicPath ? [{ path: musicPath, enabled: true }] : [],
     exclude_musicPaths: [],
+    scan_splitter: ';',
     thumbnailPath: path.join(app.getPath('appData'), app.getName(), '.thumbnails'),
     artworkPath: path.join(app.getPath('appData'), app.getName(), '.thumbnails'),
     youtubeAlt: [],
@@ -108,7 +109,7 @@ export function saveSelectivePreference(key: string, value: unknown, isExtension
  * @param [defaultValue]
  * @returns object belonging to given key
  */
-export function loadSelectivePreference<T>(key?: string, isExtension = false, defaultValue?: T): T {
+export function loadSelectivePreference<T>(key?: string, isExtension = false, defaultValue?: T): T | undefined {
   try {
     const pref = store.get(`prefs.${isExtension ? 'extension.' : ''}${key}`, defaultValue)
     return pref
@@ -273,7 +274,9 @@ export function loadPreferences(): Preferences {
 export function getCombinedMusicPaths() {
   const paths = loadSelectivePreference<togglePaths>('musicPaths', false, [])
   const excludePaths = loadSelectivePreference<togglePaths>('exclude_musicPaths', false, [])
-  paths.push(...excludePaths.map((val) => ({ ...val, enabled: false })))
+  if (paths && excludePaths) {
+    paths.push(...excludePaths.map((val) => ({ ...val, enabled: false })))
+  }
   return paths
 }
 
@@ -286,8 +289,10 @@ export function getCombinedMusicPaths() {
 export function getDisabledPaths(): string[] {
   const paths = getCombinedMusicPaths()
   const disablePaths: string[] = []
-  for (const p of paths) {
-    if (!p.enabled) disablePaths.push(p.path)
+  if (paths) {
+    for (const p of paths) {
+      if (!p.enabled) disablePaths.push(p.path)
+    }
   }
 
   return disablePaths

@@ -35,24 +35,24 @@ const logger = getLogger('ScanWorker')
 logger.setLevel(process.env.DEBUG_LOGGING ? levels.DEBUG : levels.INFO)
 
 expose({
-  start(paths: togglePaths, existingFiles: string[], loggerPath: string) {
+  start(paths: togglePaths, existingFiles: string[], loggerPath: string, splitPattern: string) {
     return new Observable((observer) => {
       prefixLogger(loggerPath, logger)
-      startScan(paths, existingFiles, observer)
+      startScan(paths, existingFiles, splitPattern, observer)
     })
   },
 
-  scanSingleSong(path: string, loggerPath: string) {
+  scanSingleSong(path: string, loggerPath: string, splitPattern: string) {
     return new Observable((observer) => {
       prefixLogger(loggerPath, logger)
-      scan([path], observer).finally(() => observer.complete())
+      scan([path], splitPattern, observer).finally(() => observer.complete())
     })
   },
 
-  scanSinglePlaylist(path: string, loggerPath: string) {
+  scanSinglePlaylist(path: string, loggerPath: string, splitPattern: string) {
     return new Observable((observer) => {
       prefixLogger(loggerPath, logger)
-      scanPlaylistByPath(path, observer).then(() => {
+      scanPlaylistByPath(path, splitPattern, observer).then(() => {
         logger.debug('Completed playlist scan')
         observer.complete()
       })
@@ -60,7 +60,7 @@ expose({
   }
 })
 
-async function scanFile(filePath: string): Promise<ScannedSong> {
+async function scanFile(filePath: string, splitPattern: string): Promise<ScannedSong> {
   const fsStats = await fsP.stat(filePath)
   const buffer = await getBuffer(filePath)
 
@@ -71,7 +71,8 @@ async function scanFile(filePath: string): Promise<ScannedSong> {
       deviceno: fsStats.dev.toString(),
       size: fsStats.size
     },
-    buffer
+    buffer,
+    splitPattern
   )
 
   return processed
@@ -222,7 +223,7 @@ async function scanPlaylist(filePath: string) {
   try {
     await fsP.access(filePath)
   } catch (e) {
-    console.error('Failed to access playlist at path', filePath)
+    logger.error('Failed to access playlist at path', filePath)
     return
   }
 
@@ -250,36 +251,41 @@ async function findCoverFile(baseDir: string, fileName: string): Promise<Buffer 
         await access(fullPath)
 
         const buffer = await readFile(fullPath)
-        console.debug('Found file', f, 'as valid cover')
+        logger.debug('Found file', f, 'as valid cover')
 
         return buffer
       } catch (e) {
-        console.debug('Local cover file', f, 'not found')
+        logger.debug('Local cover file', f, 'not found')
       }
     }
   }
 }
 
-async function processFile(stats: stats, buffer: Buffer): Promise<ScannedSong> {
+async function processFile(stats: stats, buffer: Buffer, splitPattern: string): Promise<ScannedSong> {
   const metadata = await mm.parseBuffer(buffer)
   const hash = metadata.format.audioMD5?.toString() ?? (await generateChecksum(buffer))
 
-  const info = await getInfo(metadata, stats, hash)
+  const info = await getInfo(metadata, stats, hash, splitPattern)
   let cover = metadata.common.picture && metadata.common.picture[0].data
 
   if (!cover) {
-    console.debug('Trying to find local cover for', stats.path)
+    logger.debug('Trying to find local cover for', stats.path)
     cover = await findCoverFile(path.dirname(stats.path), path.basename(stats.path))
   }
 
   return { song: info, cover }
 }
 
-async function getInfo(data: mm.IAudioMetadata, stats: stats, hash: string): Promise<Song> {
+async function getInfo(data: mm.IAudioMetadata, stats: stats, hash: string, splitPattern: string): Promise<Song> {
   const artists: Artists[] = []
   if (data.common.artists) {
     for (let i = 0; i < data.common.artists.length; i++) {
-      const split = data.common.artists[i].split(/[,&;]+/)
+      let split
+      if (splitPattern) {
+        split = data.common.artists[i].split(new RegExp(splitPattern))
+      } else {
+        split = [data.common.artists[i]]
+      }
       for (const s of split) {
         artists.push({
           artist_id: '',
@@ -299,7 +305,7 @@ async function getInfo(data: mm.IAudioMetadata, stats: stats, hash: string): Pro
 
   if (!data.common.lyrics || data.common.lyrics.length === 0) {
     const lrcFile = stats.path.replace(`${path.extname(stats.path)}`, '.lrc')
-    console.debug('Trying to find LRC file at', lrcFile)
+    logger.debug('Trying to find LRC file at', lrcFile)
 
     try {
       await access(lrcFile)
@@ -316,7 +322,7 @@ async function getInfo(data: mm.IAudioMetadata, stats: stats, hash: string): Pro
         data.common.lyrics = [parsedLyrics]
       }
     } catch {
-      console.debug('Could not find LRC file')
+      logger.debug('Could not find LRC file')
     }
   }
 
@@ -352,6 +358,7 @@ async function getInfo(data: mm.IAudioMetadata, stats: stats, hash: string): Pro
 
 async function scanPlaylistByPath(
   filePath: string,
+  splitPattern: string,
   observer: SubscriptionObserver<ScannedSong | ScannedPlaylist | Progress>
 ) {
   const result = await scanPlaylist(filePath)
@@ -363,10 +370,10 @@ async function scanPlaylistByPath(
           try {
             await fsP.access(songPath.path)
           } catch (e) {
-            console.error('Failed to access file at', songPath.path, 'while scanning playlist')
+            logger.error('Failed to access file at', songPath.path, 'while scanning playlist')
             continue
           }
-          const result = await scanFile(songPath.path)
+          const result = await scanFile(songPath.path, splitPattern)
           if (result.song.hash) {
             observer.next({ song: result.song, cover: result.cover && Transfer(result.cover as Buffer) })
             songHashes.push(result.song.hash)
@@ -384,12 +391,16 @@ async function scanPlaylistByPath(
   }
 }
 
-async function scan(allFiles: string[], observer: SubscriptionObserver<ScannedSong | ScannedPlaylist | Progress>) {
+async function scan(
+  allFiles: string[],
+  splitPattern: string,
+  observer: SubscriptionObserver<ScannedSong | ScannedPlaylist | Progress>
+) {
   for (const [i, filePath] of allFiles.entries()) {
     if (audioPatterns.exec(path.extname(filePath).toLowerCase())) {
       logger.debug('Scanning song', filePath)
       try {
-        const result = await scanFile(filePath)
+        const result = await scanFile(filePath, splitPattern)
         observer.next({ song: result.song, cover: result.cover && Transfer(result.cover as Buffer) })
       } catch (e) {
         logger.error(e)
@@ -398,14 +409,19 @@ async function scan(allFiles: string[], observer: SubscriptionObserver<ScannedSo
 
     if (playlistPatterns.exec(path.extname(filePath).toLowerCase())) {
       logger.debug('Scanning playlist', filePath)
-      await scanPlaylistByPath(filePath, observer)
+      await scanPlaylistByPath(filePath, splitPattern, observer)
     }
 
     observer.next({ total: allFiles.length, current: i + 1 } as Progress)
   }
 }
 
-async function startScan(paths: togglePaths, existingFiles: string[], observer: SubscriptionObserver<unknown>) {
+async function startScan(
+  paths: togglePaths,
+  existingFiles: string[],
+  splitPattern: string,
+  observer: SubscriptionObserver<unknown>
+) {
   const allFiles: string[] = []
 
   const excludePaths = paths.filter((val) => !val.enabled)
@@ -424,7 +440,7 @@ async function startScan(paths: togglePaths, existingFiles: string[], observer: 
 
   const newFiles = allFiles.filter((x) => !existingFiles.includes(x))
   observer.next({ total: newFiles.length, current: 0 } as Progress)
-  await scan(newFiles, observer)
+  await scan(newFiles, splitPattern, observer)
   logger.debug('Scan complete')
   observer.complete()
 }

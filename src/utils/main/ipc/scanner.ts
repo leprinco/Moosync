@@ -25,6 +25,7 @@ import { WindowHandler } from '../windowManager'
 import { v4 } from 'uuid'
 import path from 'path'
 import { isEmpty } from '@/utils/common'
+import { loadSelectivePreference } from '../db/preferences'
 
 const loggerPath = app.getPath('logs')
 
@@ -41,12 +42,17 @@ type ScanWorkerWorkerType = {
   start: (
     togglePaths: togglePaths,
     excludePaths: string[],
-    loggerPath: string
+    loggerPath: string,
+    splitPattern: string
   ) => ScannedSong | ScannedPlaylist | Progress
 
-  scanSinglePlaylist: (path: string, loggerPath: string) => ScannedSong | ScannedPlaylist | Progress
+  scanSinglePlaylist: (
+    path: string,
+    loggerPath: string,
+    splitPattern: string
+  ) => ScannedSong | ScannedPlaylist | Progress
 
-  scanSingleSong: (path: string, loggerPath: string) => ScannedSong | ScannedPlaylist | Progress
+  scanSingleSong: (path: string, loggerPath: string, splitPattern: string) => ScannedSong | ScannedPlaylist | Progress
 }
 
 type ScanWorker = Awaited<ReturnType<typeof spawn<ScanWorkerWorkerType>>>
@@ -192,9 +198,9 @@ export class ScannerChannel implements IpcChannelInterface {
     } as Progress)
   }
 
-  private scanSongs(paths: togglePaths, forceScan = false) {
+  private scanSongs(paths: togglePaths, splitPattern: string, forceScan = false) {
     return new Promise<void>((resolve, reject) => {
-      this.scannerWorker?.start(paths, forceScan ? [] : getSongDB().getAllPaths(), loggerPath).subscribe(
+      this.scannerWorker?.start(paths, forceScan ? [] : getSongDB().getAllPaths(), loggerPath, splitPattern).subscribe(
         (result) => {
           if (this.isProgress(result)) {
             this.totalScanFiles = result.total
@@ -366,28 +372,31 @@ export class ScannerChannel implements IpcChannelInterface {
     }
 
     const scanPaths = getCombinedMusicPaths()
+    const splitPattern = loadSelectivePreference<string>('scan_splitter')
 
-    try {
-      await this.scanSongs(scanPaths, request?.params.forceScan)
-    } catch (e) {
-      console.error(e)
+    if (scanPaths) {
+      try {
+        await this.scanSongs(scanPaths, splitPattern ?? '', request?.params.forceScan)
+      } catch (e) {
+        console.error(e)
+      }
+
+      console.debug('Scan complete')
+
+      this.setIdle()
+
+      if (this.scannerWorker) {
+        Thread.terminate(this.scannerWorker)
+        this.scannerWorker = undefined
+      }
+
+      if (this.isScanQueued()) {
+        await this.scanAll(event, request)
+      }
+
+      console.debug('Starting destructive scan')
+      await this.destructiveScan(scanPaths)
     }
-
-    console.debug('Scan complete')
-
-    this.setIdle()
-
-    if (this.scannerWorker) {
-      Thread.terminate(this.scannerWorker)
-      this.scannerWorker = undefined
-    }
-
-    if (this.isScanQueued()) {
-      await this.scanAll(event, request)
-    }
-
-    console.debug('Starting destructive scan')
-    await this.destructiveScan(scanPaths)
 
     // Run scraping task only if all subsequent scanning tasks are completed
     // And if no other scraping task is ongoing
@@ -415,11 +424,12 @@ export class ScannerChannel implements IpcChannelInterface {
       try {
         // Don't use global scan worker since this method should not wait for full scan to complete
         const scanWorker = await spawn<ScanWorkerWorkerType>(new Worker(`./${scannerWorker}`), { timeout: 5000 })
+        const splitPattern = loadSelectivePreference<string>('scan_splitter')
 
         const songs: Song[] = []
         let playlist: Partial<Playlist> | null = null
 
-        scanWorker.scanSinglePlaylist(request.params.playlistPath, loggerPath).subscribe(
+        scanWorker.scanSinglePlaylist(request.params.playlistPath, loggerPath, splitPattern ?? '').subscribe(
           (result) => {
             if (this.isScannedSong(result)) {
               songs.push(result.song)
@@ -482,8 +492,9 @@ export class ScannerChannel implements IpcChannelInterface {
         let song: Song | undefined = undefined
         // Don't use global scan worker since this method should not wait for full scan to complete
         const singleScanWorker = await spawn<ScanWorkerWorkerType>(new Worker(`./${scannerWorker}`), { timeout: 5000 })
+        const splitPattern = loadSelectivePreference<string>('scan_splitter')
 
-        singleScanWorker.scanSingleSong(request.params.songPath, loggerPath).subscribe(
+        singleScanWorker.scanSingleSong(request.params.songPath, loggerPath, splitPattern ?? '').subscribe(
           (result) => {
             if (this.isScannedSong(result)) {
               song = result.song
