@@ -67,16 +67,20 @@ function getSortField(song: Song, field: SongSortOptions['type']) {
   return song[field as keyof Song]
 }
 
-export function sortSongListFn(options: SongSortOptions) {
+export function sortSongListFn(options: SongSortOptions[]) {
   const fn = (a: Song, b: Song) => {
-    const first: unknown = getSortField(a, options.type)
-    const second: unknown = getSortField(b, options.type)
+    for (const o of options) {
+      const first: unknown = getSortField(a, o.type)
+      const second: unknown = getSortField(b, o.type)
 
-    if (!isEmpty(first) && !isEmpty(second)) {
-      if (!options.asc) {
-        return sortAsc(second, first)
-      } else {
-        return sortAsc(first, second)
+      if (!isEmpty(first) && !isEmpty(second)) {
+        if (first !== second) {
+          if (!o.asc) {
+            return sortAsc(second, first)
+          } else {
+            return sortAsc(first, second)
+          }
+        }
       }
     }
 
@@ -88,9 +92,7 @@ export function sortSongListFn(options: SongSortOptions) {
 
 export function sortSongList(songList: Song[], options: SongSortOptions[]): Song[] {
   if (!Array.isArray(options)) options = [options]
-  for (const o of options) {
-    songList = songList.sort(sortSongListFn(o))
-  }
+  songList = songList.sort(sortSongListFn(options))
 
   return songList
 }
