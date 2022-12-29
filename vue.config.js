@@ -94,8 +94,7 @@ module.exports = {
           icon: './build/icons/icon.icns'
         },
         win: {
-          verifyUpdateCodeSignature: false,
-          target: ['portable', 'nsis']
+          verifyUpdateCodeSignature: false
         },
         linux: {
           icon: './build/icons/',
