@@ -48,12 +48,12 @@ import FormModal from './components/modals/FormModal.vue'
 import EntityInfoModal from './components/modals/EntityInfoModal.vue'
 import { i18n } from './plugins/i18n'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
-import { sortSongListFn } from '@/utils/common'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
 import { YoutubeAlts } from './store/providers'
 import PinEntryModal from './components/modals/PinEntryModal.vue'
 import { ExtensionProvider } from '@/utils/ui/providers/extensionWrapper'
+import { sortSongListFn } from '@/utils/common'
 
 @Component({
   components: {
@@ -131,12 +131,14 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
   }
 
   private watchQueueSort() {
-    vxm.themes.$watch('queueSortBy', async (newVal?: SongSortOptions) => {
+    vxm.themes.$watch('queueSortBy', async (newVal?: SongSortOptions[]) => {
       if (newVal) {
-        if (newVal.type === 'playCount') {
-          await vxm.player.updatePlayCounts()
+        for (const v of newVal) {
+          if (v.type === 'playCount') {
+            await vxm.player.updatePlayCounts()
+          }
+          vxm.player.sortQueue(sortSongListFn(v))
         }
-        vxm.player.sortQueue(sortSongListFn(newVal))
       }
     })
   }

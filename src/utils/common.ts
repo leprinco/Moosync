@@ -51,11 +51,26 @@ function sortAsc(first: unknown, second: unknown) {
   return 0
 }
 
+function getSortField(song: Song, field: SongSortOptions['type']) {
+  if (field === 'album') {
+    return song.album?.album_name
+  }
+
+  if (field === 'artist') {
+    return song.artists?.[0].artist_name
+  }
+
+  if (field === 'genre') {
+    return song.genre?.[0]
+  }
+
+  return song[field as keyof Song]
+}
+
 export function sortSongListFn(options: SongSortOptions) {
   const fn = (a: Song, b: Song) => {
-    const field: keyof Song = options.type as keyof Song
-    const first: unknown = a[field]
-    const second: unknown = b[field]
+    const first: unknown = getSortField(a, options.type)
+    const second: unknown = getSortField(b, options.type)
 
     if (!isEmpty(first) && !isEmpty(second)) {
       if (!options.asc) {
@@ -71,8 +86,13 @@ export function sortSongListFn(options: SongSortOptions) {
   return fn
 }
 
-export function sortSongList(songList: Song[], options: SongSortOptions): Song[] {
-  return songList.sort(sortSongListFn(options))
+export function sortSongList(songList: Song[], options: SongSortOptions[]): Song[] {
+  if (!Array.isArray(options)) options = [options]
+  for (const o of options) {
+    songList = songList.sort(sortSongListFn(o))
+  }
+
+  return songList
 }
 
 const iso8601DurationRegex =

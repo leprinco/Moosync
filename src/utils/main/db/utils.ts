@@ -72,6 +72,7 @@ export class DBUtils {
       playbackUrl: dbSong.playbackUrl,
       providerExtension: dbSong.provider_extension,
       playCount: dbSong.play_count ?? 0,
+      track_no: dbSong.track_no,
       showInLibrary: !!dbSong.show_in_library
     }
   }
@@ -104,6 +105,7 @@ export class DBUtils {
       playbackUrl: song.playbackUrl?.trim(),
       date_added: Date.now(),
       icon: song.icon,
+      track_no: song.track_no,
       provider_extension: song.providerExtension,
       show_in_library: isEmpty(song.showInLibrary) || song.showInLibrary ? 1 : 0
     }

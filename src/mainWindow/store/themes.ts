@@ -17,10 +17,10 @@ export class ThemeStore extends VuexModule.With({ namespaced: 'themes' }) {
   private _jukeboxMode = false
   private _lastSearchTab: [string, keyof SearchResult] = ['local', 'songs']
 
-  public songSortBy: SongSortOptions = { type: 'date_added', asc: true }
+  public songSortBy: SongSortOptions[] = [{ type: 'date_added', asc: true }]
   public playlistSortBy: PlaylistSortOptions = { type: 'name', asc: true }
   public entitySortBy: NormalSortOptions = { type: 'name', asc: true }
-  public queueSortBy?: SongSortOptions
+  public queueSortBy?: SongSortOptions[]
 
   public currentSpotifyCanvas: string | null = null
   public showSpotifyCanvas = true

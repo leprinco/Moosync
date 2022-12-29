@@ -372,6 +372,12 @@ export class SongDBInstance extends DBUtils {
     switch (sortBy.type) {
       case 'playCount':
         return 'analytics'
+      case 'album':
+        return 'albums'
+      case 'artist':
+        return 'artists'
+      case 'genre':
+        return 'genres'
       default:
         return 'allsongs'
     }
@@ -381,18 +387,36 @@ export class SongDBInstance extends DBUtils {
     switch (sortBy.type) {
       case 'playCount':
         return 'play_count'
+      case 'album':
+        return 'album_name'
+      case 'artist':
+        return 'artist_name'
+      case 'genre':
+        return 'genre_name'
       default:
         return sortBy.type
     }
   }
 
-  private addOrderClause(sortBy?: SongSortOptions, noCase = false) {
+  private addOrderClause(sortBy?: SongSortOptions[], noCase = false) {
     if (sortBy) {
-      return `ORDER BY ${this.getSortByTable(sortBy)}.${this.getSortByColumn(sortBy)} ${
-        noCase ? 'COLLATE NOCASE' : ''
-      } ${sortBy.asc ? 'ASC' : 'DESC'}`
+      let ret = 'ORDER BY '
+      sortBy.forEach((s, index) => {
+        ret += `${this.getSortByTable(s)}.${this.getSortByColumn(s)} ${noCase ? 'COLLATE NOCASE' : ''} ${
+          s.asc ? 'ASC' : 'DESC'
+        } ${index !== sortBy.length - 1 ? ',' : ''}`
+      })
+
+      return ret
     }
     return ''
+  }
+
+  private normalizeSortBy(sortBy: SongAPIOptions['sortBy']) {
+    if (sortBy) {
+      if (Array.isArray(sortBy)) return sortBy
+      else return [sortBy]
+    }
   }
 
   /**
@@ -409,7 +433,7 @@ export class SongDBInstance extends DBUtils {
       ${this.addLeftJoinClause(undefined, 'allsongs')}
         ${where}
         ${this.addExcludeWhereClause(args.length === 0, exclude)} GROUP BY allsongs._id ${this.addOrderClause(
-        options?.sortBy,
+        this.normalizeSortBy(options?.sortBy),
         args.length > 0
       )}`,
       ...args

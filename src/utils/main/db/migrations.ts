@@ -275,5 +275,13 @@ export const migrations = [
   ALTER TABLE genre RENAME TO genres;
   
   -- Down
+  `,
+
+  // 29-12-2022
+  `
+  -- Up
+  ALTER TABLE allsongs ADD track_no NUMBER DEFAULT 0;
+  
+  -- Down
   `
 ]

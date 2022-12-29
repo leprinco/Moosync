@@ -152,7 +152,7 @@ export default class AllSongs extends mixins(
     this.selectedCopy = items
   }
 
-  private sort(options: SongSortOptions) {
+  private sort(options: SongSortOptions[]) {
     vxm.themes.songSortBy = options
   }
 

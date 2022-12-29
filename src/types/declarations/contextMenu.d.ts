@@ -20,7 +20,7 @@ type ContextMenuArgs =
   | {
       type: 'GENERAL_SONGS'
       args: {
-        sortOptions?: Sort<SongSortOptions>
+        sortOptions?: Sort<SongSortOptions[]>
         showHiddenToggle?: boolean
         isShowingHidden?: boolean
         refreshCallback?: (showHidden?: boolean) => void
@@ -48,7 +48,7 @@ type ContextMenuArgs =
         refreshCallback: () => void
         song: Song
         songIndex: number
-        sortOptions: Optional<Sort<SongSortOptions>, 'current'>
+        sortOptions: Optional<Sort<SongSortOptions[]>, 'current'>
       }
     }
   | {
@@ -72,7 +72,7 @@ type ContextMenuArgs =
   | {
       type: 'SONG_SORT'
       args: {
-        sortOptions: Sort<SongSortOptions>
+        sortOptions: Sort<SongSortOptions[]>
       }
     }
   | {
@@ -86,7 +86,10 @@ type ContextMenuArgs =
       }
     }
 
-type SongSortOptions = { type: 'title' | 'date_added' | 'playCount'; asc: boolean }
+type SongSortOptions = {
+  type: 'title' | 'date_added' | 'playCount' | 'album' | 'artist' | 'genre' | 'track_no'
+  asc: boolean
+}
 type PlaylistSortOptions = { type: 'name' | 'provider'; asc: boolean }
 type NormalSortOptions = { type: 'name'; asc: boolean }
 

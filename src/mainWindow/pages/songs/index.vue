@@ -72,7 +72,7 @@ export default class AllSongs extends mixins(ContextMenuMixin) {
     this.showingHidden = showHidden
   }
 
-  private sort(options: SongSortOptions) {
+  private sort(options: SongSortOptions[]) {
     vxm.themes.songSortBy = options
   }
 

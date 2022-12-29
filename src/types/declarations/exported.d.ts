@@ -83,6 +83,7 @@ interface Song {
   type: PlayerTypes
   playCount?: number
   showInLibrary?: boolean
+  track_no?: number
 }
 
 interface SearchableSong {
@@ -258,7 +259,7 @@ interface SongAPIOptions {
   /**
    * To sort the results, specify this property
    */
-  sortBy?: SongSortOptions
+  sortBy?: SongSortOptions | SongSortOptions[]
 
   /**
    * If false, then the exact match of all options will be provided.

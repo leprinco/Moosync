@@ -30,6 +30,7 @@ interface marshaledSong {
   date?: string
   year?: number
   album_year?: number
+  track_no?: number
   bitrate?: number
   codec?: string
   container?: string

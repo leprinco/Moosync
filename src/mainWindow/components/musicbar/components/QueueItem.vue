@@ -88,7 +88,7 @@ export default class MusicInfo extends mixins(ImgLoader, PlayerControls, Context
     this.removeFromQueue(this.index)
   }
 
-  private sortQueue(options: SongSortOptions) {
+  private sortQueue(options: SongSortOptions[]) {
     vxm.themes.queueSortBy = options
   }
 

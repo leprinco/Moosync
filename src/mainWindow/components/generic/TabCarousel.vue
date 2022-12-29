@@ -123,7 +123,7 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
   }
 
   get isSortAsc() {
-    return vxm.themes.songSortBy.asc
+    return vxm.themes.songSortBy?.[0]?.asc ?? true
   }
 
   getItemBackgroundColor(provider: TabCarouselItem) {

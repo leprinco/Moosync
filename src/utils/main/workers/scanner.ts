@@ -352,6 +352,7 @@ async function getInfo(data: mm.IAudioMetadata, stats: stats, hash: string, spli
     inode: stats.inode,
     deviceno: stats.deviceno,
     date_added: Date.now(),
+    track_no: data.common.track.no ?? undefined,
     type: 'LOCAL'
   }
 }
