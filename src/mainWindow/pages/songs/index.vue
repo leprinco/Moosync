@@ -79,6 +79,8 @@ export default class AllSongs extends mixins(ContextMenuMixin) {
   private showingHidden = false
 
   getGeneralSongsMenu(event: Event) {
+    event.stopPropagation()
+    event.preventDefault()
     this.getContextMenu(event, {
       type: 'GENERAL_SONGS',
       args: {
