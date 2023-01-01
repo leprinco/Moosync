@@ -521,7 +521,7 @@ export class SpotifyProvider extends GenericProvider {
   }
 
   public matchSongUrl(url: string) {
-    return !!url.match(/^(https:\/\/open.spotify.com\/track\/|spotify:track:)([a-zA-Z0-9]+)(.*)$/)
+    return !!url.match(/^(https:\/\/open.spotify.com\/(track|embed)\/|spotify:track:)([a-zA-Z0-9]+)(.*)$/)
   }
 
   public async getSongDetails(url: string): Promise<Song | undefined> {
