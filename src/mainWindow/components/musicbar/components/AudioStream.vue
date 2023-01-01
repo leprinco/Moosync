@@ -427,7 +427,7 @@ export default class AudioStream extends mixins(
         console.error('Player error', err.message, 'while playing', this.currentSong?.playbackUrl)
         console.error(`${this.currentSong?._id}: ${this.currentSong?.title} unplayable, skipping.`)
         await this.nextSong()
-        await this.removeFromQueue(vxm.player.queueIndex - 1)
+        // await this.removeFromQueue(vxm.player.queueIndex - 1)
         vxm.player.loading = false
       }
 
@@ -664,7 +664,7 @@ export default class AudioStream extends mixins(
       await this.setPlaybackURLAndDuration(nextSong)
 
       if (!nextSong.playbackUrl || !nextSong.duration) {
-        await this.removeFromQueue(vxm.player.queueIndex + 1)
+        // await this.removeFromQueue(vxm.player.queueIndex + 1)
         return
       }
 
@@ -792,7 +792,7 @@ export default class AudioStream extends mixins(
     if (!switchedPlayer) {
       console.error('Could not find player to play song', song)
       await this.nextSong()
-      await this.removeFromQueue(vxm.player.queueIndex - 1)
+      // await this.removeFromQueue(vxm.player.queueIndex - 1)
       vxm.player.loading = false
       return
     } else {
@@ -801,7 +801,7 @@ export default class AudioStream extends mixins(
 
     if (!song.path && (!song.playbackUrl || !song.duration)) {
       await this.nextSong()
-      await this.removeFromQueue(vxm.player.queueIndex - 1)
+      // await this.removeFromQueue(vxm.player.queueIndex - 1)
       vxm.player.loading = false
       return
     }
