@@ -633,8 +633,6 @@ export class SongDBInstance extends DBUtils {
   }
 
   public async updateAlbum(album: Album) {
-    console.log(album)
-
     if (album.album_id) {
       const oldAlbum = this.getEntityByOptions<Album>({
         album: {
@@ -1135,8 +1133,6 @@ export class SongDBInstance extends DBUtils {
         const data: (Album | Artists | Genre)[] = this.db.query(
           `SELECT * from ${table}s as t1 LEFT JOIN ${table}_bridge t2 ON t1.${table}_id = t2.${table} WHERE t2.${table} IS NULL`
         )
-
-        console.log(data)
 
         for (const d of data) {
           if (isAlbum(d)) {
