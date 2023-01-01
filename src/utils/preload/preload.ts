@@ -22,7 +22,7 @@ import {
   NotifierEvents,
   MprisEvents
 } from '@/utils/main/ipc/constants'
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webFrame } from 'electron'
 
 import { IpcRendererHolder } from '@/utils/preload/ipc/index'
 import { LogLevelDesc } from 'loglevel'
@@ -508,7 +508,9 @@ contextBridge.exposeInMainWorld('WindowUtils', {
     ipcRendererHolder.send(IpcEvents.BROWSER_WINDOWS, { type: WindowEvents.UPDATE_ZOOM, params: undefined }),
 
   getPlatform: () =>
-    ipcRendererHolder.send(IpcEvents.BROWSER_WINDOWS, { type: WindowEvents.GET_PLATFORM, params: undefined })
+    ipcRendererHolder.send(IpcEvents.BROWSER_WINDOWS, { type: WindowEvents.GET_PLATFORM, params: undefined }),
+
+  clearRSS: clearCache
 })
 
 contextBridge.exposeInMainWorld('LoggerUtils', {
@@ -751,3 +753,7 @@ contextBridge.exposeInMainWorld('SpotifyPlayer', {
       }
     })
 })
+
+function clearCache() {
+  webFrame.clearCache()
+}
