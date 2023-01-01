@@ -520,12 +520,12 @@ export class SpotifyProvider extends GenericProvider {
     }
   }
 
-  public matchSongURL(url: string) {
-    return url.match(/^(https:\/\/open.spotify.com\/track\/|spotify:track:)([a-zA-Z0-9]+)(.*)$/)
+  public matchSongUrl(url: string) {
+    return !!url.match(/^(https:\/\/open.spotify.com\/track\/|spotify:track:)([a-zA-Z0-9]+)(.*)$/)
   }
 
   public async getSongDetails(url: string): Promise<Song | undefined> {
-    if (this.matchSongURL(url)) {
+    if (this.matchSongUrl(url)) {
       const parsedURL = new URL(url)
       const split = parsedURL.pathname.split('/')
       const songID = split[split.length - 1]
