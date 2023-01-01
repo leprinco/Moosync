@@ -37,7 +37,6 @@ export class PipedProvider extends GenericProvider {
     const password = await window.Store.getSecure('piped.password')
 
     if (username && password) {
-      console.log(username, password)
       const BASE_URL = await this.parseBaseURL()
       const resp: PipedResponses.TokenResponse = await (
         await this.api.request(PipedResources.LOGIN, {

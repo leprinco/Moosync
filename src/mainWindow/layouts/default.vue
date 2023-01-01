@@ -31,7 +31,7 @@
 import MusicBar from '@/mainWindow/components/musicbar/Musicbar.vue'
 import Sidebar from '@/mainWindow/components/sidebar/Sidebar.vue'
 import TopBar from '@/mainWindow/components/topbar/TopBar.vue'
-import { Component } from 'vue-property-decorator'
+import { Component, Watch } from 'vue-property-decorator'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import { mixins } from 'vue-class-component'
 import { vxm } from '../store/index'
@@ -55,6 +55,11 @@ export default class DefaultLayout extends mixins(ContextMenuMixin) {
 
   enableRefreshIcon() {
     this.showRefreshIcon = true
+  }
+
+  @Watch('$route')
+  onRouteChange() {
+    window.WindowUtils.clearRSS()
   }
 
   private listenRefreshPage() {

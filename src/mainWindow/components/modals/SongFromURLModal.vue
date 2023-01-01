@@ -59,7 +59,7 @@
       </b-container>
       <div class="mt-3 warning" v-if="!isLoggedIn">* Requires to be logged in to respective services</div>
       <b-button class="close-button ml-3" @click="close">Close</b-button>
-      <b-button class="create-button" @click="addToLibrary">Add</b-button>
+      <b-button class="create-button" :disabled="!addButtonEnabled" @click="addToLibrary">Add</b-button>
     </div>
   </b-modal>
 </template>
@@ -90,12 +90,14 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong, Prov
 
   forceEmptyImg = false
 
-  parsedSong: Song | undefined | null = null
+  parsedSong: Song | null = null
 
   songTitle = ''
   songArtist = ''
 
   isLoading = false
+
+  addButtonEnabled = false
 
   private refreshCallback?: () => void
 
@@ -106,27 +108,44 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong, Prov
   isLoggedIn = false
 
   async parseURL(url: string) {
-    this.isLoading = true
+    if (url) {
+      this.isLoading = true
+      this.addButtonEnabled = false
 
-    this.forceEmptyImg = false
+      this.forceEmptyImg = false
 
-    const providers = this.getProvidersByScope(ProviderScopes.SONG_FROM_URL)
-    for (const p of providers) {
-      console.debug('matching url to', p, p.matchSongUrl(url))
-      if (p.matchSongUrl(url)) {
-        this.parsedSong = await p.getSongDetails(url)
-        if (this.parsedSong) {
-          break
+      const providers = this.getProvidersByScope(ProviderScopes.SONG_FROM_URL)
+      for (const p of providers) {
+        console.debug('matching url to', p, p.matchSongUrl(url))
+        if (p.matchSongUrl(url)) {
+          try {
+            this.parsedSong = (await p.getSongDetails(url)) ?? null
+            if (this.parsedSong) {
+              break
+            }
+          } catch (e) {
+            console.error(e)
+          }
         }
       }
-    }
 
-    if (this.parsedSong) {
-      this.songTitle = this.parsedSong.title ?? ''
-      this.songArtist = this.parsedSong.artists?.map((val) => val.artist_name).join(', ') ?? ''
+      if (!this.parsedSong) {
+        this.parsedSong = (await this.parseStream(url)) ?? null
+      }
+
+      if (this.parsedSong) {
+        this.songTitle = this.parsedSong.title ?? ''
+        this.songArtist = this.parsedSong.artists?.map((val) => val.artist_name).join(', ') ?? ''
+        this.addButtonEnabled = true
+      } else {
+        this.songTitle = ''
+        this.songArtist = ''
+      }
     } else {
+      this.addButtonEnabled = false
       this.songTitle = ''
       this.songArtist = ''
+      this.parsedSong = null
     }
 
     this.isLoading = false
@@ -186,6 +205,7 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong, Prov
     bus.$on(EventBus.SHOW_SONG_FROM_URL_MODAL, (refreshCallback: () => void) => {
       this.refreshCallback = refreshCallback
       this.forceEmptyImg = false
+      this.addButtonEnabled = false
       this.isLoggedIn = vxm.providers.loggedInYoutube && vxm.providers.loggedInSpotify
       this.$bvModal.show(this.id)
     })

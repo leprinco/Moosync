@@ -90,7 +90,6 @@ export default class IconHandler extends mixins(ImgLoader, ProviderMixin) {
 
     if (this.isPlaylist(this.item)) {
       if (this.item.extension) {
-        console.log(this.item)
         window.ExtensionUtils.getExtensionIcon(this.item.extension).then((val) => {
           if (val) {
             this.iconURL = 'media://' + val

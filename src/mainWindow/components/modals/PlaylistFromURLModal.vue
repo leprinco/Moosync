@@ -72,7 +72,7 @@
         </b-row>
       </b-container>
       <b-button class="close-button ml-3" @click="close">Close</b-button>
-      <b-button class="create-button" @click="addToLibrary">Add</b-button>
+      <b-button class="create-button" :disabled="!addButtonEnabled" @click="addToLibrary">Add</b-button>
     </div>
   </b-modal>
 </template>
@@ -110,6 +110,8 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
 
   isLoading = false
 
+  addButtonEnabled = false
+
   handleImageError() {
     this.forceEmptyImg = true
   }
@@ -123,33 +125,47 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
   }
 
   async parseURL(url: string) {
-    this.isLoading = true
+    if (url) {
+      this.isLoading = true
 
-    this.songList = []
-    this.playlist = null
+      this.songList = []
+      this.playlist = null
+      this.addButtonEnabled = false
 
-    if (url.startsWith('http')) {
-      const providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_FROM_URL)
-      for (const p of providers) {
-        if (p.matchPlaylist(url)) {
-          this.playlist = (await p.getPlaylistDetails(url)) ?? null
-          if (this.playlist) {
-            return
+      if (url.startsWith('http')) {
+        const providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_FROM_URL)
+        for (const p of providers) {
+          if (p.matchPlaylist(url)) {
+            try {
+              this.playlist = (await p.getPlaylistDetails(url)) ?? null
+              if (this.playlist) {
+                this.addButtonEnabled = true
+                break
+              }
+            } catch (e) {
+              console.error(e)
+            }
           }
         }
+      } else {
+        const data = await window.FileUtils.scanSinglePlaylist(url)
+        this.playlist = {
+          playlist_id: data.playlist?.playlist_id ?? v4(),
+          playlist_name: data.playlist?.playlist_name ?? 'New Playlist',
+          playlist_path: data.playlist?.playlist_path,
+          playlist_coverPath: data.playlist?.playlist_coverPath,
+          playlist_desc: data.playlist?.playlist_desc,
+          playlist_song_count: data.playlist?.playlist_song_count
+        }
+
+        this.songList.push(...data.songs)
+
+        this.addButtonEnabled = true
       }
     } else {
-      const data = await window.FileUtils.scanSinglePlaylist(url)
-      this.playlist = {
-        playlist_id: data.playlist?.playlist_id ?? v4(),
-        playlist_name: data.playlist?.playlist_name ?? 'New Playlist',
-        playlist_path: data.playlist?.playlist_path,
-        playlist_coverPath: data.playlist?.playlist_coverPath,
-        playlist_desc: data.playlist?.playlist_desc,
-        playlist_song_count: data.playlist?.playlist_song_count
-      }
-
-      this.songList.push(...data.songs)
+      this.addButtonEnabled = false
+      this.songList = []
+      this.playlist = null
     }
 
     this.isLoading = false
@@ -178,6 +194,7 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
 
   mounted() {
     bus.$on(EventBus.SHOW_PLAYLIST_FROM_URL_MODAL, (refreshCallback: () => void) => {
+      this.addButtonEnabled = false
       this.refreshCallback = refreshCallback
       this.$bvModal.show(this.id)
     })
