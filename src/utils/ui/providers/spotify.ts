@@ -287,7 +287,7 @@ export class SpotifyProvider extends GenericProvider {
       parsed.push({
         playlist_id: `spotify-playlist:${i.id}`,
         playlist_name: i.name,
-        playlist_coverPath: i.images[0] ? i.images[0].url : '',
+        playlist_coverPath: i.images?.[0] ? i.images?.[0].url : '',
         playlist_song_count: i.tracks.total
       })
     }
@@ -340,14 +340,14 @@ export class SpotifyProvider extends GenericProvider {
 
     console.debug(
       'Found',
-      res[0]?.title,
+      res?.[0]?.title,
       '-',
-      res[0]?.playbackUrl,
+      res?.[0]?.playbackUrl,
       'for spotify song',
       item.artists?.map((val) => val.artist_name).join(', '),
       item.title
     )
-    if (res.length > 0) return res[0]
+    if (res.length > 0) return res?.[0]
   }
 
   private parseSong(track: SpotifyResponses.PlaylistItems.Track): Song {
@@ -356,10 +356,10 @@ export class SpotifyProvider extends GenericProvider {
       title: track.name,
       album: {
         album_name: track.album.name,
-        album_coverPath_high: track.album.images[0] ? track.album.images[0].url : ''
+        album_coverPath_high: track.album.images?.[0] ? track.album.images?.[0].url : ''
       },
       url: track.id,
-      song_coverPath_high: track.album.images[0] ? track.album.images[0].url : '',
+      song_coverPath_high: track.album.images?.[0] ? track.album.images?.[0].url : '',
       artists: track.artists.map((artist) => ({
         artist_name: artist.name,
         artist_id: `spotify-author:${artist.id}`,
@@ -375,9 +375,9 @@ export class SpotifyProvider extends GenericProvider {
     }
 
     if (track.album.images?.length > 0) {
-      const high = track.album.images[0].url
+      const high = track.album.images?.[0].url
       let low = high
-      if (track.album.images[1]) low = track.album.images[1].url
+      if (track.album.images[1]) low = track.album.images?.[1].url
 
       song.album = {
         ...song.album,
@@ -515,7 +515,7 @@ export class SpotifyProvider extends GenericProvider {
           invalidateCache
         )
 
-        return this.parsePlaylists([resp])[0]
+        return this.parsePlaylists([resp])?.[0]
       }
     }
   }
@@ -752,12 +752,12 @@ export class SpotifyProvider extends GenericProvider {
       if (resp.length > 0) {
         window.DBUtils.updateArtist({
           artist_id: artist.artist_id,
-          artist_coverPath: artist.artist_coverPath ?? resp[0].artist_coverPath,
+          artist_coverPath: artist.artist_coverPath ?? resp?.[0].artist_coverPath,
           artist_extra_info: {
-            spotify: resp[0].artist_extra_info?.spotify
+            spotify: resp?.[0].artist_extra_info?.spotify
           }
         })
-        return resp[0]
+        return resp?.[0]
       }
     }
   }
@@ -849,8 +849,8 @@ export class SpotifyProvider extends GenericProvider {
         album_id: `spotify-album:${a.id}`,
         album_name: a.name,
         album_song_count: a.total_tracks,
-        album_coverPath_high: a.images[0] ? a.images[0].url : '',
-        album_coverPath_low: a.images[2] ? a.images[2].url : '',
+        album_coverPath_high: a.images?.[0] ? a.images?.[0].url : '',
+        album_coverPath_low: a.images?.[2] ? a.images?.[2].url : '',
         album_extra_info: {
           spotify: {
             album_id: a.id
@@ -875,7 +875,7 @@ export class SpotifyProvider extends GenericProvider {
         }
       })
 
-      return this.parseAlbum(albumDetails)[0]
+      return this.parseAlbum(albumDetails)?.[0]
     }
   }
 
@@ -912,7 +912,7 @@ export class SpotifyProvider extends GenericProvider {
         let albumId = album.album_extra_info?.spotify?.album_id
 
         if (!albumId) {
-          albumId = (await this.searchAlbum(album.album_name))[0]?.album_extra_info?.spotify?.album_id
+          albumId = (await this.searchAlbum(album.album_name))?.[0]?.album_extra_info?.spotify?.album_id
         }
 
         if (albumId) {
