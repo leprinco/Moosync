@@ -118,9 +118,13 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong, Prov
       for (const p of providers) {
         console.debug('matching url to', p, p.matchSongUrl(url))
         if (p.matchSongUrl(url)) {
-          this.parsedSong = (await p.getSongDetails(url)) ?? null
-          if (this.parsedSong) {
-            break
+          try {
+            this.parsedSong = (await p.getSongDetails(url)) ?? null
+            if (this.parsedSong) {
+              break
+            }
+          } catch (e) {
+            console.error(e)
           }
         }
       }

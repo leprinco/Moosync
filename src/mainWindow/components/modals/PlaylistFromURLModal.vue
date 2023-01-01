@@ -136,10 +136,14 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
         const providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_FROM_URL)
         for (const p of providers) {
           if (p.matchPlaylist(url)) {
-            this.playlist = (await p.getPlaylistDetails(url)) ?? null
-            if (this.playlist) {
-              this.addButtonEnabled = true
-              break
+            try {
+              this.playlist = (await p.getPlaylistDetails(url)) ?? null
+              if (this.playlist) {
+                this.addButtonEnabled = true
+                break
+              }
+            } catch (e) {
+              console.error(e)
             }
           }
         }
