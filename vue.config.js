@@ -94,7 +94,8 @@ module.exports = {
           icon: './build/icons/icon.icns'
         },
         win: {
-          verifyUpdateCodeSignature: false
+          verifyUpdateCodeSignature: false,
+          target: ['portable', 'nsis']
         },
         linux: {
           icon: './build/icons/',
@@ -102,7 +103,8 @@ module.exports = {
         },
         nsis: {
           oneClick: false,
-          perMachine: true
+          perMachine: false,
+          allowToChangeInstallationDirectory: true
         },
         snap: {
           stagePackages: ['libnspr4', 'libnss3', 'libxss1', 'libappindicator3-1', 'libsecret-1-0']
