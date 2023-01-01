@@ -106,6 +106,9 @@ module.exports = {
           perMachine: false,
           allowToChangeInstallationDirectory: true
         },
+        portable: {
+          artifactName: '${productName}-${version}-${os}-${arch}-portable.${ext}',
+        },
         snap: {
           stagePackages: ['libnspr4', 'libnss3', 'libxss1', 'libappindicator3-1', 'libsecret-1-0']
         },
