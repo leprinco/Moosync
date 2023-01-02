@@ -61,7 +61,7 @@ jobs:
           xcode-version: latest-stable
 
       - if: ${{ runner.os == 'Linux' }}
-        run: sudo apt-get update -y && sudo apt-get install -y libarchive-tools rpm libasound2-dev
+        run: sudo apt-get update -y && sudo apt-get install -y libarchive-tools rpm libasound2-dev libssl-dev libatomic1
 
       - name: Remove postinstall
         run: |
