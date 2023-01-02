@@ -99,7 +99,7 @@ module.exports = {
         },
         linux: {
           icon: './build/icons/',
-          target: ['AppImage', 'deb', 'tar.gz', 'pacman', 'snap', 'rpm']
+          target: ['AppImage', 'deb', 'tar.gz', 'pacman', 'rpm']
         },
         nsis: {
           oneClick: false,
@@ -107,10 +107,10 @@ module.exports = {
           allowToChangeInstallationDirectory: true
         },
         portable: {
-          artifactName: '${productName}-${version}-${os}-${arch}-portable.${ext}',
+          artifactName: '${productName}-${version}-${os}-${arch}-portable.${ext}'
         },
         snap: {
-          stagePackages: ['libnspr4', 'libnss3', 'libxss1', 'libappindicator3-1', 'libsecret-1-0']
+          stagePackages: ['libnspr4', 'libnss3', 'libxss1', 'libappindicator3-1', 'libsecret-1-0', 'libatomic1']
         },
         deb: {
           depends: ['libnotify4', 'libxtst6', 'libnss3']
