@@ -259,6 +259,7 @@ export function sanitizeSong(ext: string, ...songs: Song[]): Song[] {
   return songs.map((val) => ({
     ...val,
     artists: sanitizeArtists(ext, ...(val.artists ?? [])),
+    album: val.album && sanitizeAlbums(ext, val.album)[0],
     _id: `${ext}:${val._id ?? v4()}`,
     providerExtension: ext
   }))
