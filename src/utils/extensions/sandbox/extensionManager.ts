@@ -77,7 +77,8 @@ export class ExtensionManager extends AbstractExtensionManager {
     const vm = new NodeVM({
       console: 'redirect',
       sandbox: {
-        URL
+        URL,
+        URLSearchParams
       },
       env: this.getProcessEnv(),
       nesting: true,
