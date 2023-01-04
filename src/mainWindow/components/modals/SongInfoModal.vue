@@ -355,7 +355,7 @@ export default class SongInfoModal extends mixins(ImgLoader) {
   private validateSong(song: Song) {
     if (!song.artists) song.artists = []
     if (!song.genre) song.genre = []
-    if (song.album) song.album = {}
+    if (!song.album) song.album = {}
 
     return song
   }
