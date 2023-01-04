@@ -125,17 +125,18 @@ function interceptHttp() {
   if (!process.env.WEBPACK_DEV_SERVER_URL) {
     session.defaultSession.protocol.interceptFileProtocol('http', async (request, callback) => {
       const parsedUrl = new URL(request.url)
-      const host = parsedUrl.hostname
       const pathName = decodeURI(parsedUrl.pathname)
-
       const filePath = path.join(__dirname, pathName)
 
-      if (host === 'localhost') {
-        try {
-          callback(filePath)
-        } catch (e) {
-          logger.error(e)
-        }
+      // deregister intercept after we handle index.js
+      if (request.url.includes('index.html')) {
+        session.defaultSession.protocol.uninterceptProtocol('http')
+      }
+
+      try {
+        callback(filePath)
+      } catch (e) {
+        logger.error(e)
       }
     })
   }
