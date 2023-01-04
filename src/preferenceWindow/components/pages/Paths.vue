@@ -37,6 +37,7 @@
             :defaultValue="[]"
             key="musicPaths"
             @refresh="forceRescan"
+            :enableCheckbox="false"
             :showRefreshIcon="true"
           />
 
