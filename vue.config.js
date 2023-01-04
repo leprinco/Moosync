@@ -110,10 +110,19 @@ module.exports = {
           artifactName: '${productName}-${version}-${os}-${arch}-portable.${ext}'
         },
         snap: {
-          stagePackages: ['libnspr4', 'libnss3', 'libxss1', 'libappindicator3-1', 'libsecret-1-0', 'libatomic1']
+          stagePackages: [
+            'libnspr4',
+            'libnss3',
+            'libxss1',
+            'libappindicator3-1',
+            'libsecret-1-0',
+            'libatomic1',
+            'libicu-dev',
+            'libasound2-dev'
+          ]
         },
         deb: {
-          depends: ['libnotify4', 'libxtst6', 'libnss3']
+          depends: ['libnotify4', 'libxtst6', 'libnss3', 'libatomic1', 'libicu-dev', 'libasound2-dev']
         },
         fileAssociations: [
           {
