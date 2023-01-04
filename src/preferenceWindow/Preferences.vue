@@ -11,6 +11,8 @@
   <div id="app">
     <Titlebar windowType="preference-window" />
     <Sidebar />
+    <div class="logo-title version">v{{ version }}</div>
+
     <div class="main-content">
       <transition
         appear
@@ -83,6 +85,10 @@ export default class App extends mixins(ThemeHandler) {
         this.$router.push((args as { page: string }).page)
       }
     })
+  }
+
+  private get version() {
+    return process.env.MOOSYNC_VERSION
   }
 
   private registerDevTools() {
@@ -163,4 +169,17 @@ body {
   overflow-x: hidden
   z-index: -4
   transition: 0.2s
+
+.logo-title
+  position: absolute
+  bottom: 0
+  margin-left: 4px
+  font-family: Poppins
+  font-style: normal
+  font-weight: 600
+  font-size: 14px
+  line-height: 167.19%
+  letter-spacing: 0.105em
+  text-align: left
+  color: var(--textSecondary)
 </style>
