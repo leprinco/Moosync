@@ -19,8 +19,6 @@ import log from 'loglevel'
 import { isEmpty } from '@/utils/common'
 import { defaultKeybinds } from '@/utils/commonConstants'
 
-type MusicPaths = { path: string; enabled: boolean }
-
 const getDefaultPreferences = () => {
   const musicPath = getDefaultMusicPaths()
   return {
@@ -198,7 +196,7 @@ export async function onPreferenceChanged(key: string, value: any) {
 
 // TODO: Scan only changed file
 export function shouldWatchFileChanges() {
-  const value = loadSelectivePreference<MusicPaths[]>('musicPaths')
+  const value = loadSelectivePreference<togglePaths>('musicPaths')
   if (value) {
     if (ac) ac.abort()
 
@@ -211,7 +209,7 @@ export function shouldWatchFileChanges() {
   }
 }
 
-export function setupScanWatcher(dirs: MusicPaths[]) {
+export function setupScanWatcher(dirs: togglePaths) {
   console.debug('Setting up scan watcher')
   ac = new AbortController()
   const { signal } = ac
