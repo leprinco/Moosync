@@ -275,11 +275,16 @@ export function sanitizePlaylist(ext: string, ...playlists: Playlist[]): Extende
 export function sanitizeAlbums(ext: string, ...albums: Album[]): Album[] {
   return albums.map((val) => ({
     ...val,
-    album_id: `${ext}:${val.album_id ?? v4()}`
+    album_id: `${ext}:${val.album_id ?? v4()}`,
+    album_extra_info: {
+      extensions: {
+        [ext]: sanitizeExtraInfo(val.album_extra_info?.extensions?.[ext])
+      }
+    }
   }))
 }
 
-export function sanitizeArtistExtraInfo(extra_info?: Record<string, unknown>) {
+export function sanitizeExtraInfo(extra_info?: Record<string, unknown>) {
   const ret: Record<string, string | undefined> = {}
   if (extra_info) {
     for (const [key, val] of Object.entries(extra_info)) {
@@ -300,7 +305,7 @@ export function sanitizeArtists(ext: string, ...artists: Artists[]): Artists[] {
     artist_id: `${ext}:${val.artist_id ?? v4()}`,
     artist_extra_info: {
       extensions: {
-        [ext]: sanitizeArtistExtraInfo(val.artist_extra_info)
+        [ext]: sanitizeExtraInfo(val.artist_extra_info?.extensions?.[ext])
       }
     }
   }))
