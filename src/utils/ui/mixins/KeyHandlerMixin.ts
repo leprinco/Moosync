@@ -83,7 +83,9 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
         this.toggleRepeat()
         break
       case HotkeyEvents.RELOAD_PAGE:
-        window.SpotifyPlayer.close().then(() => location.reload())
+        window.SpotifyPlayer.close()
+          .then(() => window.WindowUtils.handleReload())
+          .then(() => location.reload())
         break
       case HotkeyEvents.DEVTOOLS_TOGGLE:
         window.WindowUtils.toggleDevTools(true)

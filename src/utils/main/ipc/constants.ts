@@ -108,7 +108,9 @@ export enum WindowEvents {
 
   TOGGLE_FULLSCREEN = 'toggleFullscreen',
   ENABLE_FULLSCREEN = 'enableFullscreen',
-  DISABLE_FULLSCREEN = 'disableFullscreen'
+  DISABLE_FULLSCREEN = 'disableFullscreen',
+
+  HANDLE_RELOAD = 'handleReload'
 }
 
 export enum AlbumEvents {

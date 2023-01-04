@@ -249,6 +249,7 @@ interface windowUtils {
   updateZoom: () => Promise<void>
   getPlatform: () => Promise<typeof process.platform>
   clearRSS: () => void
+  handleReload: () => Promise<void>
 }
 
 /**

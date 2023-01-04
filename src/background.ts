@@ -13,7 +13,7 @@ import 'threads/register'
 
 import { BrowserWindow, app, protocol, session } from 'electron'
 import { WindowHandler, setIsQuitting, _windowHandler } from './utils/main/windowManager'
-import path, { resolve } from 'path'
+import { resolve } from 'path'
 
 import { oauthHandler } from '@/utils/main/oauth/handler'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
@@ -123,22 +123,7 @@ function interceptHttp() {
   // Which will then be intercepted here and normal files will be delivered
   // Essentially spoofing window.location.origin to become http://localhost
   if (!process.env.WEBPACK_DEV_SERVER_URL) {
-    session.defaultSession.protocol.interceptFileProtocol('http', async (request, callback) => {
-      const parsedUrl = new URL(request.url)
-      const pathName = decodeURI(parsedUrl.pathname)
-      const filePath = path.join(__dirname, pathName)
-
-      // deregister intercept after we handle index.js
-      if (request.url.includes('index.html')) {
-        session.defaultSession.protocol.uninterceptProtocol('http')
-      }
-
-      try {
-        callback(filePath)
-      } catch (e) {
-        logger.error(e)
-      }
-    })
+    WindowHandler.interceptHttp()
   }
 }
 

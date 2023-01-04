@@ -87,6 +87,9 @@ export class BrowserWindowChannel implements IpcChannelInterface {
       case WindowEvents.GET_PLATFORM:
         this.getPlatform(event, request)
         break
+      case WindowEvents.HANDLE_RELOAD:
+        this.handleReload(event, request)
+        break
     }
   }
 
@@ -244,5 +247,11 @@ export class BrowserWindowChannel implements IpcChannelInterface {
 
   private getPlatform(event: Electron.IpcMainEvent, request: IpcRequest) {
     event.reply(request.responseChannel, process.platform)
+  }
+
+  private handleReload(event: Electron.IpcMainEvent, request: IpcRequest) {
+    console.log('intercepting http')
+    WindowHandler.interceptHttp()
+    event.reply(request.responseChannel)
   }
 }

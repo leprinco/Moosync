@@ -18,7 +18,8 @@ import {
   ThumbarButton,
   nativeImage,
   net,
-  shell
+  shell,
+  session
 } from 'electron'
 import { SongEvents, WindowEvents } from './ipc/constants'
 import { getWindowSize, setWindowSize, loadPreferences } from './db/preferences'
@@ -35,6 +36,7 @@ import { Readable } from 'stream'
 import { getMprisChannel, getSpotifyPlayerChannel } from './ipc/index'
 import { ButtonEnum, PlayerButtons } from 'media-controller'
 import { nativeTheme } from 'electron'
+import { logger } from './logger'
 
 export class WindowHandler {
   private static mainWindow: number
@@ -224,6 +226,25 @@ export class WindowHandler {
   public mainWindowHasMounted() {
     this._isMainWindowMounted = true
     this.sendToMainWindow(SongEvents.GOT_FILE_PATH, this.pathQueue)
+  }
+
+  static interceptHttp() {
+    session.defaultSession.protocol.interceptFileProtocol('http', async (request, callback) => {
+      const parsedUrl = new URL(request.url)
+      const pathName = decodeURI(parsedUrl.pathname)
+      const filePath = path.join(__dirname, pathName)
+
+      // deregister intercept after we handle index.html
+      if (request.url.includes('index.html')) {
+        session.defaultSession.protocol.uninterceptProtocol('http')
+      }
+
+      try {
+        callback(filePath)
+      } catch (e) {
+        logger.error(e)
+      }
+    })
   }
 
   private getWindowURL(isMainWindow: boolean) {

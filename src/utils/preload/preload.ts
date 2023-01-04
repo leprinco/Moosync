@@ -510,7 +510,10 @@ contextBridge.exposeInMainWorld('WindowUtils', {
   getPlatform: () =>
     ipcRendererHolder.send(IpcEvents.BROWSER_WINDOWS, { type: WindowEvents.GET_PLATFORM, params: undefined }),
 
-  clearRSS: clearCache
+  clearRSS: clearCache,
+
+  handleReload: () =>
+    ipcRendererHolder.send(IpcEvents.BROWSER_WINDOWS, { type: WindowEvents.HANDLE_RELOAD, params: undefined })
 })
 
 contextBridge.exposeInMainWorld('LoggerUtils', {
