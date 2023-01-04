@@ -572,7 +572,8 @@ export default class AudioStream extends mixins(
     song: Song
   ): Promise<{ url: string | undefined; duration?: number } | undefined> {
     if (provider) {
-      return provider.getPlaybackUrlAndDuration(song)
+      const res = await provider.getPlaybackUrlAndDuration(song)
+      if (res) return res
     }
 
     try {
