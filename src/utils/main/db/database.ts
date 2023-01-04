@@ -17,6 +17,7 @@ import path from 'path'
 import { getExtensionHostChannel } from '../ipc'
 import { downloadFile } from '@/utils/main/mainUtils'
 import { isAlbum } from '../../common'
+import { access, mkdir } from 'fs/promises'
 
 type KeysOfUnion<T> = T extends T ? keyof T : never
 // AvailableKeys will basically be keyof Foo | keyof Bar
@@ -223,9 +224,17 @@ export class SongDBInstance extends DBUtils {
   }
 
   private async getCoverPath(oldCoverPath: string, newCoverpath: string) {
+    const thumbPath = loadPreferences().thumbnailPath
+    try {
+      await access(thumbPath)
+    } catch (e) {
+      await mkdir(thumbPath, { recursive: true })
+    }
+
     if (oldCoverPath !== newCoverpath) {
       if (newCoverpath) {
-        const finalPath = path.join(loadPreferences().thumbnailPath, v4() + (path.extname(newCoverpath) ?? '.png'))
+        const finalPath = path.join(thumbPath, v4() + (path.extname(newCoverpath) ?? '.png'))
+
         if (newCoverpath.startsWith('http')) {
           try {
             await downloadFile(newCoverpath, finalPath)
