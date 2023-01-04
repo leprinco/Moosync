@@ -229,22 +229,24 @@ export class WindowHandler {
   }
 
   static interceptHttp() {
-    session.defaultSession.protocol.interceptFileProtocol('http', async (request, callback) => {
-      const parsedUrl = new URL(request.url)
-      const pathName = decodeURI(parsedUrl.pathname)
-      const filePath = path.join(__dirname, pathName)
+    if (!process.env.WEBPACK_DEV_SERVER_URL) {
+      session.defaultSession.protocol.interceptFileProtocol('http', async (request, callback) => {
+        const parsedUrl = new URL(request.url)
+        const pathName = decodeURI(parsedUrl.pathname)
+        const filePath = path.join(__dirname, pathName)
 
-      // deregister intercept after we handle index.html
-      if (request.url.includes('index.html')) {
-        session.defaultSession.protocol.uninterceptProtocol('http')
-      }
+        // deregister intercept after we handle index.html
+        if (request.url.includes('index.html')) {
+          session.defaultSession.protocol.uninterceptProtocol('http')
+        }
 
-      try {
-        callback(filePath)
-      } catch (e) {
-        logger.error(e)
-      }
-    })
+        try {
+          callback(filePath)
+        } catch (e) {
+          logger.error(e)
+        }
+      })
+    }
   }
 
   private getWindowURL(isMainWindow: boolean) {
