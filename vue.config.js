@@ -118,7 +118,8 @@ module.exports = {
             'libsecret-1-0',
             'libatomic1',
             'libicu-dev',
-            'libasound2-dev'
+            'libasound2-dev',
+            'libvips-dev'
           ]
         },
         deb: {
