@@ -218,6 +218,25 @@ export class SpotifyProvider extends GenericProvider {
     await this.getLoggedIn()
   }
 
+  private async refreshToken() {
+    if (await this.auth.hasValidRefreshToken()) {
+      await this.auth.performWithFreshTokens()
+    } else {
+      const token = await window.SpotifyPlayer.getToken(this._config.scope.split(' ') as TokenScope[])
+      if (token) {
+        this.auth.setToken({
+          ...token,
+          scope: token.scopes.join(' '),
+          token_type: 'bearer',
+          expires_in: token.expires_in.toString(),
+          issued_at: token.expiry_from_epoch - token.expires_in
+        })
+
+        bus.$emit(EventBus.REFRESH_ACCOUNTS, this.key)
+      }
+    }
+  }
+
   private async populateRequest<K extends ApiResources>(
     resource: K,
     search: SpotifyResponses.SearchObject<K>,
@@ -259,6 +278,11 @@ export class SpotifyProvider extends GenericProvider {
       headers: { Authorization: `Bearer ${accessToken}` },
       invalidateCache
     })
+
+    if (resp.status === 401) {
+      await this.refreshToken()
+      return this.populateRequest(resource, search, invalidateCache)
+    }
 
     return resp.json()
   }
