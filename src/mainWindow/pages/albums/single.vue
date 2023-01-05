@@ -155,7 +155,8 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
       album_coverPath_high: this.$route.query.cover_high as string,
       album_coverPath_low: this.$route.query.cover_low as string,
       album_artist: this.$route.query.album_artist as string,
-      year: parseInt(this.$route.query.year as string)
+      year: parseInt(this.$route.query.year as string),
+      album_extra_info: JSON.parse((this.$route.query.extra_info as string) || '{}')
     }
   }
 

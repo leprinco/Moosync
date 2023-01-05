@@ -22,6 +22,7 @@ export default class PlayerControls extends Vue {
           cover_low: album.album_coverPath_low,
           artist: album.album_artist,
           year: (album.year ?? 0).toString(),
+          extra_info: JSON.stringify(album.album_extra_info) ?? '',
           defaultProviders
         }
       })
