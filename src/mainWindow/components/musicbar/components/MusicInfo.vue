@@ -207,15 +207,28 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   }
 
   private async fetchSpotifyCanvas() {
-    if (this.currentSong?.type === 'SPOTIFY') {
-      if (
-        this.showSpotifyCanvas &&
-        (await vxm.providers.spotifyProvider.getLoggedIn()) &&
-        vxm.providers.spotifyProvider.canPlayPremium
-      ) {
-        const resp = await window.SpotifyPlayer.command('GET_CANVAS', [`spotify:track:${this.currentSong.url}`])
-        vxm.themes.currentSpotifyCanvas = resp.canvases?.at(0)?.url ?? null
+    if (
+      this.currentSong &&
+      this.showSpotifyCanvas &&
+      (await vxm.providers.spotifyProvider.getLoggedIn()) &&
+      vxm.providers.spotifyProvider.canPlayPremium
+    ) {
+      let trackId: string | undefined
+      if (this.currentSong.type === 'SPOTIFY') {
+        trackId = this.currentSong.url
+      } else {
+        const searchRes = (
+          await vxm.providers.spotifyProvider.searchSongs(
+            `${
+              this.currentSong.artists ? this.currentSong.artists?.map((val) => val.artist_name).join(', ') + ' - ' : ''
+            }${this.currentSong.title}`
+          )
+        )[0]
+
+        trackId = searchRes.url
       }
+      const resp = await window.SpotifyPlayer.command('GET_CANVAS', [`spotify:track:${trackId}`])
+      vxm.themes.currentSpotifyCanvas = resp.canvases?.at(0)?.url ?? null
     }
   }
 
