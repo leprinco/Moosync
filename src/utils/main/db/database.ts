@@ -1112,8 +1112,8 @@ export class SongDBInstance extends DBUtils {
   public incrementPlayCount(song_id: string) {
     this.db.transaction(() => {
       let playCount = this.db.queryFirstCell<number>(`SELECT play_count FROM analytics WHERE song_id = ?`, song_id)
-      if (!playCount) {
-        this.db.insert('analytics', { id: v4(), song_id, play_count: 0 })
+      if (isEmpty(playCount)) {
+        this.db.insert('analytics', { id: v4(), song_id, play_count: 0, play_time: 0 })
         playCount = 0
       }
 
@@ -1127,6 +1127,18 @@ export class SongDBInstance extends DBUtils {
       `SELECT song_id, play_count FROM analytics WHERE song_id in (${where})`
     )
     return Object.assign({}, ...res.map((val) => ({ [val.song_id]: val.play_count })))
+  }
+
+  public incrementPlayTime(song_id: string, duration: number) {
+    this.db.transaction(() => {
+      let playTime = this.db.queryFirstCell<number>(`SELECT play_time FROM analytics WHERE song_id = ?`, song_id)
+      if (isEmpty(playTime)) {
+        this.db.insert('analytics', { id: v4(), song_id, play_count: 0, play_time: duration })
+        playTime = 0
+      }
+
+      this.db.update('analytics', { play_time: playTime + duration }, { song_id })
+    })()
   }
 
   /* ============================= 

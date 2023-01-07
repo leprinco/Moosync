@@ -283,5 +283,13 @@ export const migrations = [
   ALTER TABLE allsongs ADD track_no NUMBER DEFAULT 0;
   
   -- Down
+  `,
+
+  // 07-01-2023
+  `
+  -- Up
+  ALTER TABLE analytics ADD play_time NUMBER DEFAULT 0;
+  
+  -- Down
   `
 ]

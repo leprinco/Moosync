@@ -66,6 +66,8 @@ interface DBUtils {
   updateLyrics: (id: string, lyrics: string) => Promise<void>
 
   incrementPlayCount: (song_id: string) => Promise<void>
+
+  incrementPlayTime: (song_id: string, duration: number) => Promise<void>
 }
 
 /**

@@ -32,6 +32,7 @@ CHECKSUM_FLATPAK=$(sha256sum flatpak_download_tmp | cut -d' ' -f1)
 rm -f flatpak_download_tmp
 echo $CHECKSUM_FLATPAK
 python flatpak-node-generator.py yarn --electron-node-headers ../yarn.lock
+python flatpak-cargo-generator.py ../node_modules/librespot-node/native/Cargo.lock -o generated-sources-cargo.json
 sed -i "\@${FLATPAK_PARTIAL_DOWNLOAD}.*@{n;s@.*@        sha256: ${CHECKSUM_FLATPAK}@}" app.moosync.moosync.yml
 git add -A
 git commit -m "Bump to $VERSION"
@@ -56,6 +57,6 @@ cd ../
 ## Bump snap
 yarn electron:build --linux=snap
 cd dist_electron
-snapcraft upload --release=stable "Moosync-${VERSION}-linux-amd64.snap"
+snap run snapcraft upload --release=stable "Moosync-${VERSION}-linux-amd64.snap"
 cd ../
 

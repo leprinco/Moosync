@@ -93,6 +93,48 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     this.handleInitialSetup()
     this.checkUpdate()
     this.watchLibrespotUserChange()
+    this.registerPlayTimeListeners()
+  }
+
+  private registerPlayTimeListeners() {
+    vxm.player.$watch('currentSong', async (newVal?: Song, oldVal?: Song) => {
+      if (oldVal) {
+        console.debug(oldVal?.title, 'played for', this.playTime)
+        await window.DBUtils.incrementPlayTime(oldVal._id, this.playTime)
+      }
+      this.clearPlaytimeTracker()
+      this.playTime = 0
+
+      if (newVal) {
+        this.setPlaytimeTracker()
+      }
+    })
+
+    vxm.player.$watch('playerState', (newVal: PlayerState) => {
+      if (newVal === 'PLAYING') {
+        this.setPlaytimeTracker()
+      } else {
+        this.clearPlaytimeTracker()
+      }
+    })
+  }
+
+  private playtimeTracker: ReturnType<typeof setInterval> | undefined
+  private playTime = 0
+
+  private setPlaytimeTracker() {
+    if (!this.playtimeTracker) {
+      this.playtimeTracker = setInterval(() => {
+        this.playTime += 1
+      }, 1000)
+    }
+  }
+
+  private clearPlaytimeTracker() {
+    if (this.playtimeTracker) {
+      clearInterval(this.playtimeTracker)
+      this.playtimeTracker = undefined
+    }
   }
 
   private watchLibrespotUserChange() {

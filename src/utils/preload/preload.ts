@@ -106,12 +106,17 @@ contextBridge.exposeInMainWorld('DBUtils', {
       params: { id, lyrics }
     }),
 
-  incrementPlayCount: (song_id: string) => {
+  incrementPlayCount: (song_id: string) =>
     ipcRendererHolder.send<SongRequests.PlayCount>(IpcEvents.SONG, {
       type: SongEvents.INCREMENT_PLAY_COUNT,
       params: { song_id }
+    }),
+
+  incrementPlayTime: (song_id: string, duration: number) =>
+    ipcRendererHolder.send<SongRequests.PlayTime>(IpcEvents.SONG, {
+      type: SongEvents.INCREMENT_PLAY_TIME,
+      params: { song_id, duration }
     })
-  }
 })
 
 contextBridge.exposeInMainWorld('PreferenceUtils', {

@@ -265,6 +265,11 @@ declare namespace SongRequests {
   interface PlayCount {
     song_id: string
   }
+
+  interface PlayTime {
+    song_id: string
+    duration: number
+  }
 }
 
 declare namespace StoreRequests {

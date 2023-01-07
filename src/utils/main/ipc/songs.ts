@@ -51,6 +51,9 @@ export class SongsChannel implements IpcChannelInterface {
       case SongEvents.INCREMENT_PLAY_COUNT:
         this.incrementPlayCount(event, request as IpcRequest<SongRequests.PlayCount>)
         break
+      case SongEvents.INCREMENT_PLAY_TIME:
+        this.incrementPlayTime(event, request as IpcRequest<SongRequests.PlayTime>)
+        break
     }
   }
 
@@ -160,6 +163,13 @@ export class SongsChannel implements IpcChannelInterface {
   private incrementPlayCount(event: Electron.IpcMainEvent, request: IpcRequest<SongRequests.PlayCount>) {
     if (request.params.song_id) {
       getSongDB().incrementPlayCount(request.params.song_id)
+    }
+    event.reply(request.responseChannel)
+  }
+
+  private incrementPlayTime(event: Electron.IpcMainEvent, request: IpcRequest<SongRequests.PlayTime>) {
+    if (request.params.song_id) {
+      getSongDB().incrementPlayTime(request.params.song_id, request.params.duration)
     }
     event.reply(request.responseChannel)
   }
