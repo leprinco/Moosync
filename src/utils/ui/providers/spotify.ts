@@ -384,15 +384,17 @@ export class SpotifyProvider extends GenericProvider {
       },
       url: track.id,
       song_coverPath_high: track.album.images?.[0] ? track.album.images?.[0].url : '',
-      artists: track.artists.map((artist) => ({
-        artist_name: artist.name,
-        artist_id: `spotify-author:${artist.id}`,
-        artist_extra_info: {
-          spotify: {
-            artist_id: artist.id
+      artists: track.artists
+        .filter((x, i) => i === track.artists.findIndex((v) => v.id === x.id))
+        .map((artist) => ({
+          artist_name: artist.name,
+          artist_id: `spotify-author:${artist.id}`,
+          artist_extra_info: {
+            spotify: {
+              artist_id: artist.id
+            }
           }
-        }
-      })),
+        })),
       duration: track.duration_ms / 1000,
       date_added: Date.now(),
       type: 'SPOTIFY'
