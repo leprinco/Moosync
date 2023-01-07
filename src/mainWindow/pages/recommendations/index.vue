@@ -34,7 +34,7 @@
                 :showSubSubTitle="false"
                 :scrollable="false"
                 :showPlayHoverButton="true"
-                @click.native="playTop([analyticsSongs[0]])"
+                @click="playTop([analyticsSongs[0]])"
               />
             </b-col>
             <b-col cols="auto">

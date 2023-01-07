@@ -357,6 +357,7 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, Juk
   position: absolute
   top: 0
   border-radius: 28px
+  cursor: pointer
 
 .play-button
   opacity: 0

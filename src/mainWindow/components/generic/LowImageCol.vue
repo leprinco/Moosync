@@ -92,6 +92,7 @@ export default class LowImageCol extends mixins(ImgLoader) {
   position: absolute
   top: 0
   border-radius: 10px
+  cursor: pointer
 
 .play-button
   opacity: 0
