@@ -8,7 +8,7 @@
 -->
 
 <template>
-  <b-container fluid class="h-100 scrollable">
+  <b-container fluid :class="`h-100 ${scrollable ? 'scrollable' : ''}`">
     <b-row no-gutters>
       <b-col class="position-relative">
         <div class="image-container w-100">
@@ -28,8 +28,11 @@
                   @error="handleImageError"
                   referrerPolicy="no-referrer"
                 />
-                <SongDefault class="albumart w-100" v-if="!computedImg" />
+                <SongDefault class="albumart w-100" v-else />
               </transition>
+              <div class="play-button d-flex justify-content-center" v-if="showPlayHoverButton">
+                <Play2 class="align-self-center" />
+              </div>
 
               <div v-if="isLoading" class="loading-spinner d-flex justify-content-center">
                 <b-spinner class="align-self-center" />
@@ -64,7 +67,7 @@
               </b-col>
             </b-row>
             <div class="song-subtitle text-truncate" :title="subtitle" v-if="subtitle">{{ subtitle }}</div>
-            <div class="song-timestamp" :title="subSubTitle" v-if="subSubTitle">
+            <div class="song-timestamp" :title="subSubTitle" v-if="showSubSubTitle && subSubTitle">
               {{ subSubTitle }}
             </div>
           </div>
@@ -102,6 +105,7 @@ import AddToQueue from '@/icons/AddToQueueIcon.vue'
 import PinIcon from '@/icons/PinIcon.vue'
 import RandomIcon from '@/icons/RandomIcon.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
+import Play2 from '@/icons/PlayIcon2.vue'
 
 @Component({
   components: {
@@ -110,7 +114,8 @@ import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
     AddToLibrary,
     AddToQueue,
     PinIcon,
-    RandomIcon
+    RandomIcon,
+    Play2
   }
 })
 export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, JukeboxMixin) {
@@ -151,6 +156,15 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, Juk
 
   @Prop({ default: false })
   isLoading!: boolean
+
+  @Prop({ default: true })
+  showSubSubTitle!: boolean
+
+  @Prop({ default: true })
+  scrollable!: boolean
+
+  @Prop({ default: false })
+  showPlayHoverButton!: boolean
 
   handleImageError() {
     this.forceShowDefaultImage = true
@@ -335,4 +349,22 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, Juk
   border-radius: 16px
   span
     color: white
+
+.play-button
+  width: calc(100%)
+  height: calc(100%)
+  background: rgba(0, 0, 0, 0.6)
+  position: absolute
+  top: 0
+  border-radius: 28px
+
+.play-button
+  opacity: 0
+  transition: opacity 0.2s ease
+  &:hover
+    opacity: 1
+
+  svg
+    width: 80px
+    height: 80px
 </style>

@@ -11,6 +11,54 @@
   <div class="h-100 w-100 parent">
     <b-container class="recommendations-container" fluid>
       <b-row no-gutters class="page-title">{{ $t('pages.explore') }}</b-row>
+
+      <b-row no-gutters>
+        <b-col class="d-flex total-listen-time">
+          You've listened to
+          <div
+            :class="`${index === 0 ? 'ml-2 mr-2' : 'mr-2'} total-listen-time-item`"
+            v-for="(i, index) in totalListenTime"
+            :key="i"
+          >
+            {{ i }}
+          </div>
+          of music
+        </b-col>
+      </b-row>
+      <b-row no-gutters v-if="analyticsSongs.length > 0" class="analytics">
+        <b-col>
+          <b-row no-gutters>
+            <b-col class="big-song">
+              <SongDetailsCompact
+                :currentSong="analyticsSongs[0]"
+                :showSubSubTitle="false"
+                :scrollable="false"
+                :showPlayHoverButton="true"
+                @click.native="playTop([analyticsSongs[0]])"
+              />
+            </b-col>
+            <b-col cols="auto">
+              <div class="played-for">Played for</div>
+              <div v-for="(item, index) in maxPlayTimeFormatted" :key="index" class="d-flex">
+                <span
+                  v-for="(i, index) in item"
+                  :key="i"
+                  :class="`${index === 0 ? 'playtime' : 'playtime-suffix'} big-playtime`"
+                >
+                  {{ i }}
+                </span>
+              </div>
+            </b-col>
+          </b-row>
+        </b-col>
+        <b-col cols="3" class="small-song-first">
+          <SmallSongItem v-for="item in firstFourAnalytics" :item="item" :key="item._id" />
+        </b-col>
+        <b-col cols="3" class="small-song-second">
+          <SmallSongItem v-for="item in secondFourAnalytics" :item="item" :key="item._id" />
+        </b-col>
+      </b-row>
+
       <b-row v-for="p of providers" :key="p.key">
         <b-col v-if="hasRecommendations(p.key) || loadingMap[p.key]">
           <b-row align-v="center" class="mt-3">
@@ -58,6 +106,10 @@ import PlainPlay from '@/icons/PlainPlayIcon.vue'
 import AddToLibrary from '@/icons/AddToLibraryIcon.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
+import SongDetailsCompact from '@/mainWindow/components/songView/components/SongDetailsCompact.vue'
+import ImgLoader from '@/utils/ui/mixins/ImageLoader'
+import { convertDuration } from '../../../../flatpak/.flatpak-builder/build/Moosync-12/src/utils/common'
+import SmallSongItem from '@/mainWindow/components/generic/SmallSongItem.vue'
 
 @Component({
   components: {
@@ -65,7 +117,9 @@ import PlayerControls from '@/utils/ui/mixins/PlayerControls'
     CardCarousel,
     PlainPlay,
     AddToLibrary,
-    AddToQueue
+    AddToQueue,
+    SongDetailsCompact,
+    SmallSongItem
   }
 })
 export default class Albums extends mixins(
@@ -73,14 +127,58 @@ export default class Albums extends mixins(
   ContextMenuMixin,
   ProviderMixin,
   JukeboxMixin,
-  PlayerControls
+  PlayerControls,
+  ImgLoader
 ) {
   get providers() {
     return this.fetchProviders()
   }
 
+  private totalTime = 0
+
+  get totalListenTime() {
+    if (this.totalTime > 60) {
+      return [Math.round(this.totalTime / 60), 'Minutes']
+    } else {
+      return [this.totalTime, 'Seconds']
+    }
+  }
+
+  get maxPlayTimeFormatted() {
+    const formatted = convertDuration(this.analyticsSongs[0].playTime)
+    const split = formatted.split(':').reverse()
+
+    const ret = []
+    for (let i = 0; i < split.length; i++) {
+      let suffix = ''
+      switch (i) {
+        case 0:
+          suffix = 'Secs'
+          break
+        case 1:
+          suffix = 'Mins'
+          break
+        case 2:
+          suffix = 'Hours'
+          break
+      }
+
+      ret.push([split[i], suffix])
+    }
+
+    return ret.reverse()
+  }
+
   recommendationList: Record<string, Song[]> = {}
   loadingMap: Record<string, boolean> = {}
+
+  get firstFourAnalytics() {
+    return this.analyticsSongs.slice(1, 5)
+  }
+
+  get secondFourAnalytics() {
+    return this.analyticsSongs.slice(5, 9)
+  }
 
   private fetchProviders() {
     const providers = this.getProvidersByScope(ProviderScopes.RECOMMENDATIONS)
@@ -108,6 +206,51 @@ export default class Albums extends mixins(
   addToLibrary(key: string) {
     this.addSongsToLibrary(...(this.recommendationList[key] ?? []))
   }
+
+  analyticsSongs: (Song & { playTime: number; playCount: number })[] = []
+
+  async created() {
+    const playCounts = await window.SearchUtils.getPlayCount()
+    const values = Object.entries(playCounts)
+      .map((val) => ({ ...val[1], id: val[0] }))
+      .sort((a, b) => b.playTime - a.playTime)
+
+    this.totalTime = values.reduce((prev, curr) => prev + curr.playTime, 0)
+
+    const renderFirst = 9
+
+    const fetchedSongs: (Song & typeof playCounts[0])[] = []
+    for (let i = 0; i < values.length; i++) {
+      let song: Song | undefined = (
+        await window.SearchUtils.searchSongsByOptions({
+          song: {
+            _id: values[i].id
+          }
+        })
+      )[0]
+
+      if (!song) {
+        for (const p of this.getAllProviders()) {
+          if (p.matchEntityId(values[i].id)) {
+            song = await p.getSongById(values[i].id)
+          }
+        }
+      }
+
+      if (!song) continue
+
+      fetchedSongs.push({
+        ...song,
+        playTime: values[i].playTime,
+        playCount: values[i].playCount
+      })
+
+      if (fetchedSongs.length === renderFirst) break
+    }
+
+    this.analyticsSongs.push(...fetchedSongs)
+  }
+
   mounted() {
     this.fetchRecomsFromProviders()
     this.onProvidersChanged(this.fetchRecomsFromProviders)
@@ -144,4 +287,58 @@ export default class Albums extends mixins(
 
 .slider-row
   margin-top: 15px
+
+.big-song
+  min-width: 200px
+  max-width: 400px
+  margin-right: 25px
+
+.played-for
+  font-size: 30px
+  margin-bottom: 15px
+  font-weight: 700
+
+.single-song-item
+  margin-bottom: 30px
+
+.playtime, .total-listen-time-item
+  color: var(--accent)
+  font-weight: 700
+  margin-right: 3px
+
+.playtime-suffix
+  font-weight: 700
+
+.big-playtime
+  font-size: 30px
+
+.small-song-first
+  margin-right: 50px
+  margin-left: 50px
+  display: block
+
+.small-song-second
+  margin-right: 50px
+  display: block
+
+.analytics
+  margin-bottom: 30px
+
+.total-listen-time
+  font-size: 28px
+  margin-bottom: 50px
+  margin-left: 15px
+
+@media only screen and (max-width : 1557px)
+  .small-song-second
+    display: none
+
+  .small-song-first
+    margin-left: 30px
+    flex: 0 0 40%
+    max-width: 40%
+
+@media only screen and (max-width : 1188px)
+  .small-song-first
+    display: none
 </style>

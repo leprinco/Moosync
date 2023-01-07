@@ -1122,11 +1122,18 @@ export class SongDBInstance extends DBUtils {
   }
 
   public getPlayCount(...song_id: string[]) {
-    const where = song_id.map((val) => `'${val}'`).join(', ')
-    const res = this.db.query<{ song_id: string; play_count: number }>(
-      `SELECT song_id, play_count FROM analytics WHERE song_id in (${where})`
+    let res: { song_id: string; play_count: number; play_time: number }[] = []
+
+    if (song_id.length > 0) {
+      const where = song_id.map((val) => `'${val}'`).join(', ')
+      res = this.db.query(`SELECT song_id, play_count, play_time FROM analytics WHERE song_id in (${where})`)
+    } else {
+      res = this.db.query(`SELECT song_id, play_count, play_time FROM analytics`)
+    }
+    return Object.assign(
+      {},
+      ...res.map((val) => ({ [val.song_id]: { playCount: val.play_count, playTime: val.play_time } }))
     )
-    return Object.assign({}, ...res.map((val) => ({ [val.song_id]: val.play_count })))
   }
 
   public incrementPlayTime(song_id: string, duration: number) {

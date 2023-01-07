@@ -714,6 +714,17 @@ export class YoutubeProvider extends GenericProvider {
     return []
   }
 
+  public async getSongById(id: string): Promise<Song | undefined> {
+    if (this.matchEntityId(id)) {
+      const sanitized = this.sanitizeId(id, 'SONG')
+      const song = await this.getSongDetailsFromID(false, { id: sanitized })
+      console.log(song[0])
+      return song[0]
+    }
+
+    return
+  }
+
   public get Title(): string {
     return 'Youtube'
   }

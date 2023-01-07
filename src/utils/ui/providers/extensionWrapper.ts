@@ -407,6 +407,23 @@ export class ExtensionProvider extends GenericProvider {
     }
   }
 
+  @dummyDecorator
+  public async getSongById(id: string): Promise<Song | undefined> {
+    if (this.matchEntityId(id)) {
+      const sanitized = this.sanitizeId(id)
+      const resp = await this.sendExtensionEventRequest('requestedSongFromId', [sanitized])
+      console.log(resp)
+      if (resp) {
+        if (this.isForwardRequest(resp)) {
+          return this.handleForwardRequest('getSongById', resp, [id], this.getExecStack(...arguments))
+        }
+        return resp.song
+      }
+    }
+
+    return
+  }
+
   public provides(): ProviderScopes[] {
     return this.providerScopes
   }

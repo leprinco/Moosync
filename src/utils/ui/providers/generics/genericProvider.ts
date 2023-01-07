@@ -176,6 +176,10 @@ export abstract class GenericProvider {
     return true
   }
 
+  public async getSongById(id: string): Promise<Song | undefined> {
+    return undefined
+  }
+
   public abstract matchEntityId(id: string): boolean
   public abstract sanitizeId(id: string, type: 'SONG' | 'PLAYLIST' | 'ALBUM' | 'ARTIST'): string
 

@@ -134,7 +134,7 @@ interface searchUtils {
     invalidateCache = false
   ) => Promise<InvidiousResponses.ResponseType<T, K> | undefined>
 
-  getPlayCount: (...songIds: string[]) => Promise<Record<string, number>>
+  getPlayCount: (...songIds: string[]) => Promise<Record<string, { playCount: number; playTime: number }>>
 }
 
 /**

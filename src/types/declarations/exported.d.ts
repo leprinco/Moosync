@@ -383,6 +383,7 @@ type ExtraExtensionEventTypes =
   | 'songRemoved'
   | 'playlistAdded'
   | 'playlistRemoved'
+  | 'requestedSongFromId'
 
 type ExtraExtensionEventReturnType<T extends ExtraExtensionEventTypes> =
   | (T extends 'requestedPlaylists'
@@ -393,7 +394,7 @@ type ExtraExtensionEventReturnType<T extends ExtraExtensionEventTypes> =
       ? PlaybackDetailsReturnType | ForwardRequestReturnType<T>
       : T extends 'customRequest'
       ? CustomRequestReturnType
-      : T extends 'requestedSongFromURL'
+      : T extends 'requestedSongFromURL' | 'requestedSongFromId'
       ? SongReturnType | ForwardRequestReturnType<T>
       : T extends 'requestedPlaylistFromURL'
       ? PlaylistAndSongsReturnType | ForwardRequestReturnType<T>
@@ -444,6 +445,8 @@ type ExtraExtensionEventData<T extends ExtraExtensionEventTypes | unknown> = T e
   ? [songs: Song[]]
   : T extends 'playlistAdded' | 'playlistRemoved'
   ? [playlists: Playlist[]]
+  : T extends 'requestedSongFromId'
+  ? [id: string]
   : never[]
 
 type PlaylistReturnType = {
@@ -842,6 +845,15 @@ interface extensionAPI {
       album: Album,
       nextPageToken?: unknown
     ) => Promise<SongsReturnType | ForwardRequestReturnType<'requestedAlbumSongs'> | void>
+  ): void
+
+  /**
+   * Event fired when the app only has id for the song but requires complete details
+   * Callback should return parsed song or undefined
+   */
+  on(
+    eventName: 'requestedSongFromId',
+    callback: (url: string) => Promise<SongReturnType | ForwardRequestReturnType<'requestedSongFromId'> | void>
   ): void
 
   /**

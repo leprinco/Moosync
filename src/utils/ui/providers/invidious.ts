@@ -179,7 +179,7 @@ export class InvidiousProvider extends GenericProvider {
     return vxm.providers._youtubeProvider.matchSongUrl(str)
   }
 
-  private getIDFromURL(url: string) {
+  private getPlaylistIDFromURL(url: string) {
     try {
       return new URL(url)?.searchParams?.get('list') ?? undefined
     } catch (e) {
@@ -199,7 +199,7 @@ export class InvidiousProvider extends GenericProvider {
     str: string,
     invalidateCache = false
   ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
-    const playlist_id = this.getIDFromURL(str) ?? str
+    const playlist_id = this.getPlaylistIDFromURL(str) ?? str
 
     const resp = await this.populateRequest(
       InvidiousApiResources.PLAYLIST_ITEMS,
@@ -211,7 +211,7 @@ export class InvidiousProvider extends GenericProvider {
   }
 
   public async getPlaylistDetails(url: string, invalidateCache = false) {
-    const playlist_id = this.getIDFromURL(url)
+    const playlist_id = this.getPlaylistIDFromURL(url)
     if (playlist_id) {
       const resp = await this.populateRequest(
         InvidiousApiResources.PLAYLIST_ITEMS,
@@ -362,6 +362,17 @@ export class InvidiousProvider extends GenericProvider {
 
   public async searchAlbum(): Promise<Album[]> {
     return []
+  }
+
+  public async getSongById(id: string): Promise<Song | undefined> {
+    if (this.matchEntityId(id)) {
+      const sanitized = this.sanitizeId(id, 'SONG')
+      const song = await this.getSongDetails(sanitized)
+      console.log(song)
+      return song
+    }
+
+    return
   }
 
   public get Title(): string {

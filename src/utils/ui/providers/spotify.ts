@@ -550,7 +550,7 @@ export class SpotifyProvider extends GenericProvider {
     return !!url.match(/^(https:\/\/open.spotify.com\/(track|embed)\/|spotify:track:)([a-zA-Z0-9]+)(.*)$/)
   }
 
-  public async getSongDetails(url: string): Promise<Song | undefined> {
+  public async getSongDetails(url: string, ignorePlaybackURL = false): Promise<Song | undefined> {
     if (this.matchSongUrl(url)) {
       const parsedURL = new URL(url)
       const split = parsedURL.pathname.split('/')
@@ -558,6 +558,7 @@ export class SpotifyProvider extends GenericProvider {
 
       const validRefreshToken = await this.auth?.hasValidRefreshToken()
 
+      console.log(await this.getLoggedIn())
       if ((await this.getLoggedIn()) || validRefreshToken) {
         const resp = await this.populateRequest(ApiResources.SONG_DETAILS, {
           params: {
@@ -566,13 +567,14 @@ export class SpotifyProvider extends GenericProvider {
         })
         if (resp) {
           const song = this.parseSong(resp)
-          const yt = await this.spotifyToYoutube(song)
-          if (yt) {
-            song.playbackUrl = yt.playbackUrl
-            return song
-          } else {
-            console.error("Couldn't find song on youtube")
-          }
+          return song
+          // const yt = await this.spotifyToYoutube(song)
+          // if (yt) {
+          //   song.playbackUrl = yt.playbackUrl
+          //   return song
+          // } else {
+          //   console.error("Couldn't find song on youtube")
+          // }
         }
         return
       }
@@ -955,6 +957,15 @@ export class SpotifyProvider extends GenericProvider {
         }
       }
     }
+  }
+
+  public async getSongById(id: string): Promise<Song | undefined> {
+    if (this.matchEntityId(id)) {
+      const sanitized = this.sanitizeId(id, 'SONG')
+      const song = this.getSongDetails(`https://open.spotify.com/track/${sanitized}`)
+      return song
+    }
+    return
   }
 
   public get Title(): string {

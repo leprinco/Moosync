@@ -290,9 +290,9 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
   }
 
   @mutation
-  private setPlayCounts(playCounts: Record<string, number>) {
+  private setPlayCounts(playCounts: Record<string, { playCount: number; playTime: number }>) {
     for (const key of Object.keys(this.songQueue.data)) {
-      this.songQueue.data[key].playCount = playCounts[key] ?? 0
+      this.songQueue.data[key].playCount = playCounts[key].playCount ?? 0
     }
   }
 

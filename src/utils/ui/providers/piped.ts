@@ -532,6 +532,17 @@ export class PipedProvider extends GenericProvider {
     }
   }
 
+  public async getSongById(id: string): Promise<Song | undefined> {
+    if (this.matchEntityId(id)) {
+      const sanitized = this.sanitizeId(id, 'SONG')
+      const song = await this.searchSongs(sanitized)
+      console.log(song[0])
+      return song[0]
+    }
+
+    return
+  }
+
   public get Title(): string {
     return 'Piped'
   }
