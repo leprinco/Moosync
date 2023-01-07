@@ -372,11 +372,11 @@ export default class AudioStream extends mixins(
   private async onSongEnded() {
     vxm.player.playAfterLoad = true
     this.lastLoadedSong = undefined
-    vxm.player.currentSong = undefined
     if (this.repeat && this.currentSong) {
       // Re load entire audio instead of setting current time to 0
       this.loadAudio(this.currentSong, false)
     } else {
+      vxm.player.currentSong = undefined
       await this.nextSong()
     }
   }
