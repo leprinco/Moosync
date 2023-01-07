@@ -85,13 +85,25 @@ export class LocalPlayer extends Player {
   }
 
   protected listenOnLoad(callback: () => void): void {
-    this.playerInstance.addEventListener('onload', () => console.log('loaded'))
     this.playerInstance.onload = callback
     this.playerInstance.onloadeddata = callback
   }
 
   protected listenOnError(callback: (err: Error) => void): void {
-    this.playerInstance.onerror = (event, source, line, col, err) => err && callback && callback(err)
+    this.playerInstance.onerror = (event, source, line, col, err) => {
+      console.log('error', event, source, line, col, err)
+      if (callback) {
+        if (err) {
+          callback(err)
+        } else {
+          if (typeof event === 'string') {
+            callback(new Error(event))
+          } else if (event instanceof Event) {
+            callback(new Error(`${event.type}: loading source`))
+          }
+        }
+      }
+    }
   }
 
   private listeners: { [key: string]: () => void } = {}
