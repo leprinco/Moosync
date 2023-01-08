@@ -108,8 +108,8 @@ import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import SongDetailsCompact from '@/mainWindow/components/songView/components/SongDetailsCompact.vue'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
-import { convertDuration } from '../../../../flatpak/.flatpak-builder/build/Moosync-12/src/utils/common'
 import SmallSongItem from '@/mainWindow/components/generic/SmallSongItem.vue'
+import { convertDuration } from '@/utils/common'
 
 @Component({
   components: {
