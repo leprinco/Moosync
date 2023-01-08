@@ -412,7 +412,6 @@ export class ExtensionProvider extends GenericProvider {
     if (this.matchEntityId(id)) {
       const sanitized = this.sanitizeId(id)
       const resp = await this.sendExtensionEventRequest('requestedSongFromId', [sanitized])
-      console.log(resp)
       if (resp) {
         if (this.isForwardRequest(resp)) {
           return this.handleForwardRequest('getSongById', resp, [id], this.getExecStack(...arguments))

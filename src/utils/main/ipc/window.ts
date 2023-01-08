@@ -250,7 +250,6 @@ export class BrowserWindowChannel implements IpcChannelInterface {
   }
 
   private handleReload(event: Electron.IpcMainEvent, request: IpcRequest) {
-    console.log('intercepting http')
     WindowHandler.interceptHttp()
     event.reply(request.responseChannel)
   }

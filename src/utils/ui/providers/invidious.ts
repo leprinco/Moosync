@@ -368,7 +368,6 @@ export class InvidiousProvider extends GenericProvider {
     if (this.matchEntityId(id)) {
       const sanitized = this.sanitizeId(id, 'SONG')
       const song = await this.getSongDetails(sanitized)
-      console.log(song)
       return song
     }
 

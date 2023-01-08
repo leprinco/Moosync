@@ -718,7 +718,6 @@ export class YoutubeProvider extends GenericProvider {
     if (this.matchEntityId(id)) {
       const sanitized = this.sanitizeId(id, 'SONG')
       const song = await this.getSongDetailsFromID(false, { id: sanitized })
-      console.log(song[0])
       return song[0]
     }
 

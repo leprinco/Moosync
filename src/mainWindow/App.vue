@@ -96,10 +96,6 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     this.registerPlayTimeListeners()
   }
 
-  beforeUnmount() {
-    console.log('unmounting now')
-  }
-
   private registerPlayTimeListeners() {
     vxm.player.$watch('currentSong', async (newVal?: Song, oldVal?: Song) => {
       if (oldVal) {

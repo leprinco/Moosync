@@ -536,7 +536,6 @@ export class PipedProvider extends GenericProvider {
     if (this.matchEntityId(id)) {
       const sanitized = this.sanitizeId(id, 'SONG')
       const song = await this.searchSongs(sanitized)
-      console.log(song[0])
       return song[0]
     }
 
