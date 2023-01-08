@@ -425,7 +425,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
   private listenExtensionEvents() {
     vxm.player.$watch(
       'currentSong',
-      (newVal: Song | undefined | null) => {
+      async (newVal: Song | undefined | null) => {
         console.debug('Got song change request for extension host')
         if (newVal?.type !== 'LOCAL' && !newVal?.playbackUrl) {
           console.debug('Song is missing playback url')
@@ -437,9 +437,36 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
           data: [newVal]
         })
 
-        this.getProvidersByScope(ProviderScopes.SCROBBLES).forEach((val) => {
-          val.scrobble(newVal)
-        })
+        const scrobbleableProviderList =
+          (await window.PreferenceUtils.loadSelective<Checkbox[]>('scrobble.provider_toggle')) ?? []
+
+        if (newVal.path) {
+          const providerStatus = scrobbleableProviderList.find((val) => val.key === 'local')?.enabled ?? true
+          if (providerStatus) {
+            console.debug('scrobbling', newVal.title)
+            this.getProvidersByScope(ProviderScopes.SCROBBLES).forEach((val) => {
+              val.scrobble(newVal)
+            })
+          } else {
+            console.debug('not scrobbling', newVal.title)
+          }
+        } else {
+          const providers = this.getAllProviders()
+          for (const p of providers) {
+            if (p.matchEntityId(newVal._id)) {
+              const providerStatus = scrobbleableProviderList.find((val) => val.key === p.key)?.enabled ?? true
+              if (providerStatus) {
+                console.debug('scrobbling', newVal.title)
+                this.getProvidersByScope(ProviderScopes.SCROBBLES).forEach((val) => {
+                  val.scrobble(newVal)
+                })
+                return
+              } else {
+                console.debug('not scrobbling', newVal.title)
+              }
+            }
+          }
+        }
       },
       { deep: true, immediate: true }
     )

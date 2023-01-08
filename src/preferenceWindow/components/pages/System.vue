@@ -54,6 +54,15 @@
             key="audio"
           />
 
+          <CheckboxGroup
+            :title="$t('settings.system.scrobble.provider_toggle.title')"
+            class="mt-4"
+            :tooltip="$t('settings.system.scrobble.provider_toggle.tooltip')"
+            :isExtension="false"
+            :defaultValue="scrobbleProviderCheckboxValues"
+            key="scrobble.provider_toggle"
+          />
+
           <RadioCheckbox
             :title="$t('settings.system.youtubeAlternative.title')"
             class="mt-4"
@@ -368,6 +377,8 @@ export default class System extends Vue {
 
   private pipedInstances: string[] = []
 
+  private extensions: ExtensionDetails[] = []
+
   private async onInvidiousInstanceChange() {
     try {
       const resp = await window.SearchUtils.requestInvidious(
@@ -612,6 +623,36 @@ export default class System extends Vue {
     ]
   }
 
+  get scrobbleProviderCheckboxValues(): Checkbox[] {
+    const ret = [
+      {
+        key: 'local',
+        title: 'Local',
+        enabled: true
+      },
+      {
+        key: 'youtube',
+        title: 'Youtube',
+        enabled: true
+      },
+      {
+        key: 'spotify',
+        title: 'Spotify',
+        enabled: true
+      }
+    ]
+
+    for (const e of this.extensions) {
+      ret.push({
+        key: e.packageName,
+        title: e.name,
+        enabled: true
+      })
+    }
+
+    return ret
+  }
+
   private openSpotifyHelp() {
     window.WindowUtils.openExternal('https://moosync.app/wiki/integrations#enabling-spotify-integration')
   }
@@ -717,7 +758,12 @@ export default class System extends Vue {
     this.$bvModal.hide('clear-preferences-modal')
   }
 
+  private async fetchExtensions() {
+    this.extensions = await window.ExtensionUtils.getAllExtensions()
+  }
+
   created() {
+    this.fetchExtensions()
     this.fetchInvidiousInstances()
     this.fetchPipedInstances()
   }
