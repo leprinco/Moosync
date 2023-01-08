@@ -135,7 +135,7 @@ export class WindowHandler {
   public async restartApp() {
     await this.stopAll()
     app.relaunch()
-    app.exit()
+    app.quit()
   }
 
   public registerMediaProtocol() {
@@ -311,7 +311,7 @@ export class WindowHandler {
         window.hide()
       } else {
         this.stopAll()
-        app.exit()
+        app.quit()
       }
     }
   }

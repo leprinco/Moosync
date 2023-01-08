@@ -121,6 +121,13 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
         this.clearPlaytimeTracker()
       }
     })
+
+    window.onbeforeunload = () => {
+      console.debug('unloading page')
+      if (vxm.player.currentSong) {
+        window.DBUtils.incrementPlayTime(vxm.player.currentSong?._id, this.playTime)
+      }
+    }
   }
 
   private playtimeTracker: ReturnType<typeof setInterval> | undefined
