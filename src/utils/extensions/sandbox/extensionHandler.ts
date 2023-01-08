@@ -278,7 +278,7 @@ export class ExtensionHandler {
           ;(resp as CombinedSongsType).songs = sanitizeSong(packageName, ...(resp as CombinedSongsType).songs)
         }
 
-        if (EventType === 'requestedSongFromURL') {
+        if (EventType === 'requestedSongFromURL' || EventType === 'requestedSongFromId') {
           ;(resp as SongReturnType).song = sanitizeSong(packageName, (resp as SongReturnType).song)[0]
         }
 
