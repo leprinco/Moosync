@@ -109,7 +109,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       this.clearPlaytimeTracker()
       this.playTime = 0
 
-      if (newVal) {
+      if (newVal && vxm.player.playerState === 'PLAYING') {
         this.setPlaytimeTracker()
       }
     })
