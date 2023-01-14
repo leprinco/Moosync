@@ -27,6 +27,7 @@ declare namespace InvidiousResponses {
   type PlaylistItemRequest = {
     params: {
       playlist_id: string
+      page?: number
     }
   }
 
@@ -57,6 +58,7 @@ declare namespace InvidiousResponses {
     params: {
       channel_id: string
       page?: number
+      continuation?: string
       sort_by?: 'newest' | 'oldest' | 'popular'
     }
   }
@@ -81,6 +83,11 @@ declare namespace InvidiousResponses {
   }
 
   namespace VideoDetails {
+    interface ChannelVideoResponse {
+      videos: VideoResponse[]
+      continuation: string
+    }
+
     interface VideoResponse {
       title: string
       videoId: string
@@ -268,7 +275,7 @@ declare namespace InvidiousResponses {
     : T extends InvidiousApiResources.CHANNELS
     ? ChannelDetails
     : T extends InvidiousApiResources.CHANNEL_VIDEOS
-    ? VideoDetails.VideoResponse[]
+    ? VideoDetails.ChannelVideoResponse
     : undefined) & {
     error?: string
   }

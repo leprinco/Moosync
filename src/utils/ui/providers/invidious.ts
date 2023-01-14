@@ -197,17 +197,23 @@ export class InvidiousProvider extends GenericProvider {
 
   public async *getPlaylistContent(
     str: string,
-    invalidateCache = false
-  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
+    invalidateCache = false,
+    nextPageToken?: number
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: number }> {
     const playlist_id = this.getPlaylistIDFromURL(str) ?? str
 
     const resp = await this.populateRequest(
       InvidiousApiResources.PLAYLIST_ITEMS,
-      { params: { playlist_id } },
+      {
+        params: {
+          playlist_id,
+          page: nextPageToken
+        }
+      },
       invalidateCache
     )
 
-    yield { songs: this.parsePlaylistItems(resp?.videos ?? []) }
+    yield { songs: this.parsePlaylistItems(resp?.videos ?? []), nextPageToken: (nextPageToken ?? 1) + 1 }
   }
 
   public async getPlaylistDetails(url: string, invalidateCache = false) {
