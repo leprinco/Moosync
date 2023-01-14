@@ -37,26 +37,21 @@ import SongView from '@/mainWindow/components/songView/SongView.vue'
 
 import { mixins } from 'vue-class-component'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
-import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
-import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
-import { arrayDiff, getRandomFromArray } from '@/utils/common'
+import { arrayDiff, emptyGen, getRandomFromArray } from '@/utils/common'
+import ProviderFetchMixin from '@/utils/ui/mixins/ProviderFetchMixin'
 
 @Component({
   components: {
     SongView
   }
 })
-export default class SinglePlaylistView extends mixins(ContextMenuMixin, ProviderMixin) {
+export default class SinglePlaylistView extends mixins(ContextMenuMixin, ProviderFetchMixin) {
   @Prop({ default: () => () => undefined })
   private enableRefresh!: () => void
 
-  songList: Song[] = []
-
-  isLoading = false
   private isAddedInLibrary = false
 
   private invalidateCache = false
@@ -77,14 +72,14 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
     return {
       enableContainer: true,
       enableLibraryStore: this.isRemote() && !this.isAddedInLibrary,
-      playRandom: !!(this.songList.length > 150 || this.nextPageToken)
+      playRandom: !!(this.filteredSongList.length > 150)
     }
   }
 
   get defaultDetails(): SongDetailDefaults {
     return {
       defaultTitle: this.playlist?.playlist_name ?? '',
-      defaultSubSubtitle: this.$tc('songView.details.songCount', this.songList.length),
+      defaultSubSubtitle: this.$tc('songView.details.songCount', this.filteredSongList.length),
       defaultCover: this.playlist?.playlist_coverPath ?? ''
     }
   }
@@ -106,18 +101,43 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   }
 
   private async refresh() {
-    this.nextPageToken = undefined
-    this.songList = []
-    await this.fetchSongListAsync()
+    this.clearSongList()
+    this.clearNextPageTokens()
+    await this.fetchSongList()
   }
 
   async created() {
+    this.localSongFetch = async (sortBy) =>
+      window.SearchUtils.searchSongsByOptions({
+        playlist: {
+          playlist_id: this.$route.query.playlist_id as string
+        },
+        sortBy
+      })
+
+    this.generator = (provider, nextPageToken) => {
+      if (this.playlist) {
+        return provider.getPlaylistContent(
+          provider.sanitizeId(this.playlist.playlist_id, 'PLAYLIST'),
+          this.invalidateCache,
+          nextPageToken
+        )
+      } else {
+        return emptyGen()
+      }
+    }
+
     this.isAddedInLibrary = !!(
       await window.SearchUtils.searchEntityByOptions<Playlist>({
         playlist: { playlist_id: this.playlist.playlist_id }
       })
     )[0]
     this.refresh()
+
+    const owner = this.getPlaylistOwnerProvider()
+    if (owner) {
+      this.onProviderChanged({ key: owner?.key, checked: true })
+    }
   }
 
   mounted() {
@@ -143,77 +163,6 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
     }
   }
 
-  private async fetchLocalSongList() {
-    this.isLoading = true
-    if (this.playlist) {
-      const songs = await window.SearchUtils.searchSongsByOptions({
-        playlist: {
-          playlist_id: this.playlist.playlist_id as string
-        },
-        sortBy: vxm.themes.songSortBy
-      })
-
-      this.songList.push(...songs.filter((val) => this.songList.findIndex((val2) => val2._id === val._id) === -1))
-    }
-    this.isLoading = false
-  }
-
-  private nextPageToken?: unknown
-
-  private async fetchProvider(provider: GenericProvider) {
-    this.isLoading = true
-    const generator = provider.getPlaylistContent(
-      provider.sanitizeId(this.playlist.playlist_id, 'PLAYLIST'),
-      this.invalidateCache,
-      this.nextPageToken
-    )
-
-    if (generator) {
-      for await (const items of generator) {
-        const uniqueItems = items.songs.filter((val) => this.songList.findIndex((val2) => val2._id === val._id) === -1)
-        this.songList.push(...uniqueItems)
-        this.nextPageToken = items.nextPageToken
-      }
-    }
-
-    this.isLoading = false
-  }
-
-  private async fetchSongListAsync() {
-    if (this.playlist) {
-      await this.fetchLocalSongList()
-
-      const owner = this.getPlaylistOwnerProvider()
-
-      if (owner) {
-        await this.fetchProvider(owner)
-      }
-    }
-  }
-
-  async loadNextPage() {
-    if (this.nextPageToken) {
-      await this.fetchSongListAsync()
-    }
-  }
-
-  private isFetching = false
-
-  private async fetchAll(afterFetch?: (songs: Song[]) => void) {
-    if (!this.isFetching) {
-      this.isFetching = true
-      let songListLastSong = this.songList.length - 1
-
-      while (this.nextPageToken) {
-        await this.loadNextPage()
-        afterFetch && afterFetch(this.songList.slice(songListLastSong))
-        songListLastSong = this.songList.length
-      }
-
-      this.isFetching = false
-    }
-  }
-
   async playPlaylist() {
     const clearQueue = (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('queue.clear_queue_playlist'))
       ?.enabled
@@ -221,12 +170,12 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
       this.clearQueue()
     }
 
-    this.playTop(this.songList)
+    this.playTop(this.filteredSongList)
     this.fetchAll(this.queueSong)
   }
 
   async addPlaylistToQueue() {
-    this.queueSong(this.songList)
+    this.queueSong(this.filteredSongList)
     this.fetchAll(this.queueSong)
   }
 
@@ -241,7 +190,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
 
   async playRandom() {
     await this.fetchAll()
-    const randomSongs = getRandomFromArray(this.songList, 100)
+    const randomSongs = getRandomFromArray(this.filteredSongList, 100)
     this.queueSong(randomSongs)
   }
 
@@ -252,7 +201,8 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
         playlistId: this.playlist.playlist_id,
         songs,
         isRemote: this.isRemote(),
-        refreshCallback: () => this.songList.splice(0, this.songList.length, ...arrayDiff(this.songList, songs))
+        refreshCallback: () =>
+          this.filteredSongList.splice(0, this.filteredSongList.length, ...arrayDiff(this.filteredSongList, songs))
       }
     })
   }

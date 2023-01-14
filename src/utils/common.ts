@@ -325,3 +325,7 @@ export function isArtist(data: unknown): data is Artists {
 export function isGenre(data: unknown): data is Genre {
   return !!(data as Genre).genre_id
 }
+
+export async function* emptyGen() {
+  yield { songs: [] }
+}

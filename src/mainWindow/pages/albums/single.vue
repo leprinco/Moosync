@@ -22,7 +22,8 @@
       :isLoading="isLoading"
       @playAll="playAlbum"
       @addToQueue="addAlbumToQueue"
-      @onOptionalProviderChanged="onAlbumProviderChanged"
+      @addToLibrary="addToLibrary"
+      @onOptionalProviderChanged="onProviderChanged"
       :optionalProviders="albumSongProviders"
       @playRandom="playRandom"
     />
@@ -30,41 +31,26 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator'
+import { Component, Watch } from 'vue-property-decorator'
 import SongView from '@/mainWindow/components/songView/SongView.vue'
 
 import { mixins } from 'vue-class-component'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
-import { vxm } from '@/mainWindow/store'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
-import Vue from 'vue'
-import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
-import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 import { ProviderScopes } from '@/utils/commonConstants'
-import { getRandomFromArray } from '@/utils/common'
+import { emptyGen, getRandomFromArray } from '@/utils/common'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
+import ProviderFetchMixin from '@/utils/ui/mixins/ProviderFetchMixin'
 
 @Component({
   components: {
     SongView
   }
 })
-export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerControls, RemoteSong, ProviderMixin) {
+export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerControls, RemoteSong, ProviderFetchMixin) {
   private album: Album | null = null
-  private songList: Song[] = []
-  private optionalSongList: Record<string, string[]> = {}
-
-  private loadingMap: Record<string, boolean> = {}
-
-  private activeProviders: Record<string, boolean> = {
-    local: true
-  }
-
-  get isLoading() {
-    return Object.values(this.loadingMap).includes(true)
-  }
 
   // TODO: Find some better method to check if song is remote
   isRemote(songs: Song[]) {
@@ -86,9 +72,6 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     }))
   }
 
-  // TODO: Separate pageToken for each provider
-  private nextPageToken?: unknown
-
   get albumSongProviders(): TabCarouselItem[] {
     return this.fetchProviders()
   }
@@ -97,7 +80,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     return {
       enableContainer: true,
       enableLibraryStore: this.hasRemoteSongs,
-      playRandom: this.songList.length > 150
+      playRandom: this.filteredSongList.length > 150
     }
   }
 
@@ -110,45 +93,54 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     }
   }
 
-  get filteredSongList() {
-    return this.songList.filter((val) => {
-      for (const [key, value] of Object.entries(this.activeProviders)) {
-        if (this.optionalSongList[key]) {
-          if (value) {
-            if (this.optionalSongList[key].includes(val._id)) return true
-          } else {
-            if (!this.optionalSongList[key].includes(val._id)) return true
-          }
-        }
-      }
-      return false
-    })
-  }
-
   get hasRemoteSongs() {
     return Object.keys(this.activeProviders).some((val) => val !== 'local' && this.activeProviders[val])
   }
 
   async created() {
-    this.fetchAlbum()
-    this.fetchAlbumCover()
-    this.fetchSongList()
+    this.localSongFetch = async (sortBy) =>
+      window.SearchUtils.searchSongsByOptions({
+        album: {
+          album_id: this.$route.query.id as string
+        },
+        sortBy
+      })
 
-    this.onProvidersChanged(() => this.fetchAlbumCover())
+    this.generator = (provider, nextPageToken) => {
+      if (this.album) {
+        return provider.getAlbumSongs(this.album, nextPageToken)
+      } else {
+        return emptyGen()
+      }
+    }
+    this.onAlbumChange()
+  }
+
+  @Watch('$route.query.id')
+  private async onAlbumChange() {
+    const promises: Promise<void>[] = []
+    if (typeof this.$route.query.id === 'string') {
+      this.album = null
+      this.clearNextPageTokens()
+      this.clearSongList()
+      promises.push(this.fetchAlbum())
+      promises.push(this.fetchSongList())
+    }
+    await Promise.all(promises)
   }
 
   mounted() {
     if (this.$route.query.defaultProviders) {
       for (const p of this.$route.query.defaultProviders) {
         if (p) {
-          this.onAlbumProviderChanged({ key: p, checked: true })
+          this.onProviderChanged({ key: p, checked: true })
           bus.$emit(EventBus.UPDATE_OPTIONAL_PROVIDER, p)
         }
       }
     }
   }
 
-  private fetchAlbum() {
+  private async fetchAlbum() {
     this.album = {
       album_id: this.$route.query.id as string,
       album_name: this.$route.query.name as string,
@@ -158,6 +150,8 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
       year: parseInt(this.$route.query.year as string),
       album_extra_info: JSON.parse((this.$route.query.extra_info as string) || '{}')
     }
+
+    await this.fetchAlbumCover()
   }
 
   private async fetchAlbumCover() {
@@ -184,66 +178,21 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     }
   }
 
-  private async fetchSongList() {
-    Vue.set(this.loadingMap, 'local', true)
-    this.songList = await window.SearchUtils.searchSongsByOptions({
-      album: {
-        album_id: this.$route.query.id as string
-      },
-      sortBy: vxm.themes.songSortBy
-    })
-    Vue.set(
-      this.optionalSongList,
-      'local',
-      this.songList.map((val) => val._id)
-    )
-    Vue.set(this.loadingMap, 'local', false)
-  }
-
   playAlbum() {
-    this.playTop(this.songList)
+    this.playTop(this.filteredSongList)
   }
 
   addAlbumToQueue() {
-    this.queueSong(this.songList)
+    this.queueSong(this.filteredSongList)
   }
 
   async playRandom() {
-    const randomSongs = getRandomFromArray(this.songList, 100)
+    const randomSongs = getRandomFromArray(this.filteredSongList, 100)
     this.queueSong(randomSongs)
   }
 
-  private async fetchProviderSongs(provider: GenericProvider) {
-    Vue.set(this.loadingMap, provider.key, true)
-    if (this.album) {
-      for await (const items of provider.getAlbumSongs(this.album, this.nextPageToken)) {
-        this.nextPageToken = items.nextPageToken
-
-        for (const s of items.songs) {
-          if (!this.songList.find((val) => val._id === s._id)) {
-            this.songList.push(s)
-
-            if (!this.optionalSongList[provider.key]) {
-              this.optionalSongList[provider.key] = []
-            }
-
-            this.optionalSongList[provider.key].push(s._id)
-          }
-        }
-      }
-    }
-    Vue.set(this.loadingMap, provider.key, false)
-  }
-
-  onAlbumProviderChanged({ key, checked }: { key: string; checked: boolean }) {
-    Vue.set(this.activeProviders, key, checked)
-    if (checked) {
-      const provider = this.getProviderByKey(key)
-      if (provider) {
-        this.fetchProviderSongs(provider)
-        return
-      }
-    }
+  addToLibrary() {
+    this.addSongsToLibrary(...this.filteredSongList)
   }
 }
 </script>
