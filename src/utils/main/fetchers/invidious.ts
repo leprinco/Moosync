@@ -39,7 +39,9 @@ export class InvidiousRequester extends CacheHandler {
       const parsed = new URL(url)
       if (search.params) {
         for (const [key, value] of Object.entries(search.params)) {
-          parsed.searchParams.set(key, value.toString())
+          if (value) {
+            parsed.searchParams.set(key, value?.toString())
+          }
         }
       }
 
@@ -53,7 +55,7 @@ export class InvidiousRequester extends CacheHandler {
 
   private get(parsed: URL, authorization?: string, invalidateCache = false) {
     if (!invalidateCache) {
-      const cached = this.getCache(parsed.toString())
+      const cached = this.getCache(parsed?.toString())
       if (cached) {
         const parsedCache = JSON.parse(cached)
         if (!parsedCache.error) return parsedCache
@@ -80,7 +82,7 @@ export class InvidiousRequester extends CacheHandler {
         res.on('end', () => {
           try {
             resolve(JSON.parse(data))
-            this.addToCache(parsed.toString(), data)
+            this.addToCache(parsed?.toString(), data)
           } catch (e) {
             reject(e)
           }

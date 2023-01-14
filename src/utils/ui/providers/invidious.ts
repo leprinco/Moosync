@@ -263,8 +263,8 @@ export class InvidiousProvider extends GenericProvider {
 
   public async *getArtistSongs(
     artist: Artists,
-    nextPageToken?: number
-  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: number }> {
+    nextPageToken?: string
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: string }> {
     let channelId = artist.artist_extra_info?.youtube?.channel_id
     if (!channelId && artist.artist_name) {
       const searchRes = await this.searchArtists(artist.artist_name)
@@ -275,12 +275,14 @@ export class InvidiousProvider extends GenericProvider {
       const resp = await this.populateRequest(InvidiousApiResources.CHANNEL_VIDEOS, {
         params: {
           channel_id: channelId,
-          page: nextPageToken ?? 1
+          continuation: nextPageToken
         }
       })
 
-      const songs = this.parsePlaylistItems(resp ?? [])
-      yield { songs, nextPageToken: (nextPageToken ?? 1) + 1 }
+      console.log(resp)
+
+      const songs = this.parsePlaylistItems(resp?.videos ?? [])
+      yield { songs, nextPageToken: resp?.continuation }
     }
   }
 
