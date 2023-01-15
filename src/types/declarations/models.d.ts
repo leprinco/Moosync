@@ -78,4 +78,8 @@ type ThemeKey =
   | 'accent'
   | 'divider'
 
-type ThemeItem = { [key in ThemeKey]: string }
+type ThemeItem = {
+  [key in ThemeKey]: string
+} & {
+  customCSS?: string
+}

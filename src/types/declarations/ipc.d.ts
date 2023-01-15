@@ -171,6 +171,10 @@ declare namespace PreferenceRequests {
     theme: ThemeDetails
   }
 
+  interface TransformCSS {
+    cssPath: string
+  }
+
   interface SongView {
     menu: songMenu
   }

@@ -30,7 +30,8 @@ import {
   setActiveTheme,
   setSongView,
   saveTheme,
-  removeTheme
+  removeTheme,
+  transformCSS
 } from '../themes/preferences'
 
 export class PreferenceChannel implements IpcChannelInterface {
@@ -80,6 +81,9 @@ export class PreferenceChannel implements IpcChannelInterface {
       case PreferenceEvents.RESET_TO_DEFAULT:
         this.resetToDefault(event, request)
         break
+      case PreferenceEvents.TRANSFORM_CSS:
+        this.transformCSS(event, request as IpcRequest<PreferenceRequests.TransformCSS>)
+        break
     }
   }
 
@@ -126,6 +130,14 @@ export class PreferenceChannel implements IpcChannelInterface {
   private setTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.Theme>) {
     if (request.params.theme) {
       saveTheme(request.params.theme)
+    }
+    event.reply(request.responseChannel)
+  }
+
+  private async transformCSS(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.TransformCSS>) {
+    if (request.params.cssPath) {
+      const data = await transformCSS(request.params.cssPath)
+      event.reply(request.responseChannel, data)
     }
     event.reply(request.responseChannel)
   }

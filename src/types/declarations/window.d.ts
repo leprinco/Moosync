@@ -318,6 +318,7 @@ interface themeUtils {
   saveTheme: (theme: ThemeDetails) => Promise<void>
   removeTheme: (id: string) => Promise<void>
   getTheme: (id?: string) => Promise<ThemeDetails>
+  transformCSS: (cssPath: string) => Promise<string>
   getAllThemes: (id?: string) => Promise<{ [key: string]: ThemeDetails } | undefined>
   setActiveTheme: (id: string) => Promise<void>
   getActiveTheme: () => Promise<ThemeDetails>

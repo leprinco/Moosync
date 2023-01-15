@@ -368,6 +368,12 @@ contextBridge.exposeInMainWorld('ThemeUtils', {
       params: { id: id ?? 'default' }
     }),
 
+  transformCSS: (cssPath: string) =>
+    ipcRendererHolder.send<PreferenceRequests.TransformCSS>(IpcEvents.PREFERENCES, {
+      type: PreferenceEvents.TRANSFORM_CSS,
+      params: { cssPath }
+    }),
+
   getAllThemes: () =>
     ipcRendererHolder.send<undefined>(IpcEvents.PREFERENCES, {
       type: PreferenceEvents.GET_ALL_THEMES,

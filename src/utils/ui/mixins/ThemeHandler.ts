@@ -25,12 +25,36 @@ export default class ThemeHandler extends Vue {
     if (!colors) {
       this.root.style.cssText = ''
     }
-    for (const key in colors) {
-      this.root.style.setProperty(`--${key}`, colors[key as keyof ThemeItem])
+    if (colors) {
+      for (const [key, value] of Object.entries(colors)) {
+        this.root.style.setProperty(`--${key}`, value)
+      }
     }
 
     this.setRGBValues()
     this.setCheckboxValues()
+    if (theme?.theme.customCSS) {
+      this.loadCss(theme?.theme.customCSS)
+    }
+  }
+
+  private async loadCss(cssPath: string) {
+    const css = await this.transformCSS(cssPath)
+
+    const customStylesheet = (document.getElementById('custom-css') as HTMLStyleElement) ?? this.createStyleNode()
+    customStylesheet.innerHTML = css
+
+    document.head.append(customStylesheet)
+  }
+
+  private transformCSS(cssPath: string) {
+    return window.ThemeUtils.transformCSS(cssPath)
+  }
+
+  private createStyleNode() {
+    const style = document.createElement('style')
+    style.id = 'custom-css'
+    return style
   }
 
   get themeStore() {

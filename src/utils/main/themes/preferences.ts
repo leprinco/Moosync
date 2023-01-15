@@ -1,5 +1,7 @@
 import { saveSelectivePreference, loadSelectivePreference, store } from '../db/preferences'
 import { SystemThemeHandler } from './system'
+import { promises as fsP } from 'fs'
+import path from 'path'
 
 /**
  * Saves theme under key "themes"
@@ -133,4 +135,27 @@ export function setupDefaultThemes() {
       saveTheme(themes[key])
     }
   }
+}
+
+export async function transformCSS(cssPath: string, root?: string) {
+  if (root) {
+    cssPath = path.resolve(root, cssPath)
+  }
+  await fsP.access(cssPath)
+
+  let css = await fsP.readFile(cssPath, { encoding: 'utf-8' })
+
+  const match = css.matchAll(new RegExp('@import', 'g'))
+  for (const m of match) {
+    const line = m.input
+    if (line) {
+      const importPath = line?.match(/(["'])((\\{2})*|(.*?[^\\](\\{2})*))\1/)
+      if (importPath) {
+        const imported = await transformCSS(importPath[2], path.dirname(cssPath))
+        css = css.replaceAll(line, imported)
+      }
+    }
+  }
+
+  return css
 }

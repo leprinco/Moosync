@@ -69,7 +69,8 @@ export enum PreferenceEvents {
   SET_LANGUAGE = 'setLanguage',
   LANGUAGE_REFRESH = 'languageRefresh',
   LISTEN_PREFERENCE = 'listenPreference',
-  RESET_TO_DEFAULT = 'resetToDefault'
+  RESET_TO_DEFAULT = 'resetToDefault',
+  TRANSFORM_CSS = 'transformCSS'
 }
 
 export enum WindowEvents {
