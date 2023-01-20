@@ -103,7 +103,7 @@ export default class Extensions extends Vue {
 
   created() {
     this.fetchExtensions()
-    window.ExtensionUtils.listenRequests((r) => {
+    window.ExtensionUtils.listenRequests(() => {
       this.fetchExtensions()
     })
   }

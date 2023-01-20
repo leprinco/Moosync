@@ -329,3 +329,8 @@ export function isGenre(data: unknown): data is Genre {
 export async function* emptyGen() {
   yield { songs: [] }
 }
+
+export function isThemeDetails(data: unknown): data is ThemeDetails {
+  const tmpData = data as ThemeDetails
+  return !!(tmpData.id && tmpData.name && tmpData.theme)
+}

@@ -54,9 +54,9 @@ chmod +x ./pack.sh
 ./pack.sh
 cd ../
 
-## Bump snap
-yarn electron:build --linux=snap
-cd dist_electron
-snap run snapcraft upload --release=stable "Moosync-${VERSION}-linux-amd64.snap"
-cd ../
+# ## Bump snap
+# yarn electron:build --linux=snap
+# cd dist_electron
+# snap run snapcraft upload --release=stable "Moosync-${VERSION}-linux-amd64.snap"
+# cd ../
 

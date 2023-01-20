@@ -59,6 +59,7 @@
       "mixins",
       "Moosync",
       "mpris",
+      "mstx",
       "musicbar",
       "Musicbrainz",
       "musicmetadata",

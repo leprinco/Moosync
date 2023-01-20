@@ -325,6 +325,8 @@ interface themeUtils {
   setSongView: (menu: songMenu) => Promise<void>
   getSongView: () => Promise<songMenu>
   setLanguage: (key: string) => Promise<void>
+  packTheme: (id: string) => Promise<void>
+  importTheme: (themeZipPath: string) => Promise<void>
 }
 
 interface updateUtils {

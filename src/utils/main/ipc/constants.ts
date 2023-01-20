@@ -70,7 +70,9 @@ export enum PreferenceEvents {
   LANGUAGE_REFRESH = 'languageRefresh',
   LISTEN_PREFERENCE = 'listenPreference',
   RESET_TO_DEFAULT = 'resetToDefault',
-  TRANSFORM_CSS = 'transformCSS'
+  TRANSFORM_CSS = 'transformCSS',
+  PACK_THEME = 'packTheme',
+  IMPORT_THEME = 'importTheme'
 }
 
 export enum WindowEvents {

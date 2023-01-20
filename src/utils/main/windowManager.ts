@@ -24,7 +24,6 @@ import {
 import { SongEvents, WindowEvents } from './ipc/constants'
 import { getWindowSize, setWindowSize, loadPreferences } from './db/preferences'
 
-import { BrowserWindowConstructorOptions } from 'electron/main'
 import path from 'path'
 import { access, readFile } from 'fs/promises'
 import { getActiveTheme } from './themes/preferences'
@@ -65,13 +64,13 @@ export class WindowHandler {
     return !this.hasFrame
   }
 
-  private get windowBackgroundColor() {
-    return getActiveTheme()?.theme.primary ?? '#212121'
+  private async getWindowBackgroundColor() {
+    return (await getActiveTheme())?.theme.primary ?? '#212121'
   }
 
-  private get baseWindowProps(): BrowserWindowConstructorOptions {
+  private async getBaseWindowProps(): Promise<Electron.BrowserWindowConstructorOptions> {
     return {
-      backgroundColor: this.windowBackgroundColor,
+      backgroundColor: await this.getWindowBackgroundColor(),
       titleBarStyle: WindowHandler.hasFrame ? 'default' : 'hidden',
       frame: WindowHandler.hasFrame,
       show: false,
@@ -87,23 +86,23 @@ export class WindowHandler {
     }
   }
 
-  private get mainWindowProps(): BrowserWindowConstructorOptions {
+  private async getMainWindowProps(): Promise<Electron.BrowserWindowConstructorOptions> {
     return {
       title: 'Moosync',
       ...getWindowSize('mainWindow', { width: 1016, height: 653 }),
       minHeight: 400,
       minWidth: 300,
-      ...this.baseWindowProps
+      ...(await this.getBaseWindowProps())
     }
   }
 
-  private get prefWindowProps(): BrowserWindowConstructorOptions {
+  private async getPrefWindowProps(): Promise<Electron.BrowserWindowConstructorOptions> {
     return {
       title: 'Preferences',
       ...getWindowSize('prefWindow', { width: 840, height: 653 }),
       minHeight: 672,
       minWidth: 840,
-      ...this.baseWindowProps
+      ...(await this.getBaseWindowProps())
     }
   }
 
@@ -270,7 +269,7 @@ export class WindowHandler {
   public async createWindow(isMainWindow = true, args?: unknown) {
     let win: BrowserWindow | undefined | null
     if (!WindowHandler.getWindow(isMainWindow) || WindowHandler.getWindow(isMainWindow)?.isDestroyed()) {
-      win = new BrowserWindow(isMainWindow ? this.mainWindowProps : this.prefWindowProps)
+      win = new BrowserWindow(await (isMainWindow ? this.getMainWindowProps() : this.getPrefWindowProps()))
       this.attachWindowEvents(win, isMainWindow)
 
       win.loadURL(this.getWindowURL(isMainWindow))

@@ -20,7 +20,7 @@ import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import { getExtensionHostChannel, registerIpcChannels } from '@/utils/main/ipc'
 import { setInitialPreferences, loadPreferences, shouldWatchFileChanges } from './utils/main/db/preferences'
 import { setupScanTask } from '@/utils/main/scheduler/index'
-import { setupDefaultThemes, setupSystemThemes } from './utils/main/themes/preferences'
+import { migrateThemes, setupDefaultThemes, setupSystemThemes } from './utils/main/themes/preferences'
 import { logger } from './utils/main/logger/index'
 import { ToadScheduler } from 'toad-scheduler'
 import { setupUpdateCheckTask } from '@/utils/main/scheduler/index'
@@ -170,6 +170,7 @@ async function onReady() {
   interceptHttp()
 
   createFavoritesPlaylist()
+  await migrateThemes()
 
   await _windowHandler.createWindow(true)
 

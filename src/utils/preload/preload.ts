@@ -374,6 +374,18 @@ contextBridge.exposeInMainWorld('ThemeUtils', {
       params: { cssPath }
     }),
 
+  packTheme: (id: string) =>
+    ipcRendererHolder.send<PreferenceRequests.ThemeID>(IpcEvents.PREFERENCES, {
+      type: PreferenceEvents.PACK_THEME,
+      params: { id }
+    }),
+
+  importTheme: (themeZipPath: string) =>
+    ipcRendererHolder.send<PreferenceRequests.ImportTheme>(IpcEvents.PREFERENCES, {
+      type: PreferenceEvents.IMPORT_THEME,
+      params: { themeZipPath }
+    }),
+
   getAllThemes: () =>
     ipcRendererHolder.send<undefined>(IpcEvents.PREFERENCES, {
       type: PreferenceEvents.GET_ALL_THEMES,

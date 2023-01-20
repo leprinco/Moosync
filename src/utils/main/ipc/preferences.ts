@@ -18,7 +18,7 @@ import {
   setPreferenceListenKey
 } from '../db/preferences'
 
-import { WindowHandler } from '../windowManager'
+import { WindowHandler, _windowHandler } from '../windowManager'
 import { mkdir, rm } from 'fs/promises'
 import path from 'path/posix'
 import { app } from 'electron'
@@ -33,6 +33,8 @@ import {
   removeTheme,
   transformCSS
 } from '../themes/preferences'
+import { ThemePacker } from '../themes/packer'
+import { promises as fsP } from 'fs'
 
 export class PreferenceChannel implements IpcChannelInterface {
   name = IpcEvents.PREFERENCES
@@ -83,6 +85,12 @@ export class PreferenceChannel implements IpcChannelInterface {
         break
       case PreferenceEvents.TRANSFORM_CSS:
         this.transformCSS(event, request as IpcRequest<PreferenceRequests.TransformCSS>)
+        break
+      case PreferenceEvents.PACK_THEME:
+        this.packTheme(event, request as IpcRequest<PreferenceRequests.ThemeID>)
+        break
+      case PreferenceEvents.IMPORT_THEME:
+        this.importTheme(event, request as IpcRequest<PreferenceRequests.ImportTheme>)
         break
     }
   }
@@ -142,21 +150,53 @@ export class PreferenceChannel implements IpcChannelInterface {
     event.reply(request.responseChannel)
   }
 
-  private getTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ThemeID>) {
-    event.reply(request.responseChannel, loadTheme(request.params.id))
-  }
-
-  private removeTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ThemeID>) {
-    event.reply(request.responseChannel, removeTheme(request.params.id))
-  }
-
-  private getAllThemes(event: Electron.IpcMainEvent, request: IpcRequest) {
-    event.reply(request.responseChannel, loadAllThemes())
-  }
-
-  private setActiveTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ThemeID>) {
+  private async packTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ThemeID>) {
     if (request.params.id) {
-      const theme = loadTheme(request.params.id)
+      const packer = new ThemePacker()
+      const zipPath = await packer.packTheme(request.params.id)
+      if (zipPath) {
+        const ret = await _windowHandler.openSaveDialog(false, {
+          title: 'Export theme',
+          defaultPath: path.join(app.getPath('documents'), path.basename(zipPath)),
+          properties: ['createDirectory', 'showOverwriteConfirmation']
+        })
+
+        if (ret?.filePath) {
+          await fsP.copyFile(zipPath, ret.filePath)
+          await packer.clean(path.dirname(zipPath))
+        }
+      }
+    }
+    event.reply(request.responseChannel)
+  }
+
+  private async importTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ImportTheme>) {
+    if (request.params.themeZipPath) {
+      const packer = new ThemePacker()
+      try {
+        await packer.importTheme(request.params.themeZipPath)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    event.reply(request.responseChannel)
+  }
+
+  private async getTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ThemeID>) {
+    event.reply(request.responseChannel, await loadTheme(request.params.id))
+  }
+
+  private async removeTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ThemeID>) {
+    event.reply(request.responseChannel, await removeTheme(request.params.id))
+  }
+
+  private async getAllThemes(event: Electron.IpcMainEvent, request: IpcRequest) {
+    event.reply(request.responseChannel, await loadAllThemes())
+  }
+
+  private async setActiveTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ThemeID>) {
+    if (request.params.id) {
+      const theme = await loadTheme(request.params.id)
       if (theme || request.params.id === 'default') {
         setActiveTheme(request.params.id)
         this.generateIconFile(theme)
@@ -192,8 +232,8 @@ export class PreferenceChannel implements IpcChannelInterface {
     }
   }
 
-  private getActiveTheme(event: Electron.IpcMainEvent, request: IpcRequest) {
-    event.reply(request.responseChannel, getActiveTheme())
+  private async getActiveTheme(event: Electron.IpcMainEvent, request: IpcRequest) {
+    event.reply(request.responseChannel, await getActiveTheme())
   }
 
   private setSongView(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.SongView>) {

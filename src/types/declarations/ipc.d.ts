@@ -163,6 +163,10 @@ declare namespace PreferenceRequests {
     id: string
   }
 
+  interface ImportTheme {
+    themeZipPath: string
+  }
+
   interface LanguageKey {
     key: string
   }
