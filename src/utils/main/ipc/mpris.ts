@@ -11,6 +11,18 @@ import { IpcEvents, MprisEvents } from './constants'
 import MediaController, { ButtonEnum, PlaybackStateEnum, PlayerButtons } from 'media-controller'
 import { WindowHandler } from '../windowManager'
 
+function checkStarted() {
+  return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value
+
+    descriptor.value = async function (...args: unknown[]) {
+      if (this instanceof MprisChannel && this.isStarted) {
+        return originalMethod.bind(this)(...args)
+      }
+    }
+  }
+}
+
 export class MprisChannel implements IpcChannelInterface {
   name = IpcEvents.MPRIS
   private controller = MediaController
@@ -19,9 +31,16 @@ export class MprisChannel implements IpcChannelInterface {
 
   private buttonStatusCallbacks: ((buttons: PlayerButtons) => void)[] = []
 
+  isStarted = false
+
   constructor() {
-    this.controller.createPlayer('Moosync')
-    this.setOnButtonPressed()
+    try {
+      this.controller.createPlayer('Moosync')
+      this.isStarted = true
+      this.setOnButtonPressed()
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   handle(event: Electron.IpcMainEvent, request: IpcRequest): void {
@@ -38,6 +57,7 @@ export class MprisChannel implements IpcChannelInterface {
     }
   }
 
+  @checkStarted()
   private onSongInfoChange(event: Electron.IpcMainEvent, request: IpcRequest<MprisRequests.SongInfo>) {
     if (request.params) {
       const { title, albumName, artistName, albumArtist, thumbnail, genres } = request.params
@@ -62,6 +82,7 @@ export class MprisChannel implements IpcChannelInterface {
     event.reply(request.responseChannel)
   }
 
+  @checkStarted()
   private onPlaybackStateChanged(event: Electron.IpcMainEvent, request: IpcRequest<MprisRequests.PlaybackState>) {
     if (request.params.state) {
       switch (request.params.state) {
@@ -84,6 +105,7 @@ export class MprisChannel implements IpcChannelInterface {
     event.reply(request.responseChannel)
   }
 
+  @checkStarted()
   private setButtonStatus(event: Electron.IpcMainEvent, request: IpcRequest<MprisRequests.ButtonStatus>) {
     if (request.params) {
       this.buttonState = { ...this.buttonState, ...request.params }
@@ -98,6 +120,7 @@ export class MprisChannel implements IpcChannelInterface {
     event.reply(request.responseChannel)
   }
 
+  @checkStarted()
   private handlePlayPauseButtonState(isPlaying: boolean) {
     this.buttonState['play'] = !isPlaying
     this.buttonState['pause'] = isPlaying
@@ -105,14 +128,17 @@ export class MprisChannel implements IpcChannelInterface {
     this.controller.setButtonStatus(this.buttonState)
   }
 
+  @checkStarted()
   public onButtonPressed(button: ValueOf<typeof ButtonEnum>) {
     WindowHandler.getWindow(true)?.webContents.send(MprisEvents.ON_BUTTON_PRESSED, button)
   }
 
+  @checkStarted()
   private setOnButtonPressed() {
     this.controller.setButtonPressCallback(this.onButtonPressed.bind(this))
   }
 
+  @checkStarted()
   public onButtonStatusChange(callback: (buttons: PlayerButtons) => void) {
     this.buttonStatusCallbacks.push(callback)
   }
