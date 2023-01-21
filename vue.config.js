@@ -125,6 +125,9 @@ module.exports = {
         deb: {
           depends: ['libnotify4', 'libxtst6', 'libnss3', 'libatomic1', 'libicu-dev', 'libasound2-dev']
         },
+        rpm: {
+          depends: ['/usr/lib64/libuuid.so.1', '/usr/lib64/libnss3.so', '/usr/lib64/libnssutil3.so']
+        },
         fileAssociations: [
           {
             ext: 'mp3',
