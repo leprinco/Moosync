@@ -17,6 +17,8 @@
       :keyField="'album_id'"
       @click="gotoAlbum"
       @CardContextMenu="singleItemContextHandler"
+      @generalContextMenu="contextHandler"
+      :isSortAsc="isSortAsc"
     >
       <template #defaultCover>
         <AlbumDefault />
@@ -54,6 +56,10 @@ export default class Albums extends mixins(RouterPushes, ContextMenuMixin) {
     return this.albumList.filter((x) => {
       return x.album_name !== null
     })
+  }
+
+  get isSortAsc() {
+    return vxm.themes.entitySortBy?.asc ?? true
   }
 
   private setSort(options: NormalSortOptions) {

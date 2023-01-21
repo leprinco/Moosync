@@ -17,7 +17,10 @@
           </b-col>
           <b-col class="provider-outer-container" v-if="items.length > 0">
             <div ref="gradientContainer" class="gradient-overlay" :style="{ background: computedGradient }"></div>
-            <div ref="providersContainer" class="provider-container d-flex">
+            <div
+              ref="providersContainer"
+              :class="`${alignProvidersToEnd ? 'justify-content-end' : ''} provider-container d-flex`"
+            >
               <div
                 v-for="provider in items"
                 cols="auto"
@@ -29,7 +32,7 @@
                   class="h-100 d-flex item-checkbox-container"
                   :style="{ background: getItemBackgroundColor(provider), color: getItemTextColor(provider) }"
                 >
-                  <span class="align-self-center">{{ provider.title }}</span>
+                  <span class="align-self-center provider-title">{{ provider.title }}</span>
                 </div>
               </div>
             </div>
@@ -60,7 +63,7 @@
 
 <script lang="ts">
 import { mixins } from 'vue-class-component'
-import { Component, Prop, Ref } from 'vue-property-decorator'
+import { Component, Prop, Ref, Watch } from 'vue-property-decorator'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import SortIcon from '@/icons/SortIcon.vue'
 import SortIconAlt from '@/icons/SortIconAlt.vue'
@@ -68,7 +71,6 @@ import SortIconAlt from '@/icons/SortIconAlt.vue'
 import SearchIcon from '@/icons/SearchIcon.vue'
 import NextIcon from '@/icons/NavForwardIcon.vue'
 import PrevIcon from '@/icons/NavBackIcon.vue'
-import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
 
@@ -91,11 +93,17 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
   @Prop({ default: false })
   private singleSelectMode!: boolean
 
-  @Prop()
-  private defaultSelected: string | undefined
-
   @Prop({ default: true })
   private showBackgroundOnSelect!: boolean
+
+  @Prop({ default: 'var(--secondary)' })
+  private defaultBackgroundColor!: string
+
+  @Prop({ default: false })
+  private alignProvidersToEnd!: boolean
+
+  @Prop({ default: true })
+  private isSortAsc!: boolean
 
   @Ref('providersContainer')
   private providerContainer!: HTMLDivElement
@@ -122,8 +130,13 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
     return this.providerContainer?.scrollWidth > this.containerSize && this.scrollLeft > 0
   }
 
-  get isSortAsc() {
-    return vxm.themes.songSortBy?.[0]?.asc ?? true
+  @Watch('items')
+  private onItemsChanged(items: TabCarouselItem[]) {
+    for (const p of items) {
+      if (p.defaultChecked && !this.selectedProviders.find((val) => val === p.key)) {
+        this.onProviderSelected(p.key)
+      }
+    }
   }
 
   getItemBackgroundColor(provider: TabCarouselItem) {
@@ -132,7 +145,7 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
       return 'var(--textSecondary)'
     } else {
       if (!this.showBackgroundOnSelect) return ''
-      return 'var(--secondary)'
+      return this.defaultBackgroundColor
     }
   }
 
@@ -200,11 +213,9 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
       this.gradientContainer.onwheel = scrollProviders.bind(this)
 
       new ResizeObserver((e) => (this.containerSize = e[0].target.clientWidth)).observe(this.providerContainer)
-
-      if (this.defaultSelected) {
-        this.onProviderSelected(this.defaultSelected)
-      }
     }
+
+    this.onItemsChanged(this.items)
 
     bus.$on(EventBus.UPDATE_OPTIONAL_PROVIDER, (providerKey: string) => {
       this.selectedProviders.push(providerKey)
@@ -248,7 +259,6 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
 .song-header-options
   height: 40px
   border-radius: 10px
-  margin-bottom: 13px
 
 .item-checkbox-container
   border-radius: 8px
@@ -286,4 +296,7 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
   &:focus
     background: var(--tertiary) !important
     outline: 0
+
+.provider-title
+  font-size: 16px
 </style>

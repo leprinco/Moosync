@@ -17,6 +17,8 @@
       :keyField="'artist_id'"
       @click="gotoArtist"
       @CardContextMenu="singleItemContextHandler"
+      @generalContextMenu="contextHandler"
+      :isSortAsc="isSortAsc"
     >
       <template #defaultCover>
         <ArtistDefault />
@@ -47,6 +49,10 @@ export default class ArtistsPage extends mixins(RouterPushes, ContextMenuMixin) 
       artist: true
     })
     this.sort()
+  }
+
+  get isSortAsc() {
+    return vxm.themes.entitySortBy?.asc ?? true
   }
 
   private sort() {

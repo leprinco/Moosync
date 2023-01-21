@@ -73,7 +73,13 @@
               </div>
             </b-col>
             <b-col cols="auto">
-              <TabCarousel class="tab-carousel" v-on="$listeners" :items="optionalProviders" />
+              <TabCarousel
+                class="tab-carousel"
+                v-on="$listeners"
+                :items="optionalProviders"
+                defaultBackgroundColor="var(--tertiary)"
+                :isSortAsc="isSortAsc"
+              />
             </b-col>
           </b-row>
         </b-container>
@@ -97,6 +103,7 @@ import FileMixin from '@/utils/ui/mixins/FileMixin'
 import { convertDuration } from '@/utils/common'
 import TabCarousel from '../../generic/TabCarousel.vue'
 import RandomIcon from '@/icons/RandomIcon.vue'
+import { vxm } from '@/mainWindow/store'
 
 @Component({
   components: {
@@ -139,6 +146,10 @@ export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileM
     return (
       this.forceCover ?? this.getImgSrc(this.getValidImageHigh(this.currentSong) ?? this.defaultDetails?.defaultCover)
     )
+  }
+
+  get isSortAsc() {
+    return vxm.themes.songSortBy?.[0]?.asc ?? true
   }
 
   @Watch('defaultDetails')
@@ -200,8 +211,3 @@ export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileM
   }
 }
 </script>
-
-<style lang="sass" scoped>
-.tab-carousel
-  margin-bottom: -16px
-</style>

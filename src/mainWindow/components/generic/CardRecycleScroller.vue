@@ -9,11 +9,16 @@
 
 <template>
   <b-container fluid class="container-with-title w-100">
-    <b-row no-gutters class="page-title">{{ title }}</b-row>
+    <b-row no-gutters class="page-title">
+      <b-col cols="auto">{{ title }} </b-col>
+      <b-col class="align-self-center">
+        <TabCarousel @onSortClicked="sortMenuHandler" @onSearchChange="onSearchChange" :isSortAsc="isSortAsc" />
+      </b-col>
+    </b-row>
     <b-row class="recycle-row" ref="scrollerRow">
       <RecycleScroller
         class="scroller w-100 h-100"
-        :items="itemList"
+        :items="filteredItems"
         :item-size="itemWidth"
         :itemSecondarySize="itemWidth"
         :key-field="keyField"
@@ -44,15 +49,17 @@
 import CardView from '@/mainWindow/components/generic/CardView.vue'
 import { Component, Prop, Ref } from 'vue-property-decorator'
 import { Vue } from 'vue-property-decorator'
+import TabCarousel from '../../components/generic/TabCarousel.vue'
 
 @Component({
   components: {
-    CardView
+    CardView,
+    TabCarousel
   }
 })
 export default class CardRecycleScroller extends Vue {
   @Prop({ default: () => [] })
-  public itemList!: unknown[]
+  public itemList!: Record<string, string>[]
 
   @Prop({ default: '' })
   public keyField!: string
@@ -66,8 +73,24 @@ export default class CardRecycleScroller extends Vue {
   @Prop({ default: '' })
   public title!: string
 
+  @Prop({ default: true })
+  public isSortAsc!: boolean
+
   @Ref('scrollerRow')
   private scrollerRow!: HTMLDivElement
+
+  get filteredItems() {
+    return this.itemList.filter((val) => val[this.titleKey].toLowerCase().includes(this.searchText))
+  }
+
+  private searchText = ''
+  onSearchChange(searchText: string) {
+    this.searchText = searchText ?? ''
+  }
+
+  sortMenuHandler(event: MouseEvent) {
+    this.$emit('generalContextMenu', event)
+  }
 
   private totalWidth = 0
   public itemWidth = 250

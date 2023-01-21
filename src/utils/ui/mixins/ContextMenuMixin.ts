@@ -447,6 +447,9 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       case 'SONG_SORT':
         items = this.getSongSortByMenu(options.args.sortOptions)[0].children ?? []
         break
+      case 'PLAYLIST_SORT':
+        items = this.getPlaylistSortByMenu(options.args.sortOptions)
+        break
       case 'PLAYLIST_SONGS':
         items = await this.getPlaylistSongContextMenu(
           options.args.playlistId,

@@ -13,9 +13,19 @@
       <b-row no-gutters class="page-title">
         <b-col cols="auto">{{ $t('pages.playlists') }}</b-col>
         <b-col class="button-grow" @click="newPlaylist" cols="auto"><PlusIcon class="add-icon mb-2" /></b-col>
+        <b-col class="align-self-center">
+          <TabCarousel
+            :items="tabCarouselItems"
+            :alignProvidersToEnd="true"
+            @onItemsChanged="onTabProvidersChanged"
+            @onSortClicked="sortMenuHandler"
+            @onSearchChange="onSearchChange"
+            :isSortAsc="isSortAsc"
+          />
+        </b-col>
       </b-row>
       <b-row class="d-flex">
-        <b-col col xl="2" md="3" v-for="playlist in allPlaylists" :key="playlist.playlist_id" class="card-col">
+        <b-col col xl="2" md="3" v-for="playlist in filteredPlaylists" :key="playlist.playlist_id" class="card-col">
           <CardView
             :title="playlist.playlist_name"
             :imgSrc="playlist.playlist_coverPath"
@@ -57,6 +67,8 @@ import { FAVORITES_PLAYLIST_ID, ProviderScopes } from '@/utils/commonConstants'
 import FavPlaylistIcon from '@/icons/FavPlaylistIcon.vue'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import IconHandler from '../../components/generic/IconHandler.vue'
+import TabCarousel from '../../components/generic/TabCarousel.vue'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 
 @Component({
   components: {
@@ -65,15 +77,35 @@ import IconHandler from '../../components/generic/IconHandler.vue'
     DeleteModal,
     PlusIcon,
     FavPlaylistIcon,
-    IconHandler
+    IconHandler,
+    TabCarousel
   }
 })
 export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, ProviderMixin, ImgLoader) {
   @Prop({ default: () => () => undefined })
   private enableRefresh!: () => void
 
+  private searchText = ''
+  onSearchChange(searchText: string) {
+    this.searchText = searchText ?? ''
+  }
+
   get allPlaylists(): ExtendedPlaylist[] {
     return [...this.localPlaylists, ...this.remotePlaylists]
+  }
+
+  get filteredPlaylists(): ExtendedPlaylist[] {
+    const playlists: ExtendedPlaylist[] = []
+    for (const p of Object.values(this.activeProviders).filter((val) => val.checked)) {
+      if (p.key === 'local') {
+        playlists.push(...this.localPlaylists)
+      } else {
+        playlists.push(
+          ...this.allPlaylists.filter((val) => val.extension === p.key || val.playlist_id.startsWith(p.key))
+        )
+      }
+    }
+    return playlists.filter((val) => val.playlist_name.toLowerCase().includes(this.searchText))
   }
 
   private localPlaylists: ExtendedPlaylist[] = []
@@ -81,10 +113,33 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
 
   private playlistInAction: Playlist | undefined
 
+  private activeProviders: Record<string, { key: string; checked: boolean }> = {}
+
+  onTabProvidersChanged(data: { key: string; checked: boolean }) {
+    this.$set(this.activeProviders, data.key, data)
+  }
+
   FAVORITES_PLAYLIST_ID = FAVORITES_PLAYLIST_ID
 
   private get providers() {
     return this.getProvidersByScope(ProviderScopes.PLAYLISTS)
+  }
+
+  private providersWithPlaylists: GenericProvider[] = []
+
+  get tabCarouselItems(): TabCarouselItem[] {
+    return [
+      {
+        title: 'Local',
+        key: 'local',
+        defaultChecked: true
+      },
+      ...this.providersWithPlaylists.map((val) => ({
+        key: val.key,
+        title: val.Title,
+        defaultChecked: true
+      }))
+    ]
   }
 
   getIconBgColor(playlist: Playlist) {
@@ -104,7 +159,17 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
     await this.getLocalPlaylists()
 
     for (const p of this.providers) {
-      promises.push(p.getUserPlaylists(invalidateCache).then(this.pushPlaylistToList).then(this.sort))
+      promises.push(
+        p
+          .getUserPlaylists(invalidateCache)
+          .then((val) => {
+            if (val.length > 0) {
+              this.pushPlaylistToList(val)
+              this.providersWithPlaylists.push(p)
+            }
+          })
+          .then(this.sort)
+      )
     }
 
     await Promise.all(promises)
@@ -120,7 +185,19 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
         if (p.extension && !p.icon) {
           p.icon = await window.ExtensionUtils.getExtensionIcon(p.extension)
         }
-        this.localPlaylists.push(p)
+        // this.localPlaylists.push(p)
+
+        let providerMatch = false
+        for (const provider of this.providers) {
+          if (provider.matchEntityId(p.playlist_id)) {
+            providerMatch = true
+            this.remotePlaylists.push(p)
+          }
+        }
+
+        if (!providerMatch) {
+          this.localPlaylists.push(p)
+        }
       }
     }
   }
@@ -138,6 +215,10 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
 
   private setSort(options: PlaylistSortOptions) {
     vxm.themes.playlistSortBy = options
+  }
+
+  get isSortAsc() {
+    return vxm.themes.playlistSortBy?.asc ?? true
   }
 
   private sort() {
@@ -165,6 +246,19 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
           current: vxm.themes.playlistSortBy
         },
         refreshCallback: this.refresh
+      }
+    })
+  }
+
+  sortMenuHandler(event: MouseEvent) {
+    console.log('clicked on sort')
+    this.getContextMenu(event, {
+      type: 'PLAYLIST_SORT',
+      args: {
+        sortOptions: {
+          callback: this.setSort,
+          current: vxm.themes.playlistSortBy
+        }
       }
     })
   }

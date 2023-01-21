@@ -193,17 +193,19 @@ export default class SearchPage extends mixins(
   }
 
   private fetchProviders() {
-    const parsedProviders: { title: string; key: string }[] = []
+    const parsedProviders: TabCarouselItem[] = []
     parsedProviders.push({
       title: 'Local',
-      key: 'local'
+      key: 'local',
+      defaultChecked: this.activeProvider === 'local'
     })
 
     const providers = this.getProvidersByScope(ProviderScopes.SEARCH)
     parsedProviders.push(
       ...providers.map((val) => ({
         title: val.Title,
-        key: val.key
+        key: val.key,
+        defaultChecked: this.activeProvider === val.key
       }))
     )
 
@@ -215,7 +217,7 @@ export default class SearchPage extends mixins(
   }
 
   get subCategories(): TabCarouselItem[] {
-    return [
+    const subCategories: TabCarouselItem[] = [
       {
         title: 'Songs',
         key: 'songs'
@@ -233,6 +235,12 @@ export default class SearchPage extends mixins(
         key: 'albums'
       }
     ]
+
+    for (const s of subCategories) {
+      s.defaultChecked = this.activeSubcategory === s.key
+    }
+
+    return subCategories
   }
 
   get currentSongList() {

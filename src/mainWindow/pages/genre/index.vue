@@ -14,7 +14,9 @@
       :itemList="genresList"
       :titleKey="'genre_name'"
       :keyField="'genre_id'"
+      :isSortAsc="isSortAsc"
       @click="gotoGenre"
+      @generalContextMenu="contextHandler"
     >
       <template #defaultCover>
         <SongDefault />
@@ -29,6 +31,7 @@ import CardRecycleScroller from '@/mainWindow/components/generic/CardRecycleScro
 import { mixins } from 'vue-class-component'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
+import { vxm } from '@/mainWindow/store'
 
 @Component({
   components: {
@@ -42,6 +45,10 @@ export default class Genres extends mixins(RouterPushes) {
     this.genresList = await window.SearchUtils.searchEntityByOptions({
       genre: true
     })
+  }
+
+  get isSortAsc() {
+    return vxm.themes.entitySortBy?.asc ?? true
   }
 
   mounted() {

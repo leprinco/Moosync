@@ -58,6 +58,12 @@ type ContextMenuArgs =
       }
     }
   | {
+      type: 'PLAYLIST_SORT'
+      args: {
+        sortOptions: Sort<PlaylistSortOptions>
+      }
+    }
+  | {
       type: 'ARTIST'
       args: {
         artist: Artists

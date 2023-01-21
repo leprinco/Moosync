@@ -10,7 +10,7 @@
 <template>
   <div class="d-flex h-100 w-100">
     <b-container fluid>
-      <TabCarousel v-on="$listeners" :items="optionalProviders" />
+      <TabCarousel class="tab-carousel" v-on="$listeners" :items="optionalProviders" :isSortAsc="isSortAsc" />
       <b-row v-if="isLoading">
         <b-col class="mb-2">
           <b-spinner>{{ $t('loading') }}</b-spinner>
@@ -52,6 +52,7 @@ import { Component, Prop } from 'vue-property-decorator'
 import SongListCompactItem from './SongListCompactItem.vue'
 import EllipsisIcon from '@/icons/EllipsisIcon.vue'
 import TabCarousel from '../../generic/TabCarousel.vue'
+import { vxm } from '@/mainWindow/store'
 
 @Component({
   components: {
@@ -90,6 +91,10 @@ export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
   onScroll(e: Event) {
     this.$emit('scroll', e)
   }
+
+  get isSortAsc() {
+    return vxm.themes.songSortBy?.[0]?.asc ?? true
+  }
 }
 </script>
 
@@ -100,4 +105,7 @@ export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
 
 .full-height
   height: calc(100% - 40px - 13px)
+
+.tab-carousel
+  margin-bottom: 15px
 </style>

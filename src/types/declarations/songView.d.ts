@@ -23,6 +23,7 @@ interface SongDetailButtons {
 interface TabCarouselItem {
   title: string
   key: string
+  defaultChecked?: boolean
 }
 
 type TableFields = 'index' | 'title' | 'album_name' | 'artist_name'

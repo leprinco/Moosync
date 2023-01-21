@@ -8,7 +8,7 @@
 -->
 
 <template>
-  <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <svg class="search-icon" width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
       fill-rule="evenodd"
       clip-rule="evenodd"
@@ -28,3 +28,8 @@ export default class Playlists extends Vue {
   accent!: boolean
 }
 </script>
+
+<style lang="sass" scoped>
+.search-icon
+  cursor: pointer
+</style>
