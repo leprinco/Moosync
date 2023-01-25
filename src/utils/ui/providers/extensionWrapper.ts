@@ -85,6 +85,10 @@ export class ExtensionProvider extends GenericProvider {
     return id.startsWith(`${this.key}:`)
   }
 
+  public matchPlaylist(): boolean {
+    return true
+  }
+
   public sanitizeId(id: string): string {
     return id.replace(`${this.key}:`, '')
   }
