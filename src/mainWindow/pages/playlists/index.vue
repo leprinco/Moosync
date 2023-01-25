@@ -63,7 +63,7 @@ import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
 import PlusIcon from '@/icons/PlusIcon.vue'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
-import { FAVORITES_PLAYLIST_ID, ProviderScopes } from '@/utils/commonConstants'
+import { FAVORITES_PLAYLIST_ID } from '@/utils/commonConstants'
 import FavPlaylistIcon from '@/icons/FavPlaylistIcon.vue'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import IconHandler from '../../components/generic/IconHandler.vue'
@@ -122,7 +122,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   FAVORITES_PLAYLIST_ID = FAVORITES_PLAYLIST_ID
 
   private get providers() {
-    return this.getProvidersByScope(ProviderScopes.PLAYLISTS)
+    return this.getAllProviders()
   }
 
   private providersWithPlaylists: GenericProvider[] = []
@@ -153,6 +153,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   private async getPlaylists(invalidateCache = false) {
     this.localPlaylists.splice(0, this.localPlaylists.length)
     this.remotePlaylists.splice(0, this.remotePlaylists.length)
+    this.providersWithPlaylists.splice(0, this.providersWithPlaylists.length)
 
     const promises: Promise<unknown>[] = []
 
@@ -192,6 +193,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
           if (provider.matchEntityId(p.playlist_id)) {
             providerMatch = true
             this.remotePlaylists.push(p)
+            this.providersWithPlaylists.push(provider)
           }
         }
 
