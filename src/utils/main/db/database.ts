@@ -449,7 +449,7 @@ export class SongDBInstance extends DBUtils {
     )
 
     return this.batchUnmarshal(songs, (artistIds) => {
-      return artistIds.map(
+      return [...new Set(artistIds)].map(
         (val) =>
           this.getEntityByOptions<Artists>({
             artist: {
