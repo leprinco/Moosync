@@ -46,6 +46,22 @@
         </b-col>
       </b-row>
       <DeleteModal id="playlistDeleteModal" @confirm="deletePlaylist" />
+      <MultiButtonModal
+        :show="showMultiButtonModal"
+        :slots="2"
+        @click-1="showNewPlaylistModal"
+        @click-2="showPlaylistFromURLModal"
+      >
+        <template #1>
+          <CreatePlaylistIcon />
+        </template>
+        <template #1-title> {{ $t('contextMenu.playlist.new') }} </template>
+
+        <template #2>
+          <ImportPlaylistIcon />
+        </template>
+        <template #2-title> {{ $t('contextMenu.playlist.addFromURL') }} </template>
+      </MultiButtonModal>
     </b-container>
   </div>
 </template>
@@ -65,10 +81,13 @@ import PlusIcon from '@/icons/PlusIcon.vue'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { FAVORITES_PLAYLIST_ID } from '@/utils/commonConstants'
 import FavPlaylistIcon from '@/icons/FavPlaylistIcon.vue'
+import CreatePlaylistIcon from '@/icons/CreatePlaylistIcon.vue'
+import ImportPlaylistIcon from '@/icons/ImportPlaylistIcon.vue'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import IconHandler from '../../components/generic/IconHandler.vue'
 import TabCarousel from '../../components/generic/TabCarousel.vue'
 import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
+import MultiButtonModal from '@/mainWindow/components/modals/MultiButtonModal.vue'
 
 @Component({
   components: {
@@ -78,12 +97,17 @@ import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
     PlusIcon,
     FavPlaylistIcon,
     IconHandler,
-    TabCarousel
+    TabCarousel,
+    CreatePlaylistIcon,
+    ImportPlaylistIcon,
+    MultiButtonModal
   }
 })
 export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, ProviderMixin, ImgLoader) {
   @Prop({ default: () => () => undefined })
   private enableRefresh!: () => void
+
+  private showMultiButtonModal = false
 
   private searchText = ''
   onSearchChange(searchText: string) {
@@ -271,7 +295,15 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   }
 
   newPlaylist() {
+    this.showMultiButtonModal = !this.showMultiButtonModal
+  }
+
+  showNewPlaylistModal() {
     bus.$emit(EventBus.SHOW_NEW_PLAYLIST_MODAL, [], () => this.refresh())
+  }
+
+  showPlaylistFromURLModal() {
+    bus.$emit(EventBus.SHOW_PLAYLIST_FROM_URL_MODAL, [], () => this.refresh())
   }
 
   mounted() {

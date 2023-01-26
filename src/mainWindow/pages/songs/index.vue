@@ -69,6 +69,8 @@ export default class AllSongs extends mixins(ContextMenuMixin) {
         showInLibrary: !showHidden
       }
     })
+
+    console.log(this.songList)
     this.showingHidden = showHidden
   }
 
