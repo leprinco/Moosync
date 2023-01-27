@@ -12,17 +12,14 @@
     <b-row no-gutters>
       <b-col class="song-header-options w-100">
         <b-row no-gutters align-v="center" class="h-100">
-          <b-col cols="auto" class="mr-3" v-if="items.length > 0 && showPrevIcon">
+          <b-col cols="auto" class="mr-3 h-100 d-flex align-items-center" v-if="items.length > 0 && showPrevIcon">
             <PrevIcon @click.native="onPrevClick" />
           </b-col>
           <b-col class="provider-outer-container" v-if="items.length > 0">
             <div ref="gradientContainer" class="gradient-overlay" :style="{ background: computedGradient }"></div>
-            <div
-              ref="providersContainer"
-              :class="`${alignProvidersToEnd ? 'justify-content-end' : ''} provider-container d-flex`"
-            >
+            <div ref="providersContainer" :class="`${alignProvidersToEnd ? 'rtl' : ''} provider-container d-flex`">
               <div
-                v-for="provider in items"
+                v-for="provider in sortedItems"
                 cols="auto"
                 class="`h-100 item-checkbox-col mr-2"
                 :key="provider.key"
@@ -37,9 +34,10 @@
               </div>
             </div>
           </b-col>
-          <b-col cols="auto" class="ml-3 mr-3" v-if="items.length > 0">
+          <b-col cols="auto" class="ml-3 mr-3 h-100 d-flex align-items-center" v-if="items.length > 0">
             <NextIcon @click.native="onNextClick" v-if="showNextIcon" />
           </b-col>
+
           <b-col cols="auto" class="ml-auto d-flex" ref="buttonGroupContainer" v-if="showExtraSongListActions">
             <div v-if="showSearchbar" class="searchbar-container mr-3">
               <b-form-input
@@ -123,11 +121,28 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
   searchText = ''
 
   get showNextIcon() {
+    if (this.alignProvidersToEnd) {
+      return this.scrollLeft < 0
+    }
     return this.scrollLeft + this.containerSize < this.providerContainer?.scrollWidth
   }
 
   get showPrevIcon() {
-    return this.providerContainer?.scrollWidth > this.containerSize && this.scrollLeft > 0
+    if (this.providerContainer?.scrollWidth > this.containerSize) {
+      if (this.alignProvidersToEnd) {
+        const scrollDiff = this.containerSize - this.providerContainer?.scrollWidth
+        return this.scrollLeft > scrollDiff
+      }
+      return this.scrollLeft > 0
+    }
+    return false
+  }
+
+  get sortedItems() {
+    if (this.alignProvidersToEnd) {
+      return this.items.reverse()
+    }
+    return this.items
   }
 
   @Watch('items')
@@ -201,9 +216,13 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
     this.$emit('onSearchChange', this.searchText)
   }
 
+  private resizeObserver?: ResizeObserver
+
   mounted() {
     if (this.providerContainer && this.gradientContainer) {
       const scrollProviders = (e: WheelEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
         if (e.deltaY > 0) this.providerContainer.scrollTo({ left: this.providerContainer.scrollLeft + 20 })
         else this.providerContainer.scrollTo({ left: this.providerContainer.scrollLeft - 20 })
         this.scrollLeft = this.providerContainer.scrollLeft
@@ -212,7 +231,15 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
       this.providerContainer.onwheel = scrollProviders.bind(this)
       this.gradientContainer.onwheel = scrollProviders.bind(this)
 
-      new ResizeObserver((e) => (this.containerSize = e[0].target.clientWidth)).observe(this.providerContainer)
+      if (this.resizeObserver) {
+        this.resizeObserver.disconnect()
+      }
+      this.resizeObserver = new ResizeObserver((e) => {
+        window.requestAnimationFrame(() => {
+          this.containerSize = e[0].target.clientWidth
+        })
+      })
+      this.resizeObserver.observe(this.providerContainer)
     }
 
     this.onItemsChanged(this.items)
@@ -299,4 +326,7 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
 
 .provider-title
   font-size: 16px
+
+.rtl
+  direction: rtl
 </style>
