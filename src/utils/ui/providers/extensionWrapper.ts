@@ -185,20 +185,21 @@ export class ExtensionProvider extends GenericProvider {
     if (resp) {
       if (this.isForwardRequest(resp)) {
         return (
-          this.handleForwardRequest(
+          await (this.handleForwardRequest(
             'getUserPlaylists',
             resp,
             [invalidateCache ?? false],
             this.getExecStack(...arguments)
-          ) ?? []
-        )
+          ) ?? [])
+        ).map((val) => ({ ...val, isLocal: false }))
       }
       const icon = await window.ExtensionUtils.getExtensionIcon(this.key)
       for (const p of resp.playlists) {
         playlists.push({
           ...p,
           icon: (p.icon && 'media://' + p.icon) ?? (icon && 'media://' + icon),
-          extension: this.key
+          extension: this.key,
+          isLocal: false
         })
       }
     }

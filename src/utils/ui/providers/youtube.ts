@@ -200,7 +200,8 @@ export class YoutubeProvider extends GenericProvider {
               p.snippet.thumbnails.high ??
               p.snippet.thumbnails.default
             ).url,
-            playlist_song_count: p.contentDetails.itemCount
+            playlist_song_count: p.contentDetails.itemCount,
+            isLocal: false
           })
       }
     }

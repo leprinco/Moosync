@@ -265,11 +265,12 @@ export function sanitizeSong(ext: string, ...songs: Song[]): Song[] {
   }))
 }
 
-export function sanitizePlaylist(ext: string, ...playlists: Playlist[]): ExtendedPlaylist[] {
+export function sanitizePlaylist(ext: string, isLocal: boolean, ...playlists: Playlist[]): ExtendedPlaylist[] {
   return playlists.map((val) => ({
     ...val,
     playlist_id: `${ext}:${val.playlist_id ?? v4()}`,
-    extension: ext
+    extension: ext,
+    isLocal
   }))
 }
 

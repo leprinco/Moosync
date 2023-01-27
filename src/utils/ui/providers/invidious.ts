@@ -126,7 +126,8 @@ export class InvidiousProvider extends GenericProvider {
         playlist_id: `youtube-playlist:${p.playlistId}`,
         playlist_name: p.title,
         playlist_song_count: p.videoCount,
-        playlist_coverPath: p.videos[0]?.videoThumbnails[0]?.url ?? ''
+        playlist_coverPath: p.videos[0]?.videoThumbnails[0]?.url ?? '',
+        isLocal: false
       })
     }
     return playlists

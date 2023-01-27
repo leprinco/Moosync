@@ -259,6 +259,7 @@ export class ExtensionHandler {
         if (event.type === 'requestedPlaylists') {
           ;(resp as PlaylistReturnType).playlists = sanitizePlaylist(
             packageName,
+            false,
             ...(resp as PlaylistReturnType).playlists
           )
         }
@@ -266,6 +267,7 @@ export class ExtensionHandler {
         if (EventType === 'requestedPlaylistFromURL') {
           ;(resp as PlaylistAndSongsReturnType).playlist = sanitizePlaylist(
             packageName,
+            false,
             (resp as PlaylistAndSongsReturnType).playlist
           )[0]
           ;(resp as PlaylistAndSongsReturnType).songs = sanitizeSong(
@@ -284,7 +286,11 @@ export class ExtensionHandler {
 
         if (EventType === 'requestedSearchResult') {
           ;(resp as SearchReturnType).songs = sanitizeSong(packageName, ...(resp as SearchReturnType).songs)
-          ;(resp as SearchReturnType).playlists = sanitizePlaylist(packageName, ...(resp as SearchReturnType).playlists)
+          ;(resp as SearchReturnType).playlists = sanitizePlaylist(
+            packageName,
+            false,
+            ...(resp as SearchReturnType).playlists
+          )
           ;(resp as SearchReturnType).artists = sanitizeArtists(packageName, ...(resp as SearchReturnType).artists)
           ;(resp as SearchReturnType).albums = sanitizeAlbums(packageName, ...(resp as SearchReturnType).albums)
         }

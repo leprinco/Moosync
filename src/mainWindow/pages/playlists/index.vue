@@ -189,7 +189,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
           .getUserPlaylists(invalidateCache)
           .then((val) => {
             if (val.length > 0) {
-              this.pushPlaylistToList(val)
+              this.pushPlaylistToList(val.map((val1) => ({ ...val1, isLocal: false })))
               this.providersWithPlaylists.push(p)
             }
           })
@@ -206,6 +206,10 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
     })
 
     for (const p of localPlaylists) {
+      const extended: ExtendedPlaylist = {
+        ...p,
+        isLocal: true
+      }
       if (this.allPlaylists.findIndex((val) => val.playlist_id === p.playlist_id) === -1) {
         if (p.extension && !p.icon) {
           p.icon = await window.ExtensionUtils.getExtensionIcon(p.extension)
@@ -216,19 +220,19 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
         for (const provider of this.providers) {
           if (provider.matchEntityId(p.playlist_id)) {
             providerMatch = true
-            this.remotePlaylists.push(p)
+            this.remotePlaylists.push(extended)
             this.providersWithPlaylists.push(provider)
           }
         }
 
         if (!providerMatch) {
-          this.localPlaylists.push(p)
+          this.localPlaylists.push(extended)
         }
       }
     }
   }
 
-  private async pushPlaylistToList(playlists: Playlist[]) {
+  private async pushPlaylistToList(playlists: ExtendedPlaylist[]) {
     for (const p of playlists) {
       if (this.allPlaylists.findIndex((val) => val.playlist_id === p.playlist_id) === -1) {
         if (p.extension && !p.icon) {
@@ -324,13 +328,14 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
     })
   }
 
-  getPlaylistMenu(event: Event, playlist: Playlist) {
+  getPlaylistMenu(event: Event, playlist: ExtendedPlaylist) {
     this.playlistInAction = playlist
+    console.log(playlist)
     this.getContextMenu(event, {
       type: 'PLAYLIST',
       args: {
         playlist: playlist,
-        isRemote: !this.localPlaylists.includes(playlist),
+        isRemote: !playlist.isLocal,
         deleteCallback: () => this.$bvModal.show('playlistDeleteModal')
       }
     })

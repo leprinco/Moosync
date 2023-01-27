@@ -322,7 +322,7 @@ class ExtensionRequestHandler {
 
     if (message.type === 'add-playlist') {
       const playlist = message.data as Playlist
-      resp.data = getSongDB().createPlaylist(sanitizePlaylist(message.extensionName, playlist)[0])
+      resp.data = getSongDB().createPlaylist(sanitizePlaylist(message.extensionName, false, playlist)[0])
     }
 
     if (message.type === 'add-song-to-playlist') {

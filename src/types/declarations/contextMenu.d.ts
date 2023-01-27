@@ -29,7 +29,7 @@ type ContextMenuArgs =
   | {
       type: 'PLAYLIST'
       args: {
-        playlist: Playlist
+        playlist: ExtendedPlaylist
         isRemote: boolean
         deleteCallback?: () => void
       }

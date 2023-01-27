@@ -405,7 +405,7 @@ export default class SearchPage extends mixins(
       case 'playlists':
         this.getContextMenu(event, {
           type: 'PLAYLIST',
-          args: { playlist: item as Playlist, isRemote: this.activeProvider !== 'local' }
+          args: { playlist: item as ExtendedPlaylist, isRemote: this.activeProvider !== 'local' }
         })
         break
       default:

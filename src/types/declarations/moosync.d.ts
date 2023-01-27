@@ -4,6 +4,7 @@ interface InvidiousSong extends Song {
 
 interface ExtendedPlaylist extends Playlist {
   extension?: string
+  isLocal: boolean
 }
 
 type StrippedAccountDetails = Omit<Omit<AccountDetails, 'signinCallback'>, 'signoutCallback'>
