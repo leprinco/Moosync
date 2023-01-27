@@ -87,7 +87,7 @@ import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import IconHandler from '../../components/generic/IconHandler.vue'
 import TabCarousel from '../../components/generic/TabCarousel.vue'
 import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
-import MultiButtonModal from '@/mainWindow/components/modals/MultiButtonModal.vue'
+import MultiButtonModal from '@/commonComponents/MultiButtonModal.vue'
 
 @Component({
   components: {

@@ -93,7 +93,16 @@
       </b-row>
     </b-container>
     <DeleteModal v-if="themeToRemove" id="themeDeleteModal" :itemName="themeToRemove.name" @confirm="removeTheme" />
-    <NewThemeModal @import="importTheme" @create="createTheme" />
+    <MultiButtonModal :slots="2" :show="showNewThemeModal" @click-1="createTheme" @click-2="importTheme">
+      <template #1>
+        <CreatePlaylistIcon />
+      </template>
+      <template #1-title>{{ $t('settings.themes.createTheme') }}</template>
+      <template #2>
+        <ImportThemeIcon />
+      </template>
+      <template #2-title>{{ $t('settings.themes.importTheme') }}</template>
+    </MultiButtonModal>
   </div>
 </template>
 
@@ -109,7 +118,9 @@ import { ContextMenuComponent, MenuItem } from 'vue-context-menu-popup'
 import DeleteModal from '@/commonComponents/ConfirmationModal.vue'
 import ContextMenu from 'vue-context-menu-popup'
 import 'vue-context-menu-popup/dist/vue-context-menu-popup.css'
-import NewThemeModal from '../NewThemeModal.vue'
+import MultiButtonModal from '../../../commonComponents/MultiButtonModal.vue'
+import CreatePlaylistIcon from '@/icons/CreatePlaylistIcon.vue'
+import ImportThemeIcon from '@/icons/ImportThemeIcon.vue'
 
 @Component({
   components: {
@@ -119,11 +130,15 @@ import NewThemeModal from '../NewThemeModal.vue'
     DeleteModal,
     ContextMenu,
     Add,
-    NewThemeModal
+    MultiButtonModal,
+    CreatePlaylistIcon,
+    ImportThemeIcon
   }
 })
 export default class Themes extends Vue {
   private allThemes: { [key: string]: ThemeDetails } = {}
+
+  private showNewThemeModal = false
 
   private async getAllThemes() {
     console.log('getting all themes')
@@ -263,7 +278,7 @@ export default class Themes extends Vue {
   }
 
   private openNewThemeModal() {
-    this.$bvModal.show('NewThemeModal')
+    this.showNewThemeModal = !this.showNewThemeModal
   }
 
   async created() {
