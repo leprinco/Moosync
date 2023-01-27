@@ -1020,7 +1020,7 @@ export class SongDBInstance extends DBUtils {
       const stored = this.store(...songs.map((val) => ({ ...val, showInLibrary: false })))
 
       for (const s of stored) {
-        if (!coverExists) {
+        if (!coverExists && playlist_id !== 'favorites_playlist') {
           if (s.album?.album_coverPath_high) {
             this.updatePlaylistCoverPath(playlist_id, s.album.album_coverPath_high)
             coverExists = true
