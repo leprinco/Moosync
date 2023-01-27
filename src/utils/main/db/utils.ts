@@ -187,12 +187,12 @@ export class DBUtils {
       this.leftJoinAlbums(exclude_table) +
       this.leftJoinArtists(exclude_table) +
       this.leftJoinGenre(exclude_table) +
-      // this.leftJoinPLaylists(exclude_table) +
+      this.leftJoinPLaylists(exclude_table) +
       this.leftJoinAnalytics(exclude_table) +
       this.leftJoinCommon('albums', 'album', 'album_bridge') +
       this.leftJoinCommon('artists', 'artist', 'artist_bridge') +
-      this.leftJoinCommon('genres', 'genre', 'genre_bridge')
-      // this.leftJoinCommon('playlists', 'playlist', 'playlist_bridge')
+      this.leftJoinCommon('genres', 'genre', 'genre_bridge') +
+      this.leftJoinCommon('playlists', 'playlist', 'playlist_bridge')
     )
   }
 
