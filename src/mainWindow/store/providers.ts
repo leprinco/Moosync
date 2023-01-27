@@ -90,9 +90,16 @@ export class ProviderStore extends VuexModule.With({ namespaced: 'providers' }) 
     }
   }
 
+  @mutation
+  clearExtensionProviders() {
+    this._extensionProviders.splice(0, this._extensionProviders.length)
+  }
+
   @action
   async fetchExtensionProviders() {
     const extensions = await window.ExtensionUtils.getAllExtensions()
+    this.clearExtensionProviders()
+
     for (const e of extensions) {
       const scopes = (await window.ExtensionUtils.getExtensionProviderScopes(e.packageName))[e.packageName]
       if (scopes.length > 0) {
