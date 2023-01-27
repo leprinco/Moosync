@@ -141,7 +141,6 @@ export default class Themes extends Vue {
   private showNewThemeModal = false
 
   private async getAllThemes() {
-    console.log('getting all themes')
     this.allThemes = (await window.ThemeUtils.getAllThemes()) ?? {}
   }
 
@@ -219,6 +218,11 @@ export default class Themes extends Vue {
   }
 
   private async removeTheme() {
+    const currentTheme = await window.ThemeUtils.getActiveTheme()
+    if (currentTheme.id === this.themeToRemove?.id) {
+      await this.setTheme('default')
+    }
+
     this.themeToRemove && (await window.ThemeUtils.removeTheme(this.themeToRemove?.id))
     this.getAllThemes()
   }

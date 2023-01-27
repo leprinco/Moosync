@@ -186,8 +186,13 @@ export default class NewTheme extends Vue {
     })
   }
 
-  private saveTheme() {
-    window.ThemeUtils.saveTheme(this.generateThemeMetadata())
+  private async saveTheme() {
+    await window.ThemeUtils.saveTheme(this.generateThemeMetadata())
+    const currentTheme = await window.ThemeUtils.getActiveTheme()
+    if (currentTheme.id === this.currentThemeID) {
+      await window.ThemeUtils.setActiveTheme(this.currentThemeID)
+      this.$root.$emit('themeChanged')
+    }
     this.dismiss()
   }
 
