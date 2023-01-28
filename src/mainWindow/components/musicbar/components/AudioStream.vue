@@ -728,6 +728,7 @@ export default class AudioStream extends mixins(
       shouldRefetch = false
     }
 
+    console.debug('Should refetch playback url and duration', shouldRefetch)
     if (shouldRefetch) {
       console.debug('playback url and duration not in cache or missing')
       res = await this.getPlaybackUrlAndDuration(provider, song)
@@ -786,9 +787,11 @@ export default class AudioStream extends mixins(
 
     // Don't proceed if song has changed while we were fetching playback url and duration
     if (song._id !== this.currentSong?._id) {
+      console.debug('Current song has changed, skipping request')
       return
     }
 
+    console.debug('changing player', song.type, song.playbackUrl)
     const switchedPlayer = await this.onPlayerTypesChanged(song.type, song.playbackUrl)
     if (!switchedPlayer) {
       console.error('Could not find player to play song', song)

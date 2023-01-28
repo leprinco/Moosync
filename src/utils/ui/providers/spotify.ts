@@ -46,7 +46,7 @@ enum ApiResources {
  * API Handler for Spotify.
  */
 export class SpotifyProvider extends GenericProvider {
-  private auth!: AuthFlow
+  private auth?: AuthFlow
   private _config!: ReturnType<SpotifyProvider['getConfig']>
 
   public canPlayPremium = false
@@ -118,8 +118,6 @@ export class SpotifyProvider extends GenericProvider {
       const password = await window.Store.getSecure('spotify.password')
 
       if (username && password) {
-        this.auth = new AuthFlow(this._config, serviceConfig, false)
-
         try {
           await window.SpotifyPlayer.connect({
             auth: {
@@ -136,6 +134,7 @@ export class SpotifyProvider extends GenericProvider {
 
           const token = await window.SpotifyPlayer.getToken(this._config.scope.split(' ') as TokenScope[])
           if (token) {
+            this.auth = new AuthFlow(this._config, serviceConfig, false)
             this.auth.setToken({
               ...token,
               scope: token.scopes.join(' '),
@@ -180,12 +179,13 @@ export class SpotifyProvider extends GenericProvider {
 
       return vxm.providers.loggedInSpotify
     }
+
     return false
   }
 
   public async login() {
     if (!(await this.getLoggedIn())) {
-      if (this.auth.config) {
+      if (this.auth?.config) {
         const validRefreshToken = await this.auth.hasValidRefreshToken()
         if (validRefreshToken) {
           await this.auth.performWithFreshTokens()
@@ -219,12 +219,12 @@ export class SpotifyProvider extends GenericProvider {
   }
 
   private async refreshToken() {
-    if (await this.auth.hasValidRefreshToken()) {
-      await this.auth.performWithFreshTokens()
+    if (await this.auth?.hasValidRefreshToken()) {
+      await this.auth?.performWithFreshTokens()
     } else {
       const token = await window.SpotifyPlayer.getToken(this._config.scope.split(' ') as TokenScope[])
       if (token) {
-        this.auth.setToken({
+        this.auth?.setToken({
           ...token,
           scope: token.scopes.join(' '),
           token_type: 'bearer',
