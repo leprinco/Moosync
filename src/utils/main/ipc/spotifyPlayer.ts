@@ -104,7 +104,13 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
 
         this.playerProcess?.on('message', listener)
 
-        this.playerProcess?.send({ data: message, channel: id })
+        try {
+          this.playerProcess?.send({ data: message, channel: id })
+        } catch (e) {
+          console.error('Failed to send message to librespot process', e)
+          resolve(new Error('Failed to send message to librespot process'))
+          this.playerProcess?.kill()
+        }
       })
     }
 
@@ -128,7 +134,13 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
     return !!(val as PlayerEvent).event
   }
 
-  public async spawnProcess() {
+  public async spawnProcess(retries = 0) {
+    if (retries > 2) {
+      throw new Error('Failed to spawn process. Retries: ' + retries)
+    }
+
+    console.debug('Spawning librespot process. Retry:', retries)
+
     this.closePlayer()
     this.playerProcess = fork(__dirname + '/spotify.js', ['logPath', defaultLogPath])
 
@@ -141,6 +153,10 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
         this.eventEmitter.emit(message.event, message)
       }
     })
+
+    this.playerProcess.once('exit', () => this.spawnProcess(retries + 1))
+    this.playerProcess.once('close', () => this.spawnProcess(retries + 1))
+    this.playerProcess.once('error', () => this.spawnProcess(retries + 1))
 
     if (this.config) {
       await this.sendAsync({ type: 'CONNECT', args: this.config })
