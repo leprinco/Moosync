@@ -314,8 +314,8 @@ export class ScannerChannel implements IpcChannelInterface {
       })
     }
 
-    await scannerPool.completed(true)
-    await coverPool.completed()
+    await scannerPool.settled(true)
+    await coverPool.settled()
 
     await scannerPool.terminate()
     await coverPool.terminate()
