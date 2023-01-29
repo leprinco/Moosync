@@ -131,7 +131,6 @@ export enum ScannerEvents {
   SCAN_SINGLE_SONG = 'scanSingleSong',
   SCAN_SINGLE_PLAYLIST = 'scanSinglePlaylist',
   GET_PROGRESS = 'getProgress',
-  GET_COVER_BY_HASH = 'getCoverByHash',
 
   PROGRESS_CHANNEL = 'progressChannel'
 }

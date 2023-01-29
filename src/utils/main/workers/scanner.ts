@@ -10,7 +10,6 @@
 import * as mm from 'music-metadata'
 
 import { Observable, SubscriptionObserver } from 'observable-fns'
-import { Transfer, TransferDescriptor } from 'threads'
 import { expose } from 'threads/worker'
 import fs, { promises as fsP } from 'fs'
 
@@ -23,33 +22,40 @@ import { getLogger, levels } from 'loglevel'
 import { prefixLogger } from '../logger/utils'
 import { access, readdir, readFile } from 'fs/promises'
 import crypto from 'crypto'
+import { v1 } from 'uuid'
 
-const audioPatterns = new RegExp('.flac|.mp3|.ogg|.m4a|.webm|.wav|.wv|.aac', 'i')
-const playlistPatterns = new RegExp('.m3u|.m3u8|.wpl')
-
-type ScannedSong = { song: Song; cover: Buffer | undefined | TransferDescriptor<Buffer> }
-type ScannedPlaylist = { filePath: string; title: string; songHashes: string[] }
 let parser: XMLParser | undefined
 
-const logger = getLogger('ScanWorker')
+const logger = getLogger(`ScanWorker (${v1()})`)
 logger.setLevel(process.env.DEBUG_LOGGING ? levels.DEBUG : levels.INFO)
 
 expose({
-  start(paths: togglePaths, existingFiles: string[], loggerPath: string, splitPattern: string) {
+  scanSingleSong(path: string, splitPattern: string, loggerPath: string) {
     return new Observable((observer) => {
       prefixLogger(loggerPath, logger)
-      startScan(paths, existingFiles, splitPattern, observer)
+      scan(path, splitPattern, observer).then(() => observer.complete())
     })
   },
 
-  scanSingleSong(path: string, loggerPath: string, splitPattern: string) {
+  getCover(path: string, basePath: string, id: string, onlyHigh: boolean, loggerPath: string) {
     return new Observable((observer) => {
       prefixLogger(loggerPath, logger)
-      scan([path], splitPattern, observer).finally(() => observer.complete())
+      getCover(path, basePath, id, onlyHigh)
+        .then((data) => observer.next(data))
+        .then(() => observer.complete())
     })
   },
 
-  scanSinglePlaylist(path: string, loggerPath: string, splitPattern: string) {
+  getHash(path: string, loggerPath: string) {
+    return new Observable((observer) => {
+      prefixLogger(loggerPath, logger)
+      generateChecksum(path)
+        .then((val) => observer.next(val))
+        .then(() => observer.complete())
+    })
+  },
+
+  scanSinglePlaylist(path: string, splitPattern: string, loggerPath: string) {
     return new Observable((observer) => {
       prefixLogger(loggerPath, logger)
       scanPlaylistByPath(path, splitPattern, observer).then(() => {
@@ -60,9 +66,24 @@ expose({
   }
 })
 
+async function getCover(filePath: string, basePath: string, id: string, onlyHigh: boolean) {
+  const metadata = await mm.parseFile(filePath, {
+    duration: false,
+    skipCovers: false,
+    skipPostHeaders: true
+  })
+
+  const cover =
+    metadata.common.picture?.[0].data ?? (await findCoverFile(path.dirname(filePath), path.basename(filePath)))
+
+  if (cover) {
+    return writeBuffer(cover, basePath, id, onlyHigh)
+  }
+}
+
 async function scanFile(filePath: string, splitPattern: string): Promise<ScannedSong> {
   const fsStats = await fsP.stat(filePath)
-  const buffer = await getBuffer(filePath)
+  // const buffer = await getBuffer(filePath)
 
   const processed = processFile(
     {
@@ -71,7 +92,7 @@ async function scanFile(filePath: string, splitPattern: string): Promise<Scanned
       deviceno: fsStats.dev.toString(),
       size: fsStats.size
     },
-    buffer,
+    // buffer,
     splitPattern
   )
 
@@ -169,12 +190,11 @@ async function parseM3U(filePath: string) {
 
       if (prevSongDetails.type !== 'LOCAL') {
         songs.push({
-          _id: v4(),
+          _id: `${prevSongDetails.type.toLocaleLowerCase()}:${songPath}`,
           ...prevSongDetails,
           type: prevSongDetails.type,
           url: songPath,
-          date_added: Date.now(),
-          hash: await generateChecksum(Buffer.from(prevSongDetails.type + songPath))
+          date_added: Date.now()
         } as Song)
       } else {
         songs.push({
@@ -261,22 +281,25 @@ async function findCoverFile(baseDir: string, fileName: string): Promise<Buffer 
   }
 }
 
-async function processFile(stats: stats, buffer: Buffer, splitPattern: string): Promise<ScannedSong> {
-  const metadata = await mm.parseBuffer(buffer)
-  const hash = metadata.format.audioMD5?.toString() ?? (await generateChecksum(buffer))
+async function processFile(stats: stats, splitPattern: string): Promise<ScannedSong> {
+  const metadata = await mm.parseFile(stats.path, {
+    duration: false,
+    skipCovers: true,
+    skipPostHeaders: true
+  })
+  const hash = metadata.format.audioMD5?.toString()
 
   const info = await getInfo(metadata, stats, hash, splitPattern)
-  let cover = metadata.common.picture && metadata.common.picture[0].data
 
-  if (!cover) {
-    logger.debug('Trying to find local cover for', stats.path)
-    cover = await findCoverFile(path.dirname(stats.path), path.basename(stats.path))
-  }
-
-  return { song: info, cover }
+  return { song: info }
 }
 
-async function getInfo(data: mm.IAudioMetadata, stats: stats, hash: string, splitPattern: string): Promise<Song> {
+async function getInfo(
+  data: mm.IAudioMetadata,
+  stats: stats,
+  hash: string | undefined,
+  splitPattern: string
+): Promise<Song> {
   const artists: Artists[] = []
   if (data.common.artists) {
     for (let i = 0; i < data.common.artists.length; i++) {
@@ -363,108 +386,93 @@ async function scanPlaylistByPath(
   observer: SubscriptionObserver<ScannedSong | ScannedPlaylist | Progress>
 ) {
   const result = await scanPlaylist(filePath)
-  const songHashes: string[] = []
+  const retSongs: Song[] = []
   if (result?.songs) {
-    for (const songPath of result.songs) {
+    for (const song of result.songs) {
       try {
-        if (songPath.path) {
+        if (song.path) {
           try {
-            await fsP.access(songPath.path)
+            await fsP.access(song.path)
           } catch (e) {
-            logger.error('Failed to access file at', songPath.path, 'while scanning playlist')
+            logger.error('Failed to access file at', song.path, 'while scanning playlist')
             continue
           }
-          const result = await scanFile(songPath.path, splitPattern)
-          if (result.song.hash) {
-            observer.next({ song: result.song, cover: result.cover && Transfer(result.cover as Buffer) })
-            songHashes.push(result.song.hash)
-          }
-        } else if (songPath.url && songPath.hash) {
-          observer.next({ song: songPath, cover: undefined })
-          songHashes.push(songPath.hash)
+          const result = await scanFile(song.path, splitPattern)
+          retSongs.push(result.song)
+        } else if (song.url) {
+          retSongs.push(song)
         }
       } catch (e) {
         logger.error(e)
       }
     }
     logger.debug('Sending playlist data to main process')
-    observer.next({ title: result.title, songHashes: songHashes, filePath })
+    observer.next({ title: result.title, filePath, songs: retSongs })
   }
 }
 
 async function scan(
-  allFiles: string[],
+  filePath: string,
   splitPattern: string,
   observer: SubscriptionObserver<ScannedSong | ScannedPlaylist | Progress>
 ) {
-  for (const [i, filePath] of allFiles.entries()) {
-    if (audioPatterns.exec(path.extname(filePath).toLowerCase())) {
-      logger.debug('Scanning song', filePath)
-      try {
-        const result = await scanFile(filePath, splitPattern)
-        observer.next({ song: result.song, cover: result.cover && Transfer(result.cover as Buffer) })
-      } catch (e) {
-        logger.error(e)
-      }
-    }
-
-    if (playlistPatterns.exec(path.extname(filePath).toLowerCase())) {
-      logger.debug('Scanning playlist', filePath)
-      await scanPlaylistByPath(filePath, splitPattern, observer)
-    }
-
-    observer.next({ total: allFiles.length, current: i + 1 } as Progress)
+  logger.debug('Scanning song', filePath)
+  try {
+    const result = await scanFile(filePath, splitPattern)
+    observer.next({ song: result.song })
+  } catch (e) {
+    logger.error(e)
   }
+  return
 }
 
-async function startScan(
-  paths: togglePaths,
-  existingFiles: string[],
-  splitPattern: string,
-  observer: SubscriptionObserver<unknown>
-) {
-  const allFiles: string[] = []
-
-  const excludePaths = paths.filter((val) => !val.enabled)
-  const excludeRegex = new RegExp(
-    excludePaths.length > 0
-      ? excludePaths
-          .map((val) => val.path)
-          .join('|')
-          .replaceAll('\\', '\\\\')
-      : /(?!)/
-  )
-
-  for (const p of paths) {
-    allFiles.push(...(await getAllFiles(p.path, excludeRegex)))
+async function writeBuffer(bufferDesc: Buffer, basePath: string, id?: string, onlyHigh = false) {
+  let sharpInstance: typeof import('sharp') | undefined = undefined
+  try {
+    sharpInstance = (await import('sharp')).default
+  } catch (e) {
+    console.error(
+      'Failed to import sharp. Probably missing libvips-cpp.so or libffi.so.7. Read more at https://moosync.app/wiki/#known-bugs',
+      e
+    )
   }
 
-  const newFiles = allFiles.filter((x) => !existingFiles.includes(x))
-  observer.next({ total: newFiles.length, current: 0 } as Progress)
-  await scan(newFiles, splitPattern, observer)
-  logger.debug('Scan complete')
-  observer.complete()
-}
+  id = id ?? v4()
 
-async function getAllFiles(p: string, excludeRegex: RegExp) {
-  const allFiles: string[] = []
-  if (fs.existsSync(p)) {
-    const files = await fs.promises.readdir(p)
-    for (const file of files) {
-      const filePath = path.resolve(path.join(p, file))
-      if (!filePath.match(excludeRegex)) {
-        if ((await fs.promises.stat(filePath)).isDirectory()) {
-          allFiles.push(...(await getAllFiles(filePath, excludeRegex)))
-        } else {
-          allFiles.push(filePath)
-        }
+  const highPath = path.join(basePath, id + '-high.jpg')
+  // Write new file only if it doesn't exist
+  try {
+    await access(highPath)
+  } catch {
+    if (sharpInstance && typeof sharpInstance === 'function') {
+      await sharpInstance(Buffer.from(bufferDesc)).resize(800, 800).toFile(highPath)
+    } else {
+      await writeNoResize(bufferDesc, highPath)
+    }
+  }
+  let lowPath
+  if (!onlyHigh) {
+    lowPath = path.join(basePath, id + '-low.jpg')
+    try {
+      await access(lowPath)
+    } catch {
+      if (sharpInstance) {
+        await sharpInstance(Buffer.from(bufferDesc)).resize(80, 80).toFile(lowPath)
+      } else {
+        lowPath = highPath
       }
     }
   }
-  return allFiles
+
+  return { high: highPath, low: lowPath }
 }
 
-async function generateChecksum(buffer: Buffer): Promise<string> {
+async function writeNoResize(buffer: Buffer, path: string) {
+  await fsP.writeFile(path, buffer)
+}
+
+async function generateChecksum(filePath: string): Promise<string> {
+  const buffer = await getBuffer(filePath)
   const h = crypto.createHash('md5')
   const hash = h.update(buffer).digest('hex')
   return hash

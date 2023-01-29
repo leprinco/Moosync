@@ -134,10 +134,6 @@ declare namespace ScannerRequests {
   interface ScanSingleSong {
     songPath: string
   }
-
-  interface GetCoverByHash {
-    hash: string
-  }
 }
 
 declare namespace PreferenceRequests {

@@ -5,6 +5,7 @@ const fs = require('fs')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const { resolve } = require('path')
 const manifest = require('./package.json')
+const ExternalsPlugin = require('webpack5-externals-plugin')
 
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
@@ -52,7 +53,6 @@ module.exports = {
       new webpack.ProvidePlugin({
         Buffer: ['buffer', 'Buffer']
       })
-
       // new BundleAnalyzerPlugin()
     ],
     externals: {
@@ -236,9 +236,12 @@ module.exports = {
           .add(__dirname + '/src/utils/spotify/index.ts')
           .end()
 
-        config.plugin('thread').use(ThreadsPlugin, [{ target: 'electron-node-worker' }])
-
         config.plugin('copy').use(CopyWebpackPlugin, [{ patterns: [{ from: resolve('dev-app-update.yml') }] }])
+
+        config
+          .plugin('ExternalsPlugin')
+          .use(ExternalsPlugin, [{ type: 'commonjs', include: __dirname + '/node_modules/sharp' }])
+        config.plugin('thread').use(ThreadsPlugin, [{ target: 'electron-node-worker', plugins: ['ExternalsPlugin'] }])
 
         // config.plugin('copy').use(BundleAnalyzerPlugin)
       }

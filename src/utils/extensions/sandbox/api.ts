@@ -184,11 +184,11 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
   }
 
   public async _emit<T extends ExtraExtensionEventTypes>(event: ExtraExtensionEvents<T>) {
-    console.debug('emitting', event.type, 'in package', this.packageName)
     const callback = this.eventCallbackMap[event.type] as (
       ...data: ExtraExtensionEventData<T>
     ) => Promise<ExtraExtensionEventReturnType<T>>
     if (callback && typeof callback === 'function') {
+      console.debug('emitting', event.type, 'in package', this.packageName)
       return (await callback(...event.data)) as ExtraExtensionEventReturnType<T>
     }
   }

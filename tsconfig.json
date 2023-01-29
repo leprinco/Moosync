@@ -19,7 +19,6 @@
       "webpack-env",
       "bootstrap-vue",
       "@types/jest",
-      "playwright",
     ],
     "paths": {
       "*": [

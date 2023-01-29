@@ -11003,6 +11003,11 @@ webpack-virtual-modules@^0.4.2:
   resolved "https://registry.yarnpkg.com/webpack-virtual-modules/-/webpack-virtual-modules-0.4.6.tgz#3e4008230731f1db078d9cb6f68baf8571182b45"
   integrity sha512-5tyDlKLqPfMqjT3Q9TAqf2YqjwmnUleZwzJi1A5qXnlBCdj2AtOJ6wAWdglTIDOPgOiOrXeBeFcsQ8+aGQ6QbA==
 
+webpack5-externals-plugin@^1.0.4:
+  version "1.0.4"
+  resolved "https://registry.yarnpkg.com/webpack5-externals-plugin/-/webpack5-externals-plugin-1.0.4.tgz#af00aa26a29921e222c4f257fce5c81bce9d053d"
+  integrity sha512-JhsuQWDqeZagNFZ5iiv3VZjZh5DeT+D/LQ8jtCeACTQtp7l/S/i6ReecR3bd3FC5eDAABhDfZa0/IJHbACTVqg==
+
 webpack@^5.54.0, webpack@^5.65.0, webpack@^5.75.0:
   version "5.75.0"
   resolved "https://registry.yarnpkg.com/webpack/-/webpack-5.75.0.tgz#1e440468647b2505860e94c9ff3e44d5b582c152"

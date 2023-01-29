@@ -96,6 +96,10 @@ interface SearchableSong {
   // MD5 hash
   hash?: string
 
+  size?: number
+  inode?: string
+  deviceno?: string
+
   type?: PlayerTypes
 
   // Will return all songs provided by this extension
