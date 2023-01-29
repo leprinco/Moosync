@@ -49,11 +49,11 @@
       "playCount": "Play count"
     },
     "playlist": {
-      "new": "Playlist erstellen",
+      "new": "New Playlist",
+      "addFromURL": "Import from URL",
       "remove": "Playlist entfernen",
       "export": "Playlist exportieren",
       "add": "Zur Playlist hinzufügen",
-      "addFromURL": "Playlist von URL hinzufügen",
       "save": "Add To Library"
     },
     "song": {
@@ -107,7 +107,8 @@
       "themes": "Themes",
       "themes_tooltip": "Farben anpassen",
       "themes_default": "Standard",
-      "createTheme": "Neues Theme erstellen",
+      "createTheme": "New theme",
+      "importTheme": "Import theme",
       "newTheme": {
         "name": "Theme-Name",
         "author": "Autor",

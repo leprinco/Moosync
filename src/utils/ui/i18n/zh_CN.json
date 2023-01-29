@@ -49,11 +49,11 @@
       "playCount": "播放次数"
     },
     "playlist": {
-      "new": "创建播放列表",
+      "new": "New Playlist",
+      "addFromURL": "Import from URL",
       "remove": "从播放列表中移除",
       "export": "导出播放列表",
       "add": "添加到播放列表",
-      "addFromURL": "从 URL 添加播放列表",
       "save": "添加到库"
     },
     "song": {
@@ -107,7 +107,8 @@
       "themes": "主题",
       "themes_tooltip": "自定义颜色",
       "themes_default": "默认",
-      "createTheme": "创建新主题",
+      "createTheme": "New theme",
+      "importTheme": "Import theme",
       "newTheme": {
         "name": "主题名称",
         "author": "作者",

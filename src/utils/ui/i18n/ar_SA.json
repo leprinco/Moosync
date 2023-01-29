@@ -49,11 +49,11 @@
       "playCount": "Play count"
     },
     "playlist": {
-      "new": "إنشاء قائمة تشغيل",
+      "new": "New Playlist",
+      "addFromURL": "Import from URL",
       "remove": "إزالة قائمة التشغيل",
       "export": "تصدير قائمة التشغيل",
       "add": "إضافة إلى قائمة التشغيل",
-      "addFromURL": "إضافة قائمة تشغيل من URL",
       "save": "Add To Library"
     },
     "song": {
@@ -107,7 +107,8 @@
       "themes": "السمات",
       "themes_tooltip": "تخصيص الألوان",
       "themes_default": "الافتراضي",
-      "createTheme": "إنشاء سمة جديدة",
+      "createTheme": "New theme",
+      "importTheme": "Import theme",
       "newTheme": {
         "name": "اسم السمة",
         "author": "المؤلف",
