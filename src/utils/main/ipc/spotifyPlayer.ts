@@ -77,14 +77,14 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
   ): Promise<SpotifyRequests.ReturnType<T> | Error | undefined> {
     if (this.playerProcess && !this.playerProcess.killed && this.playerProcess.connected) {
       // Don't reject error instead resolve it. Makes it easier to pass it to renderer
+      let resolveTimeout: ReturnType<typeof setTimeout>
       return new Promise<SpotifyRequests.ReturnType<T> | Error>((resolve) => {
         const id = v1()
-        let resolved = false
         const listener = (message: PlayerChannelMessage) => {
           if (message.channel === id) {
             console.debug('Got reply from librespot', message)
             this.playerProcess?.off('message', listener)
-            resolved = true
+            resolveTimeout && clearTimeout(resolveTimeout)
 
             if (message.error) {
               resolve(new Error(message.error))
@@ -95,16 +95,16 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
         }
 
         // Automatically resolve if no reply from child process in 5 secs
-        setTimeout(() => {
-          if (!resolved) {
-            this.playerProcess?.off('message', listener)
-            resolve(new Error('Failed to resolve message'))
-          }
+        resolveTimeout = setTimeout(() => {
+          this.playerProcess?.off('message', listener)
+          console.error('Failed to resolve message for message', message)
+          resolve(new Error('Failed to resolve message'))
         }, 5000)
 
         this.playerProcess?.on('message', listener)
 
         try {
+          console.debug('sending message to spotify process', { data: message, channel: id })
           this.playerProcess?.send({ data: message, channel: id })
         } catch (e) {
           console.error('Failed to send message to librespot process', e)
@@ -117,13 +117,17 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
     return undefined
   }
 
-  public closePlayer(event?: Electron.IpcMainEvent, request?: IpcRequest) {
+  public closePlayer(event?: Electron.IpcMainEvent, request?: IpcRequest, keepListeners = false) {
     if (this.playerProcess) {
       this.isConnected = false
       this.playerProcess.removeAllListeners()
       this.playerProcess.kill()
-      this.eventEmitter.removeAllListeners()
-      this.listeners = {}
+
+      if (!keepListeners) {
+        this.eventEmitter.removeAllListeners()
+        this.listeners = {}
+      }
+
       this.playerProcess = undefined
     }
 
@@ -141,8 +145,10 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
 
     console.debug('Spawning librespot process. Retry:', retries)
 
-    this.closePlayer()
+    this.closePlayer(undefined, undefined, true)
     this.playerProcess = fork(__dirname + '/spotify.js', ['logPath', defaultLogPath])
+    this.playerProcess.stdout?.on('data', (d) => console.log('spotify player', d.toString()))
+    this.playerProcess.stderr?.on('data', (d) => console.log('spotify player err:', d.toString()))
 
     await new Promise<void>((r) => {
       this.playerProcess?.once('spawn', () => r())
@@ -154,9 +160,18 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
       }
     })
 
-    this.playerProcess.once('exit', () => this.spawnProcess(retries + 1))
-    this.playerProcess.once('close', () => this.spawnProcess(retries + 1))
-    this.playerProcess.once('error', () => this.spawnProcess(retries + 1))
+    this.playerProcess.once('exit', () => {
+      console.warn('Librespot process exited, respawning')
+      this.spawnProcess(retries + 1)
+    })
+    this.playerProcess.once('close', () => {
+      console.warn('Librespot process closed, respawning')
+      this.spawnProcess(retries + 1)
+    })
+    this.playerProcess.once('error', (err) => {
+      console.warn('Librespot process errored, respawning', err)
+      this.spawnProcess(retries + 1)
+    })
 
     if (this.config) {
       await this.sendAsync({ type: 'CONNECT', args: this.config })

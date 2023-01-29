@@ -330,7 +330,6 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
 
   getPlaylistMenu(event: Event, playlist: ExtendedPlaylist) {
     this.playlistInAction = playlist
-    console.log(playlist)
     this.getContextMenu(event, {
       type: 'PLAYLIST',
       args: {

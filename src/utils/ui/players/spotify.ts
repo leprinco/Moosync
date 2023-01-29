@@ -82,7 +82,11 @@ export class SpotifyPlayer extends Player {
   }
 
   private registerListener<T extends PlayerEventTypes>(event: T, listener: (e: PlayerEvent<T>) => void) {
-    const channel = window.SpotifyPlayer.on(event, listener)
+    const listenerMod: typeof listener = (e) => {
+      e.event !== 'TimeUpdated' && console.debug('Spotify player, got event: ', e)
+      listener(e)
+    }
+    const channel = window.SpotifyPlayer.on(event, listenerMod)
     this.listenerMap[event] = { listener: listener, channel }
   }
 

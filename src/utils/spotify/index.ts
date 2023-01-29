@@ -143,10 +143,6 @@ class SpotifyPlayerProcess {
     return !!(val as { channel: string }).channel
   }
 
-  private async handleCommand(command: SpotifyRequests.SpotifyCommands, args: unknown[]) {
-    return await this.queueCommand(command, args)
-  }
-
   private async getToken(scopes: TokenScope[], tries = 0): Promise<Token | undefined> {
     await this.waitForPlayerInitialize()
     try {
@@ -189,11 +185,19 @@ class SpotifyPlayerProcess {
       }
 
       if (type === 'COMMAND') {
-        ret.data = await this.handleCommand(args.command, args.args)
+        try {
+          ret.data = await this.queueCommand(args.command, args.args)
+        } catch (e) {
+          ret.error = (e as Error).toString()
+        }
       }
 
       if (type === 'TOKEN') {
-        ret.data = await this.getToken(args)
+        try {
+          ret.data = await this.getToken(args)
+        } catch (e) {
+          ret.error = (e as Error).toString()
+        }
       }
 
       console.debug('sending reply', ret)
