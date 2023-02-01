@@ -3,7 +3,7 @@ const ThreadsPlugin = require('threads-plugin')
 const dotenv = require('dotenv').config({ path: __dirname + '/config.env' })
 const fs = require('fs')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
-const { resolve } = require('path')
+const { resolve, join } = require('path')
 const manifest = require('./package.json')
 const ExternalsPlugin = require('webpack5-externals-plugin')
 
@@ -240,7 +240,7 @@ module.exports = {
 
         config
           .plugin('ExternalsPlugin')
-          .use(ExternalsPlugin, [{ type: 'commonjs', include: __dirname + '/node_modules/sharp' }])
+          .use(ExternalsPlugin, [{ type: 'commonjs', include: join(__dirname, 'node_modules', 'sharp') }])
         config.plugin('thread').use(ThreadsPlugin, [{ target: 'electron-node-worker', plugins: ['ExternalsPlugin'] }])
 
         // config.plugin('copy').use(BundleAnalyzerPlugin)
