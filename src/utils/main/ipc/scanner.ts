@@ -24,6 +24,7 @@ import scannerWorker from 'threads-plugin/dist/loader?name=0!/src/utils/main/wor
 import { EventEmitter } from 'events'
 import { SongDBInstance } from '@/utils/main/db/database'
 import { v4 } from 'uuid'
+import os from 'os'
 
 const loggerPath = app.getPath('logs')
 const audioPatterns = new RegExp('.flac|.mp3|.ogg|.m4a|.webm|.wav|.wv|.aac', 'i')
@@ -280,6 +281,8 @@ export class ScannerChannel implements IpcChannelInterface {
     await this.createDirIfNotExists(thumbPath)
 
     const scanEmitter = new EventEmitter()
+    scanEmitter.setMaxListeners(os.cpus().length + 2)
+
     scanEmitter.on('song', async (song: Song) => {
       if (song.path) {
         coverPool.queue(async (worker) => this.storeCover(worker, song, thumbPath, songDb))
