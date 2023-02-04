@@ -27,7 +27,9 @@
                   <b-progress-bar class="progress-bar" :value="currentValue" animated />
                 </b-progress>
               </b-col>
-              <b-col cols="auto" class="ml-3"> {{ ((currentValue / totalValue) * 100).toPrecision(2) }}% </b-col>
+              <b-col cols="auto" class="ml-3">
+                {{ Math.min(((currentValue / totalValue) * 100).toPrecision(2), 100) }}%
+              </b-col>
             </b-row>
           </b-container>
 
@@ -104,6 +106,8 @@ export default class Paths extends Vue {
   private setProgress(progress: Progress) {
     this.currentValue = progress.current
     this.totalValue = progress.total
+
+    console.log(this.currentValue, this.totalValue)
   }
 
   private openWiki() {

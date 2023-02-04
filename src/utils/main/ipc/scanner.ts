@@ -25,12 +25,14 @@ import { EventEmitter } from 'events'
 import { SongDBInstance } from '@/utils/main/db/database'
 import { v4 } from 'uuid'
 import os from 'os'
+import { ipcMain } from 'electron'
+import { WindowHandler } from '../windowManager'
 
 const loggerPath = app.getPath('logs')
 const audioPatterns = new RegExp('.flac|.mp3|.ogg|.m4a|.webm|.wav|.wv|.aac', 'i')
 const playlistPatterns = new RegExp('.m3u|.m3u8|.wpl')
 
-enum scanning {
+enum ScanStatus {
   UNDEFINED,
   SCANNING,
   QUEUED
@@ -38,7 +40,7 @@ enum scanning {
 
 export class ScannerChannel implements IpcChannelInterface {
   name = IpcEvents.SCANNER
-  private scanStatus: scanning = scanning.UNDEFINED
+  private scanStatus: ScanStatus = ScanStatus.UNDEFINED
 
   private totalScanFiles = 0
   private currentScanFile = 0
@@ -244,7 +246,23 @@ export class ScannerChannel implements IpcChannelInterface {
     })
   }
 
+  private reportProgress(currentScanIndex: number) {
+    this.currentScanFile = currentScanIndex
+
+    WindowHandler.getWindow(false)?.webContents.send(ScannerEvents.PROGRESS_CHANNEL, {
+      current: this.currentScanFile,
+      total: this.totalScanFiles,
+      status: this.scanStatus
+    } as Progress)
+  }
+
   public async scanAll(event?: IpcMainEvent, request?: IpcRequest<ScannerRequests.ScanSongs>) {
+    if (this.scanStatus !== ScanStatus.UNDEFINED) {
+      return
+    }
+
+    this.scanStatus = ScanStatus.SCANNING as ScanStatus
+
     const paths = getCombinedMusicPaths() ?? []
     await this.destructiveScan(paths)
 
@@ -265,7 +283,7 @@ export class ScannerChannel implements IpcChannelInterface {
       allFiles.push(...(await this.getAllFiles(p.path, excludeRegex)))
     }
 
-    let existingFiles = request?.params.forceScan ? [] : getSongDB().getAllPaths()
+    const existingFiles = getSongDB().getAllPaths()
     const newFiles = allFiles.filter((x) => !existingFiles.includes(x.path))
 
     const songDb = getSongDB()
@@ -289,11 +307,17 @@ export class ScannerChannel implements IpcChannelInterface {
       }
     })
 
+    this.totalScanFiles = newFiles.length
+
+    let index = 0
     for (const f of newFiles.filter((val) => val.type === 'SONG')) {
-      scannerPool.queue((worker) => this.scanSong(worker, songDb, f.path, splitPattern, scanEmitter))
+      scannerPool.queue((worker) => {
+        index++
+        this.reportProgress(index)
+        return this.scanSong(worker, songDb, f.path, splitPattern, scanEmitter)
+      })
     }
 
-    existingFiles = request?.params.forceScan ? [] : getSongDB().getAllPaths()
     for (const f of newFiles.filter((val) => val.type === 'PLAYLIST')) {
       scannerPool.queue(async (worker) => {
         const scanned = await this.promisifyWorker(worker.scanSinglePlaylist(f.path, splitPattern, loggerPath))
@@ -317,13 +341,25 @@ export class ScannerChannel implements IpcChannelInterface {
       })
     }
 
+    console.log('waiting for settle')
     await scannerPool.settled(true)
-    await coverPool.settled()
 
+    console.log('scanner settled')
+
+    console.log('settled')
     await scannerPool.terminate()
-    await coverPool.terminate()
+
+    console.log('reporting progress', newFiles.length, this.totalScanFiles)
+    this.reportProgress(newFiles.length)
 
     event?.reply(request?.responseChannel)
+
+    if (this.scanStatus === ScanStatus.QUEUED) {
+      this.scanStatus = ScanStatus.UNDEFINED
+      ipcMain.emit(IpcEvents.SCANNER, request)
+    } else {
+      this.scanStatus = ScanStatus.UNDEFINED
+    }
   }
 
   private async createDirIfNotExists(thumbPath: string) {
