@@ -98,7 +98,7 @@ export default class Paths extends Vue {
   private isLibvipsAvailable = true
 
   private forceRescan() {
-    window.FileUtils.scan(true).then(console.log)
+    window.FileUtils.scan(true)
   }
 
   private setProgress(progress: Progress) {
