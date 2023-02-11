@@ -262,7 +262,7 @@ interface loggerUtils {
   warn: (...message: unknown[]) => Promise<void>
   debug: (...message: unknown[]) => Promise<void>
   trace: (...message: unknown[]) => Promise<void>
-  watchLogs: (callback: (data: unknown) => void) => Promise<void>
+  watchLogs: (callback: (data: LogLines[]) => void) => Promise<void>
   unwatchLogs: () => Promise<void>
   setLogLevel: (level: import('loglevel').LogLevelDesc) => Promise<void>
 }

@@ -13,7 +13,6 @@ import { WriteStream, createWriteStream, readdir, unlink } from 'fs'
 import log from 'loglevel'
 import path from 'path'
 import stripAnsi from 'strip-ansi'
-import { Tail } from 'tail'
 
 let filePath: string
 let fileStream: WriteStream
@@ -125,6 +124,6 @@ export function prefixLogger(basePath: string, logger: log.Logger) {
   activeLoggers.push(logger)
 }
 
-export function getLogTail() {
-  return new Tail(path.join(filePath), { encoding: 'utf-8', fromBeginning: true, follow: true })
+export function getLogPath() {
+  return filePath
 }

@@ -1,3 +1,11 @@
+type LogLines = {
+  id: number
+  time: string
+  level: LogLevels
+  process: string
+  message: string
+}
+
 interface InvidiousSong extends Song {
   invidiousPlaybackUrl?: string
 }

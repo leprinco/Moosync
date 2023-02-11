@@ -5475,6 +5475,11 @@ file-entry-cache@^6.0.1:
   dependencies:
     flat-cache "^3.0.4"
 
+file-reader-reverse@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/file-reader-reverse/-/file-reader-reverse-1.0.2.tgz#0e46c3d54db83623137488b8865c52e0de5521d0"
+  integrity sha512-+hqtt/T8fsdmA/axD7/N8XDg3DPXAaXtbFz5fofMDL2VMOfc0kx0tNANalJ58WiEyFpHYYwUXBhEL9Qm+sqLKg==
+
 file-type@^18.0.0:
   version "18.0.0"
   resolved "https://registry.yarnpkg.com/file-type/-/file-type-18.0.0.tgz#7a39378f8657ddc02807a0c62cb77cb4dc318197"
@@ -10125,11 +10130,6 @@ svgo@^2.7.0:
     csso "^4.2.0"
     picocolors "^1.0.0"
     stable "^0.1.8"
-
-tail@^2.2.5:
-  version "2.2.5"
-  resolved "https://registry.yarnpkg.com/tail/-/tail-2.2.5.tgz#8df4c1c73a37d73b9994bcdedbf3ea238c72c986"
-  integrity sha512-vsP7EaAEOr9H8qRfXMEiHvd+57XnAu9qxZw+4OsSGzHG5WYOA8wrOAaUCR3E0iE6Vxng1h34hgCyluyXc8ltng==
 
 tapable@^1.0.0:
   version "1.1.3"

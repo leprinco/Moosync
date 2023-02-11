@@ -9,11 +9,11 @@
 
 import { rendererLogger } from '../logger'
 import { IpcEvents, LoggerEvents } from './constants'
-import { getLogTail } from '../logger/utils'
-import { WindowHandler } from '../windowManager'
 import { Tail } from 'tail'
-import { setLogLevel } from '../logger/utils'
+import { getLogPath, setLogLevel } from '../logger/utils'
 import { getExtensionHostChannel } from '.'
+import { ReverseFileReader } from 'file-reader-reverse'
+import { WindowHandler } from '../windowManager'
 
 export class LoggerChannel implements IpcChannelInterface {
   name = IpcEvents.LOGGER
@@ -73,17 +73,24 @@ export class LoggerChannel implements IpcChannelInterface {
     event.reply(request.responseChannel)
   }
 
-  private listenLogs(event: Electron.IpcMainEvent, request: IpcRequest) {
-    this.tail = getLogTail()
+  private async listenLogs(event: Electron.IpcMainEvent, request: IpcRequest) {
     let lineIndex = 0
-    this.tail.on('line', (data) => {
-      WindowHandler.getWindow(false)?.webContents.send(LoggerEvents.WATCH_LOGS, {
-        id: lineIndex,
-        ...this.parseLogLine(data)
-      })
-      lineIndex++
-    })
-    this.tail.watch()
+    const reverseReader = new ReverseFileReader(getLogPath())
+    const parsed: LogLines[] = []
+
+    for await (const lines of reverseReader.getLatestEntires()) {
+      for (const l of lines) {
+        const p = this.parseLogLineReverse(l, lineIndex)
+        if (p) {
+          parsed.push(p)
+        }
+        lineIndex++
+      }
+    }
+
+    WindowHandler.getWindow(false)?.webContents.send(LoggerEvents.WATCH_LOGS, parsed)
+    this.prev = undefined
+
     event.reply(request.responseChannel)
   }
 
@@ -93,18 +100,27 @@ export class LoggerChannel implements IpcChannelInterface {
     event.reply(request.responseChannel)
   }
 
-  private parseLogLine(line: string) {
+  private prev: string | undefined
+  private parseLogLineReverse(line: string, index: number) {
     const split = line.split(']')
     if (split.length > 3) {
       const time = split[0]?.substring(1)
-      const level = split[1]?.trim().substring(1)
-      const process = split[2]?.trim().substring(1)
-      const message = split.slice(3).join(']').substring(1).trim()
+      if (!isNaN(Date.parse(time))) {
+        const level = split[1]?.trim().substring(1)
+        const process = split[2]?.trim().substring(1)
+        const message = split.slice(3).join(']').substring(1).trim()
 
-      return { time, level, process, message }
-    } else {
-      return { prev: line }
+        const currentMessage = { id: index, time, level, process, message }
+
+        if (this.prev) currentMessage.message += '\n' + this.prev
+        this.prev = undefined
+
+        return currentMessage
+      }
     }
+
+    if (this.prev) this.prev = line + '\n' + this.prev
+    else this.prev = line
   }
 
   private setLogLevel(event: Electron.IpcMainEvent, request: IpcRequest<LoggerRequests.LogLevels>) {
