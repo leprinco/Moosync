@@ -54,6 +54,15 @@
             key="audio"
           />
 
+          <RadioCheckbox
+            :title="$t('settings.system.volumePersist.title')"
+            class="mt-4"
+            :tooltip="$t('settings.system.volumePersist.tooltip')"
+            :isExtension="false"
+            :defaultValue="volumePersistModeCheckboxValues"
+            key="volumePersist"
+          />
+
           <CheckboxGroup
             :title="$t('settings.system.scrobble.provider_toggle.title')"
             class="mt-4"
@@ -485,6 +494,21 @@ export default class System extends Vue {
       {
         key: 'always_proxy',
         title: this.$tc('settings.system.youtubeAlternative.invidious.always_proxy'),
+        enabled: true
+      }
+    ]
+  }
+
+  get volumePersistModeCheckboxValues(): Checkbox[] {
+    return [
+      {
+        key: 'separate_volumes',
+        title: this.$tc('settings.system.audioSettings.persistSeparateVolumes'),
+        enabled: true
+      },
+      {
+        key: 'persist_map_volumes',
+        title: this.$tc('settings.system.audioSettings.persistMapVolume'),
         enabled: true
       }
     ]

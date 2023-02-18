@@ -11,6 +11,7 @@ import { action, mutation } from 'vuex-class-component'
 
 import { VuexModule } from './module'
 import { v4 } from 'uuid'
+import Vue from 'vue'
 
 class Queue implements GenericQueue<Song> {
   data: QueueData<Song> = {}
@@ -23,7 +24,27 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
   public currentSong: Song | null | undefined | undefined = null
   private songQueue = new Queue()
   private repeat = false
-  public volume = 50
+
+  private _volume = 50
+  public get volume() {
+    if (this.currentSong) {
+      const type = this.currentSong.providerExtension ?? this.currentSong.type
+      return this.volumeMap[type] ?? this._volume
+    }
+    return this._volume
+  }
+
+  public set volume(vol: number) {
+    this._volume = vol
+
+    if (this.currentSong) {
+      const type = this.currentSong.providerExtension ?? this.currentSong.type
+      Vue.set(this.volumeMap, type, vol)
+    }
+  }
+
+  private volumeMap: Record<string, number> = {}
+
   public timestamp = 0
   public loading = false
 

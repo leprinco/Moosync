@@ -4,7 +4,8 @@ import { createProxy } from 'vuex-class-component'
 import { ProxyWatchers } from 'vuex-class-component/dist/interfaces'
 
 const persist = [
-  'player.volume',
+  'player._volume',
+  'player.volumeMap',
   'player.currentSong',
   'player.songQueue',
   'player.repeat',
