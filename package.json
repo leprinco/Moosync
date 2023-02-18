@@ -1,6 +1,6 @@
 {
     "name": "moosync",
-    "version":"7.1.0.r45.g31626320",
+    "version": "7.1.0",
     "private": true,
     "author": "Ovenoboyo <ovenoboyo@gmail.com>",
     "description": "Moosync is a customizable desktop music player with a clean interface",
