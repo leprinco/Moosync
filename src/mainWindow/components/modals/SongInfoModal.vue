@@ -189,7 +189,7 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     return 6
   }
 
-  getComponent(t: typeof this.tabs[0]['items'][0]) {
+  getComponent(t: (typeof this.tabs)[0]['items'][0]) {
     if (t[0] === 'artists' || t[0] === 'genre' || t[0] === 'album') {
       return 'tags-input'
     }
@@ -201,7 +201,7 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     return 'div'
   }
 
-  getKey(t: typeof this.tabs[0]['items'][0] | string) {
+  getKey(t: (typeof this.tabs)[0]['items'][0] | string) {
     let ret: string
     if (typeof t === 'string') return (ret = t)
     else ret = t[0]
@@ -209,7 +209,7 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     return ret.replaceAll('_', ' ')
   }
 
-  getValue(t: typeof this.tabs[0]['items'][0]): string | DatalistArray {
+  getValue(t: (typeof this.tabs)[0]['items'][0]): string | DatalistArray {
     if (this.song !== null) {
       if (!t[2]) return this.song[t[0] as keyof Song] as string
       else {
@@ -221,7 +221,7 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     return ''
   }
 
-  getPlaceholder(t: typeof this.tabs[0]['items'][0]): string {
+  getPlaceholder(t: (typeof this.tabs)[0]['items'][0]): string {
     return `Add ${t[0].charAt(0).toUpperCase() + t[0].slice(1)}`
   }
 
@@ -250,7 +250,7 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     }
   }
 
-  async copyText(field: typeof this.tabs[0]['items'][0]) {
+  async copyText(field: (typeof this.tabs)[0]['items'][0]) {
     if (this.popoverTimeout) {
       clearTimeout(this.popoverTimeout)
       this.popoverTimeout = undefined
