@@ -144,11 +144,16 @@ export default class PlayerControls extends Vue {
 
   get volume() {
     const volume = vxm.player.volume
-    return Math.log(volume) / scale
+    if (volume > 0) {
+      return Math.log(volume) / scale
+    }
+    return volume
   }
 
   set volume(value: number) {
-    value = Math.exp(scale * value)
+    if (value > 0) {
+      value = Math.exp(scale * value)
+    }
 
     vxm.player.volume = value
     if (value != 0) {
