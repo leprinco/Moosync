@@ -383,7 +383,7 @@ export default class SearchPage extends mixins(
     })
   }
 
-  onCardClick(item: typeof this.currentEntityList[0]) {
+  onCardClick(item: (typeof this.currentEntityList)[0]) {
     switch (this.activeSubcategory) {
       case 'artists':
         this.gotoArtist(item as Artists, [this.activeProvider])
@@ -400,7 +400,7 @@ export default class SearchPage extends mixins(
     }
   }
 
-  onCardContextMenu(event: PointerEvent, item: typeof this.currentEntityList[0]) {
+  onCardContextMenu(event: PointerEvent, item: (typeof this.currentEntityList)[0]) {
     switch (this.activeSubcategory) {
       case 'playlists':
         this.getContextMenu(event, {

@@ -219,7 +219,7 @@ export default class Albums extends mixins(
 
     const renderFirst = 9
 
-    const fetchedSongs: (Song & typeof playCounts[0])[] = []
+    const fetchedSongs: (Song & (typeof playCounts)[0])[] = []
     for (let i = 0; i < values.length; i++) {
       let song: Song | undefined = (
         await window.SearchUtils.searchSongsByOptions({
