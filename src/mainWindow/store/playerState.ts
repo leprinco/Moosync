@@ -96,6 +96,14 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
   }
 
   @mutation
+  setQueueDataSong(song: Song) {
+    this.songQueue.data[song._id] = song
+    if (this.currentSong?._id === song._id) {
+      this.currentSong = song
+    }
+  }
+
+  @mutation
   private clearCurrentSong() {
     this.currentSong = null
   }

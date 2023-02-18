@@ -23,6 +23,7 @@
     <FormModal />
     <EntityInfoModal />
     <PinEntryModal />
+    <IncorrectPlaybackModal />
   </div>
 </template>
 
@@ -54,6 +55,7 @@ import { YoutubeAlts } from './store/providers'
 import PinEntryModal from './components/modals/PinEntryModal.vue'
 import { ExtensionProvider } from '@/utils/ui/providers/extensionWrapper'
 import { sortSongListFn } from '@/utils/common'
+import IncorrectPlaybackModal from './components/modals/IncorrectPlaybackModal.vue'
 
 @Component({
   components: {
@@ -67,7 +69,8 @@ import { sortSongListFn } from '@/utils/common'
     OAuthModal,
     FormModal,
     EntityInfoModal,
-    PinEntryModal
+    PinEntryModal,
+    IncorrectPlaybackModal
   }
 })
 export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandlerMixin, JukeboxMixin, ProviderMixin) {

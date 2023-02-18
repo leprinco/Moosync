@@ -80,7 +80,8 @@
       "showHidden": "Show hidden songs",
       "hideHidden": "Hide hidden songs"
     },
-    "moreInfo": "More Info"
+    "moreInfo": "More Info",
+    "incorrectPlayback": "Incorrect playback?"
   },
   "providers": {
     "youtube": "Youtube",

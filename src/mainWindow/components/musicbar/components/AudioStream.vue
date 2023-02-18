@@ -61,6 +61,8 @@ import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 import { SpotifyPlayer } from '@/utils/ui/players/spotify'
 import { isEmpty } from '@/utils/common'
+import { bus } from '@/mainWindow/main'
+import { EventBus } from '@/utils/main/ipc/constants'
 
 @Component({})
 export default class AudioStream extends mixins(
@@ -553,6 +555,13 @@ export default class AudioStream extends mixins(
     this.registerMediaControlListener()
 
     vxm.player.$watch('playerState', this.onPlayerStateChanged, { immediate: true, deep: false })
+
+    bus.$on(EventBus.FORCE_LOAD_SONG, () => {
+      if (this.currentSong) {
+        console.log(this.currentSong.playbackUrl)
+        this.loadAudio(this.currentSong, true, true)
+      }
+    })
   }
 
   /**
@@ -718,7 +727,7 @@ export default class AudioStream extends mixins(
 
     let res: { url?: string; duration?: number } | undefined = { url: song.playbackUrl, duration: song.duration }
 
-    if (song.playbackUrl && !isEmpty(song.duration)) {
+    if (!song.playbackUrl || isEmpty(song.duration)) {
       res = this.getItem(`url_duration:${song._id}`)
       console.debug('cache url and duration', res)
     }
@@ -753,7 +762,7 @@ export default class AudioStream extends mixins(
 
   private lastLoadedSong?: Song
 
-  private async loadAudio(song: Song, loadedState: boolean) {
+  private async loadAudio(song: Song, loadedState: boolean, force = false) {
     if (!this.playersInitialized) {
       return
     }
@@ -765,7 +774,7 @@ export default class AudioStream extends mixins(
       }
     }
 
-    if (song._id === this.lastLoadedSong?._id) {
+    if (!force && song._id === this.lastLoadedSong?._id) {
       console.debug('Got duplicate song', song)
       return
     }
