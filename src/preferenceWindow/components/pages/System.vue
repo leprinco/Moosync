@@ -60,8 +60,14 @@
             :tooltip="$t('settings.system.volumePersist.tooltip')"
             :isExtension="false"
             :defaultValue="volumePersistModeCheckboxValues"
+            :onValueChange="onVolumePersistValueChange"
+            :onValueFetch="onVolumePersistValueChange"
             key="volumePersist"
           />
+
+          <!-- <b-col v-if="showVolumeMapField">
+
+          </b-col> -->
 
           <CheckboxGroup
             :title="$t('settings.system.scrobble.provider_toggle.title')"
@@ -380,6 +386,7 @@ export default class System extends Vue {
   private showPipedField = false
   private showJukeboxField = false
   private showSpotifyUserPass = false
+  private showVolumeMapField = false
 
   private invidiousInstances: string[] = []
   private invidiousDetails = ''
@@ -497,6 +504,15 @@ export default class System extends Vue {
         enabled: true
       }
     ]
+  }
+
+  private onVolumePersistValueChange(value: Checkbox[]) {
+    const active = value.find((val) => val.enabled)
+
+    this.showVolumeMapField = false
+    if (active?.key === 'persist_map_volumes') {
+      this.showVolumeMapField = true
+    }
   }
 
   get volumePersistModeCheckboxValues(): Checkbox[] {

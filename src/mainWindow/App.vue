@@ -75,7 +75,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     this.fetchProviderExtensions()
     this.registerNotifier()
     this.setLanguage()
-    this.listenThemeChanges()
+    this.listenPreferenceChanges()
     this.listenExtensionEvents()
     this.listenExtensionRequests()
     this.setYoutubeAlt()
@@ -482,7 +482,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     )
   }
 
-  private async listenThemeChanges() {
+  private async listenPreferenceChanges() {
     window.PreferenceUtils.listenPreferenceChanged('activeTheme', true, async () => {
       const theme = await window.ThemeUtils.getActiveTheme()
       this.setColorsToRoot(theme)
@@ -500,6 +500,18 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       vxm.themes.showSpotifyCanvas =
         (value as Checkbox[]).find((val) => val.key === 'use_spotify_canvas')?.enabled ?? true
     })
+
+    vxm.player.volumeMode = this.mapVolumeMode(
+      (await window.PreferenceUtils.loadSelective<Checkbox[]>('volumePersist')) ?? []
+    )
+    window.PreferenceUtils.listenPreferenceChanged('volumePersist', true, (_, value) => {
+      vxm.player.volumeMode = this.mapVolumeMode(value)
+    })
+  }
+
+  private mapVolumeMode(value: Checkbox[]) {
+    const active = (value as Checkbox[]).find((val) => val.enabled)
+    return active?.key === 'separate_volumes' ? 'SEPARATE_VOLUMES' : 'SINGLE'
   }
 
   private async handleInitialSetup() {

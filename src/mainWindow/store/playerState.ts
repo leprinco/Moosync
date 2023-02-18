@@ -25,9 +25,11 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
   private songQueue = new Queue()
   private repeat = false
 
+  public volumeMode: VolumePersistMode = 'SINGLE'
+
   private _volume = 50
   public get volume() {
-    if (this.currentSong) {
+    if (this.currentSong && this.volumeMode === 'SEPARATE_VOLUMES') {
       const type = this.currentSong.providerExtension ?? this.currentSong.type
       return this.volumeMap[type] ?? this._volume
     }
@@ -36,7 +38,6 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
 
   public set volume(vol: number) {
     this._volume = vol
-
     if (this.currentSong) {
       const type = this.currentSong.providerExtension ?? this.currentSong.type
       Vue.set(this.volumeMap, type, vol)

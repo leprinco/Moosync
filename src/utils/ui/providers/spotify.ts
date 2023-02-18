@@ -129,7 +129,8 @@ export class SpotifyProvider extends GenericProvider {
               deviceType: 'computer',
               initialVolume: vxm.player.volume,
               hasVolumeControl: true
-            }
+            },
+            volumeCtrl: 'linear'
           })
 
           const token = await window.SpotifyPlayer.getToken(this._config.scope.split(' ') as TokenScope[])
@@ -552,7 +553,7 @@ export class SpotifyProvider extends GenericProvider {
     return !!url.match(/^(https:\/\/open.spotify.com\/(track|embed)\/|spotify:track:)([a-zA-Z0-9]+)(.*)$/)
   }
 
-  public async getSongDetails(url: string, ignorePlaybackURL = false): Promise<Song | undefined> {
+  public async getSongDetails(url: string, _ = false): Promise<Song | undefined> {
     if (this.matchSongUrl(url)) {
       const parsedURL = new URL(url)
       const split = parsedURL.pathname.split('/')

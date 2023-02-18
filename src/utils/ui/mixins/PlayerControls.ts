@@ -13,6 +13,12 @@ import { PeerMode } from '@/mainWindow/store/syncState'
 import { vxm } from '@/mainWindow/store'
 import { Player } from '../players/player'
 
+const maxp = 100
+const maxv = Math.log(100)
+
+// calculate adjustment factor
+const scale = maxv / maxp
+
 @Component
 export default class PlayerControls extends Vue {
   get playerState() {
@@ -137,12 +143,13 @@ export default class PlayerControls extends Vue {
   private oldVolume = 50
 
   get volume() {
-    return vxm.player.volume
+    const volume = vxm.player.volume
+    return Math.log(volume) / scale
   }
 
   set volume(value: number) {
-    // Fuck javascript floating precision
-    value = Math.floor(value)
+    value = Math.exp(scale * value)
+
     vxm.player.volume = value
     if (value != 0) {
       this.oldVolume = value
