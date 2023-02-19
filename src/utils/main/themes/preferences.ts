@@ -238,7 +238,7 @@ export async function migrateThemes() {
   const baseDir = path.join(app.getPath('appData'), app.getName(), 'themes')
   await fsP.mkdir(baseDir, { recursive: true })
   if (themes) {
-    for (const [key, value] of Object.entries(themes)) {
+    for (const value of Object.values(themes)) {
       const themeDir = path.join(baseDir, value.id)
 
       try {
@@ -247,8 +247,6 @@ export async function migrateThemes() {
 
         const configPath = path.join(themeDir, 'config.json')
         await fsP.writeFile(configPath, JSON.stringify(value))
-
-        removeTheme(key)
       } catch {
         continue
       }
