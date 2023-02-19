@@ -243,11 +243,11 @@ export async function migrateThemes() {
 
       try {
         await fsP.access(themeDir)
+      } catch {
         await fsP.mkdir(themeDir, { recursive: true })
 
         const configPath = path.join(themeDir, 'config.json')
         await fsP.writeFile(configPath, JSON.stringify(value))
-      } catch {
         continue
       }
     }
