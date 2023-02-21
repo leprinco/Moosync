@@ -55,19 +55,32 @@
           />
 
           <RadioCheckbox
-            :title="$t('settings.system.volumePersist.title')"
+            :title="$t('settings.system.volumePersistMode.title')"
             class="mt-4"
-            :tooltip="$t('settings.system.volumePersist.tooltip')"
+            :tooltip="$t('settings.system.volumePersistMode.tooltip')"
             :isExtension="false"
             :defaultValue="volumePersistModeCheckboxValues"
             :onValueChange="onVolumePersistValueChange"
             :onValueFetch="onVolumePersistValueChange"
-            key="volumePersist"
+            key="volumePersistMode"
           />
 
-          <!-- <b-col v-if="showVolumeMapField">
-
-          </b-col> -->
+          <b-col v-if="showVolumeMapField">
+            <b-container class="ml-1 mt-2" fluid>
+              <b-row no-gutters class="d-flex" v-for="provider of volumeMapProviders" :key="provider.key">
+                <b-col cols="4" class="align-self-center text-left">{{ provider.title }}</b-col>
+                <b-col cols="8" lg="6">
+                  <EditText
+                    :onlyNumber="true"
+                    :key="`clampMap.${provider.key.replaceAll('.', '_').toLowerCase()}.clamp`"
+                    :defaultValue="provider.clamp"
+                    type="range"
+                    :showRangeText="true"
+                  />
+                </b-col>
+              </b-row>
+            </b-container>
+          </b-col>
 
           <CheckboxGroup
             :title="$t('settings.system.scrobble.provider_toggle.title')"
@@ -366,6 +379,7 @@ import Dropdown from '../Dropdown.vue'
 import { messages } from '@/utils/ui/i18n'
 import { i18n } from '@/preferenceWindow/plugins/i18n'
 import RadioCheckbox from '../RadioCheckbox.vue'
+import { VolumePersistMode } from '../../../utils/commonConstants'
 
 @Component({
   components: {
@@ -510,7 +524,7 @@ export default class System extends Vue {
     const active = value.find((val) => val.enabled)
 
     this.showVolumeMapField = false
-    if (active?.key === 'persist_map_volumes') {
+    if (active?.key === VolumePersistMode.CLAMP_MAP) {
       this.showVolumeMapField = true
     }
   }
@@ -518,14 +532,19 @@ export default class System extends Vue {
   get volumePersistModeCheckboxValues(): Checkbox[] {
     return [
       {
-        key: 'separate_volumes',
-        title: this.$tc('settings.system.audioSettings.persistSeparateVolumes'),
+        key: VolumePersistMode.SINGLE,
+        title: this.$tc('settings.system.volumePersistMode.noPersist'),
         enabled: true
       },
       {
-        key: 'persist_map_volumes',
-        title: this.$tc('settings.system.audioSettings.persistMapVolume'),
-        enabled: true
+        key: VolumePersistMode.SEPARATE_VOLUME_MAP,
+        title: this.$tc('settings.system.volumePersistMode.persistSeparateVolumes'),
+        enabled: false
+      },
+      {
+        key: VolumePersistMode.CLAMP_MAP,
+        title: this.$tc('settings.system.volumePersistMode.persistClampVolume'),
+        enabled: false
       }
     ]
   }
@@ -661,6 +680,36 @@ export default class System extends Vue {
         enabled: false
       }
     ]
+  }
+
+  get volumeMapProviders() {
+    const ret = [
+      {
+        key: 'local',
+        title: 'Local',
+        clamp: 100
+      },
+      {
+        key: 'youtube',
+        title: 'Youtube',
+        clamp: 100
+      },
+      {
+        key: 'spotify',
+        title: 'Spotify',
+        clamp: 100
+      }
+    ]
+
+    for (const e of this.extensions) {
+      ret.push({
+        key: e.packageName,
+        title: e.name,
+        clamp: 100
+      })
+    }
+
+    return ret
   }
 
   get scrobbleProviderCheckboxValues(): Checkbox[] {

@@ -93,7 +93,6 @@ export default class IncorrectPlaybackModal extends mixins(CacheMixin) {
       const selectedSong = this.searchResults[this.selected]
       this.parsedSong.playbackUrl = selectedSong?.playbackUrl
       this.parsedSong.duration = selectedSong.duration
-      this.parsedSong.url = selectedSong.url
 
       const cache = { url: this.parsedSong.playbackUrl, duration: this.parsedSong.duration }
       this.setItem(`url_duration:${this.parsedSong._id}`, cache)

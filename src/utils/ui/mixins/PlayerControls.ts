@@ -12,12 +12,9 @@ import { Component, Vue } from 'vue-property-decorator'
 import { PeerMode } from '@/mainWindow/store/syncState'
 import { vxm } from '@/mainWindow/store'
 import { Player } from '../players/player'
+import { VolumePersistMode } from '@/utils/commonConstants'
 
 const maxp = 100
-const maxv = Math.log(100)
-
-// calculate adjustment factor
-const scale = maxv / maxp
 
 @Component
 export default class PlayerControls extends Vue {
@@ -143,14 +140,22 @@ export default class PlayerControls extends Vue {
   private oldVolume = 50
 
   get volume() {
+    const maxv = Math.log(this.clamp)
+    const scale = maxv / maxp
+
     const volume = vxm.player.volume
+
     if (volume > 0) {
       return Math.log(volume) / scale
     }
+
     return volume
   }
 
   set volume(value: number) {
+    const maxv = Math.log(this.clamp)
+    const scale = maxv / maxp
+
     if (value > 0) {
       value = Math.exp(scale * value)
     }
@@ -159,6 +164,21 @@ export default class PlayerControls extends Vue {
     if (value != 0) {
       this.oldVolume = value
     }
+  }
+
+  private get clamp() {
+    if (vxm.player.volumeMode === VolumePersistMode.CLAMP_MAP) {
+      const currentSong = vxm.player.currentSong
+      if (currentSong) {
+        return (
+          vxm.player.clampMap[
+            currentSong?.type.toLowerCase() ?? currentSong?.providerExtension?.replaceAll('.', '_').toLowerCase()
+          ].clamp ?? 100
+        )
+      }
+    }
+
+    return 100
   }
 
   public muteToggle() {

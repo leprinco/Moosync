@@ -558,7 +558,6 @@ export default class AudioStream extends mixins(
 
     bus.$on(EventBus.FORCE_LOAD_SONG, () => {
       if (this.currentSong) {
-        console.log(this.currentSong.playbackUrl)
         this.loadAudio(this.currentSong, true, true)
       }
     })
