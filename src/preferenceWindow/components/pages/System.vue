@@ -34,6 +34,14 @@
               :onlyNumber="true"
               type="password"
             />
+
+            <CheckboxGroup
+              :title="$t('settings.system.jukebox.optionalFields')"
+              :tooltip="$t('settings.system.jukebox.optionalFields_tooltip')"
+              :isExtension="false"
+              :defaultValue="jukeboxOptionalFields"
+              key="jukebox_optional_fields"
+            />
           </b-col>
 
           <CheckboxGroup
@@ -630,6 +638,26 @@ export default class System extends Vue {
       title: this.$tc('settings.system.systemSettings.enableJukeboxMode'),
       enabled: false
     }
+  }
+
+  get jukeboxOptionalFields(): Checkbox[] {
+    return [
+      {
+        key: 'jukebox_skip',
+        title: this.$tc('settings.system.jukebox.optional_skip'),
+        enabled: false
+      },
+      {
+        key: 'jukebox_shuffle',
+        title: this.$tc('settings.system.jukebox.optional_shuffle'),
+        enabled: false
+      },
+      {
+        key: 'jukebox_repeat',
+        title: this.$tc('settings.system.jukebox.optional_repeat'),
+        enabled: false
+      }
+    ]
   }
 
   get youtubeEnvExists() {

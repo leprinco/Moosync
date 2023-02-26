@@ -495,7 +495,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       this.setColorsToRoot(theme)
     })
 
-    window.PreferenceUtils.listenPreferenceChanged('songView', true, (_, value) => {
+    window.PreferenceUtils.listenPreferenceChanged<songMenu>('songView', true, (_, value) => {
       vxm.themes.songView = value
     })
 
@@ -515,12 +515,12 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     vxm.player.volumeMode = this.mapVolumeMode(
       (await window.PreferenceUtils.loadSelective<Checkbox[]>('volumePersistMode')) ?? []
     )
-    window.PreferenceUtils.listenPreferenceChanged('volumePersistMode', true, (_, value) => {
+    window.PreferenceUtils.listenPreferenceChanged<Checkbox[]>('volumePersistMode', true, (_, value) => {
       vxm.player.volumeMode = this.mapVolumeMode(value)
     })
 
     vxm.player.clampMap = (await window.PreferenceUtils.loadSelective('clampMap')) ?? {}
-    window.PreferenceUtils.listenPreferenceChanged('clampMap', true, (_, value) => {
+    window.PreferenceUtils.listenPreferenceChanged<Record<string, { clamp: number }>>('clampMap', true, (_, value) => {
       vxm.player.clampMap = value
     })
   }
