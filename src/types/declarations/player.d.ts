@@ -36,6 +36,8 @@ interface CustomAudioInstance {
 
   isCustomAudio: boolean
 
+  listeners: Record<string, never>
+
   public pause(): void
   public play(): Promise<void>
   public stop(): void

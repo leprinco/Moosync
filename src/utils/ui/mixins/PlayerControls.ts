@@ -209,4 +209,10 @@ export default class PlayerControls extends Vue {
 
     return lowest[0]
   }
+
+  public clearAllListeners() {
+    for (const p of vxm.playerRepo.allPlayers) {
+      p.removeAllListeners()
+    }
+  }
 }
