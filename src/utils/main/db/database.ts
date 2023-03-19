@@ -813,7 +813,8 @@ export class SongDBInstance extends DBUtils {
     const artistID: string[] = []
     for (const a of artists) {
       if (a.artist_name) {
-        const sanitizedName = sanitizeArtistName(a.artist_name, true)
+        const sanitizedName = sanitizeArtistName(a.artist_name)
+
         let id = this.db.queryFirstCell(
           `SELECT artist_id FROM artists WHERE sanitized_artist_name = ? OR artist_name = ? COLLATE NOCASE`,
           sanitizedName,

@@ -203,6 +203,7 @@ export class ScannerChannel implements IpcChannelInterface {
     if (isDuplicate) {
       return
     }
+    console.debug('storing', song)
     songDb.store(song)
     scanEmitter.emit('song', song)
   }
