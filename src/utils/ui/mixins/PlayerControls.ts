@@ -173,7 +173,7 @@ export default class PlayerControls extends Vue {
         return (
           vxm.player.clampMap[
             currentSong?.type.toLowerCase() ?? currentSong?.providerExtension?.replaceAll('.', '_').toLowerCase()
-          ].clamp ?? 100
+          ]?.clamp ?? 100
         )
       }
     }
