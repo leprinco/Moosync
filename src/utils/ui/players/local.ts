@@ -127,7 +127,7 @@ export class LocalPlayer extends Player {
       this.playerInstance.onload = null
       this.playerInstance.onloadeddata = null
       this.playerInstance.onloadstart = null
-      for (const [key, value] of Object.entries(this.playerInstance.listeners)) {
+      for (const [key, value] of Object.entries(this.playerInstance.listeners ?? {})) {
         this.playerInstance.removeEventListener(key as keyof HTMLMediaElementEventMap, value)
       }
     }
