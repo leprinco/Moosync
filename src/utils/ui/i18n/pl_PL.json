@@ -7,7 +7,13 @@
       "albums": "Albumy",
       "artists": "Artyści",
       "genre": "Genres",
-      "explore": "Przeglądaj"
+      "explore": "Przeglądaj",
+      "paths": "Paths",
+      "themes": "Themes",
+      "extensions": "Extensions",
+      "system": "System",
+      "logs": "Logs",
+      "keybinds": "Keybinds"
     }
   },
   "topbar": {
@@ -74,7 +80,8 @@
       "showHidden": "Pokaż ukryte utwory",
       "hideHidden": "Ukryj ukryte utwory"
     },
-    "moreInfo": "Więcej informacji"
+    "moreInfo": "Więcej informacji",
+    "incorrectPlayback": "Incorrect playback?"
   },
   "providers": {
     "youtube": "YouTube",
@@ -222,7 +229,12 @@
       "clear_preferences_button": "Potwierdź",
       "jukebox": {
         "pin": "Przypinka trybu Jukebox",
-        "pin_tooltip": "Przypinek Tis będzie wymagany, aby wyjść z trybu Jukebox. Powinno być numeryczny."
+        "pin_tooltip": "Przypinek Tis będzie wymagany, aby wyjść z trybu Jukebox. Powinno być numeryczny.",
+        "optionalFields": "Button visibility",
+        "optionalFields_tooltip": "Toggle optional buttons to show in Jukebox mode",
+        "optional_skip": "Track Skip buttons",
+        "optional_shuffle": "Shuffle button",
+        "optional_repeat": "Repeat button"
       },
       "lyrics": {
         "title": "Dostawcy tekstów",
@@ -240,6 +252,13 @@
           "title": "Scrobble Biała lista",
           "tooltip": "Włącz dostawców, których utwory chcesz być scrobble'd"
         }
+      },
+      "volumePersistMode": {
+        "title": "Volume behavior",
+        "tooltip": "Change the way volume slider behaves",
+        "noPersist": "Normal behavior",
+        "persistSeparateVolumes": "Remember separate volume for each provider",
+        "persistClampVolume": "Manually adjust volume range for each provider"
       }
     },
     "logs": {

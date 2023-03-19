@@ -7,7 +7,13 @@
       "albums": "Άλμπουμ",
       "artists": "Καλλιτέχνες",
       "genre": "Είδος",
-      "explore": "Εξερεύνηση"
+      "explore": "Εξερεύνηση",
+      "paths": "Διαδρομές",
+      "themes": "Θέματα",
+      "extensions": "Επεκτάσεις",
+      "system": "Σύστημα",
+      "logs": "Αρχεία Καταγραφής",
+      "keybinds": "Συντομεύσεις"
     }
   },
   "topbar": {
@@ -74,7 +80,8 @@
       "showHidden": "Εμφάνιση κρυφών τραγουδιών",
       "hideHidden": "Απόκρυψη κρυφών τραγουδιών"
     },
-    "moreInfo": "Περισσότερες Πληροφορίες"
+    "moreInfo": "Περισσότερες Πληροφορίες",
+    "incorrectPlayback": "Λανθασμένη αναπαραγωγή;"
   },
   "providers": {
     "youtube": "YouTube",
@@ -222,7 +229,12 @@
       "clear_preferences_button": "Επιβεβαίωση",
       "jukebox": {
         "pin": "Pin λειτουργίας Jukebox",
-        "pin_tooltip": "Αυτό το pin θα χρειαστεί για έξοδο από τη λειτουργία Jukebox. Πρέπει να είναι αριθμός."
+        "pin_tooltip": "This pin will be required to exit Jukebox Mode. Should be numeric.",
+        "optionalFields": "Ορατότητα κουμπιού",
+        "optionalFields_tooltip": "Εναλλαγή προαιρετικών κουμπιών για εμφάνιση στη λειτουργία Jukebox",
+        "optional_skip": "Track Skip buttons",
+        "optional_shuffle": "Shuffle button",
+        "optional_repeat": "Repeat button"
       },
       "lyrics": {
         "title": "Πάροχοι στίχων",
@@ -240,6 +252,13 @@
           "title": "Λίστα επιτρεπόμενων Scrobble",
           "tooltip": "Ενεργοποίηση παρόχων των οποίων τα τραγούδια θέλετε να είναι scrobble'd"
         }
+      },
+      "volumePersistMode": {
+        "title": "Volume behavior",
+        "tooltip": "Change the way volume slider behaves",
+        "noPersist": "Normal behavior",
+        "persistSeparateVolumes": "Remember separate volume for each provider",
+        "persistClampVolume": "Manually adjust volume range for each provider"
       }
     },
     "logs": {

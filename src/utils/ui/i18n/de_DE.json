@@ -7,11 +7,17 @@
       "albums": "Alben",
       "artists": "Künstler",
       "genre": "Genres",
-      "explore": "Erforschen"
+      "explore": "Erkunden",
+      "paths": "Pfade",
+      "themes": "Designs",
+      "extensions": "Erweiterungen",
+      "system": "System",
+      "logs": "Logs",
+      "keybinds": "Tastaturkürzel"
     }
   },
   "topbar": {
-    "searchPlaceholder": "Suche...",
+    "searchPlaceholder": "Suchen...",
     "noResultsFound": "Keine Ergebnisse gefunden"
   },
   "pages": {
@@ -19,7 +25,7 @@
     "albums": "Alben",
     "artists": "Künstler",
     "genres": "Genres",
-    "explore": "Erforschen"
+    "explore": "Erkunden"
   },
   "songView": {
     "details": {
@@ -27,12 +33,12 @@
     },
     "songList": {
       "topbar": {
-        "searchPlaceholder": "Suche..."
+        "searchPlaceholder": "Suchen..."
       }
     }
   },
   "buttons": {
-    "playSingle": "Spiele {title}",
+    "playSingle": "{title} abspielen",
     "addToQueue": "{title} zur Warteschlange hinzufügen",
     "addToLibrary": "{title} zur Bibliothek hinzufügen",
     "playRandom": "100 zufällige Titel abspielen"
@@ -59,13 +65,13 @@
     "song": {
       "addFromURL": "Von URL hinzufügen",
       "playNow": "Jetzt spielen",
-      "playNext": "Nächste spielen",
+      "playNext": "Als nächstes abspielen",
       "clearAndPlay": "Warteschlange leeren und abspielen",
       "addToQueue": "Zur Warteschlange hinzufügen",
       "moveToTop": "Nach oben",
       "moveToBottom": "Nach unten",
       "moveManually": "Manuell verschieben",
-      "manualIndex": "Index des Liedes festlegen",
+      "manualIndex": "Index des Titels festlegen",
       "remove": "Aus der Bibliothek entfernen",
       "add": "Füge Song zur Bibliothek hinzu | Füge Titel zur Bibliothek hinzu",
       "removeFromPlaylist": "Aus Wiedergabeliste entfernen",
@@ -74,7 +80,8 @@
       "showHidden": "Versteckte Lieder anzeigen",
       "hideHidden": "Versteckte Lieder ausblenden"
     },
-    "moreInfo": "Mehr Info"
+    "moreInfo": "Mehr Info",
+    "incorrectPlayback": "Falsche Wiedergabe?"
   },
   "providers": {
     "youtube": "Youtube",
@@ -222,7 +229,12 @@
       "clear_preferences_button": "Bestätigen",
       "jukebox": {
         "pin": "Jukebox Modus Pin",
-        "pin_tooltip": "Tis-Pin wird benötigt, um Jukebox Modus zu verlassen. Sollte numerisch sein."
+        "pin_tooltip": "Tis-Pin wird benötigt, um Jukebox Modus zu verlassen. Sollte numerisch sein.",
+        "optionalFields": "Button visibility",
+        "optionalFields_tooltip": "Toggle optional buttons to show in Jukebox mode",
+        "optional_skip": "Track Skip buttons",
+        "optional_shuffle": "Shuffle button",
+        "optional_repeat": "Repeat button"
       },
       "lyrics": {
         "title": "Songtext-Anbieter",
@@ -240,6 +252,13 @@
           "title": "Whitelist scrobbeln",
           "tooltip": "Anbieter aktivieren, deren Lieder gescrobbelt werden soll"
         }
+      },
+      "volumePersistMode": {
+        "title": "Lautstärke-Verhalten",
+        "tooltip": "Verändert das Verhalten des Lautstärkeschiebers",
+        "noPersist": "Normales Verhalten",
+        "persistSeparateVolumes": "Für jeden Anbieter separate Lautstärkeeinstellungen merken",
+        "persistClampVolume": "Lautstärkebereich für jeden Anbieter manuell anpassen"
       }
     },
     "logs": {

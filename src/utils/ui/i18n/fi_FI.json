@@ -7,7 +7,13 @@
       "albums": "Albumit",
       "artists": "Esittäjät",
       "genre": "Genres",
-      "explore": "Tutki"
+      "explore": "Tutki",
+      "paths": "Paths",
+      "themes": "Themes",
+      "extensions": "Extensions",
+      "system": "System",
+      "logs": "Logs",
+      "keybinds": "Keybinds"
     }
   },
   "topbar": {
@@ -74,7 +80,8 @@
       "showHidden": "Näytä piilotetut kappaleet",
       "hideHidden": "Piilota piilotetut kappaleet"
     },
-    "moreInfo": "Lisää Tietoja"
+    "moreInfo": "Lisää Tietoja",
+    "incorrectPlayback": "Incorrect playback?"
   },
   "providers": {
     "youtube": "Youtube",
@@ -222,7 +229,12 @@
       "clear_preferences_button": "Vahvista",
       "jukebox": {
         "pin": "Jukebox-tilan pinni",
-        "pin_tooltip": "Jukebox-tilasta poistuminen vaatii Tis pin -pinnin. Pitäisi olla numeerinen."
+        "pin_tooltip": "Jukebox-tilasta poistuminen vaatii Tis pin -pinnin. Pitäisi olla numeerinen.",
+        "optionalFields": "Button visibility",
+        "optionalFields_tooltip": "Toggle optional buttons to show in Jukebox mode",
+        "optional_skip": "Track Skip buttons",
+        "optional_shuffle": "Shuffle button",
+        "optional_repeat": "Repeat button"
       },
       "lyrics": {
         "title": "Sanoitusten tarjoajat",
@@ -240,6 +252,13 @@
           "title": "Scrobble whitelist",
           "tooltip": "Ota käyttöön palveluntarjoajat, joiden kappaleet haluat olla scrobble'd"
         }
+      },
+      "volumePersistMode": {
+        "title": "Volume behavior",
+        "tooltip": "Change the way volume slider behaves",
+        "noPersist": "Normal behavior",
+        "persistSeparateVolumes": "Remember separate volume for each provider",
+        "persistClampVolume": "Manually adjust volume range for each provider"
       }
     },
     "logs": {

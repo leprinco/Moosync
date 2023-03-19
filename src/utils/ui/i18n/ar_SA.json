@@ -7,7 +7,13 @@
       "albums": "ألبومات",
       "artists": "الفنانون",
       "genre": "Genres",
-      "explore": "استكشف"
+      "explore": "استكشف",
+      "paths": "Paths",
+      "themes": "Themes",
+      "extensions": "Extensions",
+      "system": "System",
+      "logs": "Logs",
+      "keybinds": "Keybinds"
     }
   },
   "topbar": {
@@ -74,7 +80,8 @@
       "showHidden": "إظهار الأغاني المخفية",
       "hideHidden": "إخفاء الأغاني المخفية"
     },
-    "moreInfo": "المزيد من المعلومات"
+    "moreInfo": "المزيد من المعلومات",
+    "incorrectPlayback": "Incorrect playback?"
   },
   "providers": {
     "youtube": "يوتيوب",
@@ -222,7 +229,12 @@
       "clear_preferences_button": "تأكيد",
       "jukebox": {
         "pin": "دبوس وضع يوكبوكس",
-        "pin_tooltip": "سيتم طلب دبوس للخروج من وضع يوكيبوك. يجب أن يكون رقميا."
+        "pin_tooltip": "سيتم طلب دبوس للخروج من وضع يوكيبوك. يجب أن يكون رقميا.",
+        "optionalFields": "Button visibility",
+        "optionalFields_tooltip": "Toggle optional buttons to show in Jukebox mode",
+        "optional_skip": "Track Skip buttons",
+        "optional_shuffle": "Shuffle button",
+        "optional_repeat": "Repeat button"
       },
       "lyrics": {
         "title": "موفري الكلمات",
@@ -240,6 +252,13 @@
           "title": "تمرير القائمة البيضاء",
           "tooltip": "تمكين مقدمي الخدمات الذين تريد أن تكون أغانيهم سكروبوت"
         }
+      },
+      "volumePersistMode": {
+        "title": "Volume behavior",
+        "tooltip": "Change the way volume slider behaves",
+        "noPersist": "Normal behavior",
+        "persistSeparateVolumes": "Remember separate volume for each provider",
+        "persistClampVolume": "Manually adjust volume range for each provider"
       }
     },
     "logs": {

@@ -6,8 +6,14 @@
       "playlists": "プレイリスト",
       "albums": "アルバム",
       "artists": "アーティスト",
-      "genre": "Genres",
-      "explore": "探索"
+      "genre": "ジャンル",
+      "explore": "探索",
+      "paths": "パス",
+      "themes": "テーマ",
+      "extensions": "拡張機能",
+      "system": "システム",
+      "logs": "ログ記録",
+      "keybinds": "キー割り当て"
     }
   },
   "topbar": {
@@ -18,7 +24,7 @@
     "playlists": "プレイリスト",
     "albums": "アルバム",
     "artists": "アーティスト",
-    "genres": "Genres",
+    "genres": "ジャンル",
     "explore": "探索"
   },
   "songView": {
@@ -74,7 +80,8 @@
       "showHidden": "非表示の曲を表示",
       "hideHidden": "非表示の曲を非表示"
     },
-    "moreInfo": "詳細情報"
+    "moreInfo": "詳細情報",
+    "incorrectPlayback": "再生がおかしいですか？"
   },
   "providers": {
     "youtube": "Youtube",
@@ -184,8 +191,8 @@
         "client_secret_tooltip": "Youtube クライアントシークレットは、Youtube にログインするために必要です。詳細を知るにはクリックしてください"
       },
       "lastfm": {
-        "client_id": "LastFM Api Key",
-        "client_secret": "LastFM Client Secret"
+        "client_id": "LastFM API キー",
+        "client_secret": "LastFM クライアントシークレット"
       },
       "youtubeAlternative": {
         "title": "Youtube オルタナティブサービス",
@@ -222,7 +229,12 @@
       "clear_preferences_button": "確認する",
       "jukebox": {
         "pin": "ジュークボックスモードピン",
-        "pin_tooltip": "チスピンはジュークボックスモードを終了するために必要です。数値である必要があります。"
+        "pin_tooltip": "チスピンはジュークボックスモードを終了するために必要です。数値である必要があります。",
+        "optionalFields": "Button visibility",
+        "optionalFields_tooltip": "Toggle optional buttons to show in Jukebox mode",
+        "optional_skip": "Track Skip buttons",
+        "optional_shuffle": "Shuffle button",
+        "optional_repeat": "Repeat button"
       },
       "lyrics": {
         "title": "歌詞のプロバイダー",
@@ -240,6 +252,13 @@
           "title": "Scrobble whitelist",
           "tooltip": "曲をスクラブしたいプロバイダを有効にする"
         }
+      },
+      "volumePersistMode": {
+        "title": "音量の動作",
+        "tooltip": "音量スライダーの動作を変更",
+        "noPersist": "通常の動作",
+        "persistSeparateVolumes": "提供元ごとに音量をそれぞれ記憶",
+        "persistClampVolume": "それぞれの提供元用に音量の範囲を手動で調整"
       }
     },
     "logs": {
