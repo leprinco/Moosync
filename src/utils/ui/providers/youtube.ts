@@ -459,7 +459,7 @@ export class YoutubeProvider extends GenericProvider {
         // Apparently searching Video ID in youtube returns the proper video as first result
         const scraped = await window.SearchUtils.searchYT(videoID, undefined, false, true, true)
         if (scraped && scraped.songs.length > 0) {
-          return scraped.songs[0]
+          return scraped.songs.find((val) => val._id === videoID)
         }
       }
       return
