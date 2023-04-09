@@ -76,9 +76,7 @@
               @contextmenu.native="themeMenu(arguments[0], value)"
               :colors="value.theme"
             />
-            <div class="title">
-              {{ value.name }}
-            </div>
+            <div class="title">{{ value.name }}</div>
             <div class="author">
               {{ value.author }}
             </div>

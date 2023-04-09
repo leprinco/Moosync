@@ -320,5 +320,5 @@ export async function* emptyGen() {
 
 export function isThemeDetails(data: unknown): data is ThemeDetails {
   const tmpData = data as ThemeDetails
-  return !!(tmpData.id && tmpData.name && tmpData.theme)
+  return !!(tmpData.id && tmpData.theme)
 }

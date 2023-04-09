@@ -11,4 +11,10 @@ declare module '@caohenghu/vue-colorpicker' {}
 
 type ColorPickerOutput = {
   hex: string
+  rgba: {
+    r: number
+    g: number
+    b: number
+    a: number
+  }
 }

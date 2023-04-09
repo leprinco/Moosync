@@ -74,9 +74,13 @@ export default class ColorPicker extends Vue {
     this.showColorPicker = !this.showColorPicker
   }
 
+  private RGBAToString(color: ColorPickerOutput['rgba']) {
+    return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`
+  }
+
   private changeColor(color: ColorPickerOutput) {
-    this.color = color.hex
-    this.$emit('colorChange', color.hex)
+    this.color = this.RGBAToString(color.rgba)
+    this.$emit('colorChange', this.color)
   }
 
   created() {
