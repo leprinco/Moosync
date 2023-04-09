@@ -11,7 +11,7 @@
   <b-container fluid :class="`h-100 ${scrollable ? 'scrollable' : ''}`">
     <b-row no-gutters>
       <b-col class="position-relative">
-        <div class="image-container w-100">
+        <div class="image-container w-100" @click="emitClick">
           <div class="embed-responsive embed-responsive-1by1">
             <div class="embed-responsive-item">
               <transition
@@ -238,6 +238,10 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, Juk
 
   playRandom() {
     this.$emit('playRandom')
+  }
+
+  emitClick(event: MouseEvent) {
+    this.$emit('click', event)
   }
 }
 </script>
