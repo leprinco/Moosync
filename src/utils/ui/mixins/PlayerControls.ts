@@ -47,10 +47,11 @@ export default class PlayerControls extends Vue {
   }
 
   public async playTop(songs: Song[]) {
+    console.log(songs.map((val) => val.title))
     if (this.isSyncing) {
-      await vxm.sync.pushInQueue({ item: songs.slice(), top: true, skipImmediate: true })
+      await vxm.sync.pushInQueue({ item: songs.slice(), top: true, skipImmediate: vxm.sync.queueOrder.length > 0 })
     } else {
-      await vxm.player.pushInQueue({ item: songs.slice(), top: true, skipImmediate: true })
+      await vxm.player.pushInQueue({ item: songs.slice(), top: true, skipImmediate: vxm.player.queueOrder.length > 0 })
     }
 
     if (!this.isSyncing) vxm.player.playAfterLoad = true
