@@ -521,8 +521,10 @@ export class SongDBInstance extends DBUtils {
           const data: Record<string, string> = options[key as never]
           if (data) {
             for (const [innerKey, innerValue] of Object.entries(data)) {
-              where += `${addANDorOR()} ${innerKey} ${this.getLikeQuery(options.invert)} ?`
-              args.push(innerValue)
+              if (innerKey && innerValue) {
+                where += `${addANDorOR()} ${innerKey} ${this.getLikeQuery(options.invert)} ?`
+                args.push(innerValue)
+              }
             }
             break
           }

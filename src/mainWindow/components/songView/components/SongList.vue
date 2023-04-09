@@ -48,19 +48,19 @@
                 :key="`${item._id}-${field.key}`"
                 class="box text-truncate"
                 :style="{ width: columnWidths[i1] + '%' }"
-                :title="field.key === 'index' ? index + 1 : getFieldTitle(field.key, item)"
+                :title="getFieldTitle(field.key, item, index)"
                 @dblclick="onRowDoubleClicked(item)"
                 @click="onRowSelected(index)"
                 @contextmenu="onRowContext(arguments[0], item)"
               >
                 <div
                   :class="field.key === 'album_name' ? 'col-content' : ''"
-                  v-if="typeof getFieldData(field.key, item) === 'string'"
+                  v-if="typeof getFieldData(field.key, item, index) === 'string'"
                   @click="onTextClick(field.key, item)"
                 >
                   {{ getFieldData(field.key, item, index) }}
                 </div>
-                <div class="d-flex" v-if="typeof getFieldData(field.key, item) === 'object'">
+                <div class="d-flex" v-if="typeof getFieldData(field.key, item, index) === 'object'">
                   <div
                     v-for="(artist, i) in getFieldData(field.key, item, index)"
                     :key="i"
@@ -247,12 +247,15 @@ export default class SongList extends mixins(SongListMixin) {
     this.$emit('onRowDoubleClicked', item)
   }
 
-  async onTextClick(key: TableFields, item: Song | string) {
-    if (key === 'artist_name' && typeof item === 'string') {
-      const data = await window.SearchUtils.searchEntityByOptions({ artist: { artist_name: item } })
+  async onTextClick(key: TableFields, item: Song | Artists) {
+    console.log(key, item)
+    if (key === 'artist_name') {
+      const data = await window.SearchUtils.searchEntityByOptions({
+        artist: { artist_id: (item as Artists).artist_id }
+      })
       this.$emit('onArtistClicked', data[0])
     } else if (key === 'album_name' && typeof item !== 'string') {
-      this.$emit('onAlbumClicked', item.album)
+      this.$emit('onAlbumClicked', (item as Song).album)
     }
   }
 
