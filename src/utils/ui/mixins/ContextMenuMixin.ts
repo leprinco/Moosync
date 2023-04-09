@@ -16,9 +16,10 @@ import { bus } from '@/mainWindow/main'
 import { mixins } from 'vue-class-component'
 import { vxm } from '@/mainWindow/store'
 import JukeboxMixin from './JukeboxMixin'
+import ProviderMixin from './ProviderMixin'
 
 @Component
-export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong, JukeboxMixin) {
+export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong, JukeboxMixin, ProviderMixin) {
   get playlists() {
     return vxm.playlist.playlists
   }
@@ -187,6 +188,14 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     return items
   }
 
+  private async openInBrowser(song: Song) {
+    const provider = this.getProviderBySong(song)
+
+    const url = await provider?.getRemoteURL(song)
+    if (url) window.WindowUtils.openExternal(url)
+    else this.$toasted.error(`No URL found for ${song.title}`)
+  }
+
   private async getSongContextMenu(
     exclude: string | undefined,
     refreshCallback?: () => void,
@@ -249,6 +258,11 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       items.push({
         label: this.$tc('contextMenu.song.add', item.length),
         handler: () => this.addSongsToLibrary(...item)
+      })
+
+      items.push({
+        label: this.$tc('contextMenu.song.openInBrowser'),
+        handler: () => this.openInBrowser(item[0])
       })
     }
 
@@ -365,6 +379,11 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       items.push({
         label: this.$tc('contextMenu.song.add'),
         handler: () => this.addSongsToLibrary(item)
+      })
+
+      items.push({
+        label: this.$tc('contextMenu.song.openInBrowser'),
+        handler: () => this.openInBrowser(item)
       })
     } else {
       items.push({

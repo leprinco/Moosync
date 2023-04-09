@@ -542,6 +542,13 @@ export class PipedProvider extends GenericProvider {
     return
   }
 
+  public async getRemoteURL(song: Song): Promise<string | undefined> {
+    if (!song.url?.startsWith('http')) {
+      return `${this.parseBaseURL()}watch?v=${song.url || song.playbackUrl}`
+    }
+    return song.url
+  }
+
   public get Title(): string {
     return 'Piped'
   }

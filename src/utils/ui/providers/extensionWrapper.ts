@@ -428,6 +428,17 @@ export class ExtensionProvider extends GenericProvider {
     return
   }
 
+  @dummyDecorator
+  public async getRemoteURL(song: Song): Promise<string | undefined> {
+    const resp = await this.sendExtensionEventRequest('getRemoteURL', [song])
+    if (resp) {
+      if (this.isForwardRequest(resp)) {
+        return this.handleForwardRequest('getRemoteURL', resp, [song], this.getExecStack(...arguments))
+      }
+      return resp
+    }
+  }
+
   public provides(): ProviderScopes[] {
     return this.providerScopes
   }

@@ -381,6 +381,15 @@ export class InvidiousProvider extends GenericProvider {
     return
   }
 
+  public async getRemoteURL(song: Song): Promise<string | undefined> {
+    const BASE_URL = await window.PreferenceUtils.loadSelective('invidious_instance')
+
+    if (!song.url?.startsWith('http')) {
+      return `${BASE_URL}/watch?v=${song.url || song.playbackUrl}`
+    }
+    return song.url
+  }
+
   public get Title(): string {
     return 'Invidious'
   }

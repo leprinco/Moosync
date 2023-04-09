@@ -973,6 +973,13 @@ export class SpotifyProvider extends GenericProvider {
     return
   }
 
+  public async getRemoteURL(song: Song): Promise<string | undefined> {
+    if (!song.url?.startsWith('http')) {
+      return `https://open.spotify.com/track/${song.url}`
+    }
+    return song.url
+  }
+
   public get Title(): string {
     return 'Spotify'
   }

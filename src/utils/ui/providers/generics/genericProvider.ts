@@ -181,6 +181,10 @@ export abstract class GenericProvider {
     return undefined
   }
 
+  public async getRemoteURL(song: Song): Promise<string | undefined> {
+    return song.url?.startsWith('http') ? song.url : undefined
+  }
+
   public abstract matchEntityId(id: string): boolean
   public abstract sanitizeId(id: string, type: 'SONG' | 'PLAYLIST' | 'ALBUM' | 'ARTIST'): string
 

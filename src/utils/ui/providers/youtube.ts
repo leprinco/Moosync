@@ -754,6 +754,13 @@ export class YoutubeProvider extends GenericProvider {
     }
   }
 
+  public async getRemoteURL(song: Song): Promise<string | undefined> {
+    if (!song.url?.startsWith('http')) {
+      return `https://www.youtube.com/watch?v=${song.url || song.playbackUrl}`
+    }
+    return song.url
+  }
+
   public async getPlaybackUrlAndDuration(
     song: Song
   ): Promise<{ url: string | undefined; duration?: number } | undefined> {

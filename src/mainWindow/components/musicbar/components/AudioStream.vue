@@ -731,12 +731,7 @@ export default class AudioStream extends mixins(
   }
 
   private async setPlaybackURLAndDuration(song: Song, player: string) {
-    let provider: GenericProvider | undefined
-    if (song.providerExtension) {
-      provider = this.getProviderByKey(song.providerExtension)
-    } else {
-      provider = this.getProviderByKey(song.type.toLowerCase())
-    }
+    const provider = this.getProviderBySong(song)
 
     let res: { url?: string; duration?: number } | undefined = { url: song.playbackUrl, duration: song.duration }
 
