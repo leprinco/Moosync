@@ -1,22 +1,33 @@
-VERSION=$(cat package.json \
-  | grep version \
-  | head -1 \
-  | awk -F: '{ print $2 }' \
-  | sed 's/[",]//g')
+VERSION=$(cat package.json |
+  grep version |
+  head -1 |
+  awk -F: '{ print $2 }' |
+  sed 's/[",]//g')
 
 VERSION=$(echo $VERSION | xargs)
 
 ## bump AUR
-cd aur
+cd aur/moosync
 git checkout master
 sed -i "s/pkgver=.*/pkgver=${VERSION}/" PKGBUILD
 sed -i "s/pkgrel=.*/pkgrel=1/" PKGBUILD
 updpkgsums
-makepkg --printsrcinfo > .SRCINFO
+makepkg --printsrcinfo >.SRCINFO
 git add -A
 git commit -m "Bump to $VERSION"
-git push origin 
-cd ../
+git push origin
+cd ../../
+
+cd aur/moosync-bin
+git checkout master
+sed -i "s/pkgver=.*/pkgver=${VERSION}/" PKGBUILD
+sed -i "s/pkgrel=.*/pkgrel=1/" PKGBUILD
+updpkgsums
+makepkg --printsrcinfo >.SRCINFO
+git add -A
+git commit -m "Bump to $VERSION"
+git push origin
+cd ../../
 
 ## bump flatpak
 cd flatpak
@@ -39,7 +50,6 @@ git commit -m "Bump to $VERSION"
 git push origin
 cd ../
 
-
 ## bump chocolatey
 cd chocolatey
 sed -i "s@<version>.*@<version>${VERSION}</version>@" moosync.nuspec
@@ -59,4 +69,3 @@ cd ../
 # cd dist_electron
 # snap run snapcraft upload --release=stable "Moosync-${VERSION}-linux-amd64.snap"
 # cd ../
-
