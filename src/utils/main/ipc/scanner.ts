@@ -104,22 +104,26 @@ export class ScannerChannel implements IpcChannelInterface {
       for (const file of files) {
         const filePath = path.resolve(path.join(p, file))
         if (!filePath.match(excludeRegex)) {
-          if ((await fs.promises.stat(filePath)).isDirectory()) {
-            allFiles.push(...(await this.getAllFiles(filePath, excludeRegex)))
-          } else {
-            let type: 'PLAYLIST' | 'SONG' | undefined = undefined
+          try {
+            if ((await fs.promises.stat(filePath)).isDirectory()) {
+              allFiles.push(...(await this.getAllFiles(filePath, excludeRegex)))
+            } else {
+              let type: 'PLAYLIST' | 'SONG' | undefined = undefined
 
-            if (audioPatterns.exec(path.extname(file).toLowerCase())) {
-              type = 'SONG'
-            }
+              if (audioPatterns.exec(path.extname(file).toLowerCase())) {
+                type = 'SONG'
+              }
 
-            if (playlistPatterns.exec(path.extname(file).toLowerCase())) {
-              type = 'PLAYLIST'
-            }
+              if (playlistPatterns.exec(path.extname(file).toLowerCase())) {
+                type = 'PLAYLIST'
+              }
 
-            if (type) {
-              allFiles.push({ path: filePath, type })
+              if (type) {
+                allFiles.push({ path: filePath, type })
+              }
             }
+          } catch (e) {
+            console.error(e)
           }
         }
       }
