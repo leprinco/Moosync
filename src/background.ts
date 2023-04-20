@@ -22,7 +22,6 @@ import { setInitialPreferences, loadPreferences, shouldWatchFileChanges } from '
 import { setupScanTask } from '@/utils/main/scheduler/index'
 import { migrateThemes, setupDefaultThemes, setupSystemThemes } from './utils/main/themes/preferences'
 import { logger } from './utils/main/logger/index'
-import { ToadScheduler } from 'toad-scheduler'
 import { setupUpdateCheckTask } from '@/utils/main/scheduler/index'
 import pie from 'puppeteer-in-electron'
 import { loadSelectiveArrayPreference } from './utils/main/db/preferences'
@@ -178,9 +177,8 @@ async function onReady() {
   getExtensionHostChannel().onMainWindowCreated()
 
   // Setup scheduler tasks
-  const scheduler = new ToadScheduler()
-  setupScanTask(scheduler)
-  setupUpdateCheckTask(scheduler)
+  setupScanTask()
+  setupUpdateCheckTask()
   shouldWatchFileChanges()
 }
 

@@ -188,6 +188,8 @@ interface fileUtils {
    * If some file is opened with moosync, the path will be passed to the renderer from this method
    */
   listenInitialFileOpenRequest: (callback: (paths: string[]) => void) => void
+
+  resetScanTask: () => Promise<void>
 }
 
 /**

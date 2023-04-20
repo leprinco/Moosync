@@ -27,6 +27,7 @@ import { v4 } from 'uuid'
 import os from 'os'
 import { ipcMain } from 'electron'
 import { WindowHandler } from '../windowManager'
+import { setupScanTask } from '../scheduler'
 
 const loggerPath = app.getPath('logs')
 const audioPatterns = new RegExp('.flac|.mp3|.ogg|.m4a|.webm|.wav|.wv|.aac|.opus', 'i')
@@ -58,6 +59,9 @@ export class ScannerChannel implements IpcChannelInterface {
         break
       case ScannerEvents.SCAN_SINGLE_PLAYLIST:
         this.scanSinglePlaylist(event, request as IpcRequest<ScannerRequests.ScanSinglePlaylist>)
+        break
+      case ScannerEvents.RESET_SCAN_TASK:
+        this.resetScanTask(event, request)
         break
     }
   }
@@ -436,5 +440,10 @@ export class ScannerChannel implements IpcChannelInterface {
 
       event.reply(request.responseChannel, scanned)
     }
+  }
+
+  private resetScanTask(event: IpcMainEvent, request: IpcRequest) {
+    setupScanTask()
+    event.reply(request.responseChannel)
   }
 }

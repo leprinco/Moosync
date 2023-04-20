@@ -130,6 +130,7 @@ export enum ScannerEvents {
   SCAN_MUSIC = 'scanMusic',
   SCAN_SINGLE_SONG = 'scanSingleSong',
   SCAN_SINGLE_PLAYLIST = 'scanSinglePlaylist',
+  RESET_SCAN_TASK = 'resetScanTask',
   GET_PROGRESS = 'getProgress',
 
   PROGRESS_CHANNEL = 'progressChannel'

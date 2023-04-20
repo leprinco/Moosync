@@ -235,7 +235,13 @@ contextBridge.exposeInMainWorld('FileUtils', {
     }),
 
   listenInitialFileOpenRequest: (callback: (paths: string[]) => void) =>
-    ipcRendererHolder.on(SongEvents.GOT_FILE_PATH, callback)
+    ipcRendererHolder.on(SongEvents.GOT_FILE_PATH, callback),
+
+  resetScanTask: () =>
+    ipcRendererHolder.send(IpcEvents.SCANNER, {
+      type: ScannerEvents.RESET_SCAN_TASK,
+      params: undefined
+    })
 })
 
 contextBridge.exposeInMainWorld('SearchUtils', {

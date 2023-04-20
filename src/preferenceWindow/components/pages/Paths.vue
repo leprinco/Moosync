@@ -61,6 +61,16 @@
             :defaultValue="splitterRegex"
           />
 
+          <EditText
+            :title="$t('settings.paths.scan_interval')"
+            :tooltip="$t('settings.paths.scan_interval_tooltip')"
+            class="mt-2"
+            type="number"
+            key="scan_interval"
+            :onValueChange="onScanIntervalChange"
+            :defaultValue="30"
+          />
+
           <FilePicker
             :title="$t('settings.paths.artworkPath')"
             :tooltip="$t('settings.paths.artworkPath_tooltip')"
@@ -123,6 +133,10 @@ export default class Paths extends Vue {
     })
 
     this.isLibvipsAvailable = await window.NotifierUtils.isLibvipsAvailable()
+  }
+
+  async onScanIntervalChange() {
+    await window.FileUtils.resetScanTask()
   }
 }
 </script>
