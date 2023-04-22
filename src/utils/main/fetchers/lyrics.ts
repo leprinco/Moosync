@@ -232,17 +232,21 @@ export class LyricsFetcher extends CacheHandler {
     const url = this.formulateUrl('https://genius.com/api/search/song?q=', artists, this.sanitizeTitle(title))
     console.debug('Searching for lyrics at', url)
 
-    const resp = await this.get<GeniusLyrics.Root>(url, undefined, true)
-    const lyricsUrl = resp?.response?.sections?.[0]?.hits?.[0]?.result?.url
+    try {
+      const resp = await this.get<GeniusLyrics.Root>(url, undefined, true)
+      const lyricsUrl = resp?.response?.sections?.[0]?.hits?.[0]?.result?.url
 
-    if (lyricsUrl) {
-      const lyricsResp = await this.get(lyricsUrl)
+      if (lyricsUrl) {
+        const lyricsResp = await this.get(lyricsUrl)
 
-      const split = lyricsResp?.split('window.__PRELOADED_STATE__ = ')
-      const parsed = JSON.parse(eval(`${split[1].split("');")[0].replaceAll('JSON.parse(', '')}'`))
+        const split = lyricsResp?.split('window.__PRELOADED_STATE__ = ')
+        const parsed = JSON.parse(eval(`${split[1]?.split("');")?.[0]?.replaceAll('JSON.parse(', '')}'`))
 
-      const data = parsed.songPage.lyricsData.body.html.replaceAll(new RegExp(/(<([^>]+)>)/, 'ig'), '')
-      return data
+        const data = parsed?.songPage?.lyricsData?.body?.html?.replaceAll(new RegExp(/(<([^>]+)>)/, 'ig'), '')
+        return data
+      }
+    } catch (e) {
+      console.error('Failed to parse genius lyrics', url, e)
     }
   }
 }
