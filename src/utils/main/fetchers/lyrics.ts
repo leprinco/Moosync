@@ -238,7 +238,7 @@ export class LyricsFetcher extends CacheHandler {
     if (lyricsUrl) {
       const lyricsResp = await this.get(lyricsUrl)
 
-      const split = lyricsResp.split('window.__PRELOADED_STATE__ = ')
+      const split = lyricsResp?.split('window.__PRELOADED_STATE__ = ')
       const parsed = JSON.parse(eval(`${split[1].split("');")[0].replaceAll('JSON.parse(', '')}'`))
 
       const data = parsed.songPage.lyricsData.body.html.replaceAll(new RegExp(/(<([^>]+)>)/, 'ig'), '')
