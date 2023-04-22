@@ -184,6 +184,8 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   async mounted() {
     await this.$nextTick()
     this.scrollToActive()
+
+    bus.$on(EventBus.IGNORE_MUSIC_INFO_SCROLL, () => (this.ignoreScroll = true))
   }
 
   private async getLyricsFromExtension() {
@@ -260,7 +262,8 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   }
 
   @Watch('currentIndex')
-  async onIndexChange() {
+  async onIndexChange(old: number, newVal: number) {
+    console.log(old, newVal)
     await this.$nextTick()
     this.scrollToActive()
   }

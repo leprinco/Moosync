@@ -254,5 +254,6 @@ export enum EventBus {
   REFRESH_PAGE = 'refresh-page',
   REFRESH_LYRICS = 'refresh-lyrics',
   UPDATE_OPTIONAL_PROVIDER = 'update-optional-provider',
-  FORCE_LOAD_SONG = 'force-load-song'
+  FORCE_LOAD_SONG = 'force-load-song',
+  IGNORE_MUSIC_INFO_SCROLL = 'ignore-music-info-scroll'
 }

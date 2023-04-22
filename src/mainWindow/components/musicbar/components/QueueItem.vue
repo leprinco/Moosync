@@ -53,6 +53,8 @@ import LowImageCol from '@/mainWindow/components/generic/LowImageCol.vue'
 import IconHandler from '@/mainWindow/components/generic/IconHandler.vue'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import ErrorHandler from '@/utils/ui/mixins/errorHandler'
+import { bus } from '@/mainWindow/main'
+import { EventBus } from '@/utils/main/ipc/constants'
 
 @Component({
   components: {
@@ -62,7 +64,7 @@ import ErrorHandler from '@/utils/ui/mixins/errorHandler'
     LowImageCol
   }
 })
-export default class MusicInfo extends mixins(ImgLoader, PlayerControls, ContextMenuMixin, ErrorHandler) {
+export default class QueueItem extends mixins(ImgLoader, PlayerControls, ContextMenuMixin, ErrorHandler) {
   @Prop({ default: '' })
   song!: Song
 
@@ -85,6 +87,7 @@ export default class MusicInfo extends mixins(ImgLoader, PlayerControls, Context
   }
 
   removeSong() {
+    bus.$emit(EventBus.IGNORE_MUSIC_INFO_SCROLL)
     this.removeFromQueue(this.index)
   }
 
