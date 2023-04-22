@@ -158,11 +158,13 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
         key: 'local',
         defaultChecked: true
       },
-      ...this.providersWithPlaylists.map((val) => ({
-        key: val.key,
-        title: val.Title,
-        defaultChecked: true
-      }))
+      ...this.providersWithPlaylists
+        .filter((val, index) => this.providersWithPlaylists.indexOf(val) === index)
+        .map((val) => ({
+          key: val.key,
+          title: val.Title,
+          defaultChecked: true
+        }))
     ]
   }
 
