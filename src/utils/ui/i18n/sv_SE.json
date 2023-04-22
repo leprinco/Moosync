@@ -105,7 +105,9 @@
       "thumbnailPath": "Nedladdad miniatyrsökväg",
       "thumbnailPath_tooltip": "Katalog där genererade miniatyrbilder lagras",
       "splitter": "Artistens namn delat mönster",
-      "splitter_tooltip": "Regex för att dela artistnamn. Lämna tomt för att inaktivera delning."
+      "splitter_tooltip": "Regex för att dela artistnamn. Lämna tomt för att inaktivera delning.",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
       "songView": "Visning av låtar",
@@ -147,7 +149,8 @@
         "minimizeTray": "Minimera till fack vid stängning",
         "hardwareAcceleration": "Använd GPU hårdvaruacceleration",
         "watchFileChanges": "Titta på musikkataloger för ändringar",
-        "enableJukeboxMode": "Aktivera växling för Jukebox-läge"
+        "enableJukeboxMode": "Aktivera växling för Jukebox-läge",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
       "systemSettings_tooltip": "Inställningar som är relaterade till ditt system",
       "audioSettings": {
@@ -241,7 +244,8 @@
         "title": "Låttexter leverantörer",
         "tooltip": "Välj vilka textleverantörer som ska användas för att söka efter låttexter",
         "az_lyrics": "Använd AZLyrics",
-        "google_lyrics": "Använd Googles söktexter"
+        "google_lyrics": "Använd Googles söktexter",
+        "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
         "title": "Inställningar för kön",

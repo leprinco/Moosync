@@ -105,7 +105,9 @@
       "thumbnailPath": "ダウンロードされたサムネイルのパス",
       "thumbnailPath_tooltip": "生成されたサムネイルが保存されているディレクトリ",
       "splitter": "アーティスト名の分割パターン",
-      "splitter_tooltip": "アーティスト名を分割するには正規表現を使用します。空白の場合は分割を無効にします。"
+      "splitter_tooltip": "アーティスト名を分割するには正規表現を使用します。空白の場合は分割を無効にします。",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
       "songView": "曲表示",
@@ -147,7 +149,8 @@
         "minimizeTray": "閉じたらトレイに最小化",
         "hardwareAcceleration": "GPUハードウェアアクセラレーションを使用",
         "watchFileChanges": "更新がないか音楽ディレクトリを監視",
-        "enableJukeboxMode": "ジュークボックスモードへの切り替えを有効化"
+        "enableJukeboxMode": "ジュークボックスモードへの切り替えを有効化",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
       "systemSettings_tooltip": "システムに関連する設定",
       "audioSettings": {
@@ -241,7 +244,8 @@
         "title": "歌詞の提供元",
         "tooltip": "歌詞の検索に使う歌詞の提供元を選択",
         "az_lyrics": "AZLyricsを使用",
-        "google_lyrics": "Google検索の歌詞を使用"
+        "google_lyrics": "Google検索の歌詞を使用",
+        "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
         "title": "キュー設定",

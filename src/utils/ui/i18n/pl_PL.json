@@ -105,7 +105,9 @@
       "thumbnailPath": "Ścieżka do pobranych miniatur",
       "thumbnailPath_tooltip": "Katalog, w którym generowane miniatury są przechowywane",
       "splitter": "Wzór podziału nazwy artysty",
-      "splitter_tooltip": "Regex, aby podzielić nazwy artysty. Pozostaw puste, aby wyłączyć dzielenie."
+      "splitter_tooltip": "Regex, aby podzielić nazwy artysty. Pozostaw puste, aby wyłączyć dzielenie.",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
       "songView": "Widok utworów",
@@ -147,7 +149,8 @@
         "minimizeTray": "Minimalizuj do zasobnika po zamknięciu",
         "hardwareAcceleration": "Użyj akceleracji sprzętowej GPU",
         "watchFileChanges": "Obejrzyj katalogi muzyczne dla zmian",
-        "enableJukeboxMode": "Włącz przełączanie w trybie Jukebox"
+        "enableJukeboxMode": "Włącz przełączanie w trybie Jukebox",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
       "systemSettings_tooltip": "Ustawienia powiązane z Twoim systemem",
       "audioSettings": {
@@ -241,7 +244,8 @@
         "title": "Dostawcy tekstów",
         "tooltip": "Wybierz dostawców tekstów piosenek do wyszukiwania tekstów",
         "az_lyrics": "Użyj AZLyrics",
-        "google_lyrics": "Użyj tekstów wyszukiwania Google"
+        "google_lyrics": "Użyj tekstów wyszukiwania Google",
+        "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
         "title": "Ustawienia kolejki",

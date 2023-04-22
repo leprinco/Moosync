@@ -105,7 +105,9 @@
       "thumbnailPath": "Cesta ke stažení miniatur",
       "thumbnailPath_tooltip": "Adresář, kde jsou uloženy generované miniatury",
       "splitter": "Vzor rozdělení jména interpreta",
-      "splitter_tooltip": "Regex pro rozdělení jmen umělců. Ponechte prázdné pro vypnutí rozdělení."
+      "splitter_tooltip": "Regex pro rozdělení jmen umělců. Ponechte prázdné pro vypnutí rozdělení.",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
       "songView": "Zobrazení skladeb",
@@ -147,7 +149,8 @@
         "minimizeTray": "Minimalizovat do lišty při zavření",
         "hardwareAcceleration": "Použít hardwarovou akceleraci GPU",
         "watchFileChanges": "Sledujte hudební adresáře pro změny",
-        "enableJukeboxMode": "Zobrazit tlačítko pro Jukebox mód"
+        "enableJukeboxMode": "Zobrazit tlačítko pro Jukebox mód",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
       "systemSettings_tooltip": "Nastavení vztahující se k vašemu systému",
       "audioSettings": {
@@ -241,7 +244,8 @@
         "title": "Poskytovatel textů písní",
         "tooltip": "Vyberte, kteří poskytovatelé textů písní budou aktivní",
         "az_lyrics": "Použít AZLyrics",
-        "google_lyrics": "Použít Google Search texty"
+        "google_lyrics": "Použít Google Search texty",
+        "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
         "title": "Nastavení fronty",

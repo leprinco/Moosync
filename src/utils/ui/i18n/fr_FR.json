@@ -105,7 +105,9 @@
       "thumbnailPath": "Chemin de la miniature téléchargée",
       "thumbnailPath_tooltip": "Répertoire où les vignettes générées sont stockées",
       "splitter": "Modèle de séparation du nom de l'artiste",
-      "splitter_tooltip": "Regex pour découper le nom de l'artiste. Laisser vide pour désactiver le découpage."
+      "splitter_tooltip": "Regex pour découper le nom de l'artiste. Laisser vide pour désactiver le découpage.",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
       "songView": "Vue des chansons",
@@ -147,7 +149,8 @@
         "minimizeTray": "Réduire dans la barre d'état à la fermeture",
         "hardwareAcceleration": "Utiliser l'accélération matérielle GPU",
         "watchFileChanges": "Regarder les répertoires musicaux pour les modifications",
-        "enableJukeboxMode": "Activer le bouton basculant pour le mode Jukebox"
+        "enableJukeboxMode": "Activer le bouton basculant pour le mode Jukebox",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
       "systemSettings_tooltip": "Paramètres liés à votre système",
       "audioSettings": {
@@ -241,7 +244,8 @@
         "title": "Fournisseurs de lyriques",
         "tooltip": "Sélectionnez les fournisseurs de lyriques à utiliser pour rechercher des lyriques",
         "az_lyrics": "Utiliser AZLyrics",
-        "google_lyrics": "Utiliser une recherche Google pour les lyriques"
+        "google_lyrics": "Utiliser une recherche Google pour les lyriques",
+        "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
         "title": "Paramètre de la file d'attente",

@@ -105,7 +105,9 @@
       "thumbnailPath": "Downloaded Thumbnail Path",
       "thumbnailPath_tooltip": "Directory where generated thumbnails are stored",
       "splitter": "Artist name split pattern",
-      "splitter_tooltip": "Regex to split artist names. Leave empty to disable splitting."
+      "splitter_tooltip": "Regex to split artist names. Leave empty to disable splitting.",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
       "songView": "Songs View",
@@ -147,7 +149,8 @@
         "minimizeTray": "Minimize to tray on close",
         "hardwareAcceleration": "Use GPU hardware acceleration",
         "watchFileChanges": "Watch music directories for changes",
-        "enableJukeboxMode": "Enable toggle for Jukebox mode"
+        "enableJukeboxMode": "Enable toggle for Jukebox mode",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
       "systemSettings_tooltip": "Settings which are related to your system",
       "audioSettings": {
@@ -241,7 +244,8 @@
         "title": "Lyrics providers",
         "tooltip": "Select which lyrics providers to use to search for lyrics",
         "az_lyrics": "Use AZLyrics",
-        "google_lyrics": "Use Google search lyrics"
+        "google_lyrics": "Use Google search lyrics",
+        "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
         "title": "Queue Settings",

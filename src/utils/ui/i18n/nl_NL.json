@@ -105,7 +105,9 @@
       "thumbnailPath": "Gedownloade thumbnail pad",
       "thumbnailPath_tooltip": "Map waar gegenereerde miniaturen worden opgeslagen",
       "splitter": "Kunstenaar naam gesplitst patroon",
-      "splitter_tooltip": "Regex om de naam van de artiest te splitsen. Laat leeg om splitsing uit te schakelen."
+      "splitter_tooltip": "Regex om de naam van de artiest te splitsen. Laat leeg om splitsing uit te schakelen.",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
       "songView": "Nummers weergave",
@@ -147,7 +149,8 @@
         "minimizeTray": "Minimaliseer naar systeemvak bij sluiten",
         "hardwareAcceleration": "Gebruik GPU hardwareversnelling",
         "watchFileChanges": "Muziekmappen bekijken voor wijzigingen",
-        "enableJukeboxMode": "Schakelaar voor Jukebox-modus inschakelen"
+        "enableJukeboxMode": "Schakelaar voor Jukebox-modus inschakelen",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
       "systemSettings_tooltip": "Instellingen die gerelateerd zijn aan uw systeem",
       "audioSettings": {
@@ -241,7 +244,8 @@
         "title": "Songtekst leveranciers",
         "tooltip": "Selecteer welke songtekst providers ze moeten gebruiken om te zoeken naar songteksten",
         "az_lyrics": "Gebruik AZLyrics",
-        "google_lyrics": "Gebruik Google zoek songteksten"
+        "google_lyrics": "Gebruik Google zoek songteksten",
+        "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
         "title": "Wachtrij instellingen",

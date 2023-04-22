@@ -105,7 +105,9 @@
       "thumbnailPath": "Downloadet Miniaturesti",
       "thumbnailPath_tooltip": "Mappe, hvor genererede miniaturer er gemt",
       "splitter": "Kunstner navn split mønster",
-      "splitter_tooltip": "Regex for at opdele kunstnernavne. Efterlad blank for at deaktivere opdeling."
+      "splitter_tooltip": "Regex for at opdele kunstnernavne. Efterlad blank for at deaktivere opdeling.",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
       "songView": "Sange Visning",
@@ -147,7 +149,8 @@
         "minimizeTray": "Minimér til bakke ved lukning",
         "hardwareAcceleration": "Brug GPU hardware acceleration",
         "watchFileChanges": "Se musikmapper for ændringer",
-        "enableJukeboxMode": "Aktivér skift for Jukebox-tilstand"
+        "enableJukeboxMode": "Aktivér skift for Jukebox-tilstand",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
       "systemSettings_tooltip": "Indstillinger, der er relateret til dit system",
       "audioSettings": {
@@ -241,7 +244,8 @@
         "title": "Sangtekst udbydere",
         "tooltip": "Vælg hvilke sangtekstudbydere, der skal bruges til at søge efter sangtekster",
         "az_lyrics": "Brug AZLyrics",
-        "google_lyrics": "Benyt Google søge sangtekster"
+        "google_lyrics": "Benyt Google søge sangtekster",
+        "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
         "title": "Kø Indstillinger",
