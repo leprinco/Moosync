@@ -33,11 +33,16 @@ export class LyricsFetcher extends CacheHandler {
     const useAzLyrics = loadSelectiveArrayPreference<Checkbox>('lyrics_fetchers.az_lyrics')?.enabled ?? true
     const useGoogleLyrics = loadSelectiveArrayPreference<Checkbox>('lyrics_fetchers.az_lyrics')?.enabled ?? true
     const useSpotifyLyrics = loadSelectiveArrayPreference<Checkbox>('lyrics_fetchers.spotify_lyrics')?.enabled ?? true
+    const useGeniusLyrics = loadSelectiveArrayPreference<Checkbox>('lyrics_fetchers.genius_lyrics')?.enabled ?? true
 
     let lyrics: string | undefined
 
     const artists = song.artists?.map((val) => val.artist_name ?? '') ?? []
     const title = song.title
+
+    if (!lyrics && useGeniusLyrics) {
+      lyrics = await this.queryGenius(artists, title)
+    }
 
     if (!lyrics && useSpotifyLyrics) {
       lyrics = await this.querySpotify(song)
@@ -100,7 +105,7 @@ export class LyricsFetcher extends CacheHandler {
     return agents[Math.floor(Math.random() * agents.length)]
   }
 
-  private async get(url: string, referrer?: string, tryJson = false): Promise<string> {
+  private async get<T = string>(url: string, referrer?: string, tryJson = false): Promise<T> {
     const cached = this.getCache(url)
     if (cached) {
       return tryJson ? JSON.parse(cached) : cached
@@ -125,7 +130,7 @@ export class LyricsFetcher extends CacheHandler {
               this.addToCache(parsed.toString(), data)
               return
             }
-            resolve(data)
+            resolve(data as T)
           } catch (e) {
             console.warn('Failed to parse result from', parsed, 'to JSON')
             reject(e)
@@ -221,5 +226,23 @@ export class LyricsFetcher extends CacheHandler {
     }
 
     return
+  }
+
+  private async queryGenius(artists: string[], title: string): Promise<string | undefined> {
+    const url = this.formulateUrl('https://genius.com/api/search/song?q=', artists, this.sanitizeTitle(title))
+    console.debug('Searching for lyrics at', url)
+
+    const resp = await this.get<GeniusLyrics.Root>(url, undefined, true)
+    const lyricsUrl = resp?.response?.sections?.[0]?.hits?.[0]?.result?.url
+
+    if (lyricsUrl) {
+      const lyricsResp = await this.get(lyricsUrl)
+
+      const split = lyricsResp.split('window.__PRELOADED_STATE__ = ')
+      const parsed = JSON.parse(eval(`${split[1].split("');")[0].replaceAll('JSON.parse(', '')}'`))
+
+      const data = parsed.songPage.lyricsData.body.html.replaceAll(new RegExp(/(<([^>]+)>)/, 'ig'), '')
+      return data
+    }
   }
 }

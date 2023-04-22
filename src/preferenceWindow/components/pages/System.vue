@@ -618,6 +618,11 @@ export default class System extends Vue {
         title: this.$tc('settings.system.lyrics.spotify_lyrics'),
         key: 'spotify_lyrics',
         enabled: true
+      },
+      {
+        title: this.$tc('settings.system.lyrics.genius_lyrics'),
+        key: 'genius_lyrics',
+        enabled: true
       }
     ]
   }
