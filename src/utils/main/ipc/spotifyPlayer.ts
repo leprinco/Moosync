@@ -99,7 +99,7 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
           this.playerProcess?.off('message', listener)
 
           // TODO: Handle this better
-          if (message.args['auth']['password']) message.args['auth']['password'] = '***'
+          if (message?.args?.['auth']?.['password']) message.args['auth']['password'] = '***'
           console.error('Failed to resolve message for message', message)
           resolve(new Error('Failed to resolve message'))
         }, 5000)
@@ -107,8 +107,8 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
         this.playerProcess?.on('message', listener)
 
         try {
-          const logObject = { data: message, channel: id }
-          if (logObject.data.args['auth']['password']) logObject.data.args['auth']['password'] = '***'
+          const logObject = JSON.parse(JSON.stringify({ data: message, channel: id }))
+          if (logObject?.data?.args?.['auth']?.['password']) logObject.data.args['auth']['password'] = '***'
 
           console.debug('sending message to spotify process', { data: message, channel: id })
           this.playerProcess?.send({ data: message, channel: id })
