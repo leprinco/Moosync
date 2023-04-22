@@ -32,6 +32,7 @@ cd ../../
 ## bump flatpak
 cd flatpak
 git checkout master
+git pull origin master
 python flatpak-node-generator.py yarn --electron-node-headers ../yarn.lock
 sed -i "s/tag: v.*/tag: v${VERSION}/" app.moosync.moosync.yml
 
@@ -47,7 +48,9 @@ python flatpak-cargo-generator.py ../node_modules/librespot-node/native/Cargo.lo
 sed -i "\@${FLATPAK_PARTIAL_DOWNLOAD}.*@{n;s@.*@        sha256: ${CHECKSUM_FLATPAK}@}" app.moosync.moosync.yml
 git add -A
 git commit -m "Bump to $VERSION"
-git push origin
+git checkout -b "$VERSION"
+git push origin "$VERSION"
+git checkout master
 cd ../
 
 ## bump chocolatey
