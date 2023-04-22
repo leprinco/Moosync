@@ -232,7 +232,7 @@ export class ExtensionProvider extends GenericProvider {
         }
         return
       }
-      yield { songs: resp?.songs }
+      yield resp
     }
   }
 
@@ -251,7 +251,7 @@ export class ExtensionProvider extends GenericProvider {
           this.getExecStack(...arguments)
         )
       }
-      yield { songs: resp?.songs }
+      yield resp
     }
   }
 
@@ -265,7 +265,7 @@ export class ExtensionProvider extends GenericProvider {
       if (this.isForwardRequest(resp)) {
         return this.handleForwardRequest('getAlbumSongs', resp, [album, nextPageToken], this.getExecStack(...arguments))
       }
-      yield { songs: resp?.songs }
+      yield resp
     }
   }
 
