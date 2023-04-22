@@ -714,7 +714,7 @@ interface extensionAPI {
       playlistID: string,
       invalidateCache: boolean,
       nextPageToken?: unknown
-    ) => Promise<SongsReturnType | ForwardRequestReturnType<'requestedPlaylistSongs'> | void>
+    ) => Promise<SongsWithPageTokenReturnType | ForwardRequestReturnType<'requestedPlaylistSongs'> | void>
   ): void
 
   /**
@@ -839,7 +839,7 @@ interface extensionAPI {
     callback: (
       artist: Artists,
       nextPageToken?: unknown
-    ) => Promise<SongsReturnType | ForwardRequestReturnType<'requestedArtistSongs'> | void>
+    ) => Promise<SongsWithPageTokenReturnType | ForwardRequestReturnType<'requestedArtistSongs'> | void>
   ): void
 
   /**
@@ -851,7 +851,7 @@ interface extensionAPI {
     callback: (
       album: Album,
       nextPageToken?: unknown
-    ) => Promise<SongsReturnType | ForwardRequestReturnType<'requestedAlbumSongs'> | void>
+    ) => Promise<SongsWithPageTokenReturnType | ForwardRequestReturnType<'requestedAlbumSongs'> | void>
   ): void
 
   /**
