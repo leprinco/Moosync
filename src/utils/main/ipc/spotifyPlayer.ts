@@ -73,24 +73,33 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
   }
 
   private async sendAsync<T extends SpotifyRequests.SpotifyCommands>(
-    message: SpotifyMessage
+    message: SpotifyMessage,
+    retries = 0
   ): Promise<SpotifyRequests.ReturnType<T> | Error | undefined> {
     if (this.playerProcess && !this.playerProcess.killed && this.playerProcess.connected) {
       // Don't reject error instead resolve it. Makes it easier to pass it to renderer
       let resolveTimeout: ReturnType<typeof setTimeout>
-      return new Promise<SpotifyRequests.ReturnType<T> | Error>((resolve) => {
+      return new Promise<SpotifyRequests.ReturnType<T> | Error | undefined>((resolve) => {
         const id = v1()
-        const listener = (message: PlayerChannelMessage) => {
-          if (message.channel === id) {
-            console.debug('Got reply from librespot', message)
+        const listener = (m: PlayerChannelMessage) => {
+          if (m.channel === id) {
+            console.debug('Got reply from librespot', m)
             this.playerProcess?.off('message', listener)
             resolveTimeout && clearTimeout(resolveTimeout)
 
-            if (message.error) {
-              resolve(new Error(message.error))
+            if (m.error) {
+              this.closePlayer()
+              this.spawnProcess()
+
+              if (retries > 2) {
+                resolve(new Error(m.error))
+                return
+              }
+
+              this.sendAsync(message, retries + 1).then((val) => resolve(val as SpotifyRequests.ReturnType<T>))
               return
             }
-            resolve(message.data as SpotifyRequests.ReturnType<T>)
+            resolve(m.data as SpotifyRequests.ReturnType<T>)
           }
         }
 
