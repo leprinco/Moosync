@@ -271,6 +271,14 @@ export default class AudioStream extends mixins(
     this.setupSync()
     this.registerListeners()
 
+    const lastLoadedPlaybackState =
+      (await window.PreferenceUtils.loadSelectiveArrayItem<SystemSettings>('system.last_loaded_playback_state'))
+        ?.enabled ?? false
+
+    if (!lastLoadedPlaybackState) {
+      vxm.player.playerState = 'PAUSED'
+    }
+
     if (this.currentSong) this.loadAudio(this.currentSong, true)
   }
 

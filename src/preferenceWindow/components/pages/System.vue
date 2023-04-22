@@ -633,8 +633,17 @@ export default class System extends Vue {
       this.minimizeToTrayCheckbox,
       this.hardwareAcceleration,
       this.watchFileChanges,
-      this.enableJukeboxMode
+      this.enableJukeboxMode,
+      this.lastLoadedPlaybackState
     ]
+  }
+
+  get lastLoadedPlaybackState(): SystemSettings {
+    return {
+      key: 'last_loaded_playback_state',
+      title: this.$tc('settings.system.systemSettings.lastLoadedPlaybackState'),
+      enabled: false
+    }
   }
 
   get enableJukeboxMode() {
