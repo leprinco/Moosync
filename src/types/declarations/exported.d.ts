@@ -190,6 +190,10 @@ type ExtensionPreferenceGroup = {
       type: 'TextField'
       default: string
     }
+  | {
+      type: 'InfoField'
+      default: string
+    }
 )
 
 interface ExtensionFactory {

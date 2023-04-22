@@ -77,6 +77,7 @@ import ExtensionGroup from '../ExtensionGroup.vue'
 import ProgressBar from '../Progressbar.vue'
 import ButtonGroup from '../ButtonGroup.vue'
 import TextField from '../TextField.vue'
+import InfoField from '../InfoField.vue'
 
 @Component({
   components: {
@@ -89,7 +90,8 @@ import TextField from '../TextField.vue'
     ProgressBar,
     ButtonGroup,
     PrevIcon,
-    NextIcon
+    NextIcon,
+    InfoField
   }
 })
 export default class Extensions extends Vue {
