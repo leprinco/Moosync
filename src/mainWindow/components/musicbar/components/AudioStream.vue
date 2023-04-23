@@ -170,9 +170,13 @@ export default class AudioStream extends mixins(
     let tries = 0
     while (!(player && song.playbackUrl) && tries < vxm.playerRepo.allPlayers.length) {
       player = this.findPlayer(newType, this.playerBlacklist)
-
       console.debug('Found player', player?.key)
-      if (player && newType !== 'LOCAL') {
+
+      if (newType === 'LOCAL' && player) {
+        break
+      }
+
+      if (player) {
         await this.setPlaybackURLAndDuration(song, player.key)
       }
 
