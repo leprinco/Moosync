@@ -105,7 +105,9 @@
       "thumbnailPath": "Heruntergeladener Miniaturbildpfad",
       "thumbnailPath_tooltip": "Verzeichnis in dem die erzeugten Thumbnails gespeichert werden",
       "splitter": "Interpretenname Split-Muster",
-      "splitter_tooltip": "Regex um Interpretennamen zu teilen. Leer lassen um die Aufteilung zu deaktivieren."
+      "splitter_tooltip": "Regex um Interpretennamen zu teilen. Leer lassen um die Aufteilung zu deaktivieren.",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
       "songView": "Titelansicht",
@@ -147,7 +149,8 @@
         "minimizeTray": "Beim Schließen in den Tray minimieren",
         "hardwareAcceleration": "GPU-Hardware-Beschleunigung verwenden",
         "watchFileChanges": "Musikverzeichnisse für Änderungen ansehen",
-        "enableJukeboxMode": "Schalter für Jukebox-Modus aktivieren"
+        "enableJukeboxMode": "Schalter für Jukebox-Modus aktivieren",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
       "systemSettings_tooltip": "Einstellungen, die sich auf Ihr System beziehen",
       "audioSettings": {
@@ -241,7 +244,8 @@
         "title": "Songtext-Anbieter",
         "tooltip": "Wählen Sie aus, welche Songtexte für die Suche verwendet werden sollen",
         "az_lyrics": "AZLyrics verwenden",
-        "google_lyrics": "Google-Suchtexte verwenden"
+        "google_lyrics": "Google-Suchtexte verwenden",
+        "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
         "title": "Warteschlangen-Einstellungen",

@@ -105,7 +105,9 @@
       "thumbnailPath": "Calea de miniatură descărcată",
       "thumbnailPath_tooltip": "Directorul unde miniaturile generate sunt stocate",
       "splitter": "Sablon divizat pentru numele artistului",
-      "splitter_tooltip": "Regex pentru împărțirea numelor artiștilor. Lăsați gol pentru a dezactiva divizarea."
+      "splitter_tooltip": "Regex pentru împărțirea numelor artiștilor. Lăsați gol pentru a dezactiva divizarea.",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
       "songView": "Vizualizare melodii",
@@ -147,7 +149,8 @@
         "minimizeTray": "Minimizează în tăviță la închidere",
         "hardwareAcceleration": "Folosește accelerarea hardware GPU",
         "watchFileChanges": "Urmărește directoarele de muzică pentru modificări",
-        "enableJukeboxMode": "Activează comutator pentru modul Jukebox"
+        "enableJukeboxMode": "Activează comutator pentru modul Jukebox",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
       "systemSettings_tooltip": "Setări care sunt legate de sistemul dvs.",
       "audioSettings": {
@@ -241,7 +244,8 @@
         "title": "Furnizori de versuri",
         "tooltip": "Selectează ce furnizori de versuri să folosească pentru a căuta versuri",
         "az_lyrics": "Folosește AZLyrics",
-        "google_lyrics": "Utilizează versuri de căutare Google"
+        "google_lyrics": "Utilizează versuri de căutare Google",
+        "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
         "title": "Setări coadă",

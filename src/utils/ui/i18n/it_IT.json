@@ -105,7 +105,9 @@
       "thumbnailPath": "Percorso delle copertine scaricate",
       "thumbnailPath_tooltip": "Percorso dove salvare le copertine generate",
       "splitter": "Modello di divisione nome artista",
-      "splitter_tooltip": "Regex per dividere i nomi dell'artista. Lasciare vuoto per disabilitare la divisione."
+      "splitter_tooltip": "Regex per dividere i nomi dell'artista. Lasciare vuoto per disabilitare la divisione.",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
       "songView": "Vista brani",
@@ -147,7 +149,8 @@
         "minimizeTray": "Riduci a icona invece di chiudere",
         "hardwareAcceleration": "Usa l'accelerazione hardware",
         "watchFileChanges": "Controlla i cambiamenti delle canzoni locali",
-        "enableJukeboxMode": "Attiva la modalità Jukebox"
+        "enableJukeboxMode": "Attiva la modalità Jukebox",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
       "systemSettings_tooltip": "Impostazioni di sistema",
       "audioSettings": {
@@ -241,7 +244,8 @@
         "title": "Fornitori di testi",
         "tooltip": "Seleziona quali fornitori di testi usare per cercare il testo",
         "az_lyrics": "Usa AZLyrics",
-        "google_lyrics": "Usa i testi di ricerca di Google"
+        "google_lyrics": "Usa i testi di ricerca di Google",
+        "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
         "title": "Impostazioni Coda",

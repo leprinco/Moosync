@@ -105,7 +105,9 @@
       "thumbnailPath": "Звантажений шлях до ескізу",
       "thumbnailPath_tooltip": "Каталог, де зберігаються створені мініатюри",
       "splitter": "Шаблон назви виконавця розділення",
-      "splitter_tooltip": "Регулярний вираз для розділення імен виконавців. Залиште порожнім, щоб вимкнути розділення."
+      "splitter_tooltip": "Регулярний вираз для розділення імен виконавців. Залиште порожнім, щоб вимкнути розділення.",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
       "songView": "Перегляд пісень",
@@ -147,7 +149,8 @@
         "minimizeTray": "Згортати в трей при закритті",
         "hardwareAcceleration": "Використовувати апаратне прискорення ГП",
         "watchFileChanges": "Дивитися музичні каталоги для змін",
-        "enableJukeboxMode": "Увімкнути перемикач для режиму музичних автоматів"
+        "enableJukeboxMode": "Увімкнути перемикач для режиму музичних автоматів",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
       "systemSettings_tooltip": "Параметри, які пов'язані з вашою системою",
       "audioSettings": {
@@ -241,7 +244,8 @@
         "title": "Постачальники текстів",
         "tooltip": "Виберіть, які тексти пісень використовують для пошуку текстів пісень",
         "az_lyrics": "Використовувати AZLyrics",
-        "google_lyrics": "Використовувати пошукові тексти в Google"
+        "google_lyrics": "Використовувати пошукові тексти в Google",
+        "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
         "title": "Налаштування черги",

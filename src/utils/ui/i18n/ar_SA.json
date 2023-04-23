@@ -105,7 +105,9 @@
       "thumbnailPath": "مسار الصورة المصغرة الذي تم تنزيله",
       "thumbnailPath_tooltip": "الدليل حيث يتم تخزين الصور المصغرة التي تم إنشاؤها",
       "splitter": "نمط تقسيم اسم الفنان",
-      "splitter_tooltip": "ريجكس لتقسيم أسماء الفنانين. اتركه فارغاً لتعطيل التقسيم."
+      "splitter_tooltip": "ريجكس لتقسيم أسماء الفنانين. اتركه فارغاً لتعطيل التقسيم.",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
       "songView": "عرض الأغاني",
@@ -147,7 +149,8 @@
         "minimizeTray": "تصغير إلى غلق",
         "hardwareAcceleration": "استخدام تسارع أجهزة GPU",
         "watchFileChanges": "مشاهدة أدلة الموسيقى للتغييرات",
-        "enableJukeboxMode": "تمكين التبديل لوضع Youkebox"
+        "enableJukeboxMode": "تمكين التبديل لوضع Youkebox",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
       "systemSettings_tooltip": "الإعدادات المرتبطة بالنظام الخاص بك",
       "audioSettings": {
@@ -241,7 +244,8 @@
         "title": "موفري الكلمات",
         "tooltip": "حدد موفري كلمات الأغاني الذين يمكن استخدامهم للبحث عن كلمات الأغاني",
         "az_lyrics": "استخدام كلمات الاغنية",
-        "google_lyrics": "استخدام كلمات البحث في جوجل"
+        "google_lyrics": "استخدام كلمات البحث في جوجل",
+        "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
         "title": "إعدادات قائمة الانتظار",

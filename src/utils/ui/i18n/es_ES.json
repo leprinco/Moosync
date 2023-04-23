@@ -105,7 +105,9 @@
       "thumbnailPath": "Ruta de miniatura descargada",
       "thumbnailPath_tooltip": "Directorio donde se almacenan las miniaturas generadas",
       "splitter": "Patrón dividido del nombre del artista",
-      "splitter_tooltip": "Regex para dividir nombres de artista. Dejar en blanco para desactivar la separación."
+      "splitter_tooltip": "Regex para dividir nombres de artista. Dejar en blanco para desactivar la separación.",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
       "songView": "Vista de canales",
@@ -147,7 +149,8 @@
         "minimizeTray": "Minimizar a la bandeja al cerrar",
         "hardwareAcceleration": "Usar aceleración de hardware GPU",
         "watchFileChanges": "Ver directorios de música para cambios",
-        "enableJukeboxMode": "Activar el interruptor para el modo Jukebox"
+        "enableJukeboxMode": "Activar el interruptor para el modo Jukebox",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
       "systemSettings_tooltip": "Ajustes relacionados con su sistema",
       "audioSettings": {
@@ -241,7 +244,8 @@
         "title": "Proveedores de letras",
         "tooltip": "Selecciona qué proveedores de letras usar para buscar letras",
         "az_lyrics": "Usar AZLyrics",
-        "google_lyrics": "Usar letras de búsqueda de Google"
+        "google_lyrics": "Usar letras de búsqueda de Google",
+        "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
         "title": "Ajustes de cola",
