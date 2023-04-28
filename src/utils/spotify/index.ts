@@ -1,53 +1,27 @@
 import { ConstructorConfig, PlayerEvent, PlayerEventTypes, SpotifyPlayerSpirc, Token, TokenScope } from 'librespot-node'
 import { Serializable } from 'child_process'
-import { prefixLogger } from '../main/logger/utils'
-import log from 'loglevel'
 import { sleep } from '../common'
 
 class SpotifyPlayerProcess {
   private player: SpotifyPlayerSpirc | undefined
-  private logsPath: string
 
   constructor() {
-    let logsPath = ''
-    for (const [index, arg] of process.argv.entries()) {
-      if (process.argv[index + 1]) {
-        if (arg === 'logPath') {
-          logsPath = process.argv[index + 1]
-        }
-      }
-    }
-
-    this.logsPath = logsPath
     this.setupLogger()
-
     this.registerListeners()
   }
 
+  private prefixLogger(method: string) {
+    const originalMethod = console[method as 'info' | 'warn' | 'debug' | 'trace' | 'error']
+    console[method as 'info' | 'warn' | 'debug' | 'trace' | 'error'] = (...args: unknown[]) => {
+      // Offset by 21 characters
+      originalMethod(`[00000000000000000000 ${method} ]`, ...args)
+    }
+  }
+
   private setupLogger() {
-    const logger = log.getLogger('Librespot')
-    prefixLogger(this.logsPath, logger)
-    const logLevel = process.env.DEBUG_LOGGING ? log.levels.DEBUG : log.levels.INFO
-    logger.setLevel(logLevel)
-
-    console.info = (...args: unknown[]) => {
-      logger.info(...args)
-    }
-
-    console.error = (...args: unknown[]) => {
-      logger.error(...args)
-    }
-
-    console.warn = (...args: unknown[]) => {
-      logger.warn(...args)
-    }
-
-    console.debug = (...args: unknown[]) => {
-      logger.debug(...args)
-    }
-
-    console.trace = (...args: unknown[]) => {
-      logger.trace(...args)
+    const methods = ['info', 'warn', 'debug', 'trace', 'error']
+    for (const m of methods) {
+      this.prefixLogger(m)
     }
   }
 

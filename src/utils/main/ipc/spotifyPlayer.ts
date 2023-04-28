@@ -15,6 +15,8 @@ import EventEmitter from 'events'
 import { PlayerEventTypes } from 'librespot-node'
 import path from 'path'
 import { app } from 'electron'
+import { librespotLogger } from '../logger'
+import { loadSelectiveArrayPreference } from '../db/preferences'
 
 const defaultLogPath = path.join(app.getPath('logs'))
 
@@ -153,6 +155,32 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
     return !!(val as PlayerEvent).event
   }
 
+  private getLogLevel(levelRaw: string) {
+    switch (levelRaw) {
+      default:
+      case 'debug':
+        return librespotLogger.debug
+      case 'info':
+        return librespotLogger.info
+      case 'error':
+        return librespotLogger.error
+      case 'trace':
+        return librespotLogger.trace
+    }
+  }
+
+  private logLibrespotOutput(message: Buffer) {
+    const messageLines = message.toString().split('\n')
+    for (const m of messageLines) {
+      const level = m.substring(22, 27).trim().toLowerCase()
+      const parsedMessage = m.substring(27).trim()
+
+      if (parsedMessage) {
+        this.getLogLevel(level)('[' + parsedMessage)
+      }
+    }
+  }
+
   public async spawnProcess(retries = 0) {
     if (retries > 2) {
       throw new Error('Failed to spawn process. Retries: ' + retries)
@@ -161,9 +189,10 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
     console.debug('Spawning librespot process. Retry:', retries)
 
     this.closePlayer(undefined, undefined, true)
-    this.playerProcess = fork(__dirname + '/spotify.js', ['logPath', defaultLogPath])
-    this.playerProcess.stdout?.on('data', (d) => console.log('spotify player', d.toString()))
-    this.playerProcess.stderr?.on('data', (d) => console.log('spotify player err:', d.toString()))
+    this.playerProcess = fork(__dirname + '/spotify.js', ['logPath', defaultLogPath], { silent: true })
+
+    this.playerProcess.stdout?.on('data', this.logLibrespotOutput.bind(this))
+    this.playerProcess.stderr?.on('data', this.logLibrespotOutput.bind(this))
 
     await new Promise<void>((r) => {
       this.playerProcess?.once('spawn', () => r())
@@ -225,6 +254,10 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
       credentials_location: path.join(app.getPath('sessionData'), app.getName()),
       audio_location: path.join(app.getPath('sessionData'), app.getName(), 'audio_cache')
     }
+
+    request.params.logLevel = loadSelectiveArrayPreference<SystemSettings>('logs.debug_logging')?.enabled
+      ? 'debug'
+      : 'info'
 
     const ret = await this.sendAsync({ type: 'CONNECT', args: request.params })
     if (!(ret instanceof Error)) {
