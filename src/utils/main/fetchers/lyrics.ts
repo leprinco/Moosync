@@ -246,7 +246,7 @@ export class LyricsFetcher extends CacheHandler {
         return data
       }
     } catch (e) {
-      console.error('Failed to parse genius lyrics', url, e)
+      console.warn('Failed to parse genius lyrics', url)
     }
   }
 }
