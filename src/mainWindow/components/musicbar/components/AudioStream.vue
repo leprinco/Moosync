@@ -40,6 +40,8 @@ const enum ButtonEnum {
   PlayPause = 13
 }
 
+const SONG_CHANGE_DEBOUNCE = 100
+
 import { Component, Prop, Ref, Watch } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import { Player } from '@/utils/ui/players/player'
@@ -233,6 +235,15 @@ export default class AudioStream extends mixins(
     return this.activePlayer?.key
   }
 
+  private songChangeTimer: ReturnType<typeof setTimeout> | undefined
+
+  private clearSongChangeTimer() {
+    if (this.songChangeTimer) {
+      clearTimeout(this.songChangeTimer)
+      this.songChangeTimer = undefined
+    }
+  }
+
   /**
    * Method triggered when currentSong prop changes
    * This method is responsible for loading the current song in active player
@@ -240,11 +251,14 @@ export default class AudioStream extends mixins(
    */
   @Watch('currentSong', { immediate: true })
   onSongChanged(newSong: Song | null | undefined) {
-    if (newSong) this.loadAudio(newSong, false)
-    else {
+    if (newSong) {
+      this.clearSongChangeTimer()
+      this.songChangeTimer = setTimeout(() => this.loadAudio(newSong, false), SONG_CHANGE_DEBOUNCE)
+    } else {
       this.unloadAudio()
       this.showYTPlayer = 0
       this.lastLoadedSong = undefined
+      this.clearSongChangeTimer()
     }
   }
 
