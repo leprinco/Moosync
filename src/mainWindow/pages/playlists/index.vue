@@ -45,7 +45,11 @@
           </CardView>
         </b-col>
       </b-row>
-      <DeleteModal id="playlistDeleteModal" @confirm="deletePlaylist" />
+      <DeleteModal
+        id="playlistDeleteModal"
+        @confirm="deletePlaylist"
+        :itemName="playlistInAction && playlistInAction.playlist_name"
+      />
       <MultiButtonModal
         :show="showMultiButtonModal"
         :slots="2"
@@ -107,7 +111,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   @Prop({ default: () => () => undefined })
   private enableRefresh!: () => void
 
-  private showMultiButtonModal = false
+  showMultiButtonModal = false
 
   private searchText = ''
   onSearchChange(searchText: string) {
@@ -135,7 +139,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   private localPlaylists: ExtendedPlaylist[] = []
   private remotePlaylists: ExtendedPlaylist[] = []
 
-  private playlistInAction: Playlist | undefined
+  playlistInAction: Playlist | null = null
 
   private activeProviders: Record<string, { key: string; checked: boolean }> = {}
 
