@@ -63,7 +63,22 @@ export class ScannerChannel implements IpcChannelInterface {
       case ScannerEvents.RESET_SCAN_TASK:
         this.resetScanTask(event, request)
         break
+      case ScannerEvents.GET_RECOMMENDED_CPUS:
+        this.getRecommendedCpus(event, request)
+        break
     }
+  }
+
+  private getRecommendedCpus(event?: IpcMainEvent, request?: IpcRequest) {
+    let ret = 0
+    if (process.platform === 'win32') {
+      ret = Math.max(os.cpus().length - 1, 1)
+    } else {
+      ret = os.cpus().length
+    }
+
+    event?.reply(request?.responseChannel, ret)
+    return ret
   }
 
   private async getScanProgress(event: IpcMainEvent, request: IpcRequest) {
@@ -213,6 +228,7 @@ export class ScannerChannel implements IpcChannelInterface {
     }
     console.debug('storing', song)
     songDb.store(song)
+
     scanEmitter.emit('song', song)
   }
 
@@ -237,22 +253,27 @@ export class ScannerChannel implements IpcChannelInterface {
     basePath: string,
     songDb: SongDBInstance
   ) {
-    const cover = await this.promisifyWorker(
-      coverWorker.getCover(song.path ?? '', basePath, song._id, false, loggerPath)
-    )
+    try {
+      console.debug('storing cover', song.path)
+      const cover = await this.promisifyWorker(
+        coverWorker.getCover(song.path ?? '', basePath, song._id, false, loggerPath)
+      )
 
-    console.debug('Saved cover for', song.title, 'at', cover)
+      console.debug('Saved cover for', song.title, 'at', cover)
 
-    songDb.updateSong({
-      ...song,
-      song_coverPath_high: cover?.high,
-      song_coverPath_low: cover?.low,
-      album: {
-        ...song.album,
-        album_coverPath_high: cover?.high,
-        album_coverPath_low: cover?.low
-      }
-    })
+      songDb.updateSong({
+        ...song,
+        song_coverPath_high: cover?.high,
+        song_coverPath_low: cover?.low,
+        album: {
+          ...song.album,
+          album_coverPath_high: cover?.high,
+          album_coverPath_low: cover?.low
+        }
+      })
+    } catch (e) {
+      console.error('Failed to store cover for', song.path, e)
+    }
   }
 
   private reportProgress(currentScanIndex: number) {
@@ -265,12 +286,22 @@ export class ScannerChannel implements IpcChannelInterface {
     } as Progress)
   }
 
+  private setScanStatus(status: ScanStatus) {
+    this.scanStatus = status
+  }
+
+  private scanIsQueued() {
+    return this.scanStatus === ScanStatus.QUEUED
+  }
+
   public async scanAll(event?: IpcMainEvent, request?: IpcRequest<ScannerRequests.ScanSongs>) {
     if (this.scanStatus !== ScanStatus.UNDEFINED) {
+      console.debug('Another scan already in progress, setting status to queued')
+      this.setScanStatus(ScanStatus.QUEUED)
       return
     }
 
-    this.scanStatus = ScanStatus.SCANNING as ScanStatus
+    this.setScanStatus(ScanStatus.SCANNING)
 
     const paths = getCombinedMusicPaths() ?? []
     await this.destructiveScan(paths)
@@ -295,20 +326,21 @@ export class ScannerChannel implements IpcChannelInterface {
     const existingFiles = getSongDB().getAllPaths()
     const newFiles = allFiles.filter((x) => !existingFiles.includes(x.path))
 
+    const customThreadCount = loadSelectivePreference<number>('scan_threads') ?? this.getRecommendedCpus()
+
     const songDb = getSongDB()
     const scannerPool = Pool(() => spawn<ScanWorkerWorkerType>(new Worker(scannerWorker)), {
-      concurrency: 2
+      size: customThreadCount
     })
 
     const coverPool = Pool(() => spawn<ScanWorkerWorkerType>(new Worker(scannerWorker)), {
-      concurrency: 2
+      size: customThreadCount
     })
 
     const thumbPath = loadPreferences().thumbnailPath
     await this.createDirIfNotExists(thumbPath)
 
     const scanEmitter = new EventEmitter()
-    scanEmitter.setMaxListeners(os.cpus().length + 2)
 
     scanEmitter.on('song', async (song: Song) => {
       if (song.path) {
@@ -350,25 +382,21 @@ export class ScannerChannel implements IpcChannelInterface {
       })
     }
 
-    console.log('waiting for settle')
     await scannerPool.settled(true)
-
-    console.log('scanner settled')
-
-    console.log('settled')
     await scannerPool.terminate()
 
-    console.log('reporting progress', newFiles.length, this.totalScanFiles)
+    await coverPool.settled(true)
+    await coverPool.terminate()
+
     this.reportProgress(newFiles.length)
 
     event?.reply(request?.responseChannel)
 
-    if (this.scanStatus === ScanStatus.QUEUED) {
-      this.scanStatus = ScanStatus.UNDEFINED
+    if (this.scanIsQueued()) {
       ipcMain.emit(IpcEvents.SCANNER, request)
-    } else {
-      this.scanStatus = ScanStatus.UNDEFINED
     }
+
+    this.setScanStatus(ScanStatus.UNDEFINED)
   }
 
   private async createDirIfNotExists(thumbPath: string) {
