@@ -5,6 +5,7 @@ import { loadSelectiveArrayPreference } from '../db/preferences'
 import { getSpotifyPlayerChannel } from '../ipc'
 import { CacheHandler } from './cacheFile'
 import { getSongDB } from '@/utils/main/db/index'
+import { access, readFile } from 'fs/promises'
 
 interface AZSuggestions {
   term?: string
@@ -40,6 +41,10 @@ export class LyricsFetcher extends CacheHandler {
     const artists = song.artists?.map((val) => val.artist_name ?? '') ?? []
     const title = song.title
 
+    if (song.path) {
+      lyrics = await this.findLRCFile(song.path)
+    }
+
     if (!lyrics && useGeniusLyrics) {
       lyrics = await this.queryGenius(artists, title)
     }
@@ -57,6 +62,29 @@ export class LyricsFetcher extends CacheHandler {
     }
 
     return lyrics
+  }
+
+  private async findLRCFile(filePath: string) {
+    const lrcFile = filePath.replace(`${path.extname(filePath)}`, '.lrc')
+    console.debug('Trying to find LRC file at', lrcFile)
+
+    try {
+      await access(lrcFile)
+      if (lrcFile) {
+        const lrcRegex = /\[\d{2}:\d{2}.\d{2}\]/gm
+        const lyricsContent = await readFile(lrcFile, { encoding: 'utf-8' })
+        let parsedLyrics = ''
+        for (const line of lyricsContent.split('\n')) {
+          if (line.match(lrcRegex)) {
+            parsedLyrics += line.replaceAll(lrcRegex, '') + '\n'
+          }
+        }
+
+        return parsedLyrics
+      }
+    } catch {
+      console.debug('Could not find LRC file')
+    }
   }
 
   private async queryAZLyrics(artists: string[], title: string) {

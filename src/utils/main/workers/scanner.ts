@@ -330,29 +330,6 @@ async function getInfo(
     }
   }
 
-  if (!data.common.lyrics || data.common.lyrics.length === 0) {
-    const lrcFile = stats.path.replace(`${path.extname(stats.path)}`, '.lrc')
-    logger.debug('Trying to find LRC file at', lrcFile)
-
-    try {
-      await access(lrcFile)
-      if (lrcFile) {
-        const lrcRegex = /\[\d{2}:\d{2}.\d{2}\]/gm
-        const lyricsContent = await readFile(lrcFile, { encoding: 'utf-8' })
-        let parsedLyrics = ''
-        for (const line of lyricsContent.split('\n')) {
-          if (line.match(lrcRegex)) {
-            parsedLyrics += line.replaceAll(lrcRegex, '') + '\n'
-          }
-        }
-
-        data.common.lyrics = [parsedLyrics]
-      }
-    } catch {
-      logger.debug('Could not find LRC file')
-    }
-  }
-
   return {
     _id: v4(),
     title: data.common.title ? data.common.title : path.basename(stats.path, path.extname(stats.path)),
