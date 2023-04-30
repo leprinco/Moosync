@@ -190,12 +190,17 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
 
   private async getLyricsFromExtension() {
     if (this.currentSong) {
+      const { _id } = this.currentSong
       const resp = await window.ExtensionUtils.sendEvent({
         type: 'requestedLyrics',
         data: [this.currentSong]
       })
 
-      return resp && Object.values(resp).find((val) => !!val)
+      const lyrics = resp && Object.values(resp).find((val) => !!val)
+      if (lyrics && _id === this.currentSong._id) {
+        window.DBUtils.updateLyrics(this.currentSong._id, lyrics as string)
+      }
+      return lyrics
     }
   }
 
@@ -248,7 +253,6 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
         if (this.currentSong._id === _id) {
           this.lyrics = (resp as string) || 'No lyrics found...'
         }
-        window.DBUtils.updateLyrics(_id, resp as string)
       }
     }
   }

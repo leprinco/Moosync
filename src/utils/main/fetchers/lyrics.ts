@@ -61,6 +61,10 @@ export class LyricsFetcher extends CacheHandler {
       lyrics = await this.queryGoogle(artists, title)
     }
 
+    if (lyrics) {
+      getSongDB().updateSongLyrics(song._id, lyrics)
+    }
+
     return lyrics
   }
 
