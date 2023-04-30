@@ -33,7 +33,9 @@ expose({
   scanSingleSong(path: string, splitPattern: string, loggerPath: string) {
     return new Observable((observer) => {
       prefixLogger(loggerPath, logger)
-      scan(path, splitPattern, observer).then(() => observer.complete())
+      scan(path, splitPattern, observer)
+        .then(() => observer.complete())
+        .catch((e) => observer.error(e))
     })
   },
 
@@ -43,6 +45,7 @@ expose({
       getCover(path, basePath, id, onlyHigh)
         .then((data) => observer.next(data))
         .then(() => observer.complete())
+        .catch((e) => observer.error(e))
     })
   },
 
@@ -52,6 +55,7 @@ expose({
       generateChecksum(path)
         .then((val) => observer.next(val))
         .then(() => observer.complete())
+        .catch((e) => observer.error(e))
     })
   },
 
