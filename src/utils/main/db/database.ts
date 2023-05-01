@@ -256,7 +256,7 @@ export class SongDBInstance extends DBUtils {
     return oldCoverPath
   }
 
-  public async updateSong(song: Song) {
+  public async updateSong(song: Song, skipChecks = false) {
     if (this.verifySong(song)) {
       const oldSong = this.getSongByOptions({ song: { _id: song._id } })[0]
 
@@ -267,13 +267,22 @@ export class SongDBInstance extends DBUtils {
 
         const marshalled = this.marshalSong(song)
 
-        const finalCoverPath = await this.getCoverPath(
-          oldSong.song_coverPath_high ?? '',
-          song.song_coverPath_high ?? ''
-        )
+        if (!skipChecks) {
+          const finalCoverPathHigh = await this.getCoverPath(
+            oldSong.song_coverPath_high ?? '',
+            song.song_coverPath_high ?? ''
+          )
 
-        marshalled.song_coverPath_high = finalCoverPath
-        marshalled.song_coverPath_low = finalCoverPath
+          if (song.song_coverPath_low && song.song_coverPath_low !== song.song_coverPath_high) {
+            const finalCoverPathLow = await this.getCoverPath(
+              oldSong.song_coverPath_low ?? '',
+              song.song_coverPath_low ?? ''
+            )
+
+            marshalled.song_coverPath_high = finalCoverPathHigh
+            marshalled.song_coverPath_low = finalCoverPathLow
+          }
+        }
 
         this.db.updateWithBlackList('allsongs', marshalled, ['_id = ?', song._id], ['_id'])
         this.updateAllSongCounts()

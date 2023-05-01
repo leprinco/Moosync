@@ -261,16 +261,19 @@ export class ScannerChannel implements IpcChannelInterface {
 
       console.debug('Saved cover for', song.title, 'at', cover)
 
-      songDb.updateSong({
-        ...song,
-        song_coverPath_high: cover?.high,
-        song_coverPath_low: cover?.low,
-        album: {
-          ...song.album,
-          album_coverPath_high: cover?.high,
-          album_coverPath_low: cover?.low
-        }
-      })
+      await songDb.updateSong(
+        {
+          ...song,
+          song_coverPath_high: cover?.high,
+          song_coverPath_low: cover?.low,
+          album: {
+            ...song.album,
+            album_coverPath_high: cover?.high,
+            album_coverPath_low: cover?.low
+          }
+        },
+        true
+      )
     } catch (e) {
       console.error('Failed to store cover for', song.path, e)
     }
