@@ -116,37 +116,53 @@ export class ScannerChannel implements IpcChannelInterface {
     }
   }
 
-  private async getAllFiles(p: string, excludeRegex: RegExp) {
-    const allFiles: { path: string; type: 'PLAYLIST' | 'SONG' }[] = []
-    if (fs.existsSync(p)) {
-      const files = await fs.promises.readdir(p)
-      for (const file of files) {
-        const filePath = path.resolve(path.join(p, file))
-        if (!filePath.match(excludeRegex)) {
-          try {
-            if ((await fs.promises.stat(filePath)).isDirectory()) {
-              allFiles.push(...(await this.getAllFiles(filePath, excludeRegex)))
-            } else {
-              let type: 'PLAYLIST' | 'SONG' | undefined = undefined
+  private async populateFile(file: string, p: string, excludeRegex: RegExp) {
+    const filePath = path.resolve(path.join(p, file))
+    if (!filePath.match(excludeRegex)) {
+      try {
+        if ((await fs.promises.stat(filePath)).isDirectory()) {
+          return this.getAllFiles(filePath, excludeRegex)
+        } else {
+          let type: 'PLAYLIST' | 'SONG' | undefined = undefined
 
-              if (audioPatterns.exec(path.extname(file).toLowerCase())) {
-                type = 'SONG'
-              }
+          if (audioPatterns.exec(path.extname(file).toLowerCase())) {
+            type = 'SONG'
+          }
 
-              if (playlistPatterns.exec(path.extname(file).toLowerCase())) {
-                type = 'PLAYLIST'
-              }
+          if (playlistPatterns.exec(path.extname(file).toLowerCase())) {
+            type = 'PLAYLIST'
+          }
 
-              if (type) {
-                allFiles.push({ path: filePath, type })
-              }
-            }
-          } catch (e) {
-            console.error(e)
+          if (type) {
+            return [{ path: filePath, type }]
           }
         }
+      } catch (e) {
+        console.error(e)
       }
     }
+    return []
+  }
+
+  private async getAllFiles(p: string, excludeRegex: RegExp) {
+    const allFiles: { path: string; type: 'PLAYLIST' | 'SONG' }[] = []
+    const promises: Promise<{ path: string; type: 'PLAYLIST' | 'SONG' }[]>[] = []
+
+    try {
+      await fs.promises.access(p)
+    } catch {
+      return allFiles
+    }
+
+    const files = await fs.promises.readdir(p)
+    for (const file of files) {
+      promises.push(this.populateFile(file, p, excludeRegex))
+    }
+
+    allFiles.push(
+      ...(await Promise.allSettled(promises)).flatMap((val) => (val.status === 'fulfilled' ? val.value : []))
+    )
+
     return allFiles
   }
 
@@ -321,10 +337,14 @@ export class ScannerChannel implements IpcChannelInterface {
         : /(?!)/
     )
 
+    console.time(`File populate`)
+
     const allFiles: { path: string; type: 'PLAYLIST' | 'SONG' }[] = []
     for (const p of paths) {
       allFiles.push(...(await this.getAllFiles(p.path, excludeRegex)))
     }
+
+    console.timeEnd(`File populate`)
 
     const existingFiles = getSongDB().getAllPaths()
     const newFiles = allFiles.filter((x) => !existingFiles.includes(x.path))
