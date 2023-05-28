@@ -30,7 +30,7 @@ export function setupScanTask() {
 
   scheduler.removeById(SCAN_TASK_ID)
 
-  const minutes = loadSelectivePreference<number>('scan_interval') ?? 1
+  const minutes = loadSelectivePreference<number>('scan_interval') ?? 1 * 60
 
   if (minutes < 0) {
     console.info('Disabling scan task')

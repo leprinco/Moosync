@@ -17,7 +17,7 @@
             <b-img
               v-else
               class="song-url-cover"
-              :src="getValidImageHigh(parsedSong)"
+              :src="getImgSrc(getValidImageHigh(parsedSong))"
               @error="handleImageError"
               referrerPolicy="no-referrer"
             ></b-img>
@@ -114,17 +114,21 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong, Prov
 
       this.forceEmptyImg = false
 
-      const providers = this.getProvidersByScope(ProviderScopes.SONG_FROM_URL)
-      for (const p of providers) {
-        console.debug('matching url to', p, p.matchSongUrl(url))
-        if (p.matchSongUrl(url)) {
-          try {
-            this.parsedSong = (await p.getSongDetails(url)) ?? null
-            if (this.parsedSong) {
-              break
+      this.parsedSong = (await window.FileUtils.scanSingleSong(url)).song
+
+      if (!this.parsedSong) {
+        const providers = this.getProvidersByScope(ProviderScopes.SONG_FROM_URL)
+        for (const p of providers) {
+          console.debug('matching url to', p, p.matchSongUrl(url))
+          if (p.matchSongUrl(url)) {
+            try {
+              this.parsedSong = (await p.getSongDetails(url)) ?? null
+              if (this.parsedSong) {
+                break
+              }
+            } catch (e) {
+              console.error(e)
             }
-          } catch (e) {
-            console.error(e)
           }
         }
       }

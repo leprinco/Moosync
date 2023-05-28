@@ -63,7 +63,8 @@ interface Song {
   album?: Album
   artists?: Artists[]
   date?: string
-  year?: number
+  year?: number | string
+
   genre?: string[]
   lyrics?: string
   releaseType?: string[]

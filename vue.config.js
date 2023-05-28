@@ -59,7 +59,8 @@ module.exports = {
       'better-sqlite3': 'commonjs better-sqlite3',
       vm2: "require('vm2')",
       sharp: "require('sharp')",
-      'librespot-node': 'commonjs librespot-node'
+      'librespot-node': 'commonjs librespot-node',
+      'scanner-native': 'commonjs scanner-native'
     },
     devtool: 'source-map',
     resolve: {

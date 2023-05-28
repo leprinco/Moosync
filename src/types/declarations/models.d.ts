@@ -28,7 +28,7 @@ interface marshaledSong {
   genre_name?: string
   genere_id?: string
   date?: string
-  year?: number
+  year?: number | string
   album_year?: number
   track_no?: number
   bitrate?: number

@@ -91,6 +91,8 @@ export class SongDBInstance extends DBUtils {
         }
 
         newList.push(newDoc)
+      } else {
+        console.error('Failed to verify song', newDoc)
       }
     }
 
