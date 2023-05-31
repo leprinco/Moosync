@@ -39,6 +39,7 @@
           key-field="_id"
           :direction="'vertical'"
           v-click-outside="clearSelection"
+          @scroll.native="onScroll"
         >
           <template v-slot="{ item, index }">
             <div class="wrapper w-100 field-content" :class="{ selectedItem: selected.includes(index) }">
@@ -47,22 +48,22 @@
                 :key="`${item._id}-${field.key}`"
                 class="box text-truncate"
                 :style="{ width: columnWidths[i1] + '%' }"
-                :title="field.key === 'index' ? index + 1 : getFieldData(field.key, item)"
+                :title="getFieldTitle(field.key, item, index)"
                 @dblclick="onRowDoubleClicked(item)"
                 @click="onRowSelected(index)"
                 @contextmenu="onRowContext(arguments[0], item)"
               >
                 <div
                   :class="field.key === 'album_name' ? 'col-content' : ''"
-                  v-if="typeof getFieldData(field.key, item) === 'string'"
+                  v-if="typeof getFieldData(field.key, item, index) === 'string'"
                   @click="onTextClick(field.key, item)"
                 >
                   {{ getFieldData(field.key, item, index) }}
                 </div>
-                <div class="d-flex" v-if="typeof getFieldData(field.key, item) === 'object'">
+                <div class="d-flex" v-if="typeof getFieldData(field.key, item, index) === 'object'">
                   <div
-                    v-for="(artist, index) in getFieldData(field.key, item, index)"
-                    :key="index"
+                    v-for="(artist, i) in getFieldData(field.key, item, index)"
+                    :key="i"
                     @click="onTextClick(field.key, artist)"
                     :class="field.key === 'artist_name' ? 'col-content' : ''"
                     class="ml-1"
@@ -89,15 +90,15 @@ export default class SongList extends mixins(SongListMixin) {
   private refreshKey = false
 
   @Prop({ default: {} })
-  private extrafields!: [{ key: TableFields; label?: string }]
+  extrafields!: [{ key: TableFields; label?: string }]
 
   @Prop({ default: false })
-  private isLoading!: boolean
+  isLoading!: boolean
 
   @Ref('headers')
   private headers!: HTMLDivElement
 
-  private getFieldData(field: TableFields, song: Song, index: number) {
+  getFieldData(field: TableFields, song: Song, index: number) {
     switch (field) {
       case 'index':
         return (index + 1).toString()
@@ -110,7 +111,12 @@ export default class SongList extends mixins(SongListMixin) {
     }
   }
 
-  private getAlbumName(data: Song) {
+  getFieldTitle(field: TableFields, song: Song, index: number) {
+    if (field !== 'artist_name') return this.getFieldData(field, song, index)
+    else return song.artists?.map((val) => val.artist_name).join(', ')
+  }
+
+  getAlbumName(data: Song) {
     if (data.album && data.album.album_name) return data.album.album_name
     return '-'
   }
@@ -138,7 +144,7 @@ export default class SongList extends mixins(SongListMixin) {
 
   private activeHandlerKey?: string
 
-  private columnWidths: number[] = []
+  columnWidths: number[] = []
 
   private async computeDefaultWidths() {
     await this.loadWidths()
@@ -165,7 +171,7 @@ export default class SongList extends mixins(SongListMixin) {
     }
   }
 
-  private mouseDown(e: MouseEvent, id: string) {
+  mouseDown(e: MouseEvent, id: string) {
     const handlerData = this.handlerMap[id]
     handlerData.startPos = e.pageX
     handlerData.prevWidth = handlerData.prev.offsetWidth
@@ -229,7 +235,7 @@ export default class SongList extends mixins(SongListMixin) {
       ((await window.PreferenceUtils.loadSelective('UI.columnHeaders.widths', false)) as number[]) ?? []
   }
 
-  private onRowContext(event: Event, item: Song) {
+  onRowContext(event: Event, item: Song) {
     this.$emit(
       'onRowContext',
       event,
@@ -237,16 +243,19 @@ export default class SongList extends mixins(SongListMixin) {
     )
   }
 
-  private onRowDoubleClicked(item: Song) {
+  onRowDoubleClicked(item: Song) {
     this.$emit('onRowDoubleClicked', item)
   }
 
-  private async onTextClick(key: TableFields, item: Song | string) {
-    if (key === 'artist_name' && typeof item === 'string') {
-      const data = await window.SearchUtils.searchEntityByOptions({ artist: { artist_name: item } })
+  async onTextClick(key: TableFields, item: Song | Artists) {
+    console.log(key, item)
+    if (key === 'artist_name') {
+      const data = await window.SearchUtils.searchEntityByOptions({
+        artist: { artist_id: (item as Artists).artist_id }
+      })
       this.$emit('onArtistClicked', data[0])
     } else if (key === 'album_name' && typeof item !== 'string') {
-      this.$emit('onAlbumClicked', item.album)
+      this.$emit('onAlbumClicked', (item as Song).album)
     }
   }
 
@@ -257,6 +266,10 @@ export default class SongList extends mixins(SongListMixin) {
   // For some reason table isn't rerendered on window size change through maximize and minimize functions
   private rerenderTable() {
     this.refreshKey = !this.refreshKey
+  }
+
+  onScroll(e: Event) {
+    this.$emit('scroll', e)
   }
 }
 </script>

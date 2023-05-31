@@ -38,12 +38,12 @@ import Link from '@/icons/LinkIcon.vue'
   }
 })
 export default class InputGroup extends Vue {
-  private model = ''
+  model = ''
 
   @Prop()
-  private hint!: string
+  hint!: string
 
-  private onInputChange() {
+  onInputChange() {
     this.$emit('update', this.model)
   }
 }

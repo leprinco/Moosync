@@ -11,7 +11,7 @@ import { Component, Vue } from 'vue-property-decorator'
 
 @Component
 export default class PlayerControls extends Vue {
-  public gotoAlbum(album: Album) {
+  public gotoAlbum(album: Album, defaultProviders?: string[]) {
     try {
       this.$router.push({
         name: 'albums-single',
@@ -21,7 +21,9 @@ export default class PlayerControls extends Vue {
           cover_high: album.album_coverPath_high,
           cover_low: album.album_coverPath_low,
           artist: album.album_artist,
-          year: (album.year ?? 0).toString()
+          year: (album.year ?? 0).toString(),
+          extra_info: JSON.stringify(album.album_extra_info) ?? '',
+          defaultProviders
         }
       })
     } catch (e) {
@@ -42,7 +44,7 @@ export default class PlayerControls extends Vue {
     }
   }
 
-  public gotoArtist(artist: Artists) {
+  public gotoArtist(artist: Artists, defaultProviders?: string[]) {
     try {
       this.$router.push({
         name: 'artists-single',
@@ -50,7 +52,8 @@ export default class PlayerControls extends Vue {
           id: artist.artist_id,
           name: artist.artist_name ?? '',
           cover: artist.artist_coverPath ?? '',
-          extra_info: JSON.stringify(artist.artist_extra_info) ?? ''
+          extra_info: JSON.stringify(artist.artist_extra_info) ?? '',
+          defaultProviders
         }
       })
     } catch (e) {
@@ -58,7 +61,7 @@ export default class PlayerControls extends Vue {
     }
   }
 
-  public gotoPlaylist(playlist: ExtendedPlaylist) {
+  public gotoPlaylist(playlist: Playlist) {
     try {
       this.$router.push({
         name: 'playlists-single',

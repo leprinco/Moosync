@@ -13,10 +13,11 @@
     <b-row no-gutters class="background w-100 d-flex">
       <b-row no-gutters class="mt-2 item w-100">
         <b-col cols="auto" align-self="center" class="flex-grow-1 justify-content-start">
-          <b-progress class="progress-container mb-4" max="100">
+          <b-progress class="progress-container" max="100">
             <b-progress-bar class="progress-bar" :value="value" animated />
           </b-progress>
         </b-col>
+        <b-col cols="auto" class="ml-3"> {{ value }}% </b-col>
       </b-row>
     </b-row>
   </b-container>

@@ -7,6 +7,31 @@
  *  See LICENSE in the project root for license information.
  */
 
+import { FAVORITES_PLAYLIST_ID } from '@/utils/commonConstants'
 import { SongDBInstance } from './database'
 
-export const SongDB = new SongDBInstance()
+let _songDB: SongDBInstance | undefined
+
+export function getSongDB() {
+  if (!_songDB) {
+    _songDB = new SongDBInstance()
+  }
+
+  return _songDB
+}
+
+export function createFavoritesPlaylist() {
+  const isExist = !!getSongDB().getEntityByOptions<Playlist>({
+    playlist: {
+      playlist_id: FAVORITES_PLAYLIST_ID
+    }
+  })[0]
+
+  if (!isExist) {
+    getSongDB().createPlaylist({
+      playlist_id: FAVORITES_PLAYLIST_ID,
+      playlist_name: 'Favorites',
+      playlist_desc: 'Playlist containing your favorite songs'
+    })
+  }
+}

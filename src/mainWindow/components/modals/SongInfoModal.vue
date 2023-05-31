@@ -139,21 +139,21 @@ type DatalistArray = { key: string; value: string }[]
 })
 export default class SongInfoModal extends mixins(ImgLoader) {
   @Prop({ default: 'SongInfo' })
-  private id!: string
+  id!: string
 
-  private song: Song | null = null
-  private tmpSong: Song | null = null
+  song: Song | null = null
+  tmpSong: Song | null = null
 
-  private forceEmptyImg = false
+  forceEmptyImg = false
 
-  private datalist: { artists: DatalistArray; genre: DatalistArray; album: DatalistArray } = {
+  datalist: { artists: DatalistArray; genre: DatalistArray; album: DatalistArray } = {
     artists: [],
     genre: [],
     album: []
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private tabs: { tab: string; items: [keyof Song, boolean, ((value: any) => string | DatalistArray)?][] }[] = [
+  tabs: { tab: string; items: [keyof Song, boolean, ((value: any) => string | DatalistArray)?][] }[] = [
     {
       tab: 'Song Info',
       items: [
@@ -180,16 +180,16 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     }
   ]
 
-  private popoverTarget = this.getKey('title')
-  private showPopover = false
-  private popoverTimeout: ReturnType<typeof setTimeout> | undefined
+  popoverTarget = this.getKey('title')
+  showPopover = false
+  popoverTimeout: ReturnType<typeof setTimeout> | undefined
 
-  private getLimit(field: keyof Song) {
+  getLimit(field: keyof Song) {
     if (field === 'album') return 1
     return 6
   }
 
-  private getComponent(t: typeof this.tabs[0]['items'][0]) {
+  getComponent(t: (typeof this.tabs)[0]['items'][0]) {
     if (t[0] === 'artists' || t[0] === 'genre' || t[0] === 'album') {
       return 'tags-input'
     }
@@ -201,7 +201,7 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     return 'div'
   }
 
-  private getKey(t: typeof this.tabs[0]['items'][0] | string) {
+  getKey(t: (typeof this.tabs)[0]['items'][0] | string) {
     let ret: string
     if (typeof t === 'string') return (ret = t)
     else ret = t[0]
@@ -209,7 +209,7 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     return ret.replaceAll('_', ' ')
   }
 
-  private getValue(t: typeof this.tabs[0]['items'][0]): string | DatalistArray {
+  getValue(t: (typeof this.tabs)[0]['items'][0]): string | DatalistArray {
     if (this.song !== null) {
       if (!t[2]) return this.song[t[0] as keyof Song] as string
       else {
@@ -221,20 +221,20 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     return ''
   }
 
-  private getPlaceholder(t: typeof this.tabs[0]['items'][0]): string {
+  getPlaceholder(t: (typeof this.tabs)[0]['items'][0]): string {
     return `Add ${t[0].charAt(0).toUpperCase() + t[0].slice(1)}`
   }
 
-  private handleImageError() {
+  handleImageError() {
     this.forceEmptyImg = true
   }
 
-  private close() {
+  close() {
     this.song = null
     this.$bvModal.hide(this.id)
   }
 
-  private async save() {
+  async save() {
     if (this.tmpSong) {
       await window.DBUtils.updateSongs([this.tmpSong])
       this.mergeIntoOriginal()
@@ -250,7 +250,7 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     }
   }
 
-  private async copyText(field: typeof this.tabs[0]['items'][0]) {
+  async copyText(field: (typeof this.tabs)[0]['items'][0]) {
     if (this.popoverTimeout) {
       clearTimeout(this.popoverTimeout)
       this.popoverTimeout = undefined
@@ -265,7 +265,7 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     }, 1000)
   }
 
-  private onInputChange(field: keyof Song, value: never) {
+  onInputChange(field: keyof Song, value: never) {
     if (this.tmpSong) {
       if (field === 'date_added') {
         this.tmpSong.date_added = new Date(value as string).getTime()
@@ -276,7 +276,7 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     }
   }
 
-  private onTagsUpdated(field: keyof Song) {
+  onTagsUpdated(field: keyof Song) {
     if (this.tmpSong) {
       const el = this.$refs[this.getKey(field)]
       if (el) {
@@ -324,7 +324,7 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     }))
   }
 
-  private async changeSongCover() {
+  async changeSongCover() {
     if (this.tmpSong) {
       const file = await window.WindowUtils.openFileBrowser(true, true, [
         {
@@ -339,11 +339,34 @@ export default class SongInfoModal extends mixins(ImgLoader) {
     }
   }
 
+  private async fetchSongDetails(id: string) {
+    return (
+      await window.SearchUtils.searchSongsByOptions(
+        {
+          song: {
+            _id: id
+          }
+        },
+        true
+      )
+    )[0]
+  }
+
+  private validateSong(song: Song) {
+    if (!song.artists) song.artists = []
+    if (!song.genre) song.genre = []
+    if (!song.album) song.album = {}
+
+    return song
+  }
+
   mounted() {
-    bus.$on(EventBus.SHOW_SONG_INFO_MODAL, (song: Song) => {
+    bus.$on(EventBus.SHOW_SONG_INFO_MODAL, async (song: Song) => {
+      song = (await this.fetchSongDetails(song._id)) ?? song
       this.fetchDatalist()
       this.forceEmptyImg = false
-      this.song = song
+      this.song = this.validateSong(song)
+
       this.tmpSong = JSON.parse(JSON.stringify(song))
 
       if (this.song) {

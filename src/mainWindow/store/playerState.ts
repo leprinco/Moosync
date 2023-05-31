@@ -10,7 +10,9 @@
 import { action, mutation } from 'vuex-class-component'
 
 import { VuexModule } from './module'
-import { v1 } from 'uuid'
+import { v4 } from 'uuid'
+import Vue from 'vue'
+import { VolumePersistMode } from '../../utils/commonConstants'
 
 class Queue implements GenericQueue<Song> {
   data: QueueData<Song> = {}
@@ -23,7 +25,29 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
   public currentSong: Song | null | undefined | undefined = null
   private songQueue = new Queue()
   private repeat = false
-  public volume = 50
+
+  public volumeMode: VolumePersistMode = VolumePersistMode.SINGLE
+
+  private _volume = 50
+  public get volume() {
+    if (this.currentSong && this.volumeMode === VolumePersistMode.SEPARATE_VOLUME_MAP) {
+      const type = this.currentSong.providerExtension ?? this.currentSong.type
+      return this.volumeMap[type] ?? this._volume
+    }
+    return Math.min(this._volume, 100)
+  }
+
+  public set volume(vol: number) {
+    this._volume = vol
+    if (this.currentSong) {
+      const type = this.currentSong.providerExtension ?? this.currentSong.type
+      Vue.set(this.volumeMap, type, vol)
+    }
+  }
+
+  private volumeMap: Record<string, number> = {}
+  clampMap: Record<string, { clamp: number }> = {}
+
   public timestamp = 0
   public loading = false
 
@@ -71,6 +95,14 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
 
   set queueIndex(value: number) {
     this.songQueue.index = value
+  }
+
+  @mutation
+  setQueueDataSong(song: Song) {
+    this.songQueue.data[song._id] = song
+    if (this.currentSong?._id === song._id) {
+      this.currentSong = song
+    }
   }
 
   @mutation
@@ -155,13 +187,13 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
   private addInSongQueue(item: Song[]) {
     this.songQueue.order.push(
       ...item.map((obj) => {
-        return { id: v1(), songID: obj._id }
+        return { id: v4(), songID: obj._id }
       })
     )
   }
 
   @action
-  async pushInQueue(payload: { item: Song[]; top: boolean }) {
+  async pushInQueue(payload: { item: Song[]; top: boolean; skipImmediate: boolean }) {
     if (payload.item.length > 0) {
       const currentSongExists = !!this.currentSong
       if (!currentSongExists) {
@@ -174,7 +206,7 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
 
       this.addSong(payload.item)
       payload.top ? this.addInQueueTop(payload.item) : this.addInSongQueue(payload.item)
-      if (payload.top && currentSongExists) await this.nextSong()
+      if (payload.skipImmediate) await this.nextSong()
     }
   }
 
@@ -184,7 +216,7 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
       this.songQueue.index + 1,
       0,
       ...item.map((obj) => {
-        return { id: v1(), songID: obj._id }
+        return { id: v4(), songID: obj._id }
       })
     )
   }
@@ -236,7 +268,11 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
     this.state = state
   }
 
-  @mutation loadSong(song: Song | null | undefined) {
+  @mutation
+  loadSong(song: Song | null | undefined) {
+    if (this.currentSong?._id === song?._id) {
+      this.currentSong = null
+    }
     this.currentSong = song
   }
 
@@ -275,6 +311,35 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
       if (newIndex >= this.songQueue.index) this.songQueue.index -= 1
     } else if (oldIndex > this.songQueue.index) {
       if (newIndex <= this.songQueue.index) this.songQueue.index += 1
+    }
+  }
+
+  @mutation
+  sortQueue(sortfn: (a: Song, b: Song) => number) {
+    this.songQueue.order.sort((a, b) => sortfn(this.songQueue.data[a.songID], this.songQueue.data[b.songID]))
+    const newIndex = this.songQueue.order.findIndex((val) => val.songID === this.currentSong?._id)
+    this.songQueue.index = newIndex
+  }
+
+  @mutation
+  private setPlayCounts(playCounts: Record<string, { playCount: number; playTime: number }>) {
+    for (const key of Object.keys(this.songQueue.data)) {
+      this.songQueue.data[key].playCount = playCounts[key].playCount ?? 0
+    }
+  }
+
+  @action
+  async updatePlayCounts() {
+    const playCounts = await window.SearchUtils.getPlayCount(...Object.keys(this.queueData))
+    this.setPlayCounts(playCounts)
+  }
+
+  @mutation
+  clearQueue() {
+    if (this.songQueue.order.length > 0) {
+      this.songQueue.order = []
+      this.songQueue.index = -1
+      this.playerState = 'STOPPED'
     }
   }
 }

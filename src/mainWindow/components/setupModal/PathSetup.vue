@@ -20,7 +20,7 @@
           :height="4"
           :defaultValue="[]"
           :isMainWindow="true"
-          prefKey="musicPaths"
+          key="musicPaths"
         />
       </b-col>
     </b-row>
@@ -48,11 +48,11 @@ import DirectoryGroup from '@/preferenceWindow/components/DirectoryGroup.vue'
   }
 })
 export default class PathSetup extends Vue {
-  private next() {
+  next() {
     this.$emit('next')
   }
 
-  private skip() {
+  skip() {
     this.$emit('prev')
   }
 }

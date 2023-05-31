@@ -38,15 +38,15 @@ import Youtube from '@/icons/YoutubeIcon.vue'
 })
 export default class IconButton extends mixins(ImageLoader) {
   @Prop({ default: '' })
-  private title!: string
+  title!: string
 
   @Prop({ default: '' })
-  private bgColor!: string
+  bgColor!: string
 
   @Prop({ default: undefined })
-  private hoverText: string | undefined
+  hoverText: string | undefined
 
-  private hover = false
+  hover = false
 }
 </script>
 

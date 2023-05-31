@@ -29,7 +29,7 @@
           v-if="item.custom ? false : isActive"
         ></div>
         <div
-          class="d-flex align-items-center icon-transition icon-padding-open"
+          class="d-flex align-items-center icon-transition icon-padding-open w-100"
           v-bind:class="{
             'icon-active': item.custom ? false : isActive
           }"
@@ -59,14 +59,12 @@ import { Component, Prop, Vue } from 'vue-property-decorator'
 import Playlists from '@/icons/PlaylistsIcon.vue'
 import AllSongs from '@/icons/AllSongsIcon.vue'
 import Artists from '@/icons/ArtistsIcon.vue'
-import Fav from '@/icons/FavIcon.vue'
 import Genre from '@/icons/GenreIcon.vue'
 import Albums from '@/icons/AlbumsIcon.vue'
 import Toggle from '@/icons/ToggleIcon.vue'
 import Rooms from '@/icons/RoomsIcon.vue'
 import Explore from '@/icons/ExploreIcon.vue'
 import Queue from '@/icons/QueueIcon.vue'
-import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 
 @Component({
@@ -74,7 +72,6 @@ import { bus } from '@/mainWindow/main'
     Playlists,
     AllSongs,
     Artists,
-    Fav,
     Genre,
     Albums,
     Toggle,
@@ -93,12 +90,11 @@ export default class Sidebar extends Vue {
       { component: 'Artists', title: this.$t('sidebar.tabs.artists'), link: '/artists' },
       { component: 'Genre', title: this.$t('sidebar.tabs.genre'), link: '/genre' },
       { component: 'Explore', title: this.$t('sidebar.tabs.explore'), link: '/recommendations' }
-      // { component: 'Fav', title: 'Favourites', link: '/favs' }
     ]
   }
 
   private get showExplore() {
-    return vxm.providers.loggedInSpotify || vxm.providers.loggedInYoutube || vxm.providers.loggedInLastFM
+    return true
   }
 
   get navigationTabs() {
@@ -110,7 +106,7 @@ export default class Sidebar extends Vue {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private getOnClick(item: typeof this.componentNames[0], navigate: (...args: any[]) => void, ...args: any[]) {
+  getOnClick(item: (typeof this.componentNames)[0], navigate: (...args: any[]) => void, ...args: any[]) {
     if (item.custom) {
       item.custom()
       return
@@ -123,7 +119,7 @@ export default class Sidebar extends Vue {
   }
 
   @Prop({ default: true })
-  private isOpen!: boolean
+  isOpen!: boolean
 }
 </script>
 

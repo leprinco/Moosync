@@ -26,6 +26,6 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class AllSongs extends Vue {
   @Prop({ default: false })
-  private active!: boolean
+  active!: boolean
 }
 </script>

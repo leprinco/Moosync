@@ -21,6 +21,7 @@
         :defaultDetails="defaultDetails"
         :detailsButtonGroup="detailsButtonGroup"
         :optionalProviders="optionalProviders"
+        :isLoading="isLoading"
         @onItemsChanged="onOptionalProviderChanged"
         @onRowDoubleClicked="queueSong([arguments[0]])"
         @onRowContext="onSongContextMenu"
@@ -34,13 +35,15 @@
         @addToLibrary="addToLibrary"
         @onSortClicked="showSortMenu"
         @onSearchChange="onSearchChange"
+        @playRandom="playRandom"
+        @scroll="onScroll"
       ></component>
     </transition>
   </b-container>
 </template>
 
 <script lang="ts">
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop, Watch } from 'vue-property-decorator'
 import { mixins } from 'vue-class-component'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import ModelHelper from '@/utils/ui/mixins/ModelHelper'
@@ -73,79 +76,102 @@ export default class AllSongs extends mixins(
   private ignoreSort = false
 
   @Prop({ default: false })
-  private isLoading!: boolean
+  isLoading!: boolean
 
   @Prop({ default: () => [] })
-  private optionalProviders!: TabCarouselItem[]
+  optionalProviders!: TabCarouselItem[]
 
   @Prop()
-  private afterSongAddRefreshCallback!: (() => void) | undefined
+  private afterSongAddRefreshCallback!: ((showHidden?: boolean) => void) | undefined
 
   @Prop()
   private isRemote!: ((songs: Song[]) => boolean) | undefined
 
   private searchText = ''
 
-  private get filteredSongList(): Song[] {
+  get filteredSongList(): Song[] {
     let songList = this.songList.filter((val) => !!val.title.match(new RegExp(this.searchText, 'i')))
     songList = vxm.themes.songSortBy && sortSongList(songList, vxm.themes.songSortBy)
     return songList
   }
 
-  private get songView() {
+  @Watch('songList', { immediate: true })
+  private async onSongListChanged(newVal: Song[], oldVal: Song[]) {
+    const difference = newVal.filter((x) => {
+      return (oldVal ?? []).findIndex((val) => val._id === x._id) === -1
+    })
+
+    const playCounts = await window.SearchUtils.getPlayCount(...difference.map((val) => val._id))
+    for (const song of difference) {
+      this.$set(song, 'playCount', playCounts[song._id] ?? 0)
+    }
+  }
+
+  get songView() {
     return vxm.themes.songView === 'compact' ? 'SongViewCompact' : 'SongViewClassic'
   }
 
   private selected: Song[] | null = null
   private selectedCopy: Song[] | null = null
 
-  private currentSong: Song | null | undefined = null
+  currentSong: Song | null | undefined = null
 
   @Prop({
     default: () => {
       return { defaultTitle: '', defaultSubtitle: '', defaultCover: '' }
     }
   })
-  private defaultDetails!: SongDetailDefaults
+  defaultDetails!: SongDetailDefaults
 
   @Prop({
     default: () => {
       return {
         enableContainer: false,
-        enableLibraryStore: false
+        enableLibraryStore: false,
+        playRandom: false
       }
     }
   })
-  private detailsButtonGroup!: SongDetailButtons
+  detailsButtonGroup!: SongDetailButtons
 
-  private clearSelection() {
+  @Prop({ default: null })
+  private onSongContextMenuOverride!: ((event: PointerEvent, songs: Song[]) => void) | null
+
+  @Prop({ default: null })
+  private onGeneralSongContextMenuOverride!: ((event: PointerEvent) => void) | null
+
+  clearSelection() {
     this.currentSong = null
     this.selected = this.selectedCopy
     this.selectedCopy = null
   }
 
-  private updateCoverDetails(items: Song[]) {
+  updateCoverDetails(items: Song[]) {
     if (items) this.currentSong = items[items.length - 1]
     this.selected = items
     this.selectedCopy = items
   }
 
-  private sort(options: SongSortOptions) {
+  private sort(options: SongSortOptions[]) {
     vxm.themes.songSortBy = options
   }
 
-  private onSongContextMenu(event: Event, songs: Song[]) {
-    this.getContextMenu(event, {
-      type: 'SONGS',
-      args: {
-        songs,
-        isRemote: this.isRemote && typeof this.isRemote === 'function' && this.isRemote(songs),
-        refreshCallback: () => (this.songList = arrayDiff(this.songList, songs))
-      }
-    })
+  onSongContextMenu(event: PointerEvent, songs: Song[]) {
+    if (this.onSongContextMenuOverride) {
+      this.onSongContextMenuOverride(event, songs)
+    } else {
+      this.getContextMenu(event, {
+        type: 'SONGS',
+        args: {
+          songs,
+          isRemote: typeof this.isRemote === 'function' && this.isRemote(songs),
+          refreshCallback: () => this.songList.splice(0, this.songList.length, ...arrayDiff(this.songList, songs))
+        }
+      })
+    }
   }
 
-  private showSortMenu(event: Event) {
+  showSortMenu(event: Event) {
     this.getContextMenu(event, {
       type: 'SONG_SORT',
       args: {
@@ -154,40 +180,68 @@ export default class AllSongs extends mixins(
     })
   }
 
-  private onGeneralContextMenu(event: Event) {
-    this.getContextMenu(event, {
-      type: 'GENERAL_SONGS',
-      args: {
-        refreshCallback: this.afterSongAddRefreshCallback,
-        sortOptions: {
-          callback: (options) => (vxm.themes.songSortBy = options),
-          current: vxm.themes.songSortBy
+  onGeneralContextMenu(event: PointerEvent) {
+    if (this.onGeneralSongContextMenuOverride) {
+      this.onGeneralSongContextMenuOverride(event)
+    } else {
+      this.getContextMenu(event, {
+        type: 'GENERAL_SONGS',
+        args: {
+          refreshCallback: this.afterSongAddRefreshCallback,
+          sortOptions: {
+            callback: (options) => (vxm.themes.songSortBy = options),
+            current: vxm.themes.songSortBy
+          }
         }
-      }
-    })
+      })
+    }
   }
 
-  private playAll() {
-    this.playTop(this.selected ?? this.songList)
-    this.selected = this.selectedCopy
+  playAll() {
+    if (this.selected) {
+      this.playTop(this.selected)
+      this.selected = this.selectedCopy
+      return
+    }
+    this.$emit('playAll')
   }
 
-  private addToQueue() {
-    this.queueSong(this.selected ?? this.songList)
-    this.selected = this.selectedCopy
+  addToQueue() {
+    if (this.selected) {
+      this.queueSong(this.selected)
+      this.selected = this.selectedCopy
+      return
+    }
+    this.$emit('addToQueue')
   }
 
-  private addToLibrary() {
-    this.addSongsToLibrary(...(this.selected ?? this.songList))
-    this.selected = this.selectedCopy
+  addToLibrary() {
+    if (this.selected) {
+      this.addSongsToLibrary(...this.selected)
+      this.selected = this.selectedCopy
+      return
+    }
+    this.$emit('addToLibrary')
   }
 
-  private onOptionalProviderChanged(...args: unknown[]) {
+  playRandom() {
+    this.$emit('playRandom')
+  }
+
+  onOptionalProviderChanged(...args: unknown[]) {
     this.$emit('onOptionalProviderChanged', ...args)
   }
 
-  private onSearchChange(text: string) {
+  onSearchChange(text: string) {
     this.searchText = text
+    this.$emit('onSearchChange', text)
+  }
+
+  onScroll(e: MouseEvent) {
+    const { scrollTop, clientHeight, scrollHeight } = e.target as HTMLDivElement
+    if (scrollTop + clientHeight >= scrollHeight - 1) {
+      this.$emit('onScrollEnd')
+    }
   }
 }
 </script>

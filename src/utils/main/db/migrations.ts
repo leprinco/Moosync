@@ -223,5 +223,81 @@ export const migrations = [
   ALTER TABLE albums ADD album_extra_info TEXT;
 
   -- Down
+  `,
+
+  // 10-10-2022
+  `
+  -- Up
+  CREATE TABLE analytics (
+    id VARCHAR(36) PRIMARY KEY,
+    song_id VARCHAR(36),
+    play_count INTEGER
+  );
+
+  -- Down
+  `,
+
+  // 11-10-2022
+  `
+  -- Up
+  ALTER TABLE playlists ADD extension TEXT;
+
+  -- Down
+  `,
+
+  // 18-10-2022
+  `
+  -- Up
+  ALTER TABLE playlists ADD icon TEXT;
+
+  -- Down
+  `,
+
+  // 21-10-2022
+  `
+  -- Up
+  ALTER TABLE allsongs add show_in_library BOOLEAN DEFAULT TRUE;
+
+  -- Down
+  `,
+
+  // 24-12-2022
+  `
+  -- Up
+  ALTER TABLE artists_bridge RENAME TO artist_bridge;
+  
+  -- Down
+  `,
+
+  // 24-12-2022
+  `
+  -- Up
+  ALTER TABLE genre RENAME TO genres;
+  
+  -- Down
+  `,
+
+  // 29-12-2022
+  `
+  -- Up
+  ALTER TABLE allsongs ADD track_no NUMBER DEFAULT 0;
+  
+  -- Down
+  `,
+
+  // 07-01-2023
+  `
+  -- Up
+  ALTER TABLE analytics ADD play_time NUMBER DEFAULT 0;
+  
+  -- Down
+  `,
+
+  // 19-03-2023
+  `
+  -- Up
+  ALTER TABLE artists ADD sanitized_artist_name TEXT;
+  
+  -- Down
   `
 ]

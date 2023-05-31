@@ -49,14 +49,25 @@ interface DBUtils {
   addToPlaylist: (playlistID: string, ...songs: Song[]) => Promise<void>
 
   /**
+   * Remove songs from playlist
+   * @param playlistID id of playlist from which songs are to be removed
+   * @param songIDs songs to be removed from playlist
+   */
+  removeFromPlaylist: (playlistID: string, ...songIDs: Song[]) => Promise<void>
+
+  /**
    * Remove playlist
    * @param playlistID id of playlist to be removed
    */
-  removePlaylist: (playlistID: string) => Promise<void>
+  removePlaylist: (playlist: Playlist) => Promise<void>
 
-  exportPlaylist: (playlistID: string) => Promise<void>
+  exportPlaylist: (playlist: Playlist) => Promise<void>
 
   updateLyrics: (id: string, lyrics: string) => Promise<void>
+
+  incrementPlayCount: (song_id: string) => Promise<void>
+
+  incrementPlayTime: (song_id: string, duration: number) => Promise<void>
 }
 
 /**
@@ -66,7 +77,7 @@ interface searchUtils {
   /**
    * Search song by options
    */
-  searchSongsByOptions: (options: SongAPIOptions) => Promise<Song[]>
+  searchSongsByOptions: (options?: SongAPIOptions, fullFetch?: boolean) => Promise<Song[]>
 
   /**
    * Search entities like album, artists, playlists, genre by options
@@ -97,6 +108,13 @@ interface searchUtils {
    */
   getYTSuggestions: (videoID: string) => Promise<Song[]>
 
+  getYTPlaylist: (id: string) => Promise<Playlist>
+
+  getYTPlaylistContent: (
+    id: string,
+    continuation?: import('ytpl').Continuation
+  ) => Promise<{ songs: Song[]; nextPageToken?: import('ytpl').Continuation }>
+
   /**
    * Get direct stream URL from youtube
    */
@@ -107,14 +125,16 @@ interface searchUtils {
    */
   scrapeLastFM: (url: string) => Promise<unknown>
 
-  searchLyrics: (artists: string[], title: string) => Promise<string>
+  searchLyrics: (song: Song) => Promise<string>
 
-  requestInvidious: <K extends InvidiousResponses.InvidiousApiResources>(
-    resource: K,
-    search: InvidiousResponses.SearchObject<K>,
+  requestInvidious: <T extends InvidiousResponses.InvidiousApiResources, K extends InvidiousResponses.SearchTypes>(
+    resource: T,
+    search: InvidiousResponses.SearchObject<T, K>,
     authorization: string | undefined,
     invalidateCache = false
-  ) => Promise<InvidiousResponses.ResponseType<K> | undefined>
+  ) => Promise<InvidiousResponses.ResponseType<T, K> | undefined>
+
+  getPlayCount: (...songIds: string[]) => Promise<Record<string, { playCount: number; playTime: number }>>
 }
 
 /**
@@ -127,6 +147,7 @@ interface fileUtils {
    */
   scan: (forceScan?: boolean) => Promise<void>
   scanSinglePlaylist: (playlistPath: string) => Promise<{ songs: Song[]; playlist: Partial<Playlist> | null }>
+  scanSingleSong: (songPath: string) => Promise<{ song: Song | null }>
 
   getScanProgress: () => Promise<Progress>
 
@@ -167,6 +188,8 @@ interface fileUtils {
    * If some file is opened with moosync, the path will be passed to the renderer from this method
    */
   listenInitialFileOpenRequest: (callback: (paths: string[]) => void) => void
+
+  resetScanTask: () => Promise<void>
 }
 
 /**
@@ -177,8 +200,14 @@ interface preferenceUtils {
   save: (preference: Preferences) => Promise<void>
   saveSelective: (key: string, value: unknown, isExtension?: boolean) => Promise<void>
   loadSelective: <T>(key: string, isExtension?: boolean, defaultValue?: T) => Promise<T | undefined>
+  loadSelectiveArrayItem: <T>(key: string, defaultValue?: T) => Promise<T | undefined>
   notifyPreferenceChanged: (key: string, value: unknown) => Promise<void>
-  listenPreferenceChange: (callback: (key: string, value: unknown) => void) => void
+  listenPreferenceChanged: <T>(
+    key: string,
+    isMainWindow: boolean,
+    callback: (key: string, value: T) => void
+  ) => Promise<void>
+  resetToDefault: () => Promise<void>
 }
 
 /**
@@ -198,6 +227,9 @@ interface windowUtils {
   closeWindow: (isMainWindow: boolean) => Promise<void>
   minWindow: (isMainWindow: boolean) => Promise<void>
   maxWindow: (isMainWindow: boolean) => Promise<boolean>
+  toggleFullscreen: (isMainWindow: boolean) => Promise<void>
+  enableFullscreen: (isMainWindow: boolean) => Promise<void>
+  disableFullscreen: (isMainWindow: boolean) => Promise<void>
   hasFrame: () => Promise<boolean>
   showTitlebarIcons: () => Promise<boolean>
   openFileBrowser: (
@@ -219,6 +251,8 @@ interface windowUtils {
   restartApp: () => Promise<void>
   updateZoom: () => Promise<void>
   getPlatform: () => Promise<typeof process.platform>
+  clearRSS: () => void
+  handleReload: () => Promise<void>
 }
 
 /**
@@ -230,7 +264,7 @@ interface loggerUtils {
   warn: (...message: unknown[]) => Promise<void>
   debug: (...message: unknown[]) => Promise<void>
   trace: (...message: unknown[]) => Promise<void>
-  watchLogs: (callback: (data: unknown) => void) => Promise<void>
+  watchLogs: (callback: (data: LogLines[]) => void) => Promise<void>
   unwatchLogs: () => Promise<void>
   setLogLevel: (level: import('loglevel').LogLevelDesc) => Promise<void>
 }
@@ -265,14 +299,17 @@ interface extensionUtils {
     packageName: string,
     arg: ExtensionContextMenuHandlerArgs<ContextMenuTypes>
   ) => Promise<void>
-  getRegisteredAccounts: () => Promise<{ [key: string]: StrippedAccountDetails[] }>
-  listenAccountRegistered: (callback: (details: { packageName: string; data: StrippedAccountDetails }) => void) => void
+  getRegisteredAccounts: (packageName: string) => Promise<{ [key: string]: StrippedAccountDetails[] }>
+  listenAccountRegistered: (
+    callback: (details: { packageName: string; data: StrippedAccountDetails }) => void,
+    packageName?: string
+  ) => void
   performAccountLogin: (packageName: string, accountId: string, login: boolean) => Promise<void>
   listenExtensionsChanged: (callback: () => void) => void
-  getRegisteredSearchProviders: () => Promise<Record<string, string>>
-  getRegisteredArtistSongProviders: () => Promise<Record<string, string>>
-  getRegisteredPlaylistProviders: () => Promise<Record<string, string>>
-  getRegisteredAlbumSongProviders: () => Promise<Record<string, string>>
+  getExtensionProviderScopes: (
+    packageName: string
+  ) => Promise<Record<string, import('@/utils/commonConstants').ProviderScopes[]>>
+  getExtensionDisplayName: (packageName: string) => Promise<string>
 }
 
 /**
@@ -282,15 +319,15 @@ interface themeUtils {
   saveTheme: (theme: ThemeDetails) => Promise<void>
   removeTheme: (id: string) => Promise<void>
   getTheme: (id?: string) => Promise<ThemeDetails>
+  transformCSS: (cssPath: string) => Promise<string>
   getAllThemes: (id?: string) => Promise<{ [key: string]: ThemeDetails } | undefined>
   setActiveTheme: (id: string) => Promise<void>
-  getActiveTheme: () => Promise<ThemeDetails | undefined>
+  getActiveTheme: () => Promise<ThemeDetails>
   setSongView: (menu: songMenu) => Promise<void>
   getSongView: () => Promise<songMenu>
   setLanguage: (key: string) => Promise<void>
-  listenThemeChanged: (callback: (themeId: ThemeDetails) => void) => void
-  listenSongViewChanged: (callback: (menu: songMenu) => void) => void
-  listenLanguageChanged: (callback: (language: string) => void) => void
+  packTheme: (id: string) => Promise<void>
+  importTheme: (themeZipPath: string) => Promise<void>
 }
 
 interface updateUtils {
@@ -308,6 +345,21 @@ interface mprisUtils {
   listenMediaButtonPress: (callback: (args: number) => void) => Promise<void>
 }
 
+interface spotifyPlayer {
+  connect: (config: import('librespot-node').ConstructorConfig) => Promise<void>
+  on: <T extends import('librespot-node').PlayerEventTypes>(
+    event: T,
+    listener: (event: import('librespot-node').PlayerEvent<T>) => void
+  ) => string
+  off: (channel: string, event: string, listener: unknown) => void
+  command: <T extends SpotifyRequests.SpotifyCommands>(
+    command: T,
+    args?: SpotifyRequests.Command['args']
+  ) => Promise<SpotifyRequests.ReturnType<T>>
+  close: () => Promise<void>
+  getToken: (scopes: TokenScope[]) => Promise<import('librespot-node').Token>
+}
+
 interface Window {
   DBUtils: DBUtils
   SearchUtils: searchUtils
@@ -321,4 +373,5 @@ interface Window {
   ThemeUtils: themeUtils
   UpdateUtils: updateUtils
   MprisUtils: mprisUtils
+  SpotifyPlayer: spotifyPlayer
 }

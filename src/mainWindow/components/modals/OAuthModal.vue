@@ -94,40 +94,40 @@ import InputGroup from '../generic/InputGroup.vue'
 })
 export default class OAuthModal extends Vue {
   @Prop({ default: 'OAuthModal' })
-  private id!: string
+  id!: string
 
-  private textColor = ''
-  private title = ''
-  private url = ''
-  private oauthCode = ''
-  private desc = ''
-  private manualClick = false
-  private oauthPath?: string
+  textColor = ''
+  title = ''
+  url = ''
+  oauthCode = ''
+  desc = ''
+  manualClick = false
+  oauthPath?: string
 
   private showing = false
 
-  private alternative = true
+  alternative = true
 
-  private openBrowser() {
+  openBrowser() {
     if (!this.url.startsWith('http')) {
       this.url = 'https://' + this.url
     }
     window.WindowUtils.openExternal(this.url)
   }
 
-  private close() {
+  close() {
     bus.$emit(EventBus.HIDE_OAUTH_MODAL)
   }
 
-  private copyToClipboard() {
+  copyToClipboard() {
     navigator.clipboard.writeText(this.url)
   }
 
-  private submitEmpty() {
+  submitEmpty() {
     window.WindowUtils.triggerOAuthCallback(this.oauthCode)
   }
 
-  private submitCode() {
+  submitCode() {
     if (this.oauthPath) {
       if (!this.oauthCode.startsWith('moosync://')) {
         this.oauthCode = 'moosync://' + this.oauthPath + this.oauthCode

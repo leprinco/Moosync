@@ -12,35 +12,33 @@
     <Person id="account" class="accounts-icon" />
     <b-popover :target="`account`" placement="bottom" triggers="click blur" custom-class="accounts-popover">
       <div class="buttons">
-        <IconButton
-          v-for="p in providers"
-          :key="`${p.name}-${p.username}`"
-          :bgColor="p.bgColor"
-          :hoverText="p.provider.loggedIn ? 'Sign out' : p.name"
-          :title="p.username ? p.username : 'Connect'"
-          @click.native="handleClick(p.name)"
-        >
-          <template slot="icon">
-            <component :is="p.icon" />
-          </template>
-        </IconButton>
-
-        <IconButton
-          v-for="a in extraAccounts"
-          :key="a.id"
-          :bgColor="a.bgColor"
-          :hoverText="a.loggedIn ? 'Sign out' : a.name"
-          :title="a.username ? a.username : 'Connect'"
-          @click.native="handleExtensionAccountClick(a.id)"
-        >
-          <template slot="icon">
-            <inline-svg class="provider-icon" v-if="a.icon.endsWith('svg')" :src="a.icon" />
-            <img v-else referrerPolicy="no-referrer" :src="a.icon" alt="provider icon" class="provider-icon" />
-          </template>
-        </IconButton>
+        <div v-for="p in providers" :key="`${p.provider.Title}-${p.username}`">
+          <IconButton
+            v-if="p && p.provider.canLogin"
+            :bgColor="p.provider.BgColor"
+            :hoverText="p.provider.loggedIn ? 'Sign out' : p.provider.Title"
+            :title="p.username ? p.username : 'Connect'"
+            @click.native="handleClick(p)"
+          >
+            <template slot="icon">
+              <component v-if="isIconComponent(p.provider.IconComponent)" :is="p.provider.IconComponent" />
+              <inline-svg
+                class="provider-icon"
+                v-else-if="p.provider.IconComponent.endsWith('svg')"
+                :src="`media://${p.provider.IconComponent}`"
+              />
+              <img v-else referrerPolicy="no-referrer" :src="a.icon" alt="provider icon" class="provider-icon" />
+            </template>
+          </IconButton>
+        </div>
       </div>
     </b-popover>
-    <ConfirmationModal keyword="signout from" :itemName="activeSignout" id="signoutModal" @confirm="signout" />
+    <ConfirmationModal
+      keyword="signout from"
+      :itemName="activeSignout ? activeSignout.provider.Title : ''"
+      id="signoutModal"
+      @confirm="signout"
+    />
   </div>
 </template>
 <script lang="ts">
@@ -54,6 +52,8 @@ import ConfirmationModal from '@/commonComponents/ConfirmationModal.vue'
 import { mixins } from 'vue-class-component'
 import AccountsMixin from '@/utils/ui/mixins/AccountsMixin'
 import InvidiousIcon from '@/icons/InvidiousIcon.vue'
+import PipedIcon from '@/icons/PipedIcon.vue'
+import { vxm } from '@/mainWindow/store'
 
 @Component({
   components: {
@@ -62,31 +62,41 @@ import InvidiousIcon from '@/icons/InvidiousIcon.vue'
     InvidiousIcon,
     SpotifyIcon,
     LastFMIcon,
+    PipedIcon,
     Person,
     ConfirmationModal
   }
 })
 export default class TopBar extends mixins(AccountsMixin) {
-  protected activeSignout: Providers | null = null
+  activeSignout: Provider | null = null
+
+  isIconComponent(src: string) {
+    switch (src) {
+      case vxm.providers.youtubeProvider.IconComponent:
+      case vxm.providers.spotifyProvider.IconComponent:
+      case vxm.providers.lastfmProvider.IconComponent:
+        return true
+      default:
+        return false
+    }
+  }
 
   async mounted() {
     this.signoutMethod = this.showSignoutModal
   }
 
-  protected async signout() {
+  async signout() {
     if (this.activeSignout) {
-      const p = this.getProvider(this.activeSignout)
+      if (this.activeSignout) {
+        this.activeSignout.provider.signOut()
 
-      if (p) {
-        p.provider.signOut()
-
-        this.$set(p, 'username', '')
+        this.$set(this.activeSignout, 'username', (await this.activeSignout.provider.getUserDetails()) ?? '')
         this.activeSignout = null
       }
     }
   }
 
-  protected showSignoutModal(signout: Providers) {
+  protected showSignoutModal(signout: Provider) {
     this.activeSignout = signout
     this.$bvModal.show('signoutModal')
   }

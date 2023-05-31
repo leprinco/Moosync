@@ -11,29 +11,31 @@ import { extensionRequests } from '../constants'
 import crypto from 'crypto'
 
 export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
-  packageName: string
+  private packageName: string
   player: PlayerControls
   utils: Utils
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  private eventCallbackMap: { [key: string]: Function } = {}
+  #communicator: ExtensionCommunicator
+
+  private eventCallbackMap: { [key: string]: unknown } = {}
 
   private contextMenuMap: ExtendedExtensionContextMenuItems<ContextMenuTypes>[] = []
 
   private accountsMap: AccountDetails[] = []
-  private searchProvider: string | undefined
-  private artistSongProvider: string | undefined
-  private albumSongProvider: string | undefined
-  private playlistProvider: string | undefined
 
-  constructor(packageName: string) {
+  constructor(packageName: string, communicator: ExtensionCommunicator) {
     this.packageName = packageName
     this.player = new PlayerControls(this.packageName)
     this.utils = new Utils(packageName)
+    this.#communicator = communicator
   }
 
   public async getSongs(options: SongAPIOptions) {
     return sendAsync<Song[]>(this.packageName, 'get-songs', options)
+  }
+
+  public async getEntity<T extends Artists | Album | Genre | Playlist>(options: EntityApiOptions<T>) {
+    return sendAsync<T[]>(this.packageName, 'get-entity', options)
   }
 
   public async getCurrentSong() {
@@ -84,8 +86,23 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
     return sendAsync<(Song | undefined)[]>(this.packageName, 'add-songs', songs)
   }
 
-  public async removeSong(song_id: string) {
-    return sendAsync<void>(this.packageName, 'remove-song', song_id)
+  public async removeSong(song: Song | string) {
+    let parsedSong: Song | undefined
+    if (typeof song === 'string') {
+      const searchRes = await this.getSongs({
+        song: {
+          _id: song
+        }
+      })
+
+      parsedSong = searchRes?.at(0)
+    } else {
+      parsedSong = song
+    }
+
+    if (parsedSong) {
+      return sendAsync<void>(this.packageName, 'remove-song', song)
+    }
   }
 
   public async addPlaylist(playlist: Omit<Playlist, 'playlist_id'>) {
@@ -151,8 +168,7 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
     return await sendAsync<void>(this.packageName, 'close-login-modal')
   }
 
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  public on(eventName: string, callback: Function) {
+  public on(eventName: ExtraExtensionEventTypes, callback: unknown) {
     console.debug('Registering listener for', eventName, 'in package', this.packageName)
     this.eventCallbackMap[eventName] = callback
 
@@ -168,11 +184,11 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
   }
 
   public async _emit<T extends ExtraExtensionEventTypes>(event: ExtraExtensionEvents<T>) {
-    console.debug('emitting', event.type, 'in package', this.packageName)
     const callback = this.eventCallbackMap[event.type] as (
       ...data: ExtraExtensionEventData<T>
     ) => Promise<ExtraExtensionEventReturnType<T>>
-    if (callback) {
+    if (callback && typeof callback === 'function') {
+      console.debug('emitting', event.type, 'in package', this.packageName)
       return (await callback(...event.data)) as ExtraExtensionEventReturnType<T>
     }
   }
@@ -213,6 +229,10 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
     return this.contextMenuMap
   }
 
+  public getInstalledExtensions() {
+    return Array.from(this.#communicator.extensionRetriever()).map((val) => val.packageName)
+  }
+
   public _getContextMenuItems(): ExtendedExtensionContextMenuItems<ContextMenuTypes>[] {
     return JSON.parse(JSON.stringify(this.getContextMenuItems()))
   }
@@ -221,36 +241,20 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
     return this.accountsMap
   }
 
-  public registerSearchProvider(title: string) {
-    this.searchProvider = title
+  public registerSearchProvider() {
+    console.warn('Deprecated API, please update the extension')
   }
 
-  public _getSearchProvider() {
-    return this.searchProvider
+  public registerArtistSongProvider() {
+    console.warn('Deprecated API, please update the extension')
   }
 
-  public registerArtistSongProvider(title: string) {
-    this.artistSongProvider = title
-  }
-
-  public _getArtistSongProvider() {
-    return this.artistSongProvider
-  }
-
-  public registerAlbumSongProvider(title: string) {
-    this.albumSongProvider = title
-  }
-
-  public _getAlbumSongProvider() {
-    return this.albumSongProvider
+  public registerAlbumSongProvider() {
+    console.warn('Deprecated API, please update the extension')
   }
 
   private registerPlaylistProvider() {
-    this.playlistProvider = this.packageName
-  }
-
-  public _getPlaylistProvider() {
-    return this.playlistProvider
+    console.warn('Deprecated API, please update the extension')
   }
 
   public setArtistEditableInfo(artist_id: string, object: Record<string, string>) {
@@ -260,13 +264,24 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
   public setAlbumEditableInfo(album_id: string, object: Record<string, string>) {
     return sendAsync<void>(this.packageName, 'set-album-editable-info', { album_id, object })
   }
+
+  public _isEventCallbackRegistered(key: string) {
+    return !!this.eventCallbackMap[key]
+  }
+
+  addUserPreference(pref: ExtensionPreferenceGroup): void {
+    this.#communicator.addPreference(this.packageName, pref)
+  }
+  removeUserPreference(key: string): void {
+    this.#communicator.removePreference(this.packageName, key)
+  }
 }
 
 class Utils implements utils {
-  private packageName: string
+  private _packageName: string
 
   constructor(packageName: string) {
-    this.packageName = packageName
+    this._packageName = packageName
   }
 
   public getArtistExtraInfo(artist: Artists) {
@@ -277,6 +292,14 @@ class Utils implements utils {
   public getAlbumExtraInfo(album: Album) {
     if (album?.album_extra_info?.extensions)
       return album?.album_extra_info?.extensions[this.packageName] as Record<string, string>
+  }
+
+  public get packageName(): string {
+    return this._packageName
+  }
+
+  public get customRequestBaseUrl() {
+    return `extension://${this.packageName}`
   }
 }
 

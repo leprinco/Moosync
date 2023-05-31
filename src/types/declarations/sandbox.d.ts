@@ -20,6 +20,12 @@ type GithubRepoResponse = {
   }[]
 }
 
+type PlayerChannelMessage = { channel: string; data?: unknown; error?: string }
+type SpotifyMessage =
+  | { type: 'CONNECT'; args: ConstructorConfig }
+  | { type: 'COMMAND'; args: SpotifyRequests.Command }
+  | { type: 'TOKEN'; args?: import('librespot-node').TokenScope[] }
+
 type FetchedExtensionManifest = {
   name: string
   packageName: string
@@ -124,10 +130,7 @@ interface ExtendedExtensionAPI extends extensionAPI {
   ) => Promise<ExtraExtensionEventReturnType<T> | undefined>
   _getContextMenuItems: () => ExtendedExtensionContextMenuItems<ContextMenuTypes>[]
   _getAccountDetails: () => AccountDetails[]
-  _getSearchProvider: () => string | undefined
-  _getArtistSongProvider: () => string | undefined
-  _getAlbumSongProvider: () => string | undefined
-  _getPlaylistProvider: () => string | undefined
+  _isEventCallbackRegistered: (key: ExtraExtensionEventTypes) => boolean
 }
 
 interface ExtensionItem extends ExtensionDetails {
@@ -160,6 +163,12 @@ interface ExtendedExtensionContextMenuItems<T extends ContextMenuTypes>
   id: string
   packageName: string
   children?: ExtendedExtensionContextMenuItems<T>[]
+}
+
+interface ExtensionCommunicator {
+  extensionRetriever: (options?: getExtensionOptions) => Iterable<ExtensionItem>
+  addPreference: (packageName: string, preference: ExtensionPreferenceGroup) => void
+  removePreference: (packageName: string, key: string) => void
 }
 
 interface NodeRequire {

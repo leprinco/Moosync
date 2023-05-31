@@ -6,7 +6,6 @@
  *
  *  See LICENSE in the project root for license information.
  */
-
 interface IpcRequest<T = unknown> {
   type: string
   responseChannel?: string
@@ -64,6 +63,10 @@ declare namespace ExtensionHostRequests {
     accountId: string
     login: boolean
   }
+
+  interface ProviderScopes {
+    packageName: string
+  }
 }
 
 declare namespace LoggerRequests {
@@ -73,6 +76,30 @@ declare namespace LoggerRequests {
 
   interface LogLevels {
     level: import('loglevel').LogLevelDesc
+  }
+}
+
+declare namespace SpotifyRequests {
+  type Config = import('librespot-node').ConstructorConfig
+  type EventListener = {
+    event: string
+  }
+
+  interface Token {
+    scopes: import('librespot-node').TokenScope[]
+  }
+
+  type SpotifyCommands = 'PLAY' | 'PAUSE' | 'SEEK' | 'VOLUME' | 'LOAD' | 'ADD_TO_QUEUE' | 'GET_CANVAS' | 'GET_LYRICS'
+
+  type ReturnType<T extends SpotifyCommands> = T extends 'GET_CANVAS'
+    ? import('librespot-node').CanvazResponse
+    : T extends 'GET_LYRICS'
+    ? import('librespot-node').LyricsResponse
+    : undefined
+
+  interface Command<T extends SpotifyCommands> {
+    command: T
+    args: unknown[]
   }
 }
 
@@ -91,7 +118,7 @@ declare namespace PlaylistRequests {
   }
 
   interface RemoveExportPlaylist {
-    playlist_id: string
+    playlist: Playlist
   }
 }
 
@@ -102,6 +129,10 @@ declare namespace ScannerRequests {
 
   interface ScanSinglePlaylist {
     playlistPath: string
+  }
+
+  interface ScanSingleSong {
+    songPath: string
   }
 }
 
@@ -128,6 +159,10 @@ declare namespace PreferenceRequests {
     id: string
   }
 
+  interface ImportTheme {
+    themeZipPath: string
+  }
+
   interface LanguageKey {
     key: string
   }
@@ -136,8 +171,17 @@ declare namespace PreferenceRequests {
     theme: ThemeDetails
   }
 
+  interface TransformCSS {
+    cssPath: string
+  }
+
   interface SongView {
     menu: songMenu
+  }
+
+  interface ListenKey {
+    key: string
+    isMainWindow: boolean
   }
 }
 
@@ -158,6 +202,15 @@ declare namespace SearchRequests {
     videoID: string
   }
 
+  interface YTPlaylist {
+    id: string
+  }
+
+  interface YTPlaylistContent {
+    id: string
+    nextPageToken?: import('ytpl').Continuation
+  }
+
   interface LastFMSuggestions {
     url: string
   }
@@ -171,8 +224,7 @@ declare namespace SearchRequests {
   }
 
   interface LyricsScrape {
-    artists: string[]
-    title: string
+    song: Song
   }
 
   interface InvidiousRequest {
@@ -180,6 +232,10 @@ declare namespace SearchRequests {
     search: InvidiousResponses.SearchObject
     authorization: string | undefined
     invalidateCache: boolean
+  }
+
+  interface PlayCount {
+    songIds: string[]
   }
 }
 
@@ -208,6 +264,15 @@ declare namespace SongRequests {
   interface Lyrics {
     id: string
     lyrics: string
+  }
+
+  interface PlayCount {
+    song_id: string
+  }
+
+  interface PlayTime {
+    song_id: string
+    duration: number
   }
 }
 

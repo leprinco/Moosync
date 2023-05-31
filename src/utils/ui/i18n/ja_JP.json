@@ -1,67 +1,88 @@
 {
   "sidebar": {
     "tabs": {
-      "queue": "Queue",
-      "allSongs": "All Songs",
-      "playlists": "Playlists",
-      "albums": "Albums",
-      "artists": "Artists",
-      "genre": "Genres",
-      "explore": "Explore"
+      "queue": "キュー",
+      "allSongs": "すべての曲",
+      "playlists": "再生リスト",
+      "albums": "アルバム",
+      "artists": "アーティスト",
+      "genre": "ジャンル",
+      "explore": "探索",
+      "paths": "パス",
+      "themes": "テーマ",
+      "extensions": "拡張機能",
+      "system": "システム",
+      "logs": "ログ記録",
+      "keybinds": "キー割り当て"
     }
   },
   "topbar": {
-    "searchPlaceholder": "Search...",
-    "noResultsFound": "No results found"
+    "searchPlaceholder": "検索...",
+    "noResultsFound": "結果が見つかりませんでした"
   },
   "pages": {
-    "playlists": "Playlists",
-    "albums": "Albums",
-    "artists": "Artists",
-    "genres": "Genres",
-    "explore": "Explore"
+    "playlists": "再生リスト",
+    "albums": "アルバム",
+    "artists": "アーティスト",
+    "genres": "ジャンル",
+    "explore": "探索"
   },
   "songView": {
     "details": {
-      "songCount": "{count} song | {count} songs"
+      "songCount": "{count} 曲 | {count} 曲"
     },
     "songList": {
       "topbar": {
-        "searchPlaceholder": "Search..."
+        "searchPlaceholder": "検索..."
       }
     }
   },
   "buttons": {
-    "playSingle": "Play {title}",
-    "addToQueue": "Add {title} to queue",
-    "addToLibrary": "Add {title} to library"
+    "playSingle": "{title} を再生",
+    "addToQueue": "キューに {title} を追加",
+    "addToLibrary": "ライブラリに {title} を追加",
+    "playRandom": "ランダムに100曲再生"
   },
-  "loading": "Loading...",
+  "loading": "読み込み中...",
   "contextMenu": {
     "sort": {
-      "name": "Name",
-      "dateAdded": "Date added",
-      "provider": "Provider"
+      "title": "タイトル",
+      "album": "アルバム",
+      "artist": "アーティスト",
+      "genre": "ジャンル",
+      "date_added": "追加日",
+      "provider": "プロバイダー",
+      "playCount": "再生回数"
     },
     "playlist": {
-      "new": "Create Playlist",
-      "remove": "Remove playlist",
-      "export": "Export playlist",
-      "add": "Add To Playlist",
-      "addFromURL": "Add Playlist from URL"
+      "new": "新しい再生リスト",
+      "addFromURL": "URLからインポート",
+      "remove": "再生リストを削除",
+      "export": "再生リストをエクスポート",
+      "add": "再生リストに追加",
+      "save": "ライブラリに追加"
     },
     "song": {
-      "addFromURL": "Add from URL",
-      "playNow": "Play Now",
-      "addToQueue": "Add To Queue",
-      "moveToTop": "Move to top",
-      "moveToBottom": "Move to bottom",
-      "moveManually": "Move manually",
-      "manualIndex": "Set index of song",
-      "remove": "Remove from Library",
-      "add": "Add Song to Library | Add Songs to Library"
+      "addFromURL": "URLから追加",
+      "playNow": "今すぐ再生",
+      "playNext": "次に再生",
+      "clearAndPlay": "キューをクリアして再生",
+      "addToQueue": "キューに追加",
+      "moveToTop": "先頭に移動",
+      "moveToBottom": "末端に移動",
+      "moveManually": "手動で移動",
+      "manualIndex": "曲のインデックスを設定",
+      "remove": "ライブラリから削除",
+      "add": "ライブラリに曲を追加 | ライブラリに曲を追加",
+      "removeFromPlaylist": "再生リストから削除",
+      "hideFromLibrary": "ライブラリから隠す",
+      "showInLibrary": "ライブラリに表示",
+      "showHidden": "非表示の曲を表示",
+      "hideHidden": "非表示の曲を非表示",
+      "openInBrowser": "Open in browser"
     },
-    "moreInfo": "More Info"
+    "moreInfo": "詳細情報",
+    "incorrectPlayback": "再生がおかしいですか？"
   },
   "providers": {
     "youtube": "Youtube",
@@ -69,100 +90,187 @@
     "invidious": "Invidious",
     "lastfm": "LastFM"
   },
-  "save": "Save",
-  "cancel": "Cancel",
+  "save": "保存",
+  "cancel": "キャンセル",
   "settings": {
     "paths": {
-      "songDirectories": "Song Directories",
-      "songDirectories_tooltip": "Directories where all your local music is stored",
-      "addFolder": "Add Folder...",
-      "remove": "Remove",
-      "artworkPath": "Downloaded Artwork Path",
-      "artworkPath_tooltip": "Directory where downloaded artworks are stored",
-      "thumbnailPath": "Downloaded Thumbnail Path",
-      "thumbnailPath_tooltip": "Directory where generated thumbnails are stored"
+      "songDirectories": "曲のディレクトリ",
+      "songDirectories_tooltip": "すべてのローカル音楽が保存されているディレクトリ",
+      "songDirectories_exclude": "ブラックリストに登録されたディレクトリ",
+      "songDirectories_exclude_tooltip": "これらのディレクトリ内の曲はスキャンされません",
+      "addFolder": "フォルダを追加...",
+      "remove": "削除",
+      "artworkPath": "ダウンロードされたアートワークのパス",
+      "artworkPath_tooltip": "ダウンロードしたアートワークが保存されているディレクトリ",
+      "thumbnailPath": "ダウンロードされたサムネイルのパス",
+      "thumbnailPath_tooltip": "生成されたサムネイルが保存されているディレクトリ",
+      "splitter": "アーティスト名の分割パターン",
+      "splitter_tooltip": "アーティスト名を分割するには正規表現を使用します。空白の場合は分割を無効にします。",
+      "scan_interval": "Scan interval",
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
     },
     "themes": {
-      "songView": "Songs View",
-      "songView_tooltip": "Customize song list appearance",
-      "songView_classic": "Classic",
-      "songView_compact": "Compact",
-      "themes": "Themes",
-      "themes_tooltip": "Customize colors",
-      "themes_default": "Default",
-      "createTheme": "Create new theme",
+      "songView": "曲表示",
+      "songView_tooltip": "曲リストの外観を編集する",
+      "songView_classic": "クラシック",
+      "songView_compact": "コンパクト",
+      "themes": "テーマ",
+      "themes_tooltip": "色を指定",
+      "themes_default": "標準",
+      "createTheme": "新しいテーマ",
+      "importTheme": "テーマをインポート",
       "newTheme": {
-        "name": "Theme Name",
-        "author": "Author",
-        "colors": "Colors",
-        "colors_tooltip": "Change the colors to customise UI"
+        "name": "テーマ名",
+        "author": "作成者",
+        "colors": "色",
+        "colors_tooltip": "UIをカスタマイズするために色を変更します"
       },
-      "primary": "Primary",
-      "secondary": "Secondary",
-      "tertiary": "Tertiary",
-      "textPrimary": "Text Primary",
-      "textSecondary": "Text Secondary",
-      "textInverse": "Text Inverse",
-      "accent": "Accent",
-      "divider": "Divider"
+      "primary": "第一配色",
+      "secondary": "第二配色",
+      "tertiary": "第三配色",
+      "textPrimary": "第一文字色",
+      "textSecondary": "第二文字色",
+      "textInverse": "反転文字",
+      "accent": "アクセント",
+      "divider": "仕切り",
+      "import_button": "インポート"
     },
     "extensions": {
-      "extensions": "Extensions",
-      "extensions_tooltip": "List of all installed extensions",
-      "discover": "Discover",
-      "install": "Install from file",
-      "remove": "Remove"
+      "extensions": "拡張機能",
+      "extensions_tooltip": "インストールされているすべての拡張機能の一覧",
+      "discover": "探す",
+      "install": "ファイルからインストール",
+      "remove": "削除"
     },
     "system": {
       "systemSettings": {
-        "title": "System Settings",
-        "systemStartup": "Start app on system startup",
-        "minimizeTray": "Minimize to tray on close",
-        "hardwareAcceleration": "Use GPU hardware acceleration",
-        "watchFileChanges": "Watch music directories for changes",
-        "useInvidious": "Use Invidious instead of Youtube"
+        "title": "システムの設定",
+        "systemStartup": "システム起動時にアプリを起動",
+        "minimizeTray": "閉じたらトレイに最小化",
+        "hardwareAcceleration": "GPUハードウェアアクセラレーションを使用",
+        "watchFileChanges": "更新がないか音楽ディレクトリを監視",
+        "enableJukeboxMode": "ジュークボックスモードへの切り替えを有効化",
+        "lastLoadedPlaybackState": "Load last playback state on startup"
       },
-      "systemSettings_tooltip": "Settings which are related to your system",
+      "systemSettings_tooltip": "システムに関連する設定",
       "audioSettings": {
-        "title": "Audio Settings",
-        "gaplessPlayback": "Use gapless playback for wherever possible",
-        "sponsorBlock": "Use SponsorBlock to automatically skip to highlighted part of Youtube song",
-        "useEmbeds": "Use Youtube embeds for playing audio from Youtube"
+        "title": "音声設定",
+        "gaplessPlayback": "可能な限り間隔なく再生",
+        "sponsorBlock": "SponsorBlockをしYouTubeの曲の主な部分に自動でスキップ"
       },
-      "audioSettings_tooltip": "Settings which are related audio playback",
-      "invidious": "Invidious Instance",
-      "invidiousUrlUnsupported": "This url does not support Invidious API",
-      "invidious_tooltip": "Invidious instance to use instead of youtube",
-      "restartApp": "Restart Moosync",
-      "zoom": "Zoom Factor (Beta)",
-      "zoom_tooltip": "Zoom of windows in percentage. This may break the UI.",
+      "audioSettings_tooltip": "音声再生の設定",
+      "invidiousUrlUnsupported": "このURLはInvidious APIに対応していません",
+      "invidious_tooltip": "YouTubeの代わりに使用する Invidious インスタンス",
+      "restartApp": "Moosyncを再起動",
+      "zoom": "拡大係数 (ベータ)",
+      "zoom_tooltip": "ウィンドウの拡大率。UIが壊れる可能性があります。",
       "spotify": {
-        "client_id": "Spotify Client ID",
-        "client_id_tooltip": "Spotify client ID required to login to Spotify. Click to know more",
-        "client_secret": "Spotify Client Secret",
-        "client_secret_tooltip": "Spotify client Secret required to login to Spotify. Click to know more",
-        "autoFetchButton": "Get Spotify details automatically",
-        "autoFetchPreTitle": "Get",
-        "autoFetchTitle": "ClientID and Secret",
-        "autoFetchDisclaimer": "A window will now open where you will be asked to login to your Spotify account. After logging in please do not click anywhere as the whole process will be automated",
-        "openWindow": "Open Window"
+        "client_id": "SpotifyクライアントID",
+        "client_id_tooltip": "SpotifyクライアントIDはSpotifyへログインするのに必要。クリックで詳細",
+        "client_secret": "Spotifyクライアントシークレット",
+        "client_secret_tooltip": "SpotifyクライアントシークレットはSpotifyにログインするのに必要。クリックで詳細",
+        "autoFetchButton": "Spotifyの詳細を自動で取得",
+        "autoFetchPreTitle": "取得",
+        "autoFetchTitle": "クライアントID とシークレット",
+        "autoFetchDisclaimer": "Spotifyアカウントにログインするように求められるウィンドウが開きます。 ログイン後は、プロセス全体が自動化されるため、どこもクリックしないでください。",
+        "openWindow": "ウィンドウを開く",
+        "title": "Spotifyの設定",
+        "tooltip": "Spotify再生の動作を変更するオプション",
+        "librespotEnable": "librespot を使用（Spotify プレミアムが必要）",
+        "username": "Spotifyユーザー名",
+        "username_tooltip": "Spotifyのユーザー名。通常はあなたのメール",
+        "password": "Spotifyパスワード",
+        "password_tooltip": "Spotifyのパスワード。Spotifyの設定で設定する必要があるかもしれません",
+        "librespot": {
+          "title": "Librespot のオプション",
+          "tooltip": "librespot の動作を変更するオプション",
+          "useSpotifyCanvas": "背景にSpotifyのキャンバスビデオを表示する",
+          "useLibrespotPlayback": "歌の再生にlibrespotを使用"
+        }
       },
       "youtube": {
-        "client_id": "Youtube Client ID",
-        "client_secret": "Youtube Client Secret"
+        "client_id": "Youtube クライアントID",
+        "client_secret": "Youtube クライアントシークレット",
+        "client_id_tooltip": "Youtube クライアント ID は、Youtube にログインする必要があります。詳細を知るためにクリックしてください",
+        "client_secret_tooltip": "Youtube クライアントシークレットは、Youtube にログインするために必要です。クリックで詳細"
       },
       "lastfm": {
-        "client_id": "LastFM Api Key",
-        "client_secret": "LastFM Client Secret"
+        "client_id": "LastFM API キー",
+        "client_secret": "LastFM クライアントシークレット"
       },
-      "language": "Language",
-      "language_tooltip": "Change the language of the interface"
+      "youtubeAlternative": {
+        "title": "YouTube 代替サービス",
+        "tooltip": "第三者の提供者を介してYouTubeのデータを取得します",
+        "useYoutube": "標準のYoutubeのサービスを使用",
+        "useInvidious": "Invidious サービスを使用",
+        "usePiped": "Piped サービスを使用",
+        "piped": {
+          "url": "Piped インスタンス",
+          "url_tooltip": "使用する Piped インスタンスの URL",
+          "username": "ユーザー名",
+          "username_tooltip": "選択したPipedインスタンスでのユーザー名",
+          "password": "パスワード",
+          "password_tooltip": "選択したPipedインスタンスでのユーザー名"
+        },
+        "invidious": {
+          "url": "Invidious インスタンス",
+          "url_tooltip": "使用する Invidious インスタンスの URL",
+          "options": "Invidious  の詳細オプション",
+          "options_tooltip": "Invidious の再生を管理するオプション",
+          "always_proxy": "Googleビデオの代わりにInvidious Proxyから常に音声を再生"
+        },
+        "youtube": {
+          "options": "YouTubeの詳細オプション",
+          "options_tooltip": "Youtube の再生を管理するオプション",
+          "useEmbeds": "YouTube からの音声再生に YouTube 埋め込みを使用"
+        }
+      },
+      "language": "言語",
+      "language_tooltip": "インターフェースの言語を変更",
+      "clearPreferences": "設定を初期化",
+      "clear_preferences_title": "設定を初期化しますか？",
+      "clear_preferences": "すべての設定を初期値に戻しますか？初期化後に本アプリが再起動します。",
+      "clear_preferences_button": "確認",
+      "jukebox": {
+        "pin": "ジュークボックスモードのピン",
+        "pin_tooltip": "チスピンはジュークボックスモードを終了するために必要です。数値である必要があります。",
+        "optionalFields": "ボタンの表示",
+        "optionalFields_tooltip": "ジュークボックスモードで表示するオプションのボタンを切り替え",
+        "optional_skip": "曲スキップボタン",
+        "optional_shuffle": "シャッフルボタン",
+        "optional_repeat": "リピートボタン"
+      },
+      "lyrics": {
+        "title": "歌詞の提供元",
+        "tooltip": "歌詞の検索に使う歌詞の提供元を選択",
+        "az_lyrics": "AZLyricsを使用",
+        "google_lyrics": "Google検索の歌詞を使用",
+        "genius_lyrics": "Use Genius"
+      },
+      "queueSettings": {
+        "title": "キュー設定",
+        "tooltip": "曲の再生キューの動作を調整するオプション",
+        "clearQueue": "再生リストを追加する前に再生キューをクリア"
+      },
+      "scrobble": {
+        "provider_toggle": {
+          "title": "Scrobble ホワイトリスト",
+          "tooltip": "曲をスクラブしたい提供元にチェックを入れます"
+        }
+      },
+      "volumePersistMode": {
+        "title": "音量の動作",
+        "tooltip": "音量スライダーの動作を変更",
+        "noPersist": "通常の動作",
+        "persistSeparateVolumes": "提供元ごとに音量をそれぞれ記憶",
+        "persistClampVolume": "それぞれの提供元用に音量の範囲を手動で調整"
+      }
     },
     "logs": {
-      "logSettings": "Log Settings",
-      "level": "Level",
-      "process": "Process",
-      "filterMessage": "Filter Message"
+      "logSettings": "ログの設定",
+      "level": "レベル",
+      "process": "処理",
+      "filterMessage": "メッセージの絞り込み"
     }
   }
 }

@@ -3,8 +3,9 @@ const ThreadsPlugin = require('threads-plugin')
 const dotenv = require('dotenv').config({ path: __dirname + '/config.env' })
 const fs = require('fs')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
-const { resolve } = require('path')
+const { resolve, join } = require('path')
 const manifest = require('./package.json')
+const ExternalsPlugin = require('webpack5-externals-plugin')
 
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
@@ -52,13 +53,14 @@ module.exports = {
       new webpack.ProvidePlugin({
         Buffer: ['buffer', 'Buffer']
       })
-
       // new BundleAnalyzerPlugin()
     ],
     externals: {
       'better-sqlite3': 'commonjs better-sqlite3',
       vm2: "require('vm2')",
-      sharp: "require('sharp')"
+      sharp: "require('sharp')",
+      'librespot-node': 'commonjs librespot-node',
+      'scanner-native': 'commonjs scanner-native'
     },
     devtool: 'source-map',
     resolve: {
@@ -72,13 +74,16 @@ module.exports = {
         assert: false,
         crypto: false,
         dgram: false,
-        buffer: require.resolve('buffer')
+        buffer: require.resolve('buffer'),
+        http: false,
+        https: false,
+        zlib: false
       }
     }
   },
   pluginOptions: {
     electronBuilder: {
-      mainProcessWatch: ['src/utils/main', 'src/utils/extensions', 'src/utils/common.ts'],
+      mainProcessWatch: ['src/utils/main', 'src/utils/extensions', 'src/utils/common.ts', 'src/utils/spotify'],
       customFileProtocol: 'moosync://./',
       builderOptions: {
         ...archElectronConfig,
@@ -90,21 +95,39 @@ module.exports = {
           icon: './build/icons/icon.icns'
         },
         win: {
-          verifyUpdateCodeSignature: false
+          verifyUpdateCodeSignature: false,
+          target: ['portable', 'nsis']
         },
         linux: {
           icon: './build/icons/',
-          target: ['AppImage', 'deb', 'tar.gz', 'pacman', 'snap', 'rpm']
+          target: ['AppImage', 'deb', 'tar.gz', 'pacman', 'rpm']
         },
         nsis: {
           oneClick: false,
-          perMachine: true
+          perMachine: false,
+          allowToChangeInstallationDirectory: true
+        },
+        portable: {
+          artifactName: '${productName}-${version}-${os}-${arch}-portable.${ext}'
         },
         snap: {
-          stagePackages: ['libnspr4', 'libnss3', 'libxss1', 'libappindicator3-1', 'libsecret-1-0']
+          stagePackages: [
+            'libnspr4',
+            'libnss3',
+            'libxss1',
+            'libappindicator3-1',
+            'libsecret-1-0',
+            'libatomic1',
+            'libicu-dev',
+            'libasound2-dev',
+            'libvips-dev'
+          ]
         },
         deb: {
-          depends: ['libnotify4', 'libxtst6', 'libnss3']
+          depends: ['libnotify4', 'libxtst6', 'libnss3', 'libatomic1', 'libicu-dev', 'libasound2-dev']
+        },
+        rpm: {
+          depends: ['/usr/lib64/libuuid.so.1', '/usr/lib64/libnss3.so', '/usr/lib64/libnssutil3.so']
         },
         fileAssociations: [
           {
@@ -161,7 +184,8 @@ module.exports = {
             repo: 'moosync'
           }
         ],
-        asarUnpack: ['*.worker.js', 'sandbox.js', '**/node_modules/**/*.node'],
+        files: ['**/*', '!node_modules/librespot-node/native/target/*'],
+        asarUnpack: ['*.worker.js', 'sandbox.js', 'spotify.js', '**/node_modules/**/*.node'],
         protocols: [
           {
             name: 'Default protocol',
@@ -207,9 +231,18 @@ module.exports = {
           .entry('sandbox')
           .add(__dirname + '/src/utils/extensions/sandbox/index.ts')
           .end()
-        config.plugin('thread').use(ThreadsPlugin, [{ target: 'electron-node-worker' }])
+
+        config
+          .entry('spotify')
+          .add(__dirname + '/src/utils/spotify/index.ts')
+          .end()
 
         config.plugin('copy').use(CopyWebpackPlugin, [{ patterns: [{ from: resolve('dev-app-update.yml') }] }])
+
+        config
+          .plugin('ExternalsPlugin')
+          .use(ExternalsPlugin, [{ type: 'commonjs', include: join(__dirname, 'node_modules', 'sharp') }])
+        config.plugin('thread').use(ThreadsPlugin, [{ target: 'electron-node-worker', plugins: ['ExternalsPlugin'] }])
 
         // config.plugin('copy').use(BundleAnalyzerPlugin)
       }

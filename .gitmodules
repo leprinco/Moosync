@@ -1,6 +1,12 @@
 [submodule "flatpak"]
 	path = flatpak
 	url = git@github.com:flathub/app.moosync.moosync.git
-[submodule "aur"]
-	path = aur
-	url = https://aur.archlinux.org/moosync.git
+[submodule "aur/moosync"]
+	path = aur/moosync
+	url = ssh://aur@aur.archlinux.org/moosync.git
+[submodule "aur/moosync-git"]
+	path = aur/moosync-git
+	url = ssh://aur@aur.archlinux.org/moosync-git.git
+[submodule "aur/moosync-bin"]
+	path = aur/moosync-bin
+	url = ssh://aur@aur.archlinux.org/moosync-bin.git

@@ -13,17 +13,19 @@ import { extensionUIRequestsKeys, mainRequests, providerFetchRequests } from '@/
 import { loadSelectivePreference, saveSelectivePreference } from '../main/db/preferences'
 
 import { ExtensionHostEvents } from '@/utils/main/ipc/constants'
-import { SongDB } from '@/utils/main/db/index'
+import { getSongDB } from '@/utils/main/db/index'
 import { WindowHandler } from '../main/windowManager'
 import { async } from 'node-stream-zip'
 import { promises as fsP } from 'fs'
-import { getVersion } from '@/utils/common'
+import { getVersion, sanitizeSong } from '@/utils/common'
 import path from 'path'
 import { playerControlRequests } from './constants'
 import { v4 } from 'uuid'
 import { oauthHandler } from '@/utils/main/oauth/handler'
 import { getStoreChannel } from '../main/ipc'
 import { LogLevelDesc } from 'loglevel'
+import { sanitizePlaylist } from '@/utils/common'
+import { BrowserWindow } from 'electron'
 
 export const defaultExtensionPath = path.join(app.getPath('appData'), app.getName(), 'extensions')
 const defaultLogPath = path.join(app.getPath('logs'))
@@ -72,7 +74,14 @@ export class MainHostIPCHandler {
   }
 
   private createExtensionHost() {
-    const process = fork(__dirname + '/sandbox.js', ['extensionPath', defaultExtensionPath, 'logPath', defaultLogPath])
+    const process = fork(__dirname + '/sandbox.js', [
+      'extensionPath',
+      defaultExtensionPath,
+      'logPath',
+      defaultLogPath,
+      'installPath',
+      app.getAppPath()
+    ])
     this.isAlive = true
     return process
   }
@@ -196,28 +205,20 @@ class MainRequestGenerator {
     return this.sendAsync<void>('set-log-level', { level })
   }
 
-  public async getAccounts() {
-    return this.sendAsync<Record<string, StrippedAccountDetails[]>>('get-accounts')
+  public async getAccounts(packageName: string) {
+    return this.sendAsync<Record<string, StrippedAccountDetails[]>>('get-accounts', { packageName })
   }
 
   public async performAccountLogin(packageName: string, accountId: string, loginStatus: boolean) {
     return this.sendAsync<void>('perform-account-login', { packageName, accountId, loginStatus })
   }
 
-  public async getSearchProviders() {
-    return this.sendAsync<Record<string, string>>('get-search-providers')
+  public async getDisplayName(packageName: string) {
+    return this.sendAsync<void>('get-display-name', { packageName })
   }
 
-  public async getArtistSongProviders() {
-    return this.sendAsync<Record<string, string>>('get-artist-songs-providers')
-  }
-
-  public async getPlaylistProviders() {
-    return this.sendAsync<Record<string, string>>('get-playlist-providers')
-  }
-
-  public async getAlbumSongProviders() {
-    return this.sendAsync<Record<string, string>>('get-album-songs-providers')
+  public async getProviderScopes(packageName: string) {
+    return this.sendAsync<Record<string, string>>('get-extension-provider-scopes', { packageName })
   }
 
   public async sendContextMenuItemClicked(
@@ -256,29 +257,39 @@ class ExtensionRequestHandler {
     }
   }
 
-  private requestToMainWindow(message: extensionRequestMessage) {
+  private requestToRenderer(message: extensionRequestMessage) {
+    const fireAndForgetRequests: typeof message['type'][] = ['update-preferences']
     return new Promise((resolve) => {
-      let listener: (event: Electron.IpcMainEvent, data: extensionReplyMessage) => void
-      ipcMain.on(
-        ExtensionHostEvents.EXTENSION_REQUESTS,
-        (listener = (event, data: extensionReplyMessage) => {
-          if (data.channel === message.channel) {
-            ipcMain.off(ExtensionHostEvents.EXTENSION_REQUESTS, listener)
-            resolve(data.data)
-          }
-        })
-      )
+      if (!fireAndForgetRequests.includes(message.type)) {
+        let listener: (event: Electron.IpcMainEvent, data: extensionReplyMessage) => void
+        ipcMain.on(
+          ExtensionHostEvents.EXTENSION_REQUESTS,
+          (listener = (event, data: extensionReplyMessage) => {
+            if (data.channel === message.channel) {
+              ipcMain.off(ExtensionHostEvents.EXTENSION_REQUESTS, listener)
+              resolve(data.data)
+            }
+          })
+        )
+      }
 
       // Defer call till mainWindow is created
-      if (WindowHandler.getWindow(true)) this.sendToMainWindow(message)
+      if (WindowHandler.getWindow(true)) this.sendToRenderer(message)
       else {
-        this.mainWindowCallsQueue.push({ func: this.sendToMainWindow, args: [message] })
+        this.mainWindowCallsQueue.push({ func: this.sendToRenderer, args: [message] })
       }
     })
   }
 
-  private sendToMainWindow(message: extensionRequestMessage) {
-    WindowHandler.getWindow(true)?.webContents.send(ExtensionHostEvents.EXTENSION_REQUESTS, message)
+  private sendToRenderer(message: extensionRequestMessage) {
+    let window: BrowserWindow | null
+    if (message.type === 'update-preferences') {
+      window = WindowHandler.getWindow(false)
+    } else {
+      window = WindowHandler.getWindow(true)
+    }
+
+    window?.webContents.send(ExtensionHostEvents.EXTENSION_REQUESTS, message)
   }
 
   private getPreferenceKey(packageName: string, key?: string) {
@@ -291,36 +302,37 @@ class ExtensionRequestHandler {
     message.type && console.debug('Received message from extension', message.extensionName, message.type)
     const resp: extensionReplyMessage = { ...message, data: undefined }
     if (message.type === 'get-songs') {
-      const songs = SongDB.getSongByOptions(message.data)
+      const songs = getSongDB().getSongByOptions(message.data)
       resp.data = songs
+    }
+
+    if (message.type === 'get-entity') {
+      const entity = getSongDB().getEntityByOptions(message.data)
+      resp.data = entity
     }
 
     if (message.type === 'add-songs') {
       resp.data = []
       for (const s of message.data) {
         if (s) {
-          resp.data.push(
-            SongDB.store({
-              ...s,
-              _id: `${message.extensionName}-${s._id}`,
-              providerExtension: message.extensionName
-            })
-          )
+          resp.data.push(getSongDB().store(...sanitizeSong(message.extensionName, s)))
         }
       }
     }
 
     if (message.type === 'add-playlist') {
       const playlist = message.data as Playlist
-      resp.data = SongDB.createPlaylist(playlist, message.extensionName)
+      resp.data = getSongDB().createPlaylist(sanitizePlaylist(message.extensionName, false, playlist)[0])
     }
 
     if (message.type === 'add-song-to-playlist') {
-      SongDB.addToPlaylist(message.data.playlistID, ...message.data.songs)
+      getSongDB().addToPlaylist(message.data.playlistID, ...sanitizeSong(message.extensionName, ...message.data.songs))
     }
 
     if (message.type === 'remove-song') {
-      await SongDB.removeSong(message.data)
+      await getSongDB().removeSong(
+        ...(message.data as Song[]).filter((val) => val._id.startsWith(`${message.extensionName}:`))
+      )
     }
 
     if (message.type === 'get-preferences') {
@@ -334,7 +346,12 @@ class ExtensionRequestHandler {
         message.data
       const secure = await getStoreChannel().getSecure(this.getPreferenceKey(packageName, key))
       if (secure) {
-        resp.data = JSON.parse(secure)
+        try {
+          resp.data = JSON.parse(secure)
+        } catch {
+          console.error('Failed to parse secure token as json')
+          resp.data = secure
+        }
       } else {
         resp.data = defaultValue
       }
@@ -342,7 +359,7 @@ class ExtensionRequestHandler {
 
     if (message.type === 'set-preferences') {
       const { packageName, key, value }: { packageName: string; key: string; value: unknown } = message.data
-      resp.data = saveSelectivePreference(this.getPreferenceKey(packageName, key), value, true, true)
+      resp.data = saveSelectivePreference(this.getPreferenceKey(packageName, key), value, true)
     }
 
     if (message.type === 'set-secure-preferences') {
@@ -367,13 +384,13 @@ class ExtensionRequestHandler {
 
     if (message.type === 'set-artist-editable-info') {
       if (typeof message.data.artist_id === 'string' && message.data.object) {
-        SongDB.updateArtistExtraInfo(message.data.artist_id, message.data.object, message.extensionName)
+        getSongDB().updateArtistExtraInfo(message.data.artist_id, message.data.object, message.extensionName)
       }
     }
 
     if (message.type === 'set-album-editable-info') {
       if (typeof message.data.album_id === 'string' && message.data.object) {
-        SongDB.updateAlbumExtraInfo(message.data.album_id, message.data.object, message.extensionName)
+        getSongDB().updateAlbumExtraInfo(message.data.album_id, message.data.object, message.extensionName)
       }
     }
 
@@ -381,7 +398,7 @@ class ExtensionRequestHandler {
       extensionUIRequestsKeys.includes(message.type as typeof extensionUIRequestsKeys[number]) ||
       playerControlRequests.includes(message.type as typeof playerControlRequests[number])
     ) {
-      const data = await this.requestToMainWindow(message)
+      const data = await this.requestToRenderer(message)
       resp.data = data
     }
 

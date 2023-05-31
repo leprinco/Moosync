@@ -14,25 +14,13 @@
     </b-row>
     <b-row align-h="around">
       <b-col cols="auto">
-        <YoutubeBig
-          @click.native="handleClick('Youtube')"
-          class="button-grow"
-          :active="this.providers[0].provider.loggedIn"
-        />
+        <YoutubeBig @click.native="handleClick(providers[0])" class="button-grow" :active="loggedInYoutube" />
       </b-col>
       <b-col cols="auto">
-        <SpotifyBig
-          class="button-grow"
-          @click.native="handleClick('Spotify')"
-          :active="this.providers[1].provider.loggedIn"
-        />
+        <SpotifyBig class="button-grow" @click.native="handleClick(providers[1])" :active="loggedInSpotify" />
       </b-col>
       <b-col cols="auto">
-        <LastFMBig
-          class="button-grow"
-          @click.native="handleClick('LastFM')"
-          :active="this.providers[2].provider.loggedIn"
-        />
+        <LastFMBig class="button-grow" @click.native="handleClick(providers[2])" :active="loggedInLastFM" />
       </b-col>
     </b-row>
     <b-row class="mt-4">
@@ -49,7 +37,12 @@
         <b-button @click="next" class="create-button">Close</b-button>
       </b-col>
     </b-row>
-    <ConfirmationModal keyword="signout from" :itemName="activeSignout" id="signoutSetupModal" @confirm="signout" />
+    <ConfirmationModal
+      keyword="signout from"
+      :itemName="activeSignout?.provider.Title"
+      id="signoutSetupModal"
+      @confirm="signout"
+    />
   </b-container>
 </template>
 
@@ -63,6 +56,7 @@ import LastFMBig from '@/icons/LastFMBigIcon.vue'
 import { mixins } from 'vue-class-component'
 import AccountsMixin from '@/utils/ui/mixins/AccountsMixin'
 import ConfirmationModal from '../../../commonComponents/ConfirmationModal.vue'
+import { vxm } from '@/mainWindow/store'
 
 @Component({
   components: {
@@ -75,34 +69,44 @@ import ConfirmationModal from '../../../commonComponents/ConfirmationModal.vue'
   }
 })
 export default class AccountsSetup extends mixins(AccountsMixin) {
-  protected activeSignout: Providers | null = null
+  activeSignout: Provider | null = null
 
   async mounted() {
     this.signoutMethod = this.showSignoutModal
   }
 
-  private next() {
+  next() {
     this.$emit('next')
   }
 
-  private skip() {
+  skip() {
     this.$emit('prev')
   }
 
-  protected async signout() {
+  get loggedInYoutube() {
+    return vxm.providers.loggedInYoutube
+  }
+
+  get loggedInSpotify() {
+    return vxm.providers.loggedInSpotify
+  }
+
+  get loggedInLastFM() {
+    return vxm.providers.loggedInLastFM
+  }
+
+  async signout() {
     if (this.activeSignout) {
-      const p = this.getProvider(this.activeSignout)
+      if (this.activeSignout.provider) {
+        await this.activeSignout.provider.signOut()
 
-      if (p) {
-        p.provider.signOut()
-
-        this.$set(p, 'username', '')
+        this.$set(this.activeSignout, 'username', (await this.activeSignout.provider.getUserDetails()) ?? '')
         this.activeSignout = null
       }
     }
   }
 
-  protected showSignoutModal(signout: Providers) {
+  protected showSignoutModal(signout: Provider) {
     this.activeSignout = signout
     this.$bvModal.show('signoutSetupModal')
   }

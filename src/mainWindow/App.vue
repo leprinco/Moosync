@@ -10,7 +10,7 @@
 <template>
   <div id="app">
     <ContextMenu />
-    <Titlebar />
+    <Titlebar :isJukeboxModeActive="isJukeboxModeActive" />
     <div class="appContainer">
       <router-view></router-view>
     </div>
@@ -22,11 +22,13 @@
     <OAuthModal />
     <FormModal />
     <EntityInfoModal />
+    <PinEntryModal />
+    <IncorrectPlaybackModal />
   </div>
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator'
+import { Component, Watch } from 'vue-property-decorator'
 import Titlebar from '@/commonComponents/Titlebar.vue'
 import { mixins } from 'vue-class-component'
 import ThemeHandler from '@/utils/ui/mixins/ThemeHandler'
@@ -40,12 +42,20 @@ import SongInfoModal from './components/modals/SongInfoModal.vue'
 import { vxm } from './store'
 import { bus } from './main'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
-import { v1 } from 'uuid'
+import KeyHandlerMixin from '@/utils/ui/mixins/KeyHandlerMixin'
 import { EventBus } from '@/utils/main/ipc/constants'
 import OAuthModal from './components/modals/OAuthModal.vue'
 import FormModal from './components/modals/FormModal.vue'
 import EntityInfoModal from './components/modals/EntityInfoModal.vue'
 import { i18n } from './plugins/i18n'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { ProviderScopes, VolumePersistMode } from '@/utils/commonConstants'
+import { YoutubeAlts } from './store/providers'
+import PinEntryModal from './components/modals/PinEntryModal.vue'
+import { ExtensionProvider } from '@/utils/ui/providers/extensionWrapper'
+import { sortSongListFn } from '@/utils/common'
+import IncorrectPlaybackModal from './components/modals/IncorrectPlaybackModal.vue'
 
 @Component({
   components: {
@@ -58,17 +68,21 @@ import { i18n } from './plugins/i18n'
     SongInfoModal,
     OAuthModal,
     FormModal,
-    EntityInfoModal
+    EntityInfoModal,
+    PinEntryModal,
+    IncorrectPlaybackModal
   }
 })
-export default class App extends mixins(ThemeHandler, PlayerControls) {
-  created() {
+export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandlerMixin, JukeboxMixin, ProviderMixin) {
+  async created() {
+    this.fetchProviderExtensions()
     this.registerNotifier()
     this.setLanguage()
-    this.listenThemeChanges()
+    this.listenPreferenceChanges()
     this.listenExtensionEvents()
     this.listenExtensionRequests()
-    this.useInvidious()
+    this.setYoutubeAlt()
+    this.watchQueueSort()
 
     this.themeStore = vxm.themes
   }
@@ -81,25 +95,137 @@ export default class App extends mixins(ThemeHandler, PlayerControls) {
     this.registerFileDragListener()
     this.handleInitialSetup()
     this.checkUpdate()
+    this.watchLibrespotUserChange()
+    this.registerPlayTimeListeners()
+  }
+
+  private registerPlayTimeListeners() {
+    vxm.player.$watch('currentSong', async (newVal?: Song, oldVal?: Song) => {
+      if (oldVal) {
+        console.debug(oldVal?.title, 'played for', this.playTime)
+        await window.DBUtils.incrementPlayTime(oldVal._id, this.playTime)
+      }
+      this.clearPlaytimeTracker()
+      this.playTime = 0
+
+      if (newVal && vxm.player.playerState === 'PLAYING') {
+        this.setPlaytimeTracker()
+      }
+    })
+
+    vxm.player.$watch('playerState', (newVal: PlayerState) => {
+      if (newVal === 'PLAYING') {
+        this.setPlaytimeTracker()
+      } else {
+        this.clearPlaytimeTracker()
+      }
+    })
+
+    window.onbeforeunload = () => {
+      console.debug('unloading page')
+      if (vxm.player.currentSong) {
+        window.DBUtils.incrementPlayTime(vxm.player.currentSong?._id, this.playTime)
+      }
+    }
+  }
+
+  private playtimeTracker: ReturnType<typeof setInterval> | undefined
+  private playTime = 0
+
+  private setPlaytimeTracker() {
+    if (!this.playtimeTracker) {
+      this.playtimeTracker = setInterval(() => {
+        this.playTime += 1
+      }, 1000)
+    }
+  }
+
+  private clearPlaytimeTracker() {
+    if (this.playtimeTracker) {
+      clearInterval(this.playtimeTracker)
+      this.playtimeTracker = undefined
+    }
+  }
+
+  private watchLibrespotUserChange() {
+    window.PreferenceUtils.listenPreferenceChanged('spotify.username', true, async () => {
+      if (await vxm.providers.spotifyProvider.updateConfig()) {
+        bus.$emit(EventBus.REFRESH_ACCOUNTS, vxm.providers.spotifyProvider.key)
+      }
+    })
+
+    window.PreferenceUtils.listenPreferenceChanged('secure.spotify.password', true, async () => {
+      if (await vxm.providers.spotifyProvider.updateConfig()) {
+        bus.$emit(EventBus.REFRESH_ACCOUNTS, vxm.providers.spotifyProvider.key)
+      }
+    })
+  }
+
+  private fetchProviderExtensions() {
+    vxm.providers.fetchExtensionProviders()
+    window.ExtensionUtils.listenExtensionsChanged(() => vxm.providers.fetchExtensionProviders())
+
+    window.ExtensionUtils.listenAccountRegistered((details) => {
+      const provider = this.getProviderByKey(details.packageName) as ExtensionProvider
+      if (provider) {
+        provider.setAccountDetails(details.data)
+      }
+    })
+  }
+
+  @Watch('isJukeboxModeActive')
+  private onJukeboxModeChanged(val: boolean) {
+    if (val) {
+      window.WindowUtils.enableFullscreen(true)
+    } else {
+      window.WindowUtils.disableFullscreen(true)
+    }
+  }
+
+  private watchQueueSort() {
+    vxm.themes.$watch('queueSortBy', async (newVal?: SongSortOptions[]) => {
+      if (newVal) {
+        if (newVal?.[0]?.type === 'playCount') {
+          await vxm.player.updatePlayCounts()
+        }
+
+        vxm.player.sortQueue(sortSongListFn(newVal))
+      }
+    })
   }
 
   private async setLanguage() {
-    const langs = await window.PreferenceUtils.loadSelective<CheckboxValue>('system_language')
+    const langs = await window.PreferenceUtils.loadSelective<Checkbox[]>('system_language')
     const active = (langs ?? []).find((val) => val.enabled)
     if (active) {
       i18n.locale = active?.key
     }
 
-    window.ThemeUtils.listenLanguageChanged((val) => {
-      i18n.locale = val
+    window.PreferenceUtils.listenPreferenceChanged('system_language', true, (_, value: Checkbox[]) => {
+      const activeLang = value.find((val) => val.enabled)?.key
+      if (activeLang) {
+        i18n.locale = activeLang
+      }
     })
   }
 
-  private async useInvidious() {
-    const useInvidious = (await window.PreferenceUtils.loadSelective<Checkbox[]>('system', false, []))?.find(
-      (val) => val.key === 'use_invidious'
-    )?.enabled
-    vxm.providers.useInvidious = useInvidious ?? false
+  private async setYoutubeAlt() {
+    const youtubeAlt = (await window.PreferenceUtils.loadSelective<Checkbox[]>('youtubeAlt', false, [])) as Checkbox[]
+    for (const val of youtubeAlt) {
+      if (val.enabled) {
+        switch (val.key) {
+          case 'use_youtube':
+            vxm.providers.youtubeAlt = YoutubeAlts.YOUTUBE
+            break
+          case 'use_invidious':
+            vxm.providers.youtubeAlt = YoutubeAlts.INVIDIOUS
+            break
+          case 'use_piped':
+            vxm.providers.youtubeAlt = YoutubeAlts.PIPED
+            break
+        }
+      }
+    }
   }
 
   private checkUpdate() {
@@ -109,20 +235,6 @@ export default class App extends mixins(ThemeHandler, PlayerControls) {
     })
 
     window.UpdateUtils.check()
-  }
-
-  private registerKeyboardHotkeys() {
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'F11') {
-        window.WindowUtils.toggleDevTools(true)
-      } else if (e.code === 'F5') {
-        location.reload()
-      }
-
-      if (e.code === 'F1') {
-        window.WindowUtils.openExternal('https://github.com/Moosync/Moosync#readme')
-      }
-    })
   }
 
   private watchPlaylistUpdates() {
@@ -175,7 +287,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls) {
     })
   }
 
-  private async getSongFromPath(path: string): Promise<Song> {
+  private async getSongFromPath(path: string): Promise<Song | undefined> {
     const results = await window.SearchUtils.searchSongsByOptions({
       song: {
         path: path
@@ -185,16 +297,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls) {
       return results[0]
     }
 
-    const duration = await this.getDuration(path)
-    return {
-      _id: v1(),
-      title: this.getFileName(path),
-      duration: duration,
-      artists: [],
-      path: path,
-      date_added: Date.now(),
-      type: 'LOCAL'
-    }
+    return (await window.FileUtils.scanSingleSong(path)).song ?? undefined
   }
 
   private registerFileOpenRequests() {
@@ -202,10 +305,12 @@ export default class App extends mixins(ThemeHandler, PlayerControls) {
       if (paths.length > 0) {
         for (const [index, path] of paths.entries()) {
           const song = await this.getSongFromPath(path)
-          if (index === 0) {
-            await this.playTop([song])
-          } else {
-            await this.queueSong([song])
+          if (song) {
+            if (index === 0) {
+              await this.playTop([song])
+            } else {
+              await this.queueSong([song])
+            }
           }
         }
       }
@@ -222,7 +327,9 @@ export default class App extends mixins(ThemeHandler, PlayerControls) {
         for (const f of event.dataTransfer.files) {
           if (f) {
             const song = await this.getSongFromPath(f.path)
-            await this.playTop([song])
+            if (song) {
+              await this.playTop([song])
+            }
           }
         }
       }
@@ -303,7 +410,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls) {
   private listenExtensionEvents() {
     vxm.player.$watch(
       'currentSong',
-      (newVal: Song | undefined | null) => {
+      async (newVal: Song | undefined | null) => {
         console.debug('Got song change request for extension host')
         if (newVal?.type !== 'LOCAL' && !newVal?.playbackUrl) {
           console.debug('Song is missing playback url')
@@ -315,7 +422,36 @@ export default class App extends mixins(ThemeHandler, PlayerControls) {
           data: [newVal]
         })
 
-        vxm.providers.lastfmProvider.scrobble(newVal)
+        const scrobbleableProviderList =
+          (await window.PreferenceUtils.loadSelective<Checkbox[]>('scrobble.provider_toggle')) ?? []
+
+        if (newVal.path) {
+          const providerStatus = scrobbleableProviderList.find((val) => val.key === 'local')?.enabled ?? true
+          if (providerStatus) {
+            console.debug('scrobbling', newVal.title)
+            this.getProvidersByScope(ProviderScopes.SCROBBLES).forEach((val) => {
+              val.scrobble(newVal)
+            })
+          } else {
+            console.debug('not scrobbling', newVal.title)
+          }
+        } else {
+          const providers = this.getAllProviders()
+          for (const p of providers) {
+            if (p.matchEntityId(newVal._id)) {
+              const providerStatus = scrobbleableProviderList.find((val) => val.key === p.key)?.enabled ?? true
+              if (providerStatus) {
+                console.debug('scrobbling', newVal.title)
+                this.getProvidersByScope(ProviderScopes.SCROBBLES).forEach((val) => {
+                  val.scrobble(newVal)
+                })
+                return
+              } else {
+                console.debug('not scrobbling', newVal.title)
+              }
+            }
+          }
+        }
       },
       { deep: true, immediate: true }
     )
@@ -327,12 +463,16 @@ export default class App extends mixins(ThemeHandler, PlayerControls) {
       })
     )
 
-    vxm.player.$watch('volume', (newVal: number) =>
-      window.ExtensionUtils.sendEvent({
-        type: 'volumeChanged',
-        data: [newVal]
-      })
-    )
+    let volumeDebounce: ReturnType<typeof setTimeout> | undefined = undefined
+    vxm.player.$watch('volume', (newVal: number) => {
+      if (volumeDebounce) clearTimeout(volumeDebounce)
+      volumeDebounce = setTimeout(() => {
+        window.ExtensionUtils.sendEvent({
+          type: 'volumeChanged',
+          data: [newVal]
+        })
+      }, 800)
+    })
 
     vxm.player.$watch('songQueue', (newVal: SongQueue) =>
       window.ExtensionUtils.sendEvent({
@@ -349,9 +489,45 @@ export default class App extends mixins(ThemeHandler, PlayerControls) {
     )
   }
 
-  private listenThemeChanges() {
-    window.ThemeUtils.listenThemeChanged((theme) => this.setColorsToRoot(theme))
-    window.ThemeUtils.listenSongViewChanged((menu) => (vxm.themes.songView = menu))
+  private async listenPreferenceChanges() {
+    window.PreferenceUtils.listenPreferenceChanged('activeTheme', true, async () => {
+      const theme = await window.ThemeUtils.getActiveTheme()
+      this.setColorsToRoot(theme)
+    })
+
+    window.PreferenceUtils.listenPreferenceChanged<songMenu>('songView', true, (_, value) => {
+      vxm.themes.songView = value
+    })
+
+    vxm.themes.showSpotifyCanvas =
+      (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('spotify.librespot.options.use_spotify_canvas'))
+        ?.enabled ?? true
+
+    window.PreferenceUtils.listenPreferenceChanged('spotify.librespot.options', true, (_, value) => {
+      vxm.themes.showSpotifyCanvas =
+        (value as Checkbox[]).find((val) => val.key === 'use_spotify_canvas')?.enabled ?? true
+    })
+
+    this.listenVolumeModes()
+  }
+
+  private async listenVolumeModes() {
+    vxm.player.volumeMode = this.mapVolumeMode(
+      (await window.PreferenceUtils.loadSelective<Checkbox[]>('volumePersistMode')) ?? []
+    )
+    window.PreferenceUtils.listenPreferenceChanged<Checkbox[]>('volumePersistMode', true, (_, value) => {
+      vxm.player.volumeMode = this.mapVolumeMode(value)
+    })
+
+    vxm.player.clampMap = (await window.PreferenceUtils.loadSelective('clampMap')) ?? {}
+    window.PreferenceUtils.listenPreferenceChanged<Record<string, { clamp: number }>>('clampMap', true, (_, value) => {
+      vxm.player.clampMap = value
+    })
+  }
+
+  private mapVolumeMode(value: Checkbox[]): VolumePersistMode {
+    const active = (value as Checkbox[]).find((val) => val.enabled)
+    return (active?.key ?? VolumePersistMode.SINGLE) as VolumePersistMode
   }
 
   private async handleInitialSetup() {

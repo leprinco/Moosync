@@ -11,25 +11,38 @@
 
 import 'threads/register'
 
-import { BrowserWindow, app, nativeTheme, protocol, session } from 'electron'
+import { BrowserWindow, app, protocol, session } from 'electron'
 import { WindowHandler, setIsQuitting, _windowHandler } from './utils/main/windowManager'
-import path, { resolve } from 'path'
+import { resolve } from 'path'
 
 import { oauthHandler } from '@/utils/main/oauth/handler'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import { getExtensionHostChannel, registerIpcChannels } from '@/utils/main/ipc'
-import {
-  setInitialPreferences,
-  loadPreferences,
-  shouldWatchFileChanges,
-  loadSelectivePreference
-} from './utils/main/db/preferences'
+import { setInitialPreferences, loadPreferences, shouldWatchFileChanges } from './utils/main/db/preferences'
 import { setupScanTask } from '@/utils/main/scheduler/index'
-import { setupDefaultThemes, setupSystemThemes } from './utils/main/themes/preferences'
+import { migrateThemes, setupDefaultThemes, setupSystemThemes } from './utils/main/themes/preferences'
 import { logger } from './utils/main/logger/index'
-import { ToadScheduler } from 'toad-scheduler'
 import { setupUpdateCheckTask } from '@/utils/main/scheduler/index'
 import pie from 'puppeteer-in-electron'
+import { loadSelectiveArrayPreference } from './utils/main/db/preferences'
+import { exit } from 'process'
+import { createFavoritesPlaylist } from './utils/main/db'
+
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    if (process.argv.includes('--version')) {
+      console.log(`Moosync version ${process.env.MOOSYNC_VERSION}`)
+      exit(0)
+    }
+
+    // Set the path of electron.exe and your app.
+    // These two additional parameters are only available on windows.
+    // Setting this is required to get this working in dev mode.
+    app.setAsDefaultProtocolClient('moosync', process.execPath, [resolve(process.argv[1])])
+  }
+} else {
+  app.setAsDefaultProtocolClient('moosync')
+}
 
 if (process.platform !== 'darwin') {
   app.commandLine.appendSwitch('disable-features', 'HardwareMediaKeyHandling,MediaSessionService')
@@ -37,7 +50,11 @@ if (process.platform !== 'darwin') {
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
-nativeTheme.themeSource = 'dark'
+if (isDevelopment) {
+  // process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0'
+  // app.commandLine.appendSwitch('ignore-certificate-errors')
+  // app.commandLine.appendSwitch('allow-insecure-localhost', 'true')
+}
 
 overrideConsole()
 _windowHandler.setHardwareAcceleration()
@@ -65,28 +82,34 @@ if (!app.requestSingleInstanceLock() && !isDevelopment) {
   app.on('second-instance', handleSecondInstance)
 }
 
+function forceAllowCors(headers: Record<string, string[]>) {
+  delete headers['Access-Control-Allow-Origin']
+  delete headers['access-control-allow-origin']
+  headers = {
+    ...headers,
+    'Access-Control-Allow-Origin': ['*']
+  }
+
+  return headers
+}
+
 function interceptHttp() {
   // Youtube images don't have a CORS header set [Access-Control-Allow-Origin]
   // So to display them and export them, we spoof the request here
   // This should pose any security risk as such since we're only doing it for youtube trusted urls
 
-  const useInvidious =
-    loadSelectivePreference<Checkbox[]>('system')?.find((val) => val.key === 'use_invidious')?.enabled ?? false
-  const useEmbeds =
-    loadSelectivePreference<Checkbox[]>('audio')?.find((val) => val.key === 'youtube_embeds')?.enabled ?? true
+  const useInvidious = loadSelectiveArrayPreference<Checkbox>('youtubeAlt.use_invidious')?.enabled ?? false
+  const useEmbeds = loadSelectiveArrayPreference<Checkbox>('youtubeOptions.youtube_embeds')?.enabled ?? true
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    let headers: { [key: string]: string | string[] } = { ...details.responseHeaders }
+    let headers = { ...details.responseHeaders }
 
     if (
       details.url.startsWith('https') &&
       (details.url.startsWith('https://i.ytimg.com') ||
         ((useInvidious || !useEmbeds) && details.url.includes('.googlevideo.com')))
     ) {
-      headers = {
-        ...headers,
-        'access-control-allow-origin': '*'
-      }
+      headers = forceAllowCors(headers)
     }
 
     callback({
@@ -99,23 +122,7 @@ function interceptHttp() {
   // Which will then be intercepted here and normal files will be delivered
   // Essentially spoofing window.location.origin to become http://localhost
   if (!process.env.WEBPACK_DEV_SERVER_URL) {
-    session.defaultSession.protocol.interceptFileProtocol('http', async (request, callback) => {
-      let pathName = new URL(request.url).pathname
-      pathName = decodeURI(pathName)
-
-      const filePath = path.join(__dirname, pathName)
-
-      // deregister intercept after we handle index.js
-      if (request.url.includes('index.html')) {
-        session.defaultSession.protocol.uninterceptProtocol('http')
-      }
-
-      try {
-        callback(filePath)
-      } catch (e) {
-        logger.error(e)
-      }
-    })
+    WindowHandler.interceptHttp()
   }
 }
 
@@ -155,21 +162,23 @@ async function onReady() {
   await _windowHandler.installExtensions()
   _windowHandler.registerMediaProtocol()
   _windowHandler.registerExtensionProtocol()
+  _windowHandler.handleFileOpen()
+
   createProtocol('moosync')
 
   interceptHttp()
+
+  createFavoritesPlaylist()
+  await migrateThemes()
 
   await _windowHandler.createWindow(true)
 
   // Notify extension host of main window creation
   getExtensionHostChannel().onMainWindowCreated()
 
-  _windowHandler.handleFileOpen()
-
   // Setup scheduler tasks
-  const scheduler = new ToadScheduler()
-  setupScanTask(scheduler)
-  setupUpdateCheckTask(scheduler)
+  setupScanTask()
+  setupUpdateCheckTask()
   shouldWatchFileChanges()
 }
 
@@ -178,7 +187,13 @@ function registerProtocols() {
   protocol.registerSchemesAsPrivileged([
     { scheme: 'moosync', privileges: { secure: true, standard: true } },
     { scheme: 'media', privileges: { corsEnabled: true, supportFetchAPI: true } },
-    { scheme: 'extension', privileges: { supportFetchAPI: true } }
+    {
+      scheme: 'extension',
+      privileges: {
+        supportFetchAPI: true,
+        stream: true
+      }
+    }
   ])
 }
 
@@ -200,17 +215,6 @@ process.on('SIGINT', async () => {
   await _windowHandler.stopAll()
   app.quit()
 })
-
-if (process.defaultApp) {
-  if (process.argv.length >= 2) {
-    // Set the path of electron.exe and your app.
-    // These two additional parameters are only available on windows.
-    // Setting this is required to get this working in dev mode.
-    app.setAsDefaultProtocolClient('moosync', process.execPath, [resolve(process.argv[1])])
-  }
-} else {
-  app.setAsDefaultProtocolClient('moosync')
-}
 
 /**
  * Parses process.argv to find if app was started by protocol

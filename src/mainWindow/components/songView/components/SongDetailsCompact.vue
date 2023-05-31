@@ -8,10 +8,10 @@
 -->
 
 <template>
-  <b-container fluid class="h-100 scrollable">
+  <b-container fluid :class="`h-100 ${scrollable ? 'scrollable' : ''}`">
     <b-row no-gutters>
       <b-col class="position-relative">
-        <div class="image-container w-100">
+        <div class="image-container w-100" @click="emitClick">
           <div class="embed-responsive embed-responsive-1by1">
             <div class="embed-responsive-item">
               <transition
@@ -28,8 +28,15 @@
                   @error="handleImageError"
                   referrerPolicy="no-referrer"
                 />
-                <SongDefault class="albumart w-100" v-if="!computedImg" />
+                <SongDefault class="albumart w-100" v-else />
               </transition>
+              <div class="play-button d-flex justify-content-center" v-if="showPlayHoverButton">
+                <Play2 class="align-self-center" />
+              </div>
+
+              <div v-if="isLoading" class="loading-spinner d-flex justify-content-center">
+                <b-spinner class="align-self-center" />
+              </div>
 
               <div v-if="cardHoverText" :class="`hoverText ${pinHoverText ? 'visible-always' : ''}`">
                 <PinIcon
@@ -60,7 +67,7 @@
               </b-col>
             </b-row>
             <div class="song-subtitle text-truncate" :title="subtitle" v-if="subtitle">{{ subtitle }}</div>
-            <div class="song-timestamp" :title="subSubTitle" v-if="subSubTitle">
+            <div class="song-timestamp" :title="subSubTitle" v-if="showSubSubTitle && subSubTitle">
               {{ subSubTitle }}
             </div>
           </div>
@@ -70,13 +77,14 @@
     <b-row no-gutters class="flex-fill mt-2">
       <b-col>
         <div v-if="buttonGroup.enableContainer" class="button-group d-flex">
-          <PlainPlay :title="$t('buttons.playSingle', { title })" @click.native="playAll" />
+          <PlainPlay v-if="!isJukeboxModeActive" :title="$t('buttons.playSingle', { title })" @click.native="playAll" />
           <AddToQueue :title="$t('buttons.addToQueue', { title })" @click.native="addToQueue" />
           <AddToLibrary
             :title="$t('buttons.addToLibrary', { title })"
             @click.native="addToLibrary"
             v-if="buttonGroup.enableLibraryStore"
           />
+          <RandomIcon v-if="buttonGroup.playRandom" :title="$t('buttons.playRandom')" @click.native="playRandom" />
         </div>
       </b-col>
     </b-row>
@@ -95,6 +103,9 @@ import PlainPlay from '@/icons/PlainPlayIcon.vue'
 import AddToLibrary from '@/icons/AddToLibraryIcon.vue'
 import AddToQueue from '@/icons/AddToQueueIcon.vue'
 import PinIcon from '@/icons/PinIcon.vue'
+import RandomIcon from '@/icons/RandomIcon.vue'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
+import Play2 from '@/icons/PlayIcon2.vue'
 
 @Component({
   components: {
@@ -102,14 +113,16 @@ import PinIcon from '@/icons/PinIcon.vue'
     PlainPlay,
     AddToLibrary,
     AddToQueue,
-    PinIcon
+    PinIcon,
+    RandomIcon,
+    Play2
   }
 })
-export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin) {
+export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, JukeboxMixin) {
   @Prop({ default: null })
   private currentSong!: Song | null | undefined
 
-  private subtitle: string = this.getConcatedSubtitle()
+  subtitle: string = this.getConcatedSubtitle()
 
   @Prop({ default: () => null })
   private defaultDetails!: SongDetailDefaults | null
@@ -119,7 +132,7 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin) {
 
   private forceShowDefaultImage = false
 
-  private pinHoverText = false
+  pinHoverText = false
 
   @Prop({
     default: () => {
@@ -129,19 +142,31 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin) {
       }
     }
   })
-  private buttonGroup!: SongDetailButtons
+  buttonGroup!: SongDetailButtons
 
   @Prop({ default: false })
-  private forceWhiteText!: boolean
+  forceWhiteText!: boolean
 
   @Prop({ default: '' })
-  private cardHoverText!: string
-  private parsedCardHoverText = ''
+  cardHoverText!: string
+  parsedCardHoverText = ''
 
   @Prop({ default: 0 })
-  private isShowLyricsActive!: number
+  isShowLyricsActive!: number
 
-  private handleImageError() {
+  @Prop({ default: false })
+  isLoading!: boolean
+
+  @Prop({ default: true })
+  showSubSubTitle!: boolean
+
+  @Prop({ default: true })
+  scrollable!: boolean
+
+  @Prop({ default: false })
+  showPlayHoverButton!: boolean
+
+  handleImageError() {
     this.forceShowDefaultImage = true
   }
 
@@ -180,7 +205,7 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin) {
     return !!(this.currentSong?.artists && this.currentSong.artists.length > 0 && this.currentSong?.album?.album_name)
   }
 
-  private getParsedSubtitle() {
+  getParsedSubtitle() {
     if (this.currentSong && (this.currentSong.artists?.length || this.currentSong.album?.album_name)) {
       return (
         ((this.currentSong?.artists && this.currentSong?.artists?.map((val) => val.artist_name).join(', ')) ?? '') +
@@ -190,25 +215,33 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin) {
     }
   }
 
-  private getConcatedSubtitle() {
+  getConcatedSubtitle() {
     return this.getParsedSubtitle() ?? this.defaultDetails?.defaultSubtitle ?? ''
   }
 
-  private playAll() {
+  playAll() {
     this.$emit('playAll')
   }
 
-  private addToQueue() {
+  addToQueue() {
     this.$emit('addToQueue')
   }
 
-  private addToLibrary() {
+  addToLibrary() {
     this.$emit('addToLibrary')
   }
 
-  private onShowLyricsClicked() {
+  onShowLyricsClicked() {
     this.pinHoverText = true
     this.$emit('toggleLyrics')
+  }
+
+  playRandom() {
+    this.$emit('playRandom')
+  }
+
+  emitClick(event: MouseEvent) {
+    this.$emit('click', event)
   }
 }
 </script>
@@ -309,4 +342,34 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin) {
   font-weight: 400
   font-size: 17px
   cursor: pointer
+
+.loading-spinner
+  position: absolute
+  left:  0
+  top: 0
+  width: 100%
+  height: 100%
+  background: rgba(0, 0, 0, 0.4)
+  border-radius: 16px
+  span
+    color: white
+
+.play-button
+  width: calc(100%)
+  height: calc(100%)
+  background: rgba(0, 0, 0, 0.6)
+  position: absolute
+  top: 0
+  border-radius: 28px
+  cursor: pointer
+
+.play-button
+  opacity: 0
+  transition: opacity 0.2s ease
+  &:hover
+    opacity: 1
+
+  svg
+    width: 80px
+    height: 80px
 </style>

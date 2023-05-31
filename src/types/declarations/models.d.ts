@@ -28,8 +28,9 @@ interface marshaledSong {
   genre_name?: string
   genere_id?: string
   date?: string
-  year?: number
+  year?: number | string
   album_year?: number
+  track_no?: number
   bitrate?: number
   codec?: string
   container?: string
@@ -44,6 +45,8 @@ interface marshaledSong {
   type: PlayerTypes
   icon?: string
   provider_extension?: string
+  play_count?: number
+  show_in_library: number
 }
 
 interface stats {
@@ -51,7 +54,6 @@ interface stats {
   size: number
   inode: string
   deviceno: string
-  hash?: string
 }
 
 interface image {
@@ -76,4 +78,8 @@ type ThemeKey =
   | 'accent'
   | 'divider'
 
-type ThemeItem = { [key in ThemeKey]: string }
+type ThemeItem = {
+  [key in ThemeKey]: string
+} & {
+  customCSS?: string
+}

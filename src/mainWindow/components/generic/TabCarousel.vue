@@ -8,56 +8,60 @@
 -->
 
 <template>
-  <b-row no-gutters>
-    <b-col class="song-header-options w-100">
-      <b-row no-gutters align-v="center" class="h-100">
-        <b-col cols="auto" class="mr-3" v-if="items.length > 0 && showPrevIcon">
-          <PrevIcon @click.native="onPrevClick" />
-        </b-col>
-        <b-col class="provider-outer-container" v-if="items.length > 0">
-          <div ref="gradientContainer" class="gradient-overlay" :style="{ background: computedGradient }"></div>
-          <div ref="providersContainer" class="provider-container d-flex">
-            <div
-              v-for="provider in items"
-              cols="auto"
-              class="`h-100 item-checkbox-col mr-2"
-              :key="provider.key"
-              @click="onProviderSelected(provider.key)"
-            >
+  <b-container fluid>
+    <b-row no-gutters>
+      <b-col class="song-header-options w-100">
+        <b-row no-gutters align-v="center" class="h-100">
+          <b-col cols="auto" class="mr-3 h-100 d-flex align-items-center" v-if="items.length > 0 && showPrevIcon">
+            <PrevIcon @click.native="onPrevClick" />
+          </b-col>
+          <b-col class="provider-outer-container" v-if="items.length > 0">
+            <div ref="gradientContainer" class="gradient-overlay" :style="{ background: computedGradient }"></div>
+            <div ref="providersContainer" :class="`${alignProvidersToEnd ? 'rtl' : ''} provider-container d-flex`">
               <div
-                class="h-100 d-flex item-checkbox-container"
-                :style="{ background: getItemBackgroundColor(provider), color: getItemTextColor(provider) }"
+                v-for="provider in sortedItems"
+                cols="auto"
+                class="`h-100 item-checkbox-col mr-2"
+                :key="provider.key"
+                @click="onProviderSelected(provider.key)"
               >
-                <span class="align-self-center">{{ provider.title }}</span>
+                <div
+                  class="h-100 d-flex item-checkbox-container"
+                  :style="{ background: getItemBackgroundColor(provider), color: getItemTextColor(provider) }"
+                >
+                  <span class="align-self-center provider-title">{{ provider.title }}</span>
+                </div>
               </div>
             </div>
-          </div>
-        </b-col>
-        <b-col cols="auto" class="ml-3 mr-3" v-if="items.length > 0">
-          <NextIcon @click.native="onNextClick" v-if="showNextIcon" />
-        </b-col>
-        <b-col cols="auto" class="ml-auto d-flex" ref="buttonGroupContainer" v-if="showExtraSongListActions">
-          <div v-if="showSearchbar" class="searchbar-container mr-3">
-            <b-form-input
-              v-model="searchText"
-              class="searchbar"
-              :placeholder="$t('songView.songList.topbar.searchPlaceholder')"
-              type="text"
-              @update="onSearchChange"
-            />
-          </div>
-          <SearchIcon @click.native="toggleSearch" :accent="false" class="mr-3 align-self-center" />
-          <SortIcon v-if="isSortAsc" @click.native="showSortMenu" class="align-self-center" />
-          <SortIconAlt v-else @click.native="showSortMenu" class="align-self-center" />
-        </b-col>
-      </b-row>
-    </b-col>
-  </b-row>
+          </b-col>
+          <b-col cols="auto" class="ml-3 mr-3 h-100 d-flex align-items-center" v-if="items.length > 0">
+            <NextIcon @click.native="onNextClick" v-if="showNextIcon" />
+          </b-col>
+
+          <b-col cols="auto" class="ml-auto d-flex" ref="buttonGroupContainer" v-if="showExtraSongListActions">
+            <div v-if="showSearchbar" class="searchbar-container mr-3">
+              <b-form-input
+                v-model="searchText"
+                class="searchbar"
+                :placeholder="$t('songView.songList.topbar.searchPlaceholder')"
+                type="text"
+                ref="searchbar"
+                @update="onSearchChange"
+              />
+            </div>
+            <SearchIcon @click.native="toggleSearch" :accent="false" class="mr-3 align-self-center" />
+            <SortIcon v-if="isSortAsc" @click.native="showSortMenu" class="align-self-center" />
+            <SortIconAlt v-else @click.native="showSortMenu" class="align-self-center" />
+          </b-col>
+        </b-row>
+      </b-col>
+    </b-row>
+  </b-container>
 </template>
 
 <script lang="ts">
 import { mixins } from 'vue-class-component'
-import { Component, Prop, Ref } from 'vue-property-decorator'
+import { Component, Prop, Ref, Watch } from 'vue-property-decorator'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import SortIcon from '@/icons/SortIcon.vue'
 import SortIconAlt from '@/icons/SortIconAlt.vue'
@@ -65,7 +69,8 @@ import SortIconAlt from '@/icons/SortIconAlt.vue'
 import SearchIcon from '@/icons/SearchIcon.vue'
 import NextIcon from '@/icons/NavForwardIcon.vue'
 import PrevIcon from '@/icons/NavBackIcon.vue'
-import { vxm } from '@/mainWindow/store'
+import { bus } from '@/mainWindow/main'
+import { EventBus } from '@/utils/main/ipc/constants'
 
 @Component({
   components: {
@@ -78,19 +83,25 @@ import { vxm } from '@/mainWindow/store'
 })
 export default class TabCarousel extends mixins(ContextMenuMixin) {
   @Prop({ default: () => [] })
-  private items!: TabCarouselItem[]
+  items!: TabCarouselItem[]
 
   @Prop({ default: true })
-  private showExtraSongListActions!: boolean
+  showExtraSongListActions!: boolean
 
   @Prop({ default: false })
   private singleSelectMode!: boolean
 
-  @Prop()
-  private defaultSelected: string | undefined
-
   @Prop({ default: true })
   private showBackgroundOnSelect!: boolean
+
+  @Prop({ default: 'var(--secondary)' })
+  private defaultBackgroundColor!: string
+
+  @Prop({ default: false })
+  private alignProvidersToEnd!: boolean
+
+  @Prop({ default: true })
+  private isSortAsc!: boolean
 
   @Ref('providersContainer')
   private providerContainer!: HTMLDivElement
@@ -106,32 +117,54 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
 
   private selectedProviders: string[] = []
 
-  private showSearchbar = false
-  private searchText = ''
+  showSearchbar = false
+  searchText = ''
 
-  private get showNextIcon() {
+  get showNextIcon() {
+    if (this.alignProvidersToEnd) {
+      return this.scrollLeft < 0
+    }
     return this.scrollLeft + this.containerSize < this.providerContainer?.scrollWidth
   }
 
-  private get showPrevIcon() {
-    return this.providerContainer?.scrollWidth > this.containerSize && this.scrollLeft > 0
+  get showPrevIcon() {
+    if (this.providerContainer?.scrollWidth > this.containerSize) {
+      if (this.alignProvidersToEnd) {
+        const scrollDiff = this.containerSize - this.providerContainer?.scrollWidth
+        return this.scrollLeft > scrollDiff
+      }
+      return this.scrollLeft > 0
+    }
+    return false
   }
 
-  private get isSortAsc() {
-    return vxm.themes.songSortBy.asc
+  get sortedItems() {
+    if (this.alignProvidersToEnd) {
+      return this.items.reverse()
+    }
+    return this.items
   }
 
-  private getItemBackgroundColor(provider: TabCarouselItem) {
+  @Watch('items')
+  private onItemsChanged(items: TabCarouselItem[]) {
+    for (const p of items) {
+      if (p.defaultChecked && !this.selectedProviders.find((val) => val === p.key)) {
+        this.onProviderSelected(p.key)
+      }
+    }
+  }
+
+  getItemBackgroundColor(provider: TabCarouselItem) {
     if (this.selectedProviders.includes(provider.key)) {
       if (!this.showBackgroundOnSelect) return ''
       return 'var(--textSecondary)'
     } else {
       if (!this.showBackgroundOnSelect) return ''
-      return 'var(--secondary)'
+      return this.defaultBackgroundColor
     }
   }
 
-  private getItemTextColor(provider: TabCarouselItem) {
+  getItemTextColor(provider: TabCarouselItem) {
     if (this.selectedProviders.includes(provider.key)) {
       if (!this.showBackgroundOnSelect) return 'var(--textPrimary)'
       return ''
@@ -141,7 +174,7 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
     }
   }
 
-  private onProviderSelected(key: string) {
+  onProviderSelected(key: string) {
     const isSelected = this.selectedProviders.findIndex((val) => val === key)
 
     if (!this.singleSelectMode) {
@@ -157,7 +190,7 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
     this.$emit('onItemsChanged', { key, checked: isSelected === -1 })
   }
 
-  private showSortMenu(event: PointerEvent) {
+  showSortMenu(event: PointerEvent) {
     event.preventDefault()
     event.stopPropagation()
     this.$emit(
@@ -169,17 +202,27 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
     )
   }
 
-  private toggleSearch() {
+  toggleSearch() {
     this.showSearchbar = !this.showSearchbar
+
+    if (this.showSearchbar) {
+      this.$nextTick().then(() => {
+        ;(this.$refs['searchbar'] as HTMLInputElement).focus()
+      })
+    }
   }
 
-  private onSearchChange() {
+  onSearchChange() {
     this.$emit('onSearchChange', this.searchText)
   }
+
+  private resizeObserver?: ResizeObserver
 
   mounted() {
     if (this.providerContainer && this.gradientContainer) {
       const scrollProviders = (e: WheelEvent) => {
+        e.stopPropagation()
+        e.preventDefault()
         if (e.deltaY > 0) this.providerContainer.scrollTo({ left: this.providerContainer.scrollLeft + 20 })
         else this.providerContainer.scrollTo({ left: this.providerContainer.scrollLeft - 20 })
         this.scrollLeft = this.providerContainer.scrollLeft
@@ -188,27 +231,37 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
       this.providerContainer.onwheel = scrollProviders.bind(this)
       this.gradientContainer.onwheel = scrollProviders.bind(this)
 
-      new ResizeObserver((e) => (this.containerSize = e[0].target.clientWidth)).observe(this.providerContainer)
-
-      if (this.defaultSelected) {
-        this.onProviderSelected(this.defaultSelected)
+      if (this.resizeObserver) {
+        this.resizeObserver.disconnect()
       }
+      this.resizeObserver = new ResizeObserver((e) => {
+        window.requestAnimationFrame(() => {
+          this.containerSize = e[0].target.clientWidth
+        })
+      })
+      this.resizeObserver.observe(this.providerContainer)
     }
+
+    this.onItemsChanged(this.items)
+
+    bus.$on(EventBus.UPDATE_OPTIONAL_PROVIDER, (providerKey: string) => {
+      this.selectedProviders.push(providerKey)
+    })
   }
 
-  private get computedGradient() {
+  get computedGradient() {
     return `linear-gradient(90deg, var(--primary) 0% , rgba(255,255,255,0) ${
       this.showPrevIcon ? '10%' : '0%'
     }, rgba(255,255,255,0) ${this.showNextIcon ? '90%' : '100%'}, var(--primary) 100%)`
   }
 
-  private onNextClick() {
+  onNextClick() {
     const scrollLeft = this.providerContainer.scrollLeft + 100
     this.providerContainer.scrollTo({ left: scrollLeft, behavior: 'smooth' })
     this.scrollLeft = scrollLeft
   }
 
-  private onPrevClick() {
+  onPrevClick() {
     const scrollLeft = this.providerContainer.scrollLeft - 100
     this.providerContainer.scrollTo({ left: scrollLeft, behavior: 'smooth' })
     this.scrollLeft = scrollLeft
@@ -233,7 +286,6 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
 .song-header-options
   height: 40px
   border-radius: 10px
-  margin-bottom: 13px
 
 .item-checkbox-container
   border-radius: 8px
@@ -271,4 +323,10 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
   &:focus
     background: var(--tertiary) !important
     outline: 0
+
+.provider-title
+  font-size: 16px
+
+.rtl
+  direction: rtl
 </style>

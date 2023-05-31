@@ -26,6 +26,7 @@ class ExtensionHostIPCHandler {
   constructor() {
     let extensionPath = ''
     let logsPath = ''
+    let installPath = ''
     for (const [index, arg] of process.argv.entries()) {
       if (process.argv[index + 1]) {
         if (arg === 'extensionPath') {
@@ -35,13 +36,17 @@ class ExtensionHostIPCHandler {
         if (arg === 'logPath') {
           logsPath = process.argv[index + 1]
         }
+
+        if (arg === 'installPath') {
+          installPath = process.argv[index + 1]
+        }
       }
     }
 
     this.logsPath = logsPath
     this.setupLogger()
 
-    this.extensionHandler = new ExtensionHandler([extensionPath], logsPath)
+    this.extensionHandler = new ExtensionHandler([extensionPath], logsPath, installPath)
     this.mainRequestHandler = new MainRequestHandler(this.extensionHandler)
 
     this.registerListeners()
@@ -99,7 +104,7 @@ class ExtensionHostIPCHandler {
     process.on('SIGUSR2', () => this.mainRequestHandler.killSelf())
     process.on('SIGHUP', () => this.mainRequestHandler.killSelf())
     process.on('uncaughtException', (e) => {
-      console.error('Asynchronous error caught.', e)
+      console.error('Asynchronous error caught.', e.message ?? e.toString())
       if (e.message === 'Channel closed') {
         process.exit()
       }
@@ -131,7 +136,7 @@ class MainRequestHandler {
   }
 
   public parseProviderRequest(message: providerFetchRequestMessage) {
-    this.sendToMain(message.channel, this.handler.getProviderExtensions(message.type))
+    this.sendToMain(message.channel, this.handler.handleProviderRequests(message.type, message.data.packageName))
   }
 
   public parseRequest(message: mainRequestMessage) {
@@ -197,7 +202,7 @@ class MainRequestHandler {
     }
 
     if (message.type === 'get-accounts') {
-      const items = this.handler.getExtensionAccounts()
+      const items = this.handler.getExtensionAccounts(message.data?.packageName)
       this.sendToMain(message.channel, items)
       return
     }
@@ -208,6 +213,11 @@ class MainRequestHandler {
         .then((val) => this.sendToMain(message.channel, val))
 
       return
+    }
+
+    if (message.type === 'get-display-name') {
+      const name = this.handler.getDisplayName(message.data.packageName)
+      this.sendToMain(message.channel, name)
     }
   }
 

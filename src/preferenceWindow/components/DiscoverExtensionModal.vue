@@ -92,6 +92,7 @@ export default class DiscoverExtensionsModal extends Vue {
 
   private async fetchData() {
     const resp = await fetch('https://api.github.com/repos/Moosync/moosync-exts/git/trees/main?recursive=1')
+
     const parsedResp: GithubRepoResponse = await resp.json()
 
     const extensions: string[] = []
@@ -108,11 +109,13 @@ export default class DiscoverExtensionsModal extends Vue {
       ).text()
       const parsed = yaml.load(manifest) as FetchedExtensionManifest
 
-      if (!parsed.logo.startsWith('http')) {
-        parsed.logo =
-          'https://raw.githubusercontent.com/Moosync/moosync-exts/main/' + e.slice(0, -14) + '/' + parsed.logo
+      if (parsed) {
+        if (!parsed.logo.startsWith('http')) {
+          parsed.logo =
+            'https://raw.githubusercontent.com/Moosync/moosync-exts/main/' + e.slice(0, -14) + '/' + parsed.logo
+        }
+        this.fetchedExtensions.push(parsed)
       }
-      this.fetchedExtensions.push(parsed)
     }
   }
 

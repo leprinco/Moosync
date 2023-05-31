@@ -31,7 +31,7 @@ import SongView from '@/mainWindow/components/songView/SongView.vue'
 
 import { mixins } from 'vue-class-component'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
-import { arrayDiff } from '@/utils/common'
+import { arrayDiff, getRandomFromArray } from '@/utils/common'
 import { vxm } from '@/mainWindow/store'
 
 @Component({
@@ -40,13 +40,14 @@ import { vxm } from '@/mainWindow/store'
   }
 })
 export default class SingleAlbumView extends mixins(ContextMenuMixin) {
-  private songList: Song[] = []
-  private genre: Genre | null = null
+  songList: Song[] = []
+  genre: Genre | null = null
 
   get buttonGroups(): SongDetailButtons {
     return {
       enableContainer: true,
-      enableLibraryStore: false
+      enableLibraryStore: false,
+      playRandom: this.songList.length > 150
     }
   }
 
@@ -81,23 +82,28 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin) {
     })
   }
 
-  private getSongMenu(event: Event, songs: Song[], exclude: string | undefined) {
+  getSongMenu(event: Event, songs: Song[], exclude: string | undefined) {
     this.getContextMenu(event, {
       type: 'SONGS',
       args: {
         songs: songs,
         exclude: exclude,
-        refreshCallback: () => (this.songList = arrayDiff(this.songList, songs))
+        refreshCallback: () => this.songList.splice(0, this.songList.length, ...arrayDiff(this.songList, songs))
       }
     })
   }
 
-  private playGenre() {
+  playGenre() {
     this.playTop(this.songList)
   }
 
-  private addGenreToQueue() {
+  addGenreToQueue() {
     this.queueSong(this.songList)
+  }
+
+  async playRandom() {
+    const randomSongs = getRandomFromArray(this.songList, 100)
+    this.queueSong(randomSongs)
   }
 }
 </script>

@@ -13,8 +13,8 @@ import { WindowHandler, _windowHandler } from '../windowManager'
 import { mainWindowHasMounted } from '../../../background'
 import { app, shell } from 'electron'
 import path from 'path'
-import { downloadFile } from '@/utils/common'
 import { oauthHandler } from '../oauth/handler'
+import { downloadFile } from '@/utils/main/mainUtils'
 
 export class BrowserWindowChannel implements IpcChannelInterface {
   name = IpcEvents.BROWSER_WINDOWS
@@ -32,6 +32,15 @@ export class BrowserWindowChannel implements IpcChannelInterface {
         break
       case WindowEvents.MAX_WIN:
         this.maxWindow(event, request as IpcRequest<WindowRequests.MainWindowCheck>)
+        break
+      case WindowEvents.TOGGLE_FULLSCREEN:
+        this.toggleFullscreen(event, request as IpcRequest<WindowRequests.MainWindowCheck>)
+        break
+      case WindowEvents.ENABLE_FULLSCREEN:
+        this.enableFullscreen(event, request as IpcRequest<WindowRequests.MainWindowCheck>)
+        break
+      case WindowEvents.DISABLE_FULLSCREEN:
+        this.disableFullscreen(event, request as IpcRequest<WindowRequests.MainWindowCheck>)
         break
       case WindowEvents.TOGGLE_DEV_TOOLS:
         this.toggleDevTools(event, request as IpcRequest<WindowRequests.MainWindowCheck>)
@@ -78,6 +87,9 @@ export class BrowserWindowChannel implements IpcChannelInterface {
       case WindowEvents.GET_PLATFORM:
         this.getPlatform(event, request)
         break
+      case WindowEvents.HANDLE_RELOAD:
+        this.handleReload(event, request)
+        break
     }
   }
 
@@ -98,6 +110,21 @@ export class BrowserWindowChannel implements IpcChannelInterface {
 
   private minWindow(event: Electron.IpcMainEvent, request: IpcRequest<WindowRequests.MainWindowCheck>) {
     _windowHandler.minimizeWindow(!!request.params.isMainWindow)
+    event.reply(request.responseChannel)
+  }
+
+  private toggleFullscreen(event: Electron.IpcMainEvent, request: IpcRequest<WindowRequests.MainWindowCheck>) {
+    _windowHandler.toggleFullscreen(!!request.params.isMainWindow)
+    event.reply(request.responseChannel)
+  }
+
+  private enableFullscreen(event: Electron.IpcMainEvent, request: IpcRequest<WindowRequests.MainWindowCheck>) {
+    _windowHandler.setFullscreen(!!request.params.isMainWindow, true)
+    event.reply(request.responseChannel)
+  }
+
+  private disableFullscreen(event: Electron.IpcMainEvent, request: IpcRequest<WindowRequests.MainWindowCheck>) {
+    _windowHandler.setFullscreen(!!request.params.isMainWindow, false)
     event.reply(request.responseChannel)
   }
 
@@ -160,15 +187,25 @@ export class BrowserWindowChannel implements IpcChannelInterface {
 
   private async dragFile(event: Electron.IpcMainEvent, request: IpcRequest<WindowRequests.Path>) {
     let filePath: string = request.params.path
+    let showFileThumb = true
     if (filePath) {
       if (filePath.startsWith('http')) {
-        let destPath = path.join(app.getPath('temp'), path.basename(filePath))
+        let destPath = path.join(app.getPath('temp'))
+
+        try {
+          const parsedURL = new URL(filePath)
+          destPath = path.join(destPath, parsedURL.pathname.substring(parsedURL.pathname.lastIndexOf('/') + 1))
+        } catch (e) {
+          console.error('Not a valid url but proceeding', e)
+          destPath = 'dragFile'
+        }
         if (!path.extname(destPath)) {
           destPath += '.jpg'
         }
 
         await downloadFile(filePath, destPath)
         filePath = destPath
+        showFileThumb = false
       }
 
       if (filePath.startsWith('media')) {
@@ -179,7 +216,7 @@ export class BrowserWindowChannel implements IpcChannelInterface {
 
       event.sender.startDrag({
         file: filePath,
-        icon: path.join(__static, 'logo.png')
+        icon: showFileThumb ? filePath : path.join(__static, 'logo.png')
       })
     }
     event.reply(request.responseChannel)
@@ -210,5 +247,10 @@ export class BrowserWindowChannel implements IpcChannelInterface {
 
   private getPlatform(event: Electron.IpcMainEvent, request: IpcRequest) {
     event.reply(request.responseChannel, process.platform)
+  }
+
+  private handleReload(event: Electron.IpcMainEvent, request: IpcRequest) {
+    WindowHandler.interceptHttp()
+    event.reply(request.responseChannel)
   }
 }

@@ -14,12 +14,20 @@ export class ThemeStore extends VuexModule.With({ namespaced: 'themes' }) {
   private _refreshPage = false
   private _sidebarOpen = true
   private _updateAvailable = false
+  private _jukeboxMode = false
+  private _lastSearchTab: [string, keyof SearchResult] = ['local', 'songs']
 
-  public songSortBy: SongSortOptions = { type: 'date_added', asc: true }
+  public songSortBy: SongSortOptions[] = [{ type: 'date_added', asc: true }]
   public playlistSortBy: PlaylistSortOptions = { type: 'name', asc: true }
   public entitySortBy: NormalSortOptions = { type: 'name', asc: true }
+  public queueSortBy?: SongSortOptions[]
+
+  public currentSpotifyCanvas: string | null = null
+  public showSpotifyCanvas = true
 
   public showPlayer = 0
+
+  public jukeboxOptionalFields: Checkbox[] = []
 
   get isUpdateAvailable() {
     return this._updateAvailable
@@ -51,5 +59,21 @@ export class ThemeStore extends VuexModule.With({ namespaced: 'themes' }) {
 
   set sidebarOpen(val: boolean) {
     this._sidebarOpen = val
+  }
+
+  get jukeboxMode() {
+    return this._jukeboxMode
+  }
+
+  set jukeboxMode(val: boolean) {
+    this._jukeboxMode = val
+  }
+
+  get lastSearchTab() {
+    return this._lastSearchTab
+  }
+
+  set lastSearchTab(item: [string, keyof SearchResult]) {
+    this._lastSearchTab = item
   }
 }

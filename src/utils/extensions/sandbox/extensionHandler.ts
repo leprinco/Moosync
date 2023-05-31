@@ -10,8 +10,9 @@
 import { AbstractExtensionFinder, ExtensionFinder } from './extensionFinder'
 import { AbstractExtensionManager, ExtensionManager } from '@/utils/extensions/sandbox/extensionManager'
 
-import { getVersion } from '@/utils/common'
+import { getVersion, sanitizeAlbums, sanitizeArtists, sanitizePlaylist, sanitizeSong } from '@/utils/common'
 import { providerFetchRequests } from '../constants'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 type CombinedSongsType = SongsReturnType | PlaylistAndSongsReturnType | RecommendationsReturnType
 
@@ -22,9 +23,9 @@ export class ExtensionHandler {
   // eslint-disable-next-line @typescript-eslint/ban-types
   private preInitializedCalls: { func: Function; args?: unknown[] }[]
 
-  constructor(searchPaths: string[], logsPath: string) {
+  constructor(searchPaths: string[], logsPath: string, installPath: string) {
     this.preInitializedCalls = []
-    this.extensionManager = new ExtensionManager(logsPath)
+    this.extensionManager = new ExtensionManager(logsPath, installPath)
     this.extensionFinder = new ExtensionFinder(searchPaths)
 
     this.registerPlugins().then(() => {
@@ -95,8 +96,8 @@ export class ExtensionHandler {
     }
   }
 
-  public getExtensionAccounts() {
-    const ext = this.extensionManager.getExtensions()
+  public getExtensionAccounts(packageName?: string) {
+    const ext = this.extensionManager.getExtensions({ packageName })
     const accountMap: { [key: string]: AccountDetails[] } = {}
     for (const e of ext) {
       accountMap[e.packageName] = e.global.api._getAccountDetails()
@@ -105,33 +106,62 @@ export class ExtensionHandler {
     return accountMap
   }
 
-  private getFetchMethod(type: providerFetchRequests): keyof ExtendedExtensionAPI {
-    switch (type) {
-      case 'get-artist-songs-providers':
-        return '_getArtistSongProvider'
-      case 'get-album-songs-providers':
-        return '_getAlbumSongProvider'
-      case 'get-playlist-providers':
-        return '_getPlaylistProvider'
-      case 'get-search-providers':
-        return '_getSearchProvider'
+  public getDisplayName(packageName: string) {
+    const ext = this.extensionManager.getExtensions({ packageName })
+    for (const e of ext) {
+      return e.name
     }
   }
 
-  public getProviderExtensions(type: providerFetchRequests) {
-    const method = this.getFetchMethod(type)
-    const map: { [key: string]: string } = {}
+  public extensionProvides(packageName?: string): Record<string, ProviderScopes[]> {
+    const providesMap: Record<string, ProviderScopes[]> = {}
 
-    if (method) {
-      const ext = this.extensionManager.getExtensions()
-      for (const e of ext) {
-        if (typeof e.global.api[method] === 'function') {
-          const provider = (e.global.api[method] as () => string)()
-          if (provider) map[e.packageName] = provider
-        }
+    const exts = this.extensionManager.getExtensions({ packageName })
+    for (const e of exts) {
+      if (!providesMap[e.packageName]) {
+        providesMap[e.packageName] = []
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedSearchResult')) {
+        providesMap[e.packageName].push(ProviderScopes.SEARCH)
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedAlbumSongs')) {
+        providesMap[e.packageName].push(ProviderScopes.ALBUM_SONGS)
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedArtistSongs')) {
+        providesMap[e.packageName].push(ProviderScopes.ARTIST_SONGS)
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedPlaylists')) {
+        providesMap[e.packageName].push(ProviderScopes.PLAYLISTS)
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedPlaylistSongs')) {
+        providesMap[e.packageName].push(ProviderScopes.PLAYLIST_SONGS)
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedPlaylistFromURL')) {
+        providesMap[e.packageName].push(ProviderScopes.PLAYLIST_FROM_URL)
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedSongFromURL')) {
+        providesMap[e.packageName].push(ProviderScopes.SONG_FROM_URL)
+      }
+
+      if (e.global.api._isEventCallbackRegistered('requestedRecommendations')) {
+        providesMap[e.packageName].push(ProviderScopes.RECOMMENDATIONS)
       }
     }
-    return map
+
+    return providesMap
+  }
+
+  public handleProviderRequests(type: providerFetchRequests, packageName: string) {
+    if (type === 'get-extension-provider-scopes') {
+      return this.extensionProvides(packageName)
+    }
   }
 
   public async performExtensionAccountLogin(packageName: string, accountId: string, loginStatus: boolean) {
@@ -203,55 +233,8 @@ export class ExtensionHandler {
     this.toggleExtStatus(undefined, false)
   }
 
-  private sanitizeSong(ext: ExtensionItem, ...songs: Song[]): Song[] {
-    return songs.map((val) => ({
-      ...val,
-      artists: this.sanitizeArtists(ext, ...(val.artists ?? [])),
-      _id: `${ext.packageName}:${val._id}`,
-      providerExtension: ext.packageName
-    }))
-  }
-
-  private sanitizePlaylist(ext: ExtensionItem, ...playlists: Playlist[]): ExtendedPlaylist[] {
-    return playlists.map((val) => ({
-      ...val,
-      playlist_id: `${ext.packageName}:${val.playlist_id}`,
-      extension: ext.packageName
-    }))
-  }
-
-  private sanitizeAlbums(ext: ExtensionItem, ...albums: Album[]): Album[] {
-    return albums.map((val) => ({
-      ...val,
-      album_id: `${ext.packageName}:${val.album_id}`
-    }))
-  }
-
-  private sanitizeArtistExtraInfo(extra_info?: Record<string, unknown>) {
-    const ret: Record<string, string | undefined> = {}
-    if (extra_info) {
-      for (const [key, val] of Object.entries(extra_info)) {
-        if (typeof val !== 'string') {
-          ret[key] = JSON.stringify(val)
-        } else {
-          ret[key] = val as string
-        }
-      }
-    }
-
-    return ret
-  }
-
-  private sanitizeArtists(ext: ExtensionItem, ...artists: Artists[]): Artists[] {
-    return artists.map((val) => ({
-      ...val,
-      artist_id: `${ext.packageName}:${val.artist_id}`,
-      artist_extra_info: {
-        extensions: {
-          [ext.packageName]: this.sanitizeArtistExtraInfo(val.artist_extra_info)
-        }
-      }
-    }))
+  private isForwardRequest(data: unknown | undefined): boolean {
+    return !!(data as { forwardTo: string })?.forwardTo
   }
 
   public async sendExtraEventToExtensions<T extends ExtraExtensionEventTypes>(event: ExtraExtensionEvents<T>) {
@@ -270,46 +253,54 @@ export class ExtensionHandler {
         data: event.data
       })
 
-      if (resp) {
-        if (EventType === 'requestedPlaylists') {
-          ;(resp as PlaylistReturnType).playlists = this.sanitizePlaylist(
-            ext,
+      const packageName = ext.packageName
+
+      if (resp && !this.isForwardRequest(resp)) {
+        if (event.type === 'requestedPlaylists') {
+          ;(resp as PlaylistReturnType).playlists = sanitizePlaylist(
+            packageName,
+            false,
             ...(resp as PlaylistReturnType).playlists
           )
         }
 
         if (EventType === 'requestedPlaylistFromURL') {
-          ;(resp as PlaylistAndSongsReturnType).playlist = this.sanitizePlaylist(
-            ext,
+          ;(resp as PlaylistAndSongsReturnType).playlist = sanitizePlaylist(
+            packageName,
+            false,
             (resp as PlaylistAndSongsReturnType).playlist
           )[0]
-          ;(resp as PlaylistAndSongsReturnType).songs = this.sanitizeSong(
-            ext,
+          ;(resp as PlaylistAndSongsReturnType).songs = sanitizeSong(
+            packageName,
             ...(resp as PlaylistAndSongsReturnType).songs
           )
         }
 
         if (EventType === 'requestedPlaylistSongs' || EventType === 'requestedRecommendations') {
-          ;(resp as CombinedSongsType).songs = this.sanitizeSong(ext, ...(resp as CombinedSongsType).songs)
+          ;(resp as CombinedSongsType).songs = sanitizeSong(packageName, ...(resp as CombinedSongsType).songs)
         }
 
-        if (EventType === 'requestedSongFromURL') {
-          ;(resp as SongReturnType).song = this.sanitizeSong(ext, (resp as SongReturnType).song)[0]
+        if (EventType === 'requestedSongFromURL' || EventType === 'requestedSongFromId') {
+          ;(resp as SongReturnType).song = sanitizeSong(packageName, (resp as SongReturnType).song)[0]
         }
 
         if (EventType === 'requestedSearchResult') {
-          ;(resp as SearchReturnType).songs = this.sanitizeSong(ext, ...(resp as SearchReturnType).songs)
-          ;(resp as SearchReturnType).playlists = this.sanitizePlaylist(ext, ...(resp as SearchReturnType).playlists)
-          ;(resp as SearchReturnType).artists = this.sanitizeArtists(ext, ...(resp as SearchReturnType).artists)
-          ;(resp as SearchReturnType).albums = this.sanitizeAlbums(ext, ...(resp as SearchReturnType).albums)
+          ;(resp as SearchReturnType).songs = sanitizeSong(packageName, ...(resp as SearchReturnType).songs)
+          ;(resp as SearchReturnType).playlists = sanitizePlaylist(
+            packageName,
+            false,
+            ...(resp as SearchReturnType).playlists
+          )
+          ;(resp as SearchReturnType).artists = sanitizeArtists(packageName, ...(resp as SearchReturnType).artists)
+          ;(resp as SearchReturnType).albums = sanitizeAlbums(packageName, ...(resp as SearchReturnType).albums)
         }
 
         if (EventType === 'requestedArtistSongs') {
-          ;(resp as SongsReturnType).songs = this.sanitizeSong(ext, ...(resp as SongsReturnType).songs)
+          ;(resp as SongsReturnType).songs = sanitizeSong(packageName, ...(resp as SongsReturnType).songs)
         }
 
         if (EventType === 'requestedAlbumSongs') {
-          ;(resp as SongsReturnType).songs = this.sanitizeSong(ext, ...(resp as SongsReturnType).songs)
+          ;(resp as SongsReturnType).songs = sanitizeSong(packageName, ...(resp as SongsReturnType).songs)
         }
       }
 

@@ -24,20 +24,30 @@ export class IpcRendererHolder {
     }
     this.ipcRenderer.send(channel, request)
 
-    return new Promise((resolve) => {
-      this.ipcRenderer.once(request.responseChannel as string, (_, response) => resolve(response))
+    return new Promise((resolve, reject) => {
+      this.ipcRenderer.once(request.responseChannel as string, (_, response) => {
+        if (response instanceof Error) {
+          reject(response)
+          return
+        }
+        resolve(response)
+      })
     })
   }
 
-  public on<T>(channel: string, callback: (...args: T[]) => void) {
-    this.ipcRenderer.on(channel, (_, ...args: T[]) => callback(...args))
+  public on(channel: string, callback: (...args: any[]) => void) {
+    return this.ipcRenderer.on(channel, (_, ...args) => callback(...args))
   }
 
-  public once<T>(channel: string, callback: (...args: T[]) => void) {
-    this.ipcRenderer.once(channel, (_, ...args: T[]) => callback(...args))
+  public off(channel: string, callback: (...args: any[]) => void) {
+    return this.ipcRenderer.off(channel, callback)
+  }
+
+  public once(channel: string, callback: (...args: any[]) => void) {
+    return this.ipcRenderer.once(channel, (_, ...args) => callback(...args))
   }
 
   public removeAllListener(channel: string) {
-    this.ipcRenderer.removeAllListeners(channel)
+    return this.ipcRenderer.removeAllListeners(channel)
   }
 }

@@ -7,40 +7,63 @@
  *  See LICENSE in the project root for license information.
  */
 
-import localforage from 'localforage'
-import { setupCache } from 'axios-cache-adapter'
+/* eslint-disable @typescript-eslint/no-unused-vars */
 
-type Config = {
-  store: {
-    removeItem: (uid: string) => Promise<void>
-  }
-  uuid: string
+import { ProviderScopes } from '@/utils/commonConstants'
+import 'reflect-metadata'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function MethodMetadataDecorator(target: unknown, propertyKey: string, descriptor: TypedPropertyDescriptor<any>) {
+  return descriptor
 }
-
-export const forageStore = localforage.createInstance({
-  driver: [localforage.INDEXEDDB],
-  name: 'yt-cache'
-})
-
-export const cache = setupCache({
-  maxAge: 15 * 60 * 1000,
-  store: forageStore,
-  exclude: { query: false },
-  invalidate: async (config: Config, request) => {
-    if (request.clearCacheEntry) {
-      await config.store.removeItem(config.uuid)
-    }
-  }
-})
-
 export abstract class GenericProvider {
+  protected authInitialized: Promise<void>
+  protected authInitializedResolver!: () => void
+
+  constructor() {
+    this.updateConfig()
+    this.authInitialized = new Promise<void>((r) => (this.authInitializedResolver = r))
+  }
+
+  public get canLogin() {
+    return true
+  }
+
+  public abstract getLoggedIn(): Promise<boolean>
+
+  /**
+   * Login auth handler for provider
+   * @returns Promise returned after login event is completed
+   */
+  public abstract login(): Promise<boolean>
+
+  /**
+   * Sign out handler for provider
+   * @returns Promise returned after sign out event is completed
+   */
+  public abstract signOut(): Promise<void>
+
+  /**
+   * Updates config before calling login
+   * Method can be used to update config last moment before login
+   */
+  public abstract updateConfig(): Promise<boolean>
+
+  /**
+   * Gets user details from the provider
+   * @returns username as string
+   */
+  public abstract getUserDetails(): Promise<string | undefined>
+
   abstract key: string
 
   /**
    * Get user playlists
    * @returns Array of playlist fetched from users profile
    */
-  public abstract getUserPlaylists(invalidateCache?: boolean): Promise<Playlist[]>
+  public async getUserPlaylists(invalidateCache?: boolean): Promise<Playlist[]> {
+    return []
+  }
 
   /**
    * Gets details of single playlist.
@@ -48,51 +71,125 @@ export abstract class GenericProvider {
    * @param id id of playlist
    * @returns Playlist if data is found otherwise undefined
    */
-  public abstract getPlaylistDetails(id: string, invalidateCache?: boolean): Promise<Playlist | undefined>
+  public async getPlaylistDetails(url: string, invalidateCache?: boolean): Promise<Playlist | undefined> {
+    return
+  }
 
   /**
    * Gets songs present in playlist
    * @param id
    * @returns Generator of array {@link Song}
    */
-  public abstract getPlaylistContent(id: string, invalidateCache?: boolean): AsyncGenerator<Song[]>
+  @MethodMetadataDecorator
+  public async *getPlaylistContent(
+    id: string,
+    invalidateCache?: boolean,
+    nextPageToken?: unknown
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {
+    yield { songs: [] }
+  }
 
   /**
    * Matches playlist link to verify if current provider is suitable for given link
    * @param str link to match
    * @returns true if playlist can be parsed by current provider
    */
-  public abstract matchPlaylist(str: string): boolean
+  public matchPlaylist(str: string): boolean {
+    return false
+  }
+
+  public matchSongUrl(str: string): boolean {
+    return false
+  }
 
   /**
    * Gets playback url and duration of song from provider. When song conversion to youtube is rate limited then url and duration fetching can be deferred
    * @param song whose url and duration is to be fetched
    * @returns playback url and duration
    */
-  public abstract getPlaybackUrlAndDuration(
-    song: Song
-  ): Promise<{ url: string | undefined; duration: number } | undefined>
+  public async getPlaybackUrlAndDuration(
+    song: Song,
+    playerKey: string
+  ): Promise<{ url: string | undefined; duration?: number } | undefined> {
+    return
+  }
 
   /**
    * Gets details of a song from its url
    * @param url of song
    * @returns {@link Song} details
    */
-  public abstract getSongDetails(url: string, invalidateCache?: boolean): Promise<Song | undefined>
+  public async getSongDetails(url: string, invalidateCache?: boolean): Promise<Song | undefined> {
+    return
+  }
+
+  /**
+   * Gets recommendations
+   * @returns recommendations
+   */
+  public async *getRecommendations(): AsyncGenerator<Song[]> {
+    yield []
+  }
 
   /**
    * Get songs by artist ID
    * @param artist_id ID of artists whose tracks are to be fetched
    */
-  public abstract getArtistSongs(artist: Artists): AsyncGenerator<Song[]>
+  public async *getArtistSongs(
+    artist: Artists,
+    nextPageToken?: unknown
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {
+    yield { songs: [] }
+  }
 
-  public abstract searchSongs(term: string): Promise<Song[]>
+  public async *getAlbumSongs(
+    album: Album,
+    nextPageToken?: unknown
+  ): AsyncGenerator<{ songs: Song[]; nextPageToken?: unknown }> {
+    yield { songs: [] }
+  }
 
-  public abstract getArtistDetails(artist: Artists, forceFetch?: boolean): Promise<Artists | undefined>
+  public async searchSongs(term: string): Promise<Song[]> {
+    return []
+  }
 
-  public abstract searchArtists(term: string): Promise<Artists[]>
+  public async getArtistDetails(artist: Artists, forceFetch?: boolean): Promise<Artists | undefined> {
+    return
+  }
 
-  public abstract searchPlaylists(term: string): Promise<Playlist[]>
+  public async searchArtists(term: string): Promise<Artists[]> {
+    return []
+  }
 
-  public abstract searchAlbum(term: string): Promise<Album[]>
+  public async searchPlaylists(term: string): Promise<Playlist[]> {
+    return []
+  }
+
+  public async searchAlbum(term: string): Promise<Album[]> {
+    return []
+  }
+
+  public async scrobble(song: Song): Promise<void> {
+    return
+  }
+
+  public async validatePlaybackURL(playbackUrl: string, player: string): Promise<boolean> {
+    return true
+  }
+
+  public async getSongById(id: string): Promise<Song | undefined> {
+    return undefined
+  }
+
+  public async getRemoteURL(song: Song): Promise<string | undefined> {
+    return song.url?.startsWith('http') ? song.url : undefined
+  }
+
+  public abstract matchEntityId(id: string): boolean
+  public abstract sanitizeId(id: string, type: 'SONG' | 'PLAYLIST' | 'ALBUM' | 'ARTIST'): string
+
+  public abstract provides(): ProviderScopes[]
+  public abstract get Title(): string
+  public abstract get BgColor(): string
+  public abstract get IconComponent(): string
 }

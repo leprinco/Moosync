@@ -15,9 +15,11 @@ import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import { bus } from '@/mainWindow/main'
 import { mixins } from 'vue-class-component'
 import { vxm } from '@/mainWindow/store'
+import JukeboxMixin from './JukeboxMixin'
+import ProviderMixin from './ProviderMixin'
 
 @Component
-export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong) {
+export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong, JukeboxMixin, ProviderMixin) {
   get playlists() {
     return vxm.playlist.playlists
   }
@@ -26,27 +28,48 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
     await window.DBUtils.addToPlaylist(playlist_id, ...songs)
   }
 
-  private getSongSortByMenu(sort: Sort<SongSortOptions>) {
+  private getSortIcon(currentType: SongSortOptions['type'], requiredType: SongSortOptions['type'], isAsc = true) {
+    if (currentType === requiredType) {
+      return isAsc ? '▲' : '▼'
+    }
+    return ''
+  }
+
+  private getSortHandler(type: SongSortOptions['type'], currentSort?: SongSortOptions): SongSortOptions[] {
+    const ret: SongSortOptions[] = [
+      {
+        type,
+        asc: currentSort?.type === type && !currentSort.asc
+      }
+    ]
+
+    if (type === 'album') {
+      ret.push({
+        type: 'track_no',
+        asc: true
+      })
+    }
+
+    return ret
+  }
+
+  private getSongSortByMenu(sort: Optional<Sort<SongSortOptions[]>, 'current'>) {
+    const currentSort = sort?.current?.[0]
+    const possibleSorts: SongSortOptions['type'][] = ['album', 'artist', 'date_added', 'genre', 'playCount', 'title']
     const menu: MenuItem[] = [
       {
         label: 'Sort by',
-        children: [
-          {
-            label: `${this.$tc('contextMenu.sort.name')} ${
-              sort.current.type === 'title' ? (sort.current.asc ? '▲' : '▼') : ''
-            }`,
-            handler: () => sort.callback({ type: 'title', asc: sort.current.type === 'title' && !sort.current.asc })
-          },
-          {
-            label: `${this.$tc('contextMenu.sort.dateAdded')} ${
-              sort.current.type === 'date_added' ? (sort.current.asc ? '▲' : '▼') : ''
-            }`,
-            handler: () =>
-              sort.callback({ type: 'date_added', asc: sort.current.type === 'date_added' && !sort.current.asc })
-          }
-        ]
+        children: []
       }
     ]
+
+    for (const p of possibleSorts) {
+      menu[0].children?.push({
+        label:
+          this.$tc(`contextMenu.sort.${p}`) + ' ' + this.getSortIcon(currentSort?.type ?? 'title', p, currentSort?.asc),
+        handler: () => sort.callback(this.getSortHandler(p, currentSort))
+      })
+    }
     return menu
   }
 
@@ -56,7 +79,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
         label: 'Sort by',
         children: [
           {
-            label: `${this.$tc('contextMenu.sort.name')} ${
+            label: `${this.$tc('contextMenu.sort.title')} ${
               sort.current.type === 'name' ? (sort.current.asc ? '▲' : '▼') : ''
             }`,
             handler: () => sort.callback({ type: 'name', asc: sort.current.type === 'name' && !sort.current.asc })
@@ -80,7 +103,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
         label: 'Sort by',
         children: [
           {
-            label: `${this.$tc('contextMenu.sort.name')} ${
+            label: `${this.$tc('contextMenu.sort.title')} ${
               sort.current.type === 'name' ? (sort.current.asc ? '▲' : '▼') : ''
             }`,
             handler: () => sort.callback({ type: 'name', asc: sort.current.type === 'name' && !sort.current.asc })
@@ -114,7 +137,12 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
     return menu
   }
 
-  private getGeneralSongsContextMenu(refreshCallback?: () => void, sort?: Sort<SongSortOptions>) {
+  private getGeneralSongsContextMenu(
+    refreshCallback?: (showHidden?: boolean) => void,
+    showHiddenToggle?: boolean,
+    isShowingHidden?: boolean,
+    sort?: Sort<SongSortOptions[]>
+  ) {
     const items: MenuItem[] = []
 
     if (sort) {
@@ -126,12 +154,49 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
         label: this.$tc('contextMenu.song.addFromURL'),
         handler: () => bus.$emit(EventBus.SHOW_SONG_FROM_URL_MODAL, refreshCallback)
       })
+
+      if (showHiddenToggle) {
+        items.push({
+          label: isShowingHidden ? this.$tc('contextMenu.song.hideHidden') : this.$tc('contextMenu.song.showHidden'),
+          handler: () => refreshCallback(!isShowingHidden)
+        })
+      }
     }
 
     return items
   }
 
-  private getSongContextMenu(
+  private async getPlaylistSongContextMenu(
+    playlistId: string,
+    exclude: string | undefined,
+    refreshCallback?: () => void,
+    isRemote = false,
+    ...item: Song[]
+  ) {
+    const items: MenuItem[] = [...(await this.getSongContextMenu(exclude, refreshCallback, isRemote, ...item))]
+
+    if (!isRemote) {
+      items.splice(4, 0, {
+        label: this.$tc('contextMenu.song.removeFromPlaylist'),
+        handler: async () => {
+          await window.DBUtils.removeFromPlaylist(playlistId, ...item)
+          refreshCallback && refreshCallback()
+        }
+      })
+    }
+
+    return items
+  }
+
+  private async openInBrowser(song: Song) {
+    const provider = this.getProviderBySong(song)
+
+    const url = await provider?.getRemoteURL(song)
+    if (url) window.WindowUtils.openExternal(url)
+    else this.$toasted.error(`No URL found for ${song.title}`)
+  }
+
+  private async getSongContextMenu(
     exclude: string | undefined,
     refreshCallback?: () => void,
     isRemote = false,
@@ -141,6 +206,19 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
       {
         label: this.$tc('contextMenu.song.playNow'),
         handler: () => {
+          this.playTop(item)
+        }
+      },
+      {
+        label: this.$tc('contextMenu.song.playNext'),
+        handler: () => {
+          this.playNext(item)
+        }
+      },
+      {
+        label: this.$tc('contextMenu.song.clearAndPlay'),
+        handler: () => {
+          this.clearQueue()
           this.playTop(item)
         }
       },
@@ -181,6 +259,25 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
         label: this.$tc('contextMenu.song.add', item.length),
         handler: () => this.addSongsToLibrary(...item)
       })
+
+      items.push({
+        label: this.$tc('contextMenu.song.openInBrowser'),
+        handler: () => this.openInBrowser(item[0])
+      })
+    }
+
+    const songInLibrary = item.find((val) => typeof val.showInLibrary === 'boolean')
+    if (songInLibrary) {
+      const shownInLibrary = songInLibrary.showInLibrary
+      items.push({
+        label: shownInLibrary
+          ? this.$tc('contextMenu.song.hideFromLibrary')
+          : this.$tc('contextMenu.song.showInLibrary'),
+        handler: async () => {
+          await window.DBUtils.updateSongs(item.map((val) => ({ ...val, showInLibrary: !shownInLibrary })))
+          refreshCallback && refreshCallback()
+        }
+      })
     }
 
     items.push({
@@ -192,25 +289,34 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
     return items
   }
 
-  private getPlaylistContextMenu(playlist: ExtendedPlaylist, callback?: () => void) {
+  private getPlaylistContextMenu(playlist: ExtendedPlaylist, isRemote: boolean, deleteCallback?: () => void) {
     const items = []
-    if (!playlist.isRemote && !playlist.extension) {
+    if (!isRemote) {
       items.push({
         label: this.$tc('contextMenu.playlist.remove'),
         handler: () => {
-          callback && callback()
+          deleteCallback && deleteCallback()
         }
       })
 
       items.push({
         label: this.$tc('contextMenu.playlist.export'),
         handler: () => {
-          window.DBUtils.exportPlaylist(playlist.playlist_id)
+          window.DBUtils.exportPlaylist(playlist)
         }
       })
 
       items.push(this.getEntityInfoMenu(playlist))
+    } else {
+      items.push({
+        label: this.$tc('contextMenu.playlist.save'),
+        handler: async () => {
+          await window.DBUtils.createPlaylist(playlist)
+          this.$toasted.show(`Added ${playlist.playlist_name} to library`)
+        }
+      })
     }
+
     return items
   }
 
@@ -227,14 +333,14 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
     return items
   }
 
-  private getQueueItemMenu(isRemote: boolean, refreshCallback: () => void, item: Song, itemIndex: number) {
+  private getQueueItemMenu(
+    isRemote: boolean,
+    refreshCallback: () => void,
+    item: Song,
+    itemIndex: number,
+    sort: Optional<Sort<SongSortOptions[]>, 'current'>
+  ) {
     const items = [
-      {
-        label: this.$tc('contextMenu.song.playNow'),
-        handler: () => {
-          this.playTop([item])
-        }
-      },
       {
         label: this.$tc('contextMenu.playlist.add'),
         children: this.populatePlaylistMenu([item], undefined)
@@ -258,7 +364,8 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
             this.setSongIndex(itemIndex, value)
           })
         }
-      }
+      },
+      ...this.getSongSortByMenu(sort)
     ]
 
     items.push({
@@ -273,6 +380,11 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
         label: this.$tc('contextMenu.song.add'),
         handler: () => this.addSongsToLibrary(item)
       })
+
+      items.push({
+        label: this.$tc('contextMenu.song.openInBrowser'),
+        handler: () => this.openInBrowser(item)
+      })
     } else {
       items.push({
         label: this.$tc('contextMenu.song.remove'),
@@ -283,6 +395,15 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
             console.error(e)
           }
           refreshCallback()
+        }
+      })
+    }
+
+    if (item.type === 'YOUTUBE' || item.type === 'SPOTIFY') {
+      items.push({
+        label: this.$tc('contextMenu.incorrectPlayback'),
+        handler: () => {
+          bus.$emit(EventBus.SHOW_INCORRECT_PLAYBACK_MODAL, item)
         }
       })
     }
@@ -308,12 +429,11 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
     return items
   }
 
-  public getContextMenu(event: Event, options: ContextMenuArgs) {
+  public async getContextMenu(event: Event, options: ContextMenuArgs) {
     let items: { label: string; handler?: () => void }[] = []
     switch (options.type) {
       case 'SONGS':
-        console.log(options.args.isRemote)
-        items = this.getSongContextMenu(
+        items = await this.getSongContextMenu(
           options.args.exclude,
           options.args.refreshCallback,
           options.args.isRemote,
@@ -321,10 +441,15 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
         )
         break
       case 'GENERAL_SONGS':
-        items = this.getGeneralSongsContextMenu(options.args.refreshCallback, options.args.sortOptions)
+        items = this.getGeneralSongsContextMenu(
+          options.args.refreshCallback,
+          options.args.showHiddenToggle,
+          options.args.isShowingHidden,
+          options.args.sortOptions
+        )
         break
       case 'PLAYLIST':
-        items = this.getPlaylistContextMenu(options.args.playlist, options.args.deleteCallback)
+        items = this.getPlaylistContextMenu(options.args.playlist, options.args.isRemote, options.args.deleteCallback)
         break
       case 'ALBUM':
         items = this.getAlbumContextMenu(options.args.album)
@@ -340,7 +465,8 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
           options.args.isRemote,
           options.args.refreshCallback,
           options.args.song,
-          options.args.songIndex
+          options.args.songIndex,
+          options.args.sortOptions
         )
         break
       case 'ENTITY_SORT':
@@ -348,9 +474,21 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
         break
       case 'SONG_SORT':
         items = this.getSongSortByMenu(options.args.sortOptions)[0].children ?? []
+        break
+      case 'PLAYLIST_SORT':
+        items = this.getPlaylistSortByMenu(options.args.sortOptions)
+        break
+      case 'PLAYLIST_SONGS':
+        items = await this.getPlaylistSongContextMenu(
+          options.args.playlistId,
+          options.args.exclude,
+          options.args.refreshCallback,
+          options.args.isRemote,
+          ...options.args.songs
+        )
     }
 
-    this.getExtensionItems(options.type, this.getExtensionArgs(options)).then((res) => items.push(...res))
+    items.push(...(await this.getExtensionItems(options.type, this.getExtensionArgs(options))))
     this.emitMenu(event, items)
   }
 
@@ -401,6 +539,8 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong)
   }
 
   private emitMenu(event: Event, items: { label: string; handler?: () => void }[]) {
-    bus.$emit(EventBus.SHOW_CONTEXT, event, items)
+    if (!this.isJukeboxModeActive) {
+      bus.$emit(EventBus.SHOW_CONTEXT, event, items)
+    }
   }
 }

@@ -9,7 +9,7 @@
 
 <template>
   <tr height="60">
-    <td class="color-title pr-5">
+    <td class="color-title pr-5" :title="title">
       {{ title }}
     </td>
     <td class="pr-4" ref="parent">
@@ -74,9 +74,13 @@ export default class ColorPicker extends Vue {
     this.showColorPicker = !this.showColorPicker
   }
 
+  private RGBAToString(color: ColorPickerOutput['rgba']) {
+    return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`
+  }
+
   private changeColor(color: ColorPickerOutput) {
-    this.color = color.hex
-    this.$emit('colorChange', color.hex)
+    this.color = this.RGBAToString(color.rgba)
+    this.$emit('colorChange', this.color)
   }
 
   created() {

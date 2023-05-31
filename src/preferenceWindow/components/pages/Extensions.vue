@@ -49,7 +49,7 @@
                 v-if="isComponentExists(pref.type)"
                 :title="pref.title"
                 :tooltip="pref.description"
-                :prefKey="`${ext.packageName}.${pref.key}`"
+                :key="`${ext.packageName}.${pref.key}`"
                 :defaultValue="pref.default ? pref.default : pref.items"
                 :isExtension="true"
                 :packageName="ext.packageName"
@@ -76,6 +76,8 @@ import NextIcon from '@/icons/NextIcon.vue'
 import ExtensionGroup from '../ExtensionGroup.vue'
 import ProgressBar from '../Progressbar.vue'
 import ButtonGroup from '../ButtonGroup.vue'
+import TextField from '../TextField.vue'
+import InfoField from '../InfoField.vue'
 
 @Component({
   components: {
@@ -84,10 +86,12 @@ import ButtonGroup from '../ButtonGroup.vue'
     FilePicker,
     CheckboxGroup,
     ExtensionGroup,
+    TextField,
     ProgressBar,
     ButtonGroup,
     PrevIcon,
-    NextIcon
+    NextIcon,
+    InfoField
   }
 })
 export default class Extensions extends Vue {
@@ -101,6 +105,9 @@ export default class Extensions extends Vue {
 
   created() {
     this.fetchExtensions()
+    window.ExtensionUtils.listenRequests(() => {
+      this.fetchExtensions()
+    })
   }
 
   get computedTabAmount() {
@@ -162,6 +169,9 @@ export default class Extensions extends Vue {
 
   private async fetchExtensions() {
     this.extensions = await window.ExtensionUtils.getAllExtensions()
+    for (const e of this.extensions) {
+      e.preferences = e.preferences.sort((a, b) => (a.index ?? Infinity) - (b.index ?? Infinity))
+    }
   }
 
   private onExtensionChanged() {

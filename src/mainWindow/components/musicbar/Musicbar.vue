@@ -13,13 +13,14 @@
       <div class="musicbar h-100">
         <VueSlider
           :min="0"
-          :max="currentSong ? Math.ceil((currentSong.duration + 1) * 1000) : 0"
+          :max="maxInterval"
           class="timeline pl-2 pr-2"
           :interval="1"
           :dotSize="10"
-          :value="Math.ceil(timestamp * 1000)"
+          :value="currentTimestamp"
           :duration="0.1"
           :tooltip="'none'"
+          :disabled="disableSeekbar"
           @change="updateTimestmp"
         />
         <b-container fluid class="d-flex bar-container h-100 pb-2">
@@ -55,12 +56,7 @@
       :style="{ height: `calc(100% - ${!hasFrame ? '7.5rem' : '6rem'})` }"
     >
       <MusicInfo :currentSong="currentSong">
-        <AudioStream
-          :playerState="playerState"
-          :currentSong="currentSong"
-          @onTimeUpdate="updateTimestamp"
-          :forceSeek="forceSeek"
-        />
+        <AudioStream :playerState="playerState" @onTimeUpdate="updateTimestamp" :forceSeek="forceSeek" />
       </MusicInfo>
     </div>
   </div>
@@ -78,6 +74,7 @@ import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 
 @Component({
   components: {
@@ -89,14 +86,34 @@ import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue
     Timestamp
   }
 })
-export default class MusicBar extends mixins(ImgLoader) {
-  private forceSeek = 0
-  private PlayerState: PlayerState = 'PAUSED'
-  private sliderPosition = false
-  private hasFrame = false
+export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
+  forceSeek = 0
+  PlayerState: PlayerState = 'PAUSED'
+  sliderPosition = false
+  hasFrame = false
 
-  private iconType = ''
-  private iconURL = ''
+  iconType = ''
+  iconURL = ''
+
+  get disableSeekbar() {
+    return (
+      this.isJukeboxModeActive || !isFinite(this.currentSong?.duration ?? 0) || (this.currentSong?.duration ?? 0) < 0
+    )
+  }
+
+  get maxInterval() {
+    if (this.currentSong) {
+      if (isFinite(this.currentSong.duration) && this.currentSong.duration > 0) {
+        return Math.ceil((this.currentSong.duration + 1) * 1000)
+      }
+    }
+
+    return 2
+  }
+
+  get currentTimestamp() {
+    return Math.min(Math.ceil(this.timestamp * 1000), this.maxInterval)
+  }
 
   private async getIconType() {
     this.iconURL = ''
@@ -130,7 +147,7 @@ export default class MusicBar extends mixins(ImgLoader) {
     return vxm.player.currentTime
   }
 
-  private updateTimestmp(value: number) {
+  updateTimestmp(value: number) {
     bus.$emit('forceSeek', value / 1000)
     this.forceSeek = value / 1000
   }
@@ -155,17 +172,23 @@ export default class MusicBar extends mixins(ImgLoader) {
     this.sliderPosition = position
   }
 
-  private updateTimestamp(timestamp: number) {
+  updateTimestamp(timestamp: number) {
     vxm.player.currentTime = timestamp
   }
 
   async mounted() {
     this.hasFrame = await window.WindowUtils.hasFrame()
-    bus.$on('onToggleSlider', this.toggleSlider)
+    bus.$on('onToggleSliderWindow', this.toggleSlider)
     this.iconType = (await this.getIconType()) ?? ''
   }
 }
 </script>
+
+<style lang="sass">
+.vue-slider-disabled
+  opacity: 1 !important
+  cursor: auto !important
+</style>
 
 <style lang="sass" scoped>
 .background
@@ -217,10 +240,11 @@ export default class MusicBar extends mixins(ImgLoader) {
   .slider
     display: none
 
-@media only screen and (max-width : 480px)
+@media only screen and (max-width : 640px)
   .details-col
     display: none
 
+@media only screen and (max-width : 565px)
   .extra-col
     display: none
 </style>

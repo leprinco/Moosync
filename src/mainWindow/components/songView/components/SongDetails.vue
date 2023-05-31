@@ -55,8 +55,8 @@
               </div>
             </div>
           </b-row>
-          <b-row no-gutters align-v="end" class="flex-fill mt-2">
-            <b-col>
+          <b-row no-gutters align-v="end" align-h="between" class="flex-fill mt-2 button-row">
+            <b-col cols="auto">
               <div v-if="buttonGroup.enableContainer" class="button-group d-flex">
                 <PlainPlay :title="$t('buttons.playSingle', { title })" @click.native="playAll" />
                 <AddToQueue :title="$t('buttons.addToQueue', { title })" @click.native="addToQueue" />
@@ -65,7 +65,21 @@
                   @click.native="addToLibrary"
                   v-if="buttonGroup.enableLibraryStore"
                 />
+                <RandomIcon
+                  v-if="buttonGroup.playRandom"
+                  :title="$t('buttons.playRandom')"
+                  @click.native="playRandom"
+                />
               </div>
+            </b-col>
+            <b-col cols="auto">
+              <TabCarousel
+                class="tab-carousel"
+                v-on="$listeners"
+                :items="optionalProviders"
+                defaultBackgroundColor="var(--tertiary)"
+                :isSortAsc="isSortAsc"
+              />
             </b-col>
           </b-row>
         </b-container>
@@ -87,6 +101,9 @@ import ErrorHandler from '@/utils/ui/mixins/errorHandler'
 import ImageLoader from '@/utils/ui/mixins/ImageLoader'
 import FileMixin from '@/utils/ui/mixins/FileMixin'
 import { convertDuration } from '@/utils/common'
+import TabCarousel from '../../generic/TabCarousel.vue'
+import RandomIcon from '@/icons/RandomIcon.vue'
+import { vxm } from '@/mainWindow/store'
 
 @Component({
   components: {
@@ -95,20 +112,25 @@ import { convertDuration } from '@/utils/common'
     AddToLibrary,
     AddToQueue,
     YoutubeIcon,
-    SpotifyIcon
+    SpotifyIcon,
+    TabCarousel,
+    RandomIcon
   }
 })
 export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileMixin) {
   @Prop({ default: null })
-  private currentSong!: Song | null | undefined
+  currentSong!: Song | null | undefined
 
-  private subtitle: string = this.getConcatedSubtitle()
+  subtitle: string = this.getConcatedSubtitle()
 
   @Prop({ default: () => null })
-  private defaultDetails!: SongDetailDefaults | null
+  defaultDetails!: SongDetailDefaults | null
 
   @Prop({ default: () => undefined })
-  private forceCover!: string
+  forceCover!: string
+
+  @Prop({ default: () => [] })
+  optionalProviders!: TabCarouselItem[]
 
   @Prop({
     default: () => {
@@ -118,12 +140,16 @@ export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileM
       }
     }
   })
-  private buttonGroup!: SongDetailButtons
+  buttonGroup!: SongDetailButtons
 
   get computedImg() {
     return (
       this.forceCover ?? this.getImgSrc(this.getValidImageHigh(this.currentSong) ?? this.defaultDetails?.defaultCover)
     )
+  }
+
+  get isSortAsc() {
+    return vxm.themes.songSortBy?.[0]?.asc ?? true
   }
 
   @Watch('defaultDetails')
@@ -146,11 +172,11 @@ export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileM
     return this.currentSong?.type
   }
 
-  private isArtistAlbumNotEmpty() {
+  isArtistAlbumNotEmpty() {
     return !!(this.currentSong?.artists && this.currentSong.artists.length > 0 && this.currentSong?.album?.album_name)
   }
 
-  private getParsedSubtitle() {
+  getParsedSubtitle() {
     if (this.currentSong && (this.currentSong.artists?.length || this.currentSong.album?.album_name)) {
       return (
         ((this.currentSong?.artists && this.currentSong?.artists.map((val) => val.artist_name)?.join(', ')) ?? '') +
@@ -160,20 +186,28 @@ export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileM
     }
   }
 
-  private getConcatedSubtitle() {
+  getConcatedSubtitle() {
     return this.getParsedSubtitle() ?? this.defaultDetails?.defaultSubtitle ?? ''
   }
 
-  private playAll() {
+  playAll() {
     this.$emit('playAll')
   }
 
-  private addToQueue() {
+  addToQueue() {
     this.$emit('addToQueue')
   }
 
-  private addToLibrary() {
+  addToLibrary() {
     this.$emit('addToLibrary')
+  }
+
+  playRandom() {
+    this.$emit('playRandom')
+  }
+
+  handleError(e: ErrorEvent) {
+    console.error(e)
   }
 }
 </script>

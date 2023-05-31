@@ -9,13 +9,16 @@
 
 import { IpcEvents, PreferenceEvents } from './constants'
 import {
+  loadSelectiveArrayPreference,
   loadSelectivePreference,
   onPreferenceChanged,
   removeSelectivePreference,
-  saveSelectivePreference
+  resetPrefsToDefault,
+  saveSelectivePreference,
+  setPreferenceListenKey
 } from '../db/preferences'
 
-import { WindowHandler } from '../windowManager'
+import { WindowHandler, _windowHandler } from '../windowManager'
 import { mkdir, rm } from 'fs/promises'
 import path from 'path/posix'
 import { app } from 'electron'
@@ -27,11 +30,15 @@ import {
   setActiveTheme,
   setSongView,
   saveTheme,
-  removeTheme
+  removeTheme,
+  transformCSS
 } from '../themes/preferences'
+import { ThemePacker } from '../themes/packer'
+import { promises as fsP } from 'fs'
 
 export class PreferenceChannel implements IpcChannelInterface {
   name = IpcEvents.PREFERENCES
+
   handle(event: Electron.IpcMainEvent, request: IpcRequest): void {
     switch (request.type) {
       case PreferenceEvents.SAVE_SELECTIVE_PREFERENCES:
@@ -39,6 +46,9 @@ export class PreferenceChannel implements IpcChannelInterface {
         break
       case PreferenceEvents.LOAD_SELECTIVE_PREFERENCES:
         this.loadSelective(event, request as IpcRequest<PreferenceRequests.Load>)
+        break
+      case PreferenceEvents.LOAD_SELECTIVE_ARRAY:
+        this.loadSelectiveArrayItem(event, request as IpcRequest<PreferenceRequests.Load>)
         break
       case PreferenceEvents.PREFERENCE_REFRESH:
         this.onPreferenceChanged(event, request as IpcRequest<PreferenceRequests.PreferenceChange>)
@@ -67,8 +77,20 @@ export class PreferenceChannel implements IpcChannelInterface {
       case PreferenceEvents.SET_SONG_VIEW:
         this.setSongView(event, request as IpcRequest<PreferenceRequests.SongView>)
         break
-      case PreferenceEvents.SET_LANGUAGE:
-        this.setActiveLanguage(event, request as IpcRequest<PreferenceRequests.LanguageKey>)
+      case PreferenceEvents.LISTEN_PREFERENCE:
+        this.setListenKey(event, request as IpcRequest<PreferenceRequests.ListenKey>)
+        break
+      case PreferenceEvents.RESET_TO_DEFAULT:
+        this.resetToDefault(event, request)
+        break
+      case PreferenceEvents.TRANSFORM_CSS:
+        this.transformCSS(event, request as IpcRequest<PreferenceRequests.TransformCSS>)
+        break
+      case PreferenceEvents.PACK_THEME:
+        this.packTheme(event, request as IpcRequest<PreferenceRequests.ThemeID>)
+        break
+      case PreferenceEvents.IMPORT_THEME:
+        this.importTheme(event, request as IpcRequest<PreferenceRequests.ImportTheme>)
         break
     }
   }
@@ -93,7 +115,17 @@ export class PreferenceChannel implements IpcChannelInterface {
         loadSelectivePreference(request.params.key, request.params.isExtension, request.params.defaultValue)
       )
     }
-    event.reply(request.responseChannel)
+    event.reply(request.responseChannel, request.params.defaultValue)
+  }
+
+  private loadSelectiveArrayItem(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.Load>) {
+    if (request.params.key) {
+      event.reply(
+        request.responseChannel,
+        loadSelectiveArrayPreference(request.params.key, request.params.defaultValue)
+      )
+    }
+    event.reply(request.responseChannel, request.params.defaultValue)
   }
 
   private onPreferenceChanged(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.PreferenceChange>) {
@@ -110,24 +142,63 @@ export class PreferenceChannel implements IpcChannelInterface {
     event.reply(request.responseChannel)
   }
 
-  private getTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ThemeID>) {
-    event.reply(request.responseChannel, loadTheme(request.params.id))
+  private async transformCSS(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.TransformCSS>) {
+    if (request.params.cssPath) {
+      const data = await transformCSS(request.params.cssPath)
+      event.reply(request.responseChannel, data)
+    }
+    event.reply(request.responseChannel)
   }
 
-  private removeTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ThemeID>) {
-    event.reply(request.responseChannel, removeTheme(request.params.id))
-  }
-
-  private getAllThemes(event: Electron.IpcMainEvent, request: IpcRequest) {
-    event.reply(request.responseChannel, loadAllThemes())
-  }
-
-  private setActiveTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ThemeID>) {
+  private async packTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ThemeID>) {
     if (request.params.id) {
-      const theme = loadTheme(request.params.id)
+      const packer = new ThemePacker()
+      const zipPath = await packer.packTheme(request.params.id)
+      if (zipPath) {
+        const ret = await _windowHandler.openSaveDialog(false, {
+          title: 'Export theme',
+          defaultPath: path.join(app.getPath('documents'), path.basename(zipPath)),
+          properties: ['createDirectory', 'showOverwriteConfirmation']
+        })
+
+        if (ret?.filePath) {
+          await fsP.copyFile(zipPath, ret.filePath)
+          await packer.clean(path.dirname(zipPath))
+        }
+      }
+    }
+    event.reply(request.responseChannel)
+  }
+
+  private async importTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ImportTheme>) {
+    if (request.params.themeZipPath) {
+      const packer = new ThemePacker()
+      try {
+        await packer.importTheme(request.params.themeZipPath)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    event.reply(request.responseChannel)
+  }
+
+  private async getTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ThemeID>) {
+    event.reply(request.responseChannel, await loadTheme(request.params.id))
+  }
+
+  private async removeTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ThemeID>) {
+    event.reply(request.responseChannel, await removeTheme(request.params.id))
+  }
+
+  private async getAllThemes(event: Electron.IpcMainEvent, request: IpcRequest) {
+    event.reply(request.responseChannel, await loadAllThemes())
+  }
+
+  private async setActiveTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ThemeID>) {
+    if (request.params.id) {
+      const theme = await loadTheme(request.params.id)
       if (theme || request.params.id === 'default') {
         setActiveTheme(request.params.id)
-        WindowHandler.getWindow(true)?.webContents.send(PreferenceEvents.THEME_REFRESH, theme)
         this.generateIconFile(theme)
       }
     }
@@ -161,14 +232,13 @@ export class PreferenceChannel implements IpcChannelInterface {
     }
   }
 
-  private getActiveTheme(event: Electron.IpcMainEvent, request: IpcRequest) {
-    event.reply(request.responseChannel, getActiveTheme())
+  private async getActiveTheme(event: Electron.IpcMainEvent, request: IpcRequest) {
+    event.reply(request.responseChannel, await getActiveTheme())
   }
 
   private setSongView(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.SongView>) {
     if (request.params.menu) {
       setSongView(request.params.menu)
-      WindowHandler.getWindow(true)?.webContents.send(PreferenceEvents.SONG_VIEW_REFRESH, request.params.menu)
     }
     event.reply(request.responseChannel)
   }
@@ -177,13 +247,20 @@ export class PreferenceChannel implements IpcChannelInterface {
     event.reply(request.responseChannel, getSongView())
   }
 
-  public notifyPreferenceWindow(key: string) {
-    WindowHandler.getWindow(false)?.webContents.send(PreferenceEvents.PREFERENCE_REFRESH, key)
+  public notifyWindow(key: string, value: unknown, isMainWindow: boolean, channel: string) {
+    console.debug('notifying pref change on channel', channel)
+    WindowHandler.getWindow(isMainWindow)?.webContents.send(channel, key, value)
   }
 
-  private setActiveLanguage(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.LanguageKey>) {
+  private setListenKey(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.ListenKey>) {
     if (request.params?.key) {
-      WindowHandler.getWindow(true)?.webContents.send(PreferenceEvents.LANGUAGE_REFRESH, request.params?.key)
+      const channel = setPreferenceListenKey(request.params.key, request.params.isMainWindow)
+      event.reply(request.responseChannel, channel)
     }
+  }
+
+  private resetToDefault(event: Electron.IpcMainEvent, request: IpcRequest) {
+    resetPrefsToDefault()
+    event.reply(request.responseChannel)
   }
 }

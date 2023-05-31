@@ -36,11 +36,11 @@ import { bus } from '@/mainWindow/main'
 @Component({})
 export default class FormModal extends Vue {
   @Prop({ default: 'FormModal' })
-  private id!: string
+  id!: string
 
-  private title = ''
+  title = ''
   private callback?: (val: number) => void
-  private value = 0
+  value = 0
 
   private showing = false
 
@@ -55,12 +55,12 @@ export default class FormModal extends Vue {
     })
   }
 
-  private close() {
+  close() {
     this.$bvModal.hide(this.id)
     this.showing = false
   }
 
-  private setValue() {
+  setValue() {
     this.callback && this.callback(this.value)
     this.close()
   }

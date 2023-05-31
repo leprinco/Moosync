@@ -7,20 +7,35 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { BrowserWindow, Menu, Tray, app, dialog, protocol } from 'electron'
+import {
+  BrowserWindow,
+  Menu,
+  Tray,
+  app,
+  dialog,
+  protocol,
+  webFrameMain,
+  ThumbarButton,
+  nativeImage,
+  net,
+  shell,
+  session
+} from 'electron'
 import { SongEvents, WindowEvents } from './ipc/constants'
 import { getWindowSize, setWindowSize, loadPreferences } from './db/preferences'
 
-import { BrowserWindowConstructorOptions } from 'electron/main'
 import path from 'path'
-import { access } from 'fs/promises'
+import { access, readFile } from 'fs/promises'
 import { getActiveTheme } from './themes/preferences'
 import pie from 'puppeteer-in-electron'
 import puppeteer from 'puppeteer-core'
 import { getExtensionHostChannel } from './ipc'
-import { SongDB } from './db/index'
-import https from 'https'
+import { getSongDB } from './db/index'
 import { Readable } from 'stream'
+import { getMprisChannel, getSpotifyPlayerChannel } from './ipc/index'
+import { ButtonEnum, PlayerButtons } from 'media-controller'
+import { nativeTheme } from 'electron'
+import { logger } from './logger'
 
 export class WindowHandler {
   private static mainWindow: number
@@ -28,15 +43,17 @@ export class WindowHandler {
 
   private trayHandler = new TrayHandler()
   private isDevelopment = process.env.NODE_ENV !== 'production'
-  private _isMainWindowMounted = true
+  private _isMainWindowMounted = false
   private pathQueue: string[] = []
 
-  public static getWindow(mainWindow = true) {
+  public static getWindow(mainWindow = true): BrowserWindow | null {
     if (mainWindow && this.mainWindow !== undefined) return BrowserWindow.fromId(this.mainWindow)
 
     if (!mainWindow && this.preferenceWindow !== undefined) {
       return BrowserWindow.fromId(this.preferenceWindow)
     }
+
+    return null
   }
 
   public static get hasFrame() {
@@ -47,18 +64,19 @@ export class WindowHandler {
     return !this.hasFrame
   }
 
-  private get windowBackgroundColor() {
-    return getActiveTheme()?.theme.primary ?? '#212121'
+  private async getWindowBackgroundColor() {
+    return (await getActiveTheme())?.theme.primary ?? '#212121'
   }
 
-  private get baseWindowProps(): BrowserWindowConstructorOptions {
+  private async getBaseWindowProps(): Promise<Electron.BrowserWindowConstructorOptions> {
     return {
-      backgroundColor: this.windowBackgroundColor,
+      backgroundColor: await this.getWindowBackgroundColor(),
       titleBarStyle: WindowHandler.hasFrame ? 'default' : 'hidden',
       frame: WindowHandler.hasFrame,
       show: false,
       icon: path.join(__static, 'logo.png'),
       webPreferences: {
+        devTools: true,
         contextIsolation: true,
         // Use pluginOptions.nodeIntegration, leave this alone
         // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
@@ -68,23 +86,23 @@ export class WindowHandler {
     }
   }
 
-  private get mainWindowProps(): BrowserWindowConstructorOptions {
+  private async getMainWindowProps(): Promise<Electron.BrowserWindowConstructorOptions> {
     return {
       title: 'Moosync',
       ...getWindowSize('mainWindow', { width: 1016, height: 653 }),
       minHeight: 400,
       minWidth: 300,
-      ...this.baseWindowProps
+      ...(await this.getBaseWindowProps())
     }
   }
 
-  private get prefWindowProps(): BrowserWindowConstructorOptions {
+  private async getPrefWindowProps(): Promise<Electron.BrowserWindowConstructorOptions> {
     return {
       title: 'Preferences',
       ...getWindowSize('prefWindow', { width: 840, height: 653 }),
       minHeight: 672,
       minWidth: 840,
-      ...this.baseWindowProps
+      ...(await this.getBaseWindowProps())
     }
   }
 
@@ -116,7 +134,7 @@ export class WindowHandler {
   public async restartApp() {
     await this.stopAll()
     app.relaunch()
-    app.exit()
+    app.quit()
   }
 
   public registerMediaProtocol() {
@@ -127,9 +145,35 @@ export class WindowHandler {
         return callback(decodeURIComponent(url))
       } catch (error) {
         console.error(error)
-        app.quit()
       }
     })
+  }
+
+  private forwardRedirectStream(
+    redirectUrl: string,
+    requestHeaders: Record<string, string>,
+    method: string,
+    callback: (response: Electron.ProtocolResponse | NodeJS.ReadableStream) => void
+  ) {
+    try {
+      const req = net.request(redirectUrl)
+      for (const [key, val] of Object.entries(requestHeaders)) {
+        req.setHeader(key, val)
+      }
+
+      req.on('response', (res) => {
+        callback({
+          headers: res.headers,
+          statusCode: res.statusCode,
+          mimeType: res.headers['content-type'] as string,
+          data: res as unknown as NodeJS.ReadableStream
+        })
+      })
+
+      req.end()
+    } catch (e) {
+      console.error('Failed to forward redirect stream', e)
+    }
   }
 
   public registerExtensionProtocol() {
@@ -146,12 +190,13 @@ export class WindowHandler {
         if (data[extensionPackageName]) {
           const redirectUrl = (data[extensionPackageName] as CustomRequestReturnType).redirectUrl
           if (redirectUrl) {
-            https.get(redirectUrl, callback)
+            this.forwardRedirectStream(redirectUrl, request.headers, request.method, callback)
             return
           }
 
           const respData = (data[extensionPackageName] as CustomRequestReturnType).data
           const mimeType = (data[extensionPackageName] as CustomRequestReturnType).mimeType
+
           if (respData && mimeType) {
             callback({
               statusCode: 200,
@@ -182,6 +227,27 @@ export class WindowHandler {
     this.sendToMainWindow(SongEvents.GOT_FILE_PATH, this.pathQueue)
   }
 
+  static interceptHttp() {
+    if (!process.env.WEBPACK_DEV_SERVER_URL) {
+      session.defaultSession.protocol.interceptFileProtocol('http', async (request, callback) => {
+        const parsedUrl = new URL(request.url)
+        const pathName = decodeURI(parsedUrl.pathname)
+        const filePath = path.join(__dirname, pathName)
+
+        // deregister intercept after we handle index.html
+        if (request.url.includes('index.html')) {
+          session.defaultSession.protocol.uninterceptProtocol('http')
+        }
+
+        try {
+          callback(filePath)
+        } catch (e) {
+          logger.error(e)
+        }
+      })
+    }
+  }
+
   private getWindowURL(isMainWindow: boolean) {
     let url = ''
 
@@ -203,12 +269,13 @@ export class WindowHandler {
   public async createWindow(isMainWindow = true, args?: unknown) {
     let win: BrowserWindow | undefined | null
     if (!WindowHandler.getWindow(isMainWindow) || WindowHandler.getWindow(isMainWindow)?.isDestroyed()) {
-      win = new BrowserWindow(isMainWindow ? this.mainWindowProps : this.prefWindowProps)
+      win = new BrowserWindow(await (isMainWindow ? this.getMainWindowProps() : this.getPrefWindowProps()))
       this.attachWindowEvents(win, isMainWindow)
 
       win.loadURL(this.getWindowURL(isMainWindow))
 
       win.removeMenu()
+      Menu.setApplicationMenu(null)
 
       if (this.isDevelopment) win.webContents.openDevTools()
 
@@ -219,6 +286,10 @@ export class WindowHandler {
       win = WindowHandler.getWindow(isMainWindow)
       if (win) win.focus()
       else console.warn('Cant find existing window')
+    }
+
+    if (isMainWindow) {
+      this.trayHandler.createTray()
     }
 
     win?.webContents.on('did-finish-load', () => win?.webContents.send(WindowEvents.GOT_EXTRA_ARGS, args))
@@ -234,26 +305,21 @@ export class WindowHandler {
 
     if (isMainWindow) {
       if (!AppExitHandler._isQuitting && AppExitHandler._minimizeToTray) {
-        event.preventDefault()
         await this.trayHandler.createTray()
+        event.preventDefault()
         window.hide()
       } else {
         this.stopAll()
-        app.exit()
+        app.quit()
       }
     }
   }
 
   public async stopAll() {
+    getSpotifyPlayerChannel().closePlayer()
     // Stop extension Host
     await getExtensionHostChannel().closeExtensionHost()
-    SongDB.close()
-  }
-
-  public createScrapeWindow() {
-    return new BrowserWindow({
-      show: false
-    })
+    getSongDB().close()
   }
 
   private handleWindowShow(window: BrowserWindow) {
@@ -274,6 +340,49 @@ export class WindowHandler {
       this.handleWindowShow(window)
     })
 
+    window.webContents.setWindowOpenHandler((details) => {
+      if (['new-window', 'foreground-tab', 'background-tab', 'default'].includes(details.disposition)) {
+        shell.openExternal(details.url, {
+          activate: true
+        })
+        return {
+          action: 'deny'
+        }
+      } else {
+        return {
+          action: 'allow'
+        }
+      }
+    })
+    // window.webContents.on('', (event, url) {
+    //   event.preventDefault()
+    //   open(url)
+    // })
+
+    window.webContents.on(
+      'did-frame-navigate',
+      async (event, url, code, status, isMainFrame, frameProcessId, frameRoutingId) => {
+        if (!isMainFrame && code === 200) {
+          try {
+            const parsedURL = new URL(url)
+            if (parsedURL.host === 'www.youtube.com') {
+              const frame = webFrameMain.fromId(frameProcessId, frameRoutingId)
+              if (frame) {
+                try {
+                  const script = await readFile(path.join(__static, 'youtube_age_bypass.js'), { encoding: 'utf-8' })
+                  await frame.executeJavaScript(script)
+                } catch (e) {
+                  console.error('Failed to execute youtube content warning bypass')
+                }
+              }
+            }
+          } catch {
+            return
+          }
+        }
+      }
+    )
+
     // TODO: Hopefully expand the blocklist in future
     window.webContents.session.webRequest.onBeforeRequest(
       { urls: ['*://googleads.g.doubleclick.net/*', '*://*.youtube.com/api/stats/ads'] },
@@ -281,11 +390,27 @@ export class WindowHandler {
         callback({ cancel: true })
       }
     )
+
+    if (isMainWindow) {
+      getMprisChannel().onButtonStatusChange((buttons) => WindowToolbarButtonsHandler.setWindowToolbar(window, buttons))
+    }
   }
 
   public minimizeWindow(isMainWindow = true) {
     const window = WindowHandler.getWindow(isMainWindow)
     window?.minimizable && window.minimize()
+  }
+
+  public toggleFullscreen(isMainWindow = true) {
+    const window = WindowHandler.getWindow(isMainWindow)
+    this.setFullscreen(isMainWindow, !window?.isFullScreen() ?? false)
+  }
+
+  public setFullscreen(isMainWindow = true, value: boolean) {
+    const window = WindowHandler.getWindow(isMainWindow)
+    if (window?.fullScreenable) {
+      window.setFullScreen(value)
+    }
   }
 
   public maximizeWindow(isMainWindow = true) {
@@ -414,8 +539,65 @@ class AppExitHandler {
   public static _minimizeToTray = true
 }
 
+class WindowToolbarButtonsHandler {
+  static setWindowToolbar(window: BrowserWindow, buttonState: PlayerButtons) {
+    const buttons: ThumbarButton[] = []
+
+    if (buttonState.prev) {
+      buttons.push({
+        icon: getThemeIcon('prev_track'),
+        click: () => getMprisChannel().onButtonPressed(ButtonEnum.Previous),
+        tooltip: 'Previous track'
+      })
+    }
+
+    if (buttonState.play) {
+      buttons.push({
+        icon: getThemeIcon('play'),
+        click: () => getMprisChannel().onButtonPressed(ButtonEnum.Play),
+        tooltip: 'Play'
+      })
+    }
+
+    if (buttonState.pause) {
+      buttons.push({
+        icon: getThemeIcon('pause'),
+        click: () => getMprisChannel().onButtonPressed(ButtonEnum.Pause),
+        tooltip: 'Pause'
+      })
+    }
+
+    if (buttonState.next) {
+      buttons.push({
+        icon: getThemeIcon('next_track'),
+        click: () => getMprisChannel().onButtonPressed(ButtonEnum.Next),
+        tooltip: 'Next track'
+      })
+    }
+
+    if (!window.isDestroyed()) {
+      window.setThumbarButtons(buttons)
+    }
+  }
+}
+
 class TrayHandler {
   private _tray: Tray | null = null
+
+  private extraButtons: (Electron.MenuItem | Electron.MenuItemConstructorOptions)[] = []
+
+  constructor() {
+    getMprisChannel().onButtonStatusChange((buttons) => {
+      this.extraButtons = this.buildControlButtons(buttons)
+      // Tray will be updated only if it exists
+      this.setupContextMenu()
+    })
+
+    nativeTheme.on('updated', () => {
+      this.extraButtons = this.buildControlButtons(getMprisChannel().buttonStatus)
+      this.setupContextMenu()
+    })
+  }
 
   public async createTray() {
     if (!this._tray || this._tray?.isDestroyed()) {
@@ -426,9 +608,81 @@ class TrayHandler {
       } catch (e) {
         this._tray = new Tray(path.join(__static, process.platform === 'darwin' ? 'logo_osx.png' : 'logo.png'))
       }
+      this.setupContextMenu()
     }
-    this.setupListeners()
-    this.setupContextMenu()
+  }
+
+  private buildControlButtons(buttonState: PlayerButtons) {
+    const buttons: (Electron.MenuItem | Electron.MenuItemConstructorOptions)[] = []
+    if (buttonState.play) {
+      buttons.push({
+        label: 'Play',
+        icon: getThemeIcon('play'),
+        click: () => {
+          getMprisChannel().onButtonPressed(ButtonEnum.Play)
+        }
+      })
+    }
+
+    if (buttonState.pause) {
+      buttons.push({
+        label: 'Pause',
+        icon: getThemeIcon('pause'),
+        click: () => {
+          getMprisChannel().onButtonPressed(ButtonEnum.Pause)
+        }
+      })
+    }
+
+    if (buttonState.next) {
+      buttons.push({
+        label: 'Next',
+        icon: getThemeIcon('next_track'),
+        click: () => {
+          getMprisChannel().onButtonPressed(ButtonEnum.Next)
+        }
+      })
+    }
+
+    if (buttonState.prev) {
+      buttons.push({
+        label: 'Prev',
+        icon: getThemeIcon('prev_track'),
+        click: () => {
+          getMprisChannel().onButtonPressed(ButtonEnum.Previous)
+        }
+      })
+    }
+
+    if (buttonState.loop) {
+      buttons.push({
+        label: 'Repeat',
+        icon: getThemeIcon('repeat'),
+        click: () => {
+          getMprisChannel().onButtonPressed(ButtonEnum.Repeat)
+        }
+      })
+    } else {
+      buttons.push({
+        label: 'No Repeat',
+        icon: getThemeIcon('repeat'),
+        click: () => {
+          getMprisChannel().onButtonPressed(ButtonEnum.Repeat)
+        }
+      })
+    }
+
+    if (buttonState.shuffle) {
+      buttons.push({
+        label: 'Shuffle',
+        icon: getThemeIcon('shuffle'),
+        click: () => {
+          getMprisChannel().onButtonPressed(ButtonEnum.Shuffle)
+        }
+      })
+    }
+
+    return buttons
   }
 
   private setupContextMenu() {
@@ -437,14 +691,18 @@ class TrayHandler {
         Menu.buildFromTemplate([
           {
             label: 'Show App',
+            icon: getThemeIcon('show_eye'),
             click: () => {
-              this.destroy()
+              // this.destroy()
               AppExitHandler._isQuitting = false
               WindowHandler.getWindow()?.show()
+              WindowHandler.getWindow()?.focus()
             }
           },
+          ...this.extraButtons,
           {
             label: 'Quit',
+            icon: getThemeIcon('close'),
             click: function () {
               AppExitHandler._isQuitting = true
               app.quit()
@@ -452,15 +710,6 @@ class TrayHandler {
           }
         ])
       )
-    }
-  }
-
-  private setupListeners() {
-    if (this._tray) {
-      this._tray.on('double-click', () => {
-        WindowHandler.getWindow()?.show()
-        this.destroy()
-      })
     }
   }
 
@@ -472,6 +721,12 @@ class TrayHandler {
       this._tray = null
     }
   }
+}
+
+function getThemeIcon(iconName: string) {
+  return nativeImage.createFromPath(
+    path.join(__static, `${iconName}${nativeTheme.shouldUseDarkColors ? '' : '_light'}.png`)
+  )
 }
 
 export function setMinimizeToTray(enabled: boolean) {

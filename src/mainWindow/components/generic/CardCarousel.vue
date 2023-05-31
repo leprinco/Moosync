@@ -55,13 +55,13 @@ import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 })
 export default class CardCarousel extends mixins(ImgLoader, PlayerControls, ContextMenuMixin) {
   @Prop({ default: () => [] })
-  private songList!: Song[]
+  songList!: Song[]
 
-  private playSong(song: Song) {
+  playSong(song: Song) {
     this.playTop([song])
   }
 
-  private showContextMenu(event: Event, song: Song) {
+  showContextMenu(event: Event, song: Song) {
     this.getContextMenu(event, {
       type: 'SONGS',
       args: {

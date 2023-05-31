@@ -10,13 +10,14 @@
 import { DBUtils } from './utils'
 import { promises as fsP } from 'fs'
 import { v4 } from 'uuid'
-import { sanitizeArtistName } from '../../common'
+import { isArtist, isEmpty, sanitizeArtistName } from '../../common'
 
 import { loadPreferences } from './preferences'
 import path from 'path'
-import fs from 'fs'
-import https from 'https'
-import http from 'http'
+import { getExtensionHostChannel } from '../ipc'
+import { downloadFile } from '@/utils/main/mainUtils'
+import { isAlbum } from '../../common'
+import { access, mkdir } from 'fs/promises'
 
 type KeysOfUnion<T> = T extends T ? keyof T : never
 // AvailableKeys will basically be keyof Foo | keyof Bar
@@ -29,7 +30,7 @@ export class SongDBInstance extends DBUtils {
      ============================= */
 
   private verifySong(song: Partial<Song>) {
-    return !!(song._id && song.title && song.date_added && song.duration && song.type)
+    return !!(song._id && song.title && song.date_added && !isEmpty(song.duration) && song.type)
   }
 
   private getSongId(oldId: string, providerExtension?: string) {
@@ -44,39 +45,59 @@ export class SongDBInstance extends DBUtils {
     return oldId
   }
 
-  public store(newDoc: Song): Song | undefined {
-    if (this.verifySong(newDoc)) {
-      const existing = this.getSongByOptions({ song: { _id: newDoc._id } })[0]
-      if (existing) {
-        return existing
-      }
-
-      const artistID = newDoc.artists ? this.storeArtists(...newDoc.artists) : []
-      const albumID = newDoc.album ? this.storeAlbum(newDoc.album) : ''
-      const genreID = newDoc.genre ? this.storeGenre(...newDoc.genre) : []
-
-      newDoc._id = this.getSongId(newDoc._id ?? v4(), newDoc.providerExtension)
-      const marshaledSong = this.marshalSong(newDoc)
-
-      this.db.insert('allsongs', marshaledSong)
-      this.storeArtistBridge(artistID, marshaledSong._id)
-      this.storeGenreBridge(genreID, marshaledSong._id)
-      this.storeAlbumBridge(albumID, marshaledSong._id)
-
-      this.updateAllSongCounts()
-
-      if (newDoc.artists && artistID.length > 0) {
-        for (const i in newDoc.artists) {
-          newDoc.artists[i].artist_id = artistID[i]
-        }
-      }
-
-      if (newDoc.album && albumID) {
-        newDoc.album.album_id = albumID
-      }
-
-      return newDoc
+  private notifyExtensionHostSongChanged(added: boolean, songs: Song[]) {
+    if (songs.length > 0) {
+      getExtensionHostChannel().sendExtraEvent({
+        type: added ? 'songAdded' : 'songRemoved',
+        data: [songs]
+      })
     }
+  }
+
+  public store(...songsToAdd: Song[]): Song[] {
+    const newList: Song[] = []
+    const existingList: Song[] = []
+    for (const newDoc of songsToAdd) {
+      if (this.verifySong(newDoc)) {
+        const existing = this.getSongByOptions({ song: { _id: newDoc._id } })[0]
+        if (existing) {
+          existingList.push(existing)
+          continue
+        }
+
+        const artistID = newDoc.artists ? this.storeArtists(...newDoc.artists) : []
+        const albumID = newDoc.album ? this.storeAlbum(newDoc.album) : ''
+        const genreID = newDoc.genre ? this.storeGenre(...newDoc.genre) : []
+
+        newDoc._id = this.getSongId(newDoc._id ?? v4(), newDoc.providerExtension)
+
+        const marshaledSong = this.marshalSong(newDoc)
+
+        this.db.insert('allsongs', { ...marshaledSong, duration: marshaledSong.duration || -1 })
+        this.storeArtistBridge(artistID, marshaledSong._id)
+        this.storeGenreBridge(genreID, marshaledSong._id)
+        this.storeAlbumBridge(albumID, marshaledSong._id)
+
+        this.updateAllSongCounts()
+
+        if (newDoc.artists && artistID.length > 0) {
+          for (const i in newDoc.artists) {
+            newDoc.artists[i].artist_id = artistID[i]
+          }
+        }
+
+        if (newDoc.album && albumID) {
+          newDoc.album.album_id = albumID
+        }
+
+        newList.push(newDoc)
+      } else {
+        console.error('Failed to verify song', newDoc)
+      }
+    }
+
+    this.notifyExtensionHostSongChanged(true, newList)
+    return [...newList, ...existingList]
   }
 
   private updateAllSongCounts() {
@@ -100,86 +121,55 @@ export class SongDBInstance extends DBUtils {
 
   /**
    * Removes song by its ID. Also removes references to albums, artists, genre, playlist and unlinks thumbnails.
-   * @param song_id id of song to remove
+   * @param songs list of songs to remove
    */
-  public async removeSong(song_id: string) {
+  public async removeSong(...songs: Song[]) {
     const pathsToRemove: string[] = []
+
     this.db
-      .transaction((song_id: string) => {
-        const album_ids = this.getCountBySong('album_bridge', 'album', song_id)
-        const artist_ids = this.getCountBySong('artists_bridge', 'artist', song_id)
-        const genre_ids = this.getCountBySong('genre_bridge', 'genre', song_id)
+      .transaction((song_ids: string[]) => {
+        for (const song_id of song_ids) {
+          const songCoverPath_low = this.db.queryFirstCell(
+            `SELECT song_coverPath_low from allsongs WHERE _id = ?`,
+            song_id
+          )
+          const songCoverPath_high = this.db.queryFirstCell(
+            `SELECT song_coverPath_high from allsongs WHERE _id = ?`,
+            song_id
+          )
 
-        const songCoverPath_low = this.db.queryFirstCell(
-          `SELECT song_coverPath_low from allsongs WHERE _id = ?`,
-          song_id
-        )
-        const songCoverPath_high = this.db.queryFirstCell(
-          `SELECT song_coverPath_high from allsongs WHERE _id = ?`,
-          song_id
-        )
+          if (songCoverPath_low) pathsToRemove.push(songCoverPath_low)
+          if (songCoverPath_high) pathsToRemove.push(songCoverPath_high)
 
-        if (songCoverPath_low) pathsToRemove.push(songCoverPath_low)
-        if (songCoverPath_high) pathsToRemove.push(songCoverPath_high)
+          this.db.delete('artist_bridge', { song: song_id })
+          this.db.delete('album_bridge', { song: song_id })
+          this.db.delete('genre_bridge', { song: song_id })
+          this.db.delete('playlist_bridge', { song: song_id })
 
-        this.db.delete('artists_bridge', { song: song_id })
-        this.db.delete('album_bridge', { song: song_id })
-        this.db.delete('genre_bridge', { song: song_id })
-        this.db.delete('playlist_bridge', { song: song_id })
-        this.db.delete('allsongs', { _id: song_id })
-
-        for (const id of album_ids) {
-          if (id.count === 1) {
-            const album: Album = (
-              this.getEntityByOptions({
-                album: {
-                  album_id: id.album
-                }
-              }) as Album[]
-            )[0]
-            this.db.delete('albums', { album_id: id.album })
-            if (album?.album_coverPath_low) pathsToRemove.push(album.album_coverPath_low)
-            if (album?.album_coverPath_high) pathsToRemove.push(album.album_coverPath_high)
-          }
-        }
-
-        for (const id of artist_ids) {
-          if (id.count === 1) {
-            const artist = (
-              this.getEntityByOptions({
-                artist: {
-                  artist_id: id.artist
-                }
-              }) as Artists[]
-            )[0]
-            this.db.delete('artists', { artist_id: id.artist })
-            if (artist?.artist_coverPath) pathsToRemove.push(artist.artist_coverPath)
-          }
-        }
-
-        for (const id of genre_ids) {
-          if (id.count === 1) {
-            this.db.delete('genre', { genre_id: id.genre })
-          }
+          this.db.delete('allsongs', { _id: song_id })
         }
       })
-      .immediate(song_id)
+      .immediate(songs.map((val) => val._id))
+
+    await this.cleanDb()
 
     for (const path of pathsToRemove) {
       await this.removeFile(path)
     }
 
     this.updateAllSongCounts()
+
+    this.notifyExtensionHostSongChanged(false, songs)
   }
 
   private updateSongArtists(newArtists: Artists[], oldArtists: Artists[] | undefined, songID: string) {
     if (JSON.stringify(oldArtists) !== JSON.stringify(newArtists)) {
-      this.db.delete('artists_bridge', { song: songID })
+      this.db.delete('artist_bridge', { song: songID })
 
       for (const a of oldArtists ?? []) {
         if (!newArtists.find((val) => val.artist_name === a.artist_name)) {
           const songCount = this.db.queryFirstCell<number>(
-            'SELECT COUNT(id) FROM artists_bridge WHERE artist = ?',
+            'SELECT COUNT(id) FROM artist_bridge WHERE artist = ?',
             a.artist_id
           )
           if (songCount === 0) {
@@ -204,7 +194,7 @@ export class SongDBInstance extends DBUtils {
         if (!newGenres.includes(g)) {
           const songCount = this.db.queryFirstCell<number>('SELECT COUNT(id) FROM genre_bridge WHERE genre = ?', g)
           if (songCount === 0) {
-            this.db.delete('genre', { genre_id: g })
+            this.db.delete('genres', { genre_id: g })
           }
         }
       }
@@ -236,12 +226,20 @@ export class SongDBInstance extends DBUtils {
   }
 
   private async getCoverPath(oldCoverPath: string, newCoverpath: string) {
+    const thumbPath = loadPreferences().thumbnailPath
+    try {
+      await access(thumbPath)
+    } catch (e) {
+      await mkdir(thumbPath, { recursive: true })
+    }
+
     if (oldCoverPath !== newCoverpath) {
       if (newCoverpath) {
-        const finalPath = path.join(loadPreferences().thumbnailPath, v4() + (path.extname(newCoverpath) ?? '.png'))
+        const finalPath = path.join(thumbPath, v4() + (path.extname(newCoverpath) ?? '.png'))
+
         if (newCoverpath.startsWith('http')) {
           try {
-            await this.downloadFile(newCoverpath, finalPath)
+            await downloadFile(newCoverpath, finalPath)
             return finalPath
           } catch (e) {
             console.error('Failed to download from url', newCoverpath, e)
@@ -260,47 +258,6 @@ export class SongDBInstance extends DBUtils {
     return oldCoverPath
   }
 
-  private downloadFile(url: string, path: string) {
-    return new Promise<void>((resolve, reject) => {
-      const parsedURL = new URL(url)
-      const method = parsedURL.protocol === 'https:' ? https.get : http.get
-
-      const agents = [
-        'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Ubuntu Chromium/37.0.2062.94 Chrome/37.0.2062.94 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; rv:11.0) like Gecko',
-        'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:40.0) Gecko/20100101 Firefox/40.0',
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/600.8.9 (KHTML, like Gecko) Version/8.0.8 Safari/600.8.9'
-      ]
-
-      const request = method(
-        {
-          hostname: parsedURL.hostname,
-          path: parsedURL.pathname,
-          headers: { 'User-Agent': agents[Math.floor(Math.random() * agents.length)] }
-        },
-        function (response) {
-          if (response.statusCode === 200) {
-            const file = fs.createWriteStream(path)
-            response.pipe(file)
-
-            file.on('finish', () => {
-              console.debug('Downloaded image from', url, 'at', path)
-              file.close()
-              resolve()
-            })
-
-            file.on('error', reject)
-          } else {
-            reject('Failed with status code: ' + response.statusCode)
-          }
-        }
-      )
-
-      request.on('error', reject)
-    })
-  }
-
   public async updateSong(song: Song) {
     if (this.verifySong(song)) {
       const oldSong = this.getSongByOptions({ song: { _id: song._id } })[0]
@@ -310,19 +267,22 @@ export class SongDBInstance extends DBUtils {
         this.updateSongAlbums(song.album ?? {}, oldSong.album, song._id)
         this.updateSongGenre(song.genre ?? [], oldSong.genre, song._id)
 
+        const marshalled = this.marshalSong(song)
+
         const finalCoverPath = await this.getCoverPath(
           oldSong.song_coverPath_high ?? '',
           song.song_coverPath_high ?? ''
         )
 
-        song.song_coverPath_high = finalCoverPath
-        song.song_coverPath_low = finalCoverPath
+        marshalled.song_coverPath_high = finalCoverPath
+        marshalled.song_coverPath_low = finalCoverPath
 
-        this.db.updateWithBlackList('allsongs', song, ['_id = ?', song._id], ['_id'])
+        this.db.updateWithBlackList('allsongs', marshalled, ['_id = ?', song._id], ['_id'])
         this.updateAllSongCounts()
-      } else {
-        this.store(song)
+        return
       }
+
+      console.warn('Song with id', song._id, 'does not exist in db')
     }
   }
 
@@ -370,9 +330,14 @@ export class SongDBInstance extends DBUtils {
     return { songs, albums, artists, genres, playlists }
   }
 
-  private getInnerKey(property: string) {
+  private getInnerKey(property: keyof SearchableSong): keyof marshaledSong {
     if (property === 'extension') return 'provider_extension'
+    if (property === 'showInLibrary') return 'show_in_library'
     return property
+  }
+
+  private getLikeQuery(invert?: boolean) {
+    return invert ? 'NOT LIKE' : 'LIKE'
   }
 
   private populateWhereQuery(options?: SongAPIOptions) {
@@ -387,14 +352,19 @@ export class SongDBInstance extends DBUtils {
         return str
       }
 
-      for (const [key] of Object.entries(options)) {
+      for (const key of Object.keys(options)) {
         if (key !== 'inclusive' && key !== 'sortBy') {
           const tableName = this.getTableByProperty(key as keyof SongAPIOptions)
           const data = options[key as keyof SongAPIOptions]
           if (data) {
             for (const [innerKey, innerValue] of Object.entries(data)) {
-              where += `${addANDorOR()} ${tableName}.${this.getInnerKey(innerKey)} LIKE ?`
-              args.push(`${innerValue}`)
+              let parsedValue = innerValue
+              if (typeof innerValue === 'boolean') parsedValue = innerValue ? 1 : 0
+
+              where += `${addANDorOR()} ${tableName}.${this.getInnerKey(
+                innerKey as keyof SearchableSong
+              )} ${this.getLikeQuery(options.invert)} ?`
+              args.push(`${parsedValue}`)
             }
           }
         }
@@ -409,11 +379,55 @@ export class SongDBInstance extends DBUtils {
     return { where: '', args: [] }
   }
 
-  private addOrderClause(sortBy?: SongSortOptions, noCase = false) {
+  private getSortByTable(sortBy: SongSortOptions) {
+    switch (sortBy.type) {
+      case 'playCount':
+        return 'analytics'
+      case 'album':
+        return 'albums'
+      case 'artist':
+        return 'artists'
+      case 'genre':
+        return 'genres'
+      default:
+        return 'allsongs'
+    }
+  }
+
+  private getSortByColumn(sortBy: SongSortOptions) {
+    switch (sortBy.type) {
+      case 'playCount':
+        return 'play_count'
+      case 'album':
+        return 'album_name'
+      case 'artist':
+        return 'artist_name'
+      case 'genre':
+        return 'genre_name'
+      default:
+        return sortBy.type
+    }
+  }
+
+  private addOrderClause(sortBy?: SongSortOptions[], noCase = false) {
     if (sortBy) {
-      return `ORDER BY allsongs.${sortBy.type} ${noCase ? 'COLLATE NOCASE' : ''} ${sortBy.asc ? 'ASC' : 'DESC'}`
+      let ret = 'ORDER BY '
+      sortBy.forEach((s, index) => {
+        ret += `${this.getSortByTable(s)}.${this.getSortByColumn(s)} ${noCase ? 'COLLATE NOCASE' : ''} ${
+          s.asc ? 'ASC' : 'DESC'
+        } ${index !== sortBy.length - 1 ? ',' : ''}`
+      })
+
+      return ret
     }
     return ''
+  }
+
+  private normalizeSortBy(sortBy: SongAPIOptions['sortBy']) {
+    if (sortBy) {
+      if (Array.isArray(sortBy)) return sortBy
+      else return [sortBy]
+    }
   }
 
   /**
@@ -430,14 +444,14 @@ export class SongDBInstance extends DBUtils {
       ${this.addLeftJoinClause(undefined, 'allsongs')}
         ${where}
         ${this.addExcludeWhereClause(args.length === 0, exclude)} GROUP BY allsongs._id ${this.addOrderClause(
-        options?.sortBy,
+        this.normalizeSortBy(options?.sortBy),
         args.length > 0
       )}`,
       ...args
     )
 
     return this.batchUnmarshal(songs, (artistIds) => {
-      return artistIds.map(
+      return [...new Set(artistIds)].map(
         (val) =>
           this.getEntityByOptions<Artists>({
             artist: {
@@ -457,7 +471,7 @@ export class SongDBInstance extends DBUtils {
       case 'artist':
         return 'artists'
       case 'genre':
-        return 'genre'
+        return 'genres'
       case 'playlist':
         return 'playlists'
     }
@@ -493,7 +507,7 @@ export class SongDBInstance extends DBUtils {
 
     let query = `SELECT * FROM `
     let where = `WHERE `
-    const args = []
+    const args: string[] = []
     let orderBy
     for (const [key, value] of Object.entries(options)) {
       const tableName = this.getTableByProperty(key as EntityKeys<T>)
@@ -506,18 +520,25 @@ export class SongDBInstance extends DBUtils {
         }
 
         if (typeof value === 'object') {
-          const data = options[key as never]
+          const data: Record<string, string> = options[key as never]
           if (data) {
             for (const [innerKey, innerValue] of Object.entries(data)) {
-              where += `${addANDorOR()} ${innerKey} LIKE ?`
-              args.push(innerValue)
+              if (innerKey && innerValue) {
+                where += `${addANDorOR()} ${innerKey} ${this.getLikeQuery(options.invert)} ?`
+                args.push(innerValue)
+              }
             }
             break
           }
         }
       }
     }
-    let ret = this.db.query<T>(`${query} ${args.length > 0 ? where : ''} ORDER BY ${orderBy} ASC`, ...args) ?? []
+
+    let ret =
+      this.db.query<T>(
+        `${query} ${args.length > 0 ? where : ''} ORDER BY ${orderBy} ASC`,
+        ...args.map((val) => val.replaceAll(' ', '%'))
+      ) ?? []
     if ('artist' in options) {
       ret = ret.map((val) => {
         if ('artist_extra_info' in val && typeof val.artist_extra_info === 'string') {
@@ -593,7 +614,7 @@ export class SongDBInstance extends DBUtils {
         this.db.run(
           `INSERT INTO albums (album_id, album_name, album_coverPath_low, album_coverPath_high, album_artist) VALUES(?, ?, ?, ?, ?)`,
           id,
-          album.album_name,
+          album.album_name.trim(),
           album.album_coverPath_low,
           album.album_coverPath_high,
           album.album_artist
@@ -645,6 +666,7 @@ export class SongDBInstance extends DBUtils {
           await this.removeFile(oldAlbum.album_coverPath_low)
         }
       }
+
       this.db.updateWithBlackList('albums', album, ['album_id = ?', album.album_id], ['album_id', 'album_extra_info'])
 
       this.updateAlbumExtraInfo(album.album_id, album.album_extra_info)
@@ -710,9 +732,9 @@ export class SongDBInstance extends DBUtils {
    */
   public updateSongCountGenre() {
     this.db.transaction(() => {
-      for (const row of this.db.query(`SELECT genre_id FROM genre`)) {
+      for (const row of this.db.query(`SELECT genre_id FROM genres`)) {
         this.db.run(
-          `UPDATE genre SET genre_song_count = (SELECT count(id) FROM genre_bridge WHERE genre = ?) WHERE genre_id = ?`,
+          `UPDATE genres SET genre_song_count = (SELECT count(id) FROM genre_bridge WHERE genre = ?) WHERE genre_id = ?`,
           (row as Genre).genre_id,
           (row as Genre).genre_id
         )
@@ -725,11 +747,11 @@ export class SongDBInstance extends DBUtils {
     if (genre) {
       for (const a of genre) {
         if (a) {
-          const id = this.db.queryFirstCell(`SELECT genre_id FROM genre WHERE genre_name = ? COLLATE NOCASE`, a)
+          const id = this.db.queryFirstCell(`SELECT genre_id FROM genres WHERE genre_name = ? COLLATE NOCASE`, a)
           if (id) genreID.push(id)
           else {
             const id = v4()
-            this.db.insert('genre', { genre_id: id, genre_name: a.trim() })
+            this.db.insert('genres', { genre_id: id, genre_name: a.trim() })
             genreID.push(id)
           }
         }
@@ -764,36 +786,42 @@ export class SongDBInstance extends DBUtils {
    * @returns number of rows updated
    */
   public async updateArtists(artist: Artists) {
-    const oldArtist = this.getEntityByOptions<Artists>({
-      artist: {
-        artist_id: artist.artist_id
+    if (artist) {
+      const oldArtist = this.getEntityByOptions<Artists>({
+        artist: {
+          artist_id: artist.artist_id
+        }
+      })[0]
+
+      if (oldArtist) {
+        const coverPath = await this.getCoverPath(oldArtist.artist_coverPath ?? '', artist.artist_coverPath ?? '')
+        artist.artist_coverPath = coverPath
+
+        this.db.updateWithBlackList(
+          'artists',
+          artist,
+          ['artist_id = ?', artist.artist_id],
+          ['artist_id', 'artist_extra_info']
+        )
+
+        if (oldArtist?.artist_coverPath) {
+          await this.removeFile(oldArtist.artist_coverPath)
+        }
+
+        this.updateArtistExtraInfo(artist.artist_id, artist.artist_extra_info)
       }
-    })[0]
-
-    const coverPath = await this.getCoverPath(oldArtist.artist_coverPath ?? '', artist.artist_coverPath ?? '')
-    artist.artist_coverPath = coverPath
-
-    this.db.updateWithBlackList(
-      'artists',
-      artist,
-      ['artist_id = ?', artist.artist_id],
-      ['artist_id', 'artist_extra_info']
-    )
-
-    if (oldArtist?.artist_coverPath) {
-      await this.removeFile(oldArtist.artist_coverPath)
     }
-
-    this.updateArtistExtraInfo(artist.artist_id, artist.artist_extra_info)
   }
 
   private storeArtists(...artists: Artists[]): string[] {
     const artistID: string[] = []
     for (const a of artists) {
       if (a.artist_name) {
-        const sanitizedName = sanitizeArtistName(a.artist_name, true)
+        const sanitizedName = sanitizeArtistName(a.artist_name)
+
         let id = this.db.queryFirstCell(
-          `SELECT artist_id FROM artists WHERE artist_name = ? COLLATE NOCASE`,
+          `SELECT artist_id FROM artists WHERE sanitized_artist_name = ? OR artist_name = ? COLLATE NOCASE`,
+          sanitizedName,
           sanitizedName
         )
         if (id) {
@@ -816,7 +844,7 @@ export class SongDBInstance extends DBUtils {
           }
         } else {
           id = v4()
-          this.db.insert('artists', { artist_id: id, artist_name: sanitizedName })
+          this.db.insert('artists', { artist_id: id, artist_name: a.artist_name, sanitized_artist_name: sanitizedName })
           artistID.push(id)
         }
 
@@ -857,12 +885,12 @@ export class SongDBInstance extends DBUtils {
   private storeArtistBridge(artistID: string[], songID: string) {
     for (const i of artistID) {
       const exists = this.db.queryFirstCell(
-        `SELECT COUNT(id) FROM artists_bridge WHERE artist = ? AND song = ?`,
+        `SELECT COUNT(id) FROM artist_bridge WHERE artist = ? AND song = ?`,
         i,
         songID
       )
       if (exists === 0) {
-        this.db.insert('artists_bridge', { song: songID, artist: i })
+        this.db.insert('artist_bridge', { song: songID, artist: i })
       }
     }
   }
@@ -880,7 +908,7 @@ export class SongDBInstance extends DBUtils {
     }
 
     const album_cover = this.db.queryFirstCell(
-      `SELECT album_coverPath_high from albums WHERE album_id = (SELECT album FROM album_bridge WHERE song = (SELECT song FROM artists_bridge WHERE artist = ?))`,
+      `SELECT album_coverPath_high from albums WHERE album_id = (SELECT album FROM album_bridge WHERE song = (SELECT song FROM artist_bridge WHERE artist = ?))`,
       id
     ) as marshaledSong
 
@@ -889,7 +917,7 @@ export class SongDBInstance extends DBUtils {
     }
 
     const song_cover = this.db.queryFirstCell(
-      `SELECT song_coverPath_high from allsongs WHERE _id = (SELECT song FROM artists_bridge WHERE artist = ?)`,
+      `SELECT song_coverPath_high from allsongs WHERE _id = (SELECT song FROM artist_bridge WHERE artist = ?)`,
       id
     )
 
@@ -903,7 +931,7 @@ export class SongDBInstance extends DBUtils {
     this.db.transaction(() => {
       for (const row of this.db.query(`SELECT artist_id FROM artists`)) {
         this.db.run(
-          `UPDATE artists SET artist_song_count = (SELECT count(id) FROM artists_bridge WHERE artist = ?) WHERE artist_id = ?`,
+          `UPDATE artists SET artist_song_count = (SELECT count(id) FROM artist_bridge WHERE artist = ?) WHERE artist_id = ?`,
           (row as Artists).artist_id,
           (row as Artists).artist_id
         )
@@ -915,6 +943,15 @@ export class SongDBInstance extends DBUtils {
                 PLAYLISTS
      ============================= */
 
+  private notifyExtensionHostPlaylistChanged(added: boolean, playlist: Playlist[]) {
+    if (playlist.length > 0) {
+      getExtensionHostChannel().sendExtraEvent({
+        type: added ? 'playlistAdded' : 'playlistRemoved',
+        data: [playlist]
+      })
+    }
+  }
+
   /**
    * Creates playlist
    * @param name name of playlist
@@ -922,15 +959,23 @@ export class SongDBInstance extends DBUtils {
    * @param imgSrc cover image of playlist
    * @returns playlist id after creation
    */
-  public createPlaylist(playlist: Partial<Playlist>, extension?: string): string {
-    const id = `${extension ? extension + ':' : ''}${playlist.playlist_id ?? v4()}`
-    this.db.insert('playlists', {
+  public createPlaylist(playlist: Partial<Playlist>): string {
+    const id = playlist.playlist_id ?? v4()
+
+    const playlistToInsert: Playlist = {
       playlist_name: playlist.playlist_name ?? 'New Playlist',
       playlist_desc: playlist.playlist_desc,
       playlist_id: id,
       playlist_song_count: playlist.playlist_song_count ?? 0,
-      playlist_coverPath: playlist.playlist_coverPath
-    })
+      playlist_path: playlist.playlist_path,
+      playlist_coverPath: playlist.playlist_coverPath,
+      extension: playlist.extension,
+      icon: playlist.icon
+    }
+
+    this.db.insert('playlists', playlistToInsert)
+
+    this.notifyExtensionHostPlaylistChanged(true, [playlistToInsert])
     return id
   }
 
@@ -977,18 +1022,18 @@ export class SongDBInstance extends DBUtils {
    */
   public addToPlaylist(playlist_id: string, ...songs: Song[]) {
     // TODO: Regenerate cover instead of using existing from song
-    const coverExists = this.isPlaylistCoverExists(playlist_id)
+    let coverExists = this.isPlaylistCoverExists(playlist_id)
     this.db.transaction((songs: Song[]) => {
-      for (let s of songs) {
-        if (this.verifySong(s)) {
-          s = this.store(s) as Song
-          if (!coverExists) {
-            if (s.album?.album_coverPath_high) {
-              this.updatePlaylistCoverPath(playlist_id, s.album.album_coverPath_high)
-            }
+      const stored = this.store(...songs.map((val) => ({ ...val, showInLibrary: false })))
+
+      for (const s of stored) {
+        if (!coverExists && playlist_id !== 'favorites_playlist') {
+          if (s.album?.album_coverPath_high) {
+            this.updatePlaylistCoverPath(playlist_id, s.album.album_coverPath_high)
+            coverExists = true
           }
-          this.db.insert('playlist_bridge', { playlist: playlist_id, song: s._id })
         }
+        this.db.insert('playlist_bridge', { playlist: playlist_id, song: s._id })
       }
     })(songs)
     this.updateSongCountPlaylists()
@@ -999,12 +1044,12 @@ export class SongDBInstance extends DBUtils {
    * @param playlist id of playlist from which song is to be removed
    * @param songs songs which are to be removed
    */
-  public async removeFromPlaylist(playlist: string, ...songs: string[]) {
+  public removeFromPlaylist(playlist: string, ...songs: Song[]) {
     this.db.transaction((songs: string[]) => {
-      for (const s in songs) {
+      for (const s of songs) {
         this.db.delete('playlist_bridge', { playlist: playlist, song: s })
       }
-    })(songs)
+    })(songs.map((val) => val._id))
     this.updateSongCountPlaylists()
   }
 
@@ -1025,11 +1070,16 @@ export class SongDBInstance extends DBUtils {
 
   /**
    * Removes playlist
-   * @param playlist_id id of playlist to be removed
+   * @param playlists playlists to be removed
    */
-  public async removePlaylist(playlist_id: string) {
-    this.db.delete('playlist_bridge', { playlist: playlist_id })
-    this.db.delete('playlists', { playlist_id: playlist_id })
+  public removePlaylist(...playlists: Playlist[]) {
+    for (const playlist of playlists) {
+      const playlist_id = playlist.playlist_id
+      this.db.delete('playlist_bridge', { playlist: playlist_id })
+      this.db.delete('playlists', { playlist_id: playlist_id })
+    }
+
+    this.notifyExtensionHostPlaylistChanged(false, playlists)
   }
 
   private async removeFile(src: string) {
@@ -1060,5 +1110,86 @@ export class SongDBInstance extends DBUtils {
     }
 
     return false
+  }
+
+  /* ============================= 
+                Analytics
+     ============================= */
+
+  public incrementPlayCount(song_id: string) {
+    this.db.transaction(() => {
+      let playCount = this.db.queryFirstCell<number>(`SELECT play_count FROM analytics WHERE song_id = ?`, song_id)
+      if (isEmpty(playCount)) {
+        this.db.insert('analytics', { id: v4(), song_id, play_count: 0, play_time: 0 })
+        playCount = 0
+      }
+
+      this.db.update('analytics', { play_count: playCount + 1 }, { song_id })
+    })()
+  }
+
+  public getPlayCount(...song_id: string[]) {
+    let res: { song_id: string; play_count: number; play_time: number }[] = []
+
+    if (song_id.length > 0) {
+      const where = song_id.map((val) => `'${val}'`).join(', ')
+      res = this.db.query(`SELECT song_id, play_count, play_time FROM analytics WHERE song_id in (${where})`)
+    } else {
+      res = this.db.query(`SELECT song_id, play_count, play_time FROM analytics`)
+    }
+    return Object.assign(
+      {},
+      ...res.map((val) => ({ [val.song_id]: { playCount: val.play_count, playTime: val.play_time } }))
+    )
+  }
+
+  public incrementPlayTime(song_id: string, duration: number) {
+    this.db.transaction(() => {
+      let playTime = this.db.queryFirstCell<number>(`SELECT play_time FROM analytics WHERE song_id = ?`, song_id)
+      if (isEmpty(playTime)) {
+        this.db.insert('analytics', { id: v4(), song_id, play_count: 0, play_time: duration })
+        playTime = 0
+      }
+
+      this.db.update('analytics', { play_time: playTime + duration }, { song_id })
+    })()
+  }
+
+  /* ============================= 
+                Destructive
+     ============================= */
+
+  public async cleanDb() {
+    const tables = ['album', 'artist', 'genre']
+    const pathsToRemove: (string | undefined)[] = []
+
+    this.db.transaction(() => {
+      for (const table of tables) {
+        const data: (Album | Artists | Genre)[] = this.db.query(
+          `SELECT * from ${table}s as t1 LEFT JOIN ${table}_bridge t2 ON t1.${table}_id = t2.${table} WHERE t2.${table} IS NULL`
+        )
+
+        for (const d of data) {
+          if (isAlbum(d)) {
+            pathsToRemove.push(d.album_coverPath_high, d.album_coverPath_low)
+          }
+
+          if (isArtist(d)) {
+            pathsToRemove.push(d.artist_coverPath)
+          }
+
+          this.db.delete(`${table}s`, {
+            [`${table}_id`]: (d as Record<string, string>)[`${table}_id`]
+          })
+        }
+      }
+    })()
+
+    const promises: Promise<void>[] = []
+    for (const p of pathsToRemove) {
+      if (p) promises.push(this.removeFile(p))
+    }
+
+    await Promise.all(promises)
   }
 }

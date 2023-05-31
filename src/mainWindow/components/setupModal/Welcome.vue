@@ -46,11 +46,11 @@ import Logo from '@/icons/LogoIcon.vue'
   }
 })
 export default class Welcome extends Vue {
-  private beginSetup() {
+  beginSetup() {
     this.$emit('next')
   }
 
-  private skip() {
+  skip() {
     this.$emit('prev')
   }
 }

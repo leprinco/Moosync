@@ -12,6 +12,7 @@ import DB, { BetterSqlite3Helper } from 'better-sqlite3-helper'
 import { app } from 'electron'
 import { migrations } from './migrations'
 import path from 'path'
+import { isEmpty } from '@/utils/common'
 
 export class DBUtils {
   protected db: BetterSqlite3Helper.DBInstance
@@ -62,14 +63,17 @@ export class DBUtils {
       duration: dbSong.duration,
       sampleRate: dbSong.sampleRate,
       hash: dbSong.hash,
-      inode: '',
-      deviceno: '',
+      inode: dbSong.inode,
+      deviceno: dbSong.deviceno,
       type: dbSong.type,
       url: dbSong.url,
       icon: dbSong.icon,
       date_added: dbSong.date_added,
       playbackUrl: dbSong.playbackUrl,
-      providerExtension: dbSong.provider_extension
+      providerExtension: dbSong.provider_extension,
+      playCount: dbSong.play_count ?? 0,
+      track_no: dbSong.track_no,
+      showInLibrary: !!dbSong.show_in_library
     }
   }
 
@@ -101,14 +105,17 @@ export class DBUtils {
       playbackUrl: song.playbackUrl?.trim(),
       date_added: Date.now(),
       icon: song.icon,
-      provider_extension: song.providerExtension
+      track_no: song.track_no,
+      provider_extension: song.providerExtension,
+      show_in_library: isEmpty(song.showInLibrary) || song.showInLibrary ? 1 : 0
     }
   }
 
   protected batchUnmarshal(marshaled: marshaledSong[], fetchArtists: (artistIds: string[]) => Artists[]) {
     const unmarshaled: Song[] = []
     for (const m of marshaled) {
-      unmarshaled.push(this.unMarshalSong(m, fetchArtists))
+      const um = this.unMarshalSong(m, fetchArtists)
+      unmarshaled.push(um)
     }
     return unmarshaled
   }
@@ -144,13 +151,13 @@ export class DBUtils {
 
   private leftJoinArtists(exclude_table?: string) {
     if (exclude_table !== 'artists') {
-      return ` LEFT JOIN artists_bridge ON allsongs._id = artists_bridge.song`
+      return ` LEFT JOIN artist_bridge ON allsongs._id = artist_bridge.song`
     }
     return ''
   }
 
   private leftJoinGenre(exclude_table?: string) {
-    if (exclude_table !== 'genre') {
+    if (exclude_table !== 'genres') {
       return ` LEFT JOIN genre_bridge ON allsongs._id = genre_bridge.song`
     }
     return ''
@@ -163,20 +170,28 @@ export class DBUtils {
     return ''
   }
 
+  private leftJoinAnalytics(exclude_table?: string) {
+    if (exclude_table !== 'analytics') {
+      return ` LEFT JOIN analytics ON allsongs._id = analytics.song_id`
+    }
+    return ''
+  }
+
   private leftJoinCommon(tableName: string, rowName: string, bridgeTable?: string) {
     return ` LEFT JOIN ${tableName} ON ${bridgeTable}.${rowName} = ${tableName}.${rowName}_id`
   }
 
-  protected addLeftJoinClause(bridgeTable?: string, exclude_table?: 'album' | 'artists' | 'genre' | 'allsongs') {
+  protected addLeftJoinClause(bridgeTable?: string, exclude_table?: 'album' | 'artists' | 'genres' | 'allsongs') {
     return (
       this.leftJoinSongs(bridgeTable, exclude_table) +
       this.leftJoinAlbums(exclude_table) +
       this.leftJoinArtists(exclude_table) +
       this.leftJoinGenre(exclude_table) +
       this.leftJoinPLaylists(exclude_table) +
+      this.leftJoinAnalytics(exclude_table) +
       this.leftJoinCommon('albums', 'album', 'album_bridge') +
-      this.leftJoinCommon('artists', 'artist', 'artists_bridge') +
-      this.leftJoinCommon('genre', 'genre', 'genre_bridge') +
+      this.leftJoinCommon('artists', 'artist', 'artist_bridge') +
+      this.leftJoinCommon('genres', 'genre', 'genre_bridge') +
       this.leftJoinCommon('playlists', 'playlist', 'playlist_bridge')
     )
   }
@@ -186,6 +201,6 @@ export class DBUtils {
   }
 
   protected getSelectClause() {
-    return `allsongs._id, allsongs.path, allsongs.size, allsongs.title, allsongs.song_coverPath_high, allsongs.song_coverPath_low, allsongs.date, allsongs.date_added, allsongs.year, allsongs.lyrics, allsongs.bitrate, allsongs.codec, allsongs.container, allsongs.duration, allsongs.sampleRate, allsongs.hash, allsongs.type, allsongs.url, allsongs.icon, allsongs.playbackUrl, allsongs.provider_extension, albums.album_id, albums.album_name, albums.album_coverPath_high, albums.album_coverPath_low, albums.album_song_count, albums.year as album_year, albums.album_extra_info`
+    return `allsongs._id, allsongs.path, allsongs.size, allsongs.inode, allsongs.deviceno, allsongs.title, allsongs.song_coverPath_high, allsongs.song_coverPath_low, allsongs.date, allsongs.date_added, allsongs.year, allsongs.lyrics, allsongs.bitrate, allsongs.codec, allsongs.container, allsongs.duration, allsongs.sampleRate, allsongs.hash, allsongs.type, allsongs.url, allsongs.icon, allsongs.playbackUrl, allsongs.provider_extension, allsongs.show_in_library, allsongs.track_no, albums.album_id, albums.album_name, albums.album_coverPath_high, albums.album_coverPath_low, albums.album_song_count, albums.year as album_year, albums.album_extra_info, analytics.play_count`
   }
 }

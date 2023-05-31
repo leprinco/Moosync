@@ -21,6 +21,10 @@
               @error="handleImageError"
               referrerPolicy="no-referrer"
             ></b-img>
+
+            <div v-if="isLoading" class="loading-spinner d-flex justify-content-center">
+              <b-spinner class="align-self-center" />
+            </div>
           </b-col>
           <b-col cols="9">
             <b-row no-gutters class="playlist-url-details">
@@ -68,7 +72,7 @@
         </b-row>
       </b-container>
       <b-button class="close-button ml-3" @click="close">Close</b-button>
-      <b-button class="create-button" @click="addToLibrary">Add</b-button>
+      <b-button class="create-button" :disabled="!addButtonEnabled" @click="addToLibrary">Add</b-button>
     </div>
   </b-modal>
 </template>
@@ -78,7 +82,6 @@ import { Component, Prop } from 'vue-property-decorator'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import { vxm } from '@/mainWindow/store'
 import { mixins } from 'vue-class-component'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import SingleSearchResult from '@/mainWindow/components/generic/SingleSearchResult.vue'
@@ -86,6 +89,8 @@ import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import InputGroup from '../generic/InputGroup.vue'
 import { v4 } from 'uuid'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 @Component({
   components: {
@@ -94,90 +99,87 @@ import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
     SingleSearchResult
   }
 })
-export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoader, RemoteSong) {
+export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoader, RemoteSong, ProviderMixin) {
   @Prop({ default: 'PlaylistFromURL' })
-  private id!: string
+  id!: string
 
-  private forceEmptyImg = false
+  forceEmptyImg = false
 
-  private songList: Song[] = []
-  private playlist: Playlist | null = null
+  songList: Song[] = []
+  playlist: Playlist | null = null
 
-  private handleImageError() {
+  isLoading = false
+
+  addButtonEnabled = false
+
+  handleImageError() {
     this.forceEmptyImg = true
   }
 
   private refreshCallback?: () => void
 
-  private close() {
+  close() {
     this.songList = []
     this.playlist = null
     this.$bvModal.hide(this.id)
   }
 
-  private async parseURL(url: string) {
-    let generator
-    this.songList = []
-    this.playlist = null
+  async parseURL(url: string) {
+    if (url) {
+      this.isLoading = true
 
-    if (url.startsWith('http')) {
-      if (vxm.providers.youtubeProvider.matchPlaylist(url)) {
-        this.playlist = (await vxm.providers.youtubeProvider.getPlaylistDetails(url)) ?? null
-        generator = vxm.providers.youtubeProvider.getPlaylistContent(url, true)
-      }
+      this.songList = []
+      this.playlist = null
+      this.addButtonEnabled = false
 
-      if (vxm.providers.spotifyProvider.matchPlaylist(url)) {
-        this.playlist = (await vxm.providers.spotifyProvider.getPlaylistDetails(url)) ?? null
-        generator = vxm.providers.spotifyProvider.getPlaylistContent(url, true)
-      }
-
-      if (generator) {
-        for await (const items of generator) {
-          this.songList.push(...items)
-        }
-        return
-      }
-
-      const res = await window.ExtensionUtils.sendEvent({
-        type: 'requestedPlaylistFromURL',
-        data: [url]
-      })
-
-      if (res) {
-        for (const val of Object.values(res)) {
-          if (val) {
-            if (val.playlist) {
-              this.playlist = val.playlist
-              this.songList.push(...val.songs)
-              break
+      if (url.startsWith('http')) {
+        const providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_FROM_URL)
+        for (const p of providers) {
+          if (p.matchPlaylist(url)) {
+            try {
+              this.playlist = (await p.getPlaylistDetails(url)) ?? null
+              if (this.playlist) {
+                this.addButtonEnabled = true
+                break
+              }
+            } catch (e) {
+              console.error(e)
             }
           }
         }
+      } else {
+        const data = await window.FileUtils.scanSinglePlaylist(url)
+        this.playlist = {
+          playlist_id: data.playlist?.playlist_id ?? v4(),
+          playlist_name: data.playlist?.playlist_name ?? 'New Playlist',
+          playlist_path: data.playlist?.playlist_path,
+          playlist_coverPath: data.playlist?.playlist_coverPath,
+          playlist_desc: data.playlist?.playlist_desc,
+          playlist_song_count: data.playlist?.playlist_song_count
+        }
+
+        this.songList.push(...data.songs)
+
+        this.addButtonEnabled = true
       }
     } else {
-      const data = await window.FileUtils.scanSinglePlaylist(url)
-      this.playlist = {
-        playlist_id: data.playlist?.playlist_id ?? v4(),
-        playlist_name: data.playlist?.playlist_name ?? 'New Playlist',
-        playlist_path: data.playlist?.playlist_path,
-        playlist_coverPath: data.playlist?.playlist_coverPath,
-        playlist_desc: data.playlist?.playlist_desc,
-        playlist_song_count: data.playlist?.playlist_song_count
-      }
-
-      this.songList.push(...data.songs)
+      this.addButtonEnabled = false
+      this.songList = []
+      this.playlist = null
     }
+
+    this.isLoading = false
   }
 
-  private handleClick(index: number) {
+  handleClick(index: number) {
     this.playTop([this.songList[index]])
   }
 
-  private async addToLibrary() {
+  async addToLibrary() {
     if (this.playlist) {
       const playlistId = await window.DBUtils.createPlaylist(this.playlist)
 
-      await window.DBUtils.addToPlaylist(playlistId, ...this.songList)
+      if (!this.playlist.extension) await window.DBUtils.addToPlaylist(playlistId, ...this.songList)
 
       this.$toasted.show(`Added ${this.playlist.playlist_name} to library`)
 
@@ -192,6 +194,7 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
 
   mounted() {
     bus.$on(EventBus.SHOW_PLAYLIST_FROM_URL_MODAL, (refreshCallback: () => void) => {
+      this.addButtonEnabled = false
       this.refreshCallback = refreshCallback
       this.$bvModal.show(this.id)
     })
@@ -297,4 +300,13 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
 .scroller
   margin-right: -10px
   margin-left: -10px
+
+.loading-spinner
+  position: absolute
+  left:  0
+  top: 0
+  width: 100%
+  height: 100%
+  background: rgba(0, 0, 0, 0.4)
+  border-radius: 16px
 </style>

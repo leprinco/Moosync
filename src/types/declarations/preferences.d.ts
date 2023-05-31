@@ -13,18 +13,40 @@ type songMenu = 'compact' | 'classic'
 
 type SystemSettings = Checkbox
 
-type CheckboxValue = {
-  key: string
-  title: string
-  enabled: boolean
-}[]
-
 interface Preferences {
   isFirstLaunch: boolean
   musicPaths: togglePaths
+  exclude_musicPaths: togglePaths
   thumbnailPath: string
   artworkPath: string
+  youtubeAlt: Checkbox[]
+  youtubeOptions: Checkbox[]
+  youtube?: {
+    client_id?: string
+    client_secret?: string
+  }
+  invidious: Checkbox[]
+  invidious_instance?: string
+  spotify?: {
+    client_id?: string
+    client_secret?: string
+    options?: {
+      use_librespot?: boolean
+    }
+  }
+  piped_instance?: string
+  system_language?: Checkbox[]
+  audio: Checkbox[]
   system: SystemSettings[]
   themes: { [key: string]: ThemeDetails }
+  activeTheme: string
+  hotkeys: HotkeyPair[]
   zoomFactor: string
+  logs: Checkbox[]
+  lyrics_fetchers: Checkbox[]
+}
+
+type HotkeyPair = {
+  key: KeyboardEvent['code'][][]
+  value: import('@/utils/commonConstants').HotkeyEvents
 }

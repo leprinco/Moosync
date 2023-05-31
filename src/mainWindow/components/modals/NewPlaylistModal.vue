@@ -68,17 +68,17 @@ import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 })
 export default class NewPlaylistModal extends mixins(ImgLoader, RemoteSong) {
   @Prop({ default: 'NewPlaylistModal' })
-  private id!: string
+  id!: string
 
-  private title = 'New Playlist'
-  private desc = ''
+  title = 'New Playlist'
+  desc = ''
 
-  private songs: Song[] = []
-  private songCount = 0
+  songs: Song[] = []
+  songCount = 0
 
-  private forceEmptyImg = true
+  forceEmptyImg = true
 
-  private showing = false
+  showing = false
 
   private createCallback: (() => void) | undefined
 
@@ -93,7 +93,7 @@ export default class NewPlaylistModal extends mixins(ImgLoader, RemoteSong) {
     return false
   }
 
-  private async createPlaylist() {
+  async createPlaylist() {
     let path
     if (this.canvas) {
       const data = this.canvas.toDataURL('image/png')

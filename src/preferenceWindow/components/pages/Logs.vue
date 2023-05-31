@@ -10,7 +10,7 @@
 <template>
   <div class="w-100 h-100">
     <div class="mb-3">
-      <CheckboxGroup prefKey="logs" :title="$t('settings.logs.logSettings')" :defaultValue="logSettings" />
+      <CheckboxGroup key="logs" :title="$t('settings.logs.logSettings')" :defaultValue="logSettings" />
     </div>
     <div class="logger-bg">
       <b-container fluid class="controls w-100 d-flex">
@@ -79,6 +79,7 @@
               </b-col>
             </b-row>
           </b-col>
+          <b-col cols="auto" class="mt-3 align-self-center refresh-icon" @click="refreshLogs"> <RefreshIcon /> </b-col>
         </b-row>
       </b-container>
       <div class="log-content w-100" no-gutters>
@@ -139,26 +140,15 @@ import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
 import CheckboxGroup from '../CheckboxGroup.vue'
 import SearchIcon from '@/icons/SearchIcon.vue'
-
-type LogLines = {
-  index: number
-  id: number
-  time: string
-  level: LogLevels
-  process: string
-  message: string
-}
-
-type LogPrevLine = {
-  prev: string
-}
+import RefreshIcon from '../../../icons/RefreshIcon.vue'
 
 type LogLevels = 'ALL' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
 
 @Component({
   components: {
     CheckboxGroup,
-    SearchIcon
+    SearchIcon,
+    RefreshIcon
   }
 })
 export default class Logs extends Vue {
@@ -166,11 +156,7 @@ export default class Logs extends Vue {
 
   private levelFilter: LogLevels = 'ALL'
   private processFilter = 'All'
-  private possibleProcessFilters: { [key: string]: boolean } = {
-    Main: true,
-    Renderer: true,
-    'Extension Host': true
-  }
+  private possibleProcessFilters: Set<string> = new Set(['Main', 'Renderer', 'Extension Host'])
 
   private searchFilter = ''
 
@@ -189,7 +175,7 @@ export default class Logs extends Vue {
   }
 
   private get processFilters() {
-    return Object.keys(this.possibleProcessFilters)
+    return Array.from(this.possibleProcessFilters)
   }
 
   private filterCriteria = 'key'
@@ -243,44 +229,16 @@ export default class Logs extends Vue {
   }
 
   mounted() {
-    let tmpData: LogLines[] = []
-    let timer: ReturnType<typeof setTimeout>
-    // This timer ensures that animation plays without lag
-    setTimeout(() => {
-      window.LoggerUtils.watchLogs((data) => {
-        if (data) {
-          if ((data as LogPrevLine).prev) {
-            if (tmpData[tmpData.length - 1]) {
-              tmpData[tmpData.length - 1].message += '\n' + (data as LogPrevLine).prev
-            } else {
-              this.logLines[this.logLines.length - 1].message += '\n' + (data as LogPrevLine).prev
-            }
-          } else {
-            if ((data as LogLines).message) {
-              if (!tmpData.find((val) => val.id === (data as LogLines).id)) {
-                tmpData.push({ ...(data as LogLines), index: this.logLines.length })
-                Vue.set(this.possibleProcessFilters, (data as LogLines).process, true)
-              }
-            }
-          }
-          if (timer) {
-            clearTimeout(timer)
-          }
-          if (tmpData.length > 10) {
-            this.logLines.push(...tmpData)
-            this.totalRows = this.logLines.length
-            tmpData = []
-            return
-          }
-          // Without timer spam push into logLines causes b-table to quickly react to so many changes
-          timer = setTimeout(() => {
-            this.logLines.push(...tmpData)
-            this.totalRows = this.logLines.length
-            tmpData = []
-          }, 100)
-        }
-      })
-    }, 1000)
+    this.refreshLogs()
+  }
+
+  private refreshLogs() {
+    window.LoggerUtils.watchLogs((data) => {
+      this.logLines = data
+      const uniqueProcesses = new Set(data.map((item) => item.process))
+      this.possibleProcessFilters = new Set([...uniqueProcesses, ...this.possibleProcessFilters])
+      window.LoggerUtils.unwatchLogs()
+    })
   }
 
   beforeDestroy() {
@@ -408,4 +366,9 @@ td
   text-align: left
   margin-bottom: 5px
   font-size: 18px
+
+.refresh-icon
+  svg
+    width: 25px
+    height: 25px
 </style>

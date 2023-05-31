@@ -8,7 +8,7 @@
 -->
 
 <template>
-  <div class="w-100 h-100">
+  <div class="w-100 h-100" :key="refreshPage">
     <b-container fluid>
       <b-row no-gutters class="w-100">
         <div class="path-selector w-100">
@@ -19,7 +19,38 @@
             :defaultValue="systemCheckboxValues"
             :onValueChange="onSystemPrefChange"
             :onValueFetch="onSystemPrefFetch"
-            prefKey="system"
+            key="system"
+          />
+
+          <b-col v-if="showJukeboxField">
+            <EditText
+              class="mt-5 mb-3"
+              :isExtension="false"
+              :title="$t('settings.system.jukebox.pin')"
+              key="jukebox_pin"
+              :tooltip="$t('settings.system.jukebox.pin_tooltip')"
+              defaultValue=""
+              maxValue="6"
+              :onlyNumber="true"
+              type="password"
+            />
+
+            <CheckboxGroup
+              :title="$t('settings.system.jukebox.optionalFields')"
+              :tooltip="$t('settings.system.jukebox.optionalFields_tooltip')"
+              :isExtension="false"
+              :defaultValue="jukeboxOptionalFields"
+              key="jukebox_optional_fields"
+            />
+          </b-col>
+
+          <CheckboxGroup
+            :title="$t('settings.system.queueSettings.title')"
+            class="mt-4"
+            :tooltip="$t('settings.system.queueSettings.tooltip')"
+            :isExtension="false"
+            :defaultValue="queueCheckboxValues"
+            key="queue"
           />
 
           <CheckboxGroup
@@ -28,25 +59,161 @@
             :tooltip="$t('settings.system.audioSettings_tooltip')"
             :isExtension="false"
             :defaultValue="audioCheckboxValues"
-            :onValueChange="onAudioPrefChange"
-            :onValueFetch="onAudioPrefFetch"
-            prefKey="audio"
+            key="audio"
           />
 
-          <AutoFillEditText
-            v-if="showInvidiousField"
+          <RadioCheckbox
+            :title="$t('settings.system.volumePersistMode.title')"
             class="mt-4"
-            prefKey="invidious_instance"
-            :datalist="invidiousInstances"
-            :title="$t('settings.system.invidious')"
-            :tooltip="$t('settings.system.invidious_tooltip')"
-            :onValueChange="onInvidiousInstanceChange"
-            :onValueFetch="onInvidiousInstanceChange"
+            :tooltip="$t('settings.system.volumePersistMode.tooltip')"
+            :isExtension="false"
+            :defaultValue="volumePersistModeCheckboxValues"
+            :onValueChange="onVolumePersistValueChange"
+            :onValueFetch="onVolumePersistValueChange"
+            key="volumePersistMode"
           />
 
-          <b-col v-if="showInvidiousField"
-            ><div class="invidious-details">{{ invidiousDetails }}</div></b-col
-          >
+          <b-col v-if="showVolumeMapField">
+            <b-container class="ml-1 mt-2" fluid>
+              <b-row no-gutters class="d-flex" v-for="provider of volumeMapProviders" :key="provider.key">
+                <b-col cols="4" class="align-self-center text-left">{{ provider.title }}</b-col>
+                <b-col cols="8" lg="6">
+                  <EditText
+                    :onlyNumber="true"
+                    :key="`clampMap.${provider.key.replaceAll('.', '_').toLowerCase()}.clamp`"
+                    :defaultValue="provider.clamp"
+                    type="range"
+                    :showRangeText="true"
+                  />
+                </b-col>
+              </b-row>
+            </b-container>
+          </b-col>
+
+          <CheckboxGroup
+            :title="$t('settings.system.scrobble.provider_toggle.title')"
+            class="mt-4"
+            :tooltip="$t('settings.system.scrobble.provider_toggle.tooltip')"
+            :isExtension="false"
+            :defaultValue="scrobbleProviderCheckboxValues"
+            key="scrobble.provider_toggle"
+          />
+
+          <RadioCheckbox
+            :title="$t('settings.system.youtubeAlternative.title')"
+            class="mt-4"
+            :tooltip="$t('settings.system.youtubeAlternative.tooltip')"
+            :isExtension="false"
+            :defaultValue="youtubeAlternativeCheckboxValues"
+            :onValueChange="onYoutubeAlternativesChanged"
+            :onValueFetch="onYoutubeAlternativesFetched"
+            key="youtubeAlt"
+          />
+
+          <b-col v-if="showYoutubeField">
+            <CheckboxGroup
+              :title="$t('settings.system.youtubeAlternative.youtube.options')"
+              class="mt-4"
+              :tooltip="$t('settings.system.youtubeAlternative.youtube.options_tooltip')"
+              :isExtension="false"
+              :defaultValue="youtubeAdvancedCheckboxValues"
+              key="youtubeOptions"
+            />
+          </b-col>
+
+          <b-col v-if="showInvidiousField">
+            <AutoFillEditText
+              class="mt-4"
+              key="invidious_instance"
+              :datalist="invidiousInstances"
+              :title="$t('settings.system.youtubeAlternative.invidious.url')"
+              :tooltip="$t('settings.system.youtubeAlternative.invidious.url_tooltip')"
+              :onValueChange="onInvidiousInstanceChange"
+              :onValueFetch="onInvidiousInstanceChange"
+            />
+
+            <b-container class="invidious-details">
+              <b-row>
+                <b-col>
+                  {{ invidiousDetails }}
+                </b-col>
+              </b-row>
+            </b-container>
+            <CheckboxGroup
+              :title="$t('settings.system.youtubeAlternative.invidious.options')"
+              class="mt-4"
+              :tooltip="$t('settings.system.youtubeAlternative.invidious.options_tooltip')"
+              :isExtension="false"
+              :defaultValue="invidiousAdvancedCheckboxValues"
+              key="invidious"
+            />
+          </b-col>
+
+          <b-col v-if="showPipedField">
+            <AutoFillEditText
+              class="mt-4"
+              key="piped_instance"
+              :datalist="pipedInstances"
+              :title="$t('settings.system.youtubeAlternative.piped.url')"
+              :tooltip="$t('settings.system.youtubeAlternative.piped.url_tooltip')"
+            />
+
+            <EditText
+              class="mt-4"
+              :isExtension="false"
+              :title="$t('settings.system.youtubeAlternative.piped.username')"
+              key="piped.username"
+              :tooltip="$t('settings.system.youtubeAlternative.piped.username_tooltip')"
+            />
+
+            <EditText
+              class="mt-2"
+              :isExtension="false"
+              :title="$t('settings.system.youtubeAlternative.piped.password')"
+              key="piped.password"
+              :tooltip="$t('settings.system.youtubeAlternative.piped.password_tooltip')"
+              type="password"
+            />
+          </b-col>
+
+          <CheckboxGroup
+            :title="$t('settings.system.spotify.title')"
+            :tooltip="$t('settings.system.spotify.tooltip')"
+            class="mt-4"
+            key="spotify.options"
+            :defaultValue="spotifyCheckboxValues"
+            :isExtension="false"
+            :onValueChange="onSpotifyValueFetch"
+            :onValueFetch="onSpotifyValueFetch"
+          />
+
+          <b-col v-if="showSpotifyUserPass">
+            <EditText
+              class="mt-4"
+              :isExtension="false"
+              :title="$t('settings.system.spotify.username')"
+              key="spotify.username"
+              :tooltip="$t('settings.system.spotify.username_tooltip')"
+            />
+
+            <EditText
+              class="mt-2"
+              :isExtension="false"
+              :title="$t('settings.system.spotify.password')"
+              key="spotify.password"
+              :tooltip="$t('settings.system.spotify.password_tooltip')"
+              type="password"
+            />
+
+            <CheckboxGroup
+              :title="$t('settings.system.spotify.librespot.title')"
+              :tooltip="$t('settings.system.spotify.librespot.tooltip')"
+              class="mt-4"
+              key="spotify.librespot.options"
+              :defaultValue="librespotOptions"
+              :isExtension="false"
+            />
+          </b-col>
 
           <b-row v-if="showRestartButton">
             <b-col cols="auto">
@@ -54,11 +221,20 @@
             </b-col>
           </b-row>
 
+          <CheckboxGroup
+            :title="$t('settings.system.lyrics.title')"
+            class="mt-4"
+            :tooltip="$t('settings.system.lyrics.tooltip')"
+            :isExtension="false"
+            :defaultValue="lyricsCheckboxValues"
+            key="lyrics_fetchers"
+          />
+
           <EditText
             class="mt-5 mb-3"
             :isExtension="false"
             :title="$t('settings.system.zoom')"
-            prefKey="zoomFactor"
+            key="zoomFactor"
             :tooltip="$t('settings.system.zoom_tooltip')"
             :onValueChange="onZoomUpdate"
             defaultValue="100"
@@ -69,22 +245,20 @@
             class="mt-5 mb-3"
             :isExtension="false"
             :title="$t('settings.system.spotify.client_id')"
-            prefKey="spotify.client_id"
+            key="spotify.client_id"
             :tooltip="$t('settings.system.spotify.client_id_tooltip')"
             @tooltipClick="openSpotifyHelp"
-            :key="spotifyIDKey"
-            :onValueFetch="onSpotifyValueFetch"
-            :onValueChange="onSpotifyValueFetch"
+            :onValueFetch="onSpotifySecretsFetch"
+            :onValueChange="onSpotifySecretsFetch"
           />
           <EditText
             :isExtension="false"
             :tooltip="$t('settings.system.spotify.client_secret_tooltip')"
             :title="$t('settings.system.spotify.client_secret')"
-            prefKey="spotify.client_secret"
+            key="spotify.client_secret"
             @tooltipClick="openSpotifyHelp"
-            :key="spotifySecretKey"
-            :onValueFetch="onSpotifyValueFetch"
-            :onValueChange="onSpotifyValueFetch"
+            :onValueFetch="onSpotifySecretsFetch"
+            :onValueChange="onSpotifySecretsFetch"
           />
 
           <b-row v-if="showSpotifyButton">
@@ -100,13 +274,17 @@
             class="mt-5 mb-3"
             :isExtension="false"
             :title="$t('settings.system.youtube.client_id')"
-            prefKey="youtube.client_id"
+            :tooltip="$t('settings.system.youtube.client_id_tooltip')"
+            @tooltipClick="openYoutubeHelp"
+            key="youtube.client_id"
           />
           <EditText
             v-if="!youtubeEnvExists"
             :isExtension="false"
             :title="$t('settings.system.youtube.client_secret')"
-            prefKey="youtube.client_secret"
+            :tooltip="$t('settings.system.youtube.client_secret_tooltip')"
+            @tooltipClick="openYoutubeHelp"
+            key="youtube.client_secret"
           />
 
           <EditText
@@ -114,23 +292,28 @@
             class="mt-5 mb-3"
             :isExtension="false"
             :title="$t('settings.system.lastfm.client_id')"
-            prefKey="lastfm.client_id"
+            key="lastfm.client_id"
           />
+
           <EditText
             v-if="!lastfmEnvExists"
             :isExtension="false"
             :title="$t('settings.system.lastfm.client_secret')"
-            prefKey="lastfm.client_secret"
+            key="lastfm.client_secret"
           />
 
           <Dropdown
             class="mt-5"
             :defaultValue="languageDropdown"
-            title="$t('settings.system.language')"
+            :title="$t('settings.system.language')"
             :tooltip="$t('settings.system.language_tooltip')"
-            prefKey="system_language"
+            key="system_language"
             :onValueChange="onLanguageChanged"
           />
+
+          <b-button class="delete-button mt-4" @click="showClearPreferencesDisclaimer">{{
+            $t('settings.system.clearPreferences')
+          }}</b-button>
         </div>
       </b-row>
     </b-container>
@@ -155,7 +338,29 @@
           </b-col>
         </b-row>
       </b-container>
-      <CrossIcon @click.native="closeModal" class="close-icon button-grow" />
+      <CrossIcon @click.native="closeSpotifyAutomateModal" class="close-icon button-grow" />
+    </b-modal>
+
+    <b-modal no-close-on-backdrop centered size="md" id="clear-preferences-modal" hide-footer hide-header>
+      <b-container class="response-container">
+        <b-row no-gutters class="d-flex">
+          <b-col class="title" cols="auto">{{ $t('settings.system.clear_preferences_title') }}</b-col>
+        </b-row>
+        <b-row>
+          <b-col class="mt-4 waiting">{{ $t('settings.system.clear_preferences') }}</b-col>
+        </b-row>
+        <b-row>
+          <b-col class="d-flex justify-content-center">
+            <div
+              @click="clearPreferences"
+              class="delete-button button-grow mt-4 d-flex justify-content-center align-items-center"
+            >
+              {{ $t('settings.system.clear_preferences_button') }}
+            </div>
+          </b-col>
+        </b-row>
+      </b-container>
+      <CrossIcon @click.native="closeClearPreferencesModal" class="close-icon button-grow" />
     </b-modal>
   </div>
 </template>
@@ -181,10 +386,13 @@ import { InvidiousApiResources } from '@/utils/commonConstants'
 import Dropdown from '../Dropdown.vue'
 import { messages } from '@/utils/ui/i18n'
 import { i18n } from '@/preferenceWindow/plugins/i18n'
+import RadioCheckbox from '../RadioCheckbox.vue'
+import { VolumePersistMode } from '../../../utils/commonConstants'
 
 @Component({
   components: {
     CheckboxGroup,
+    RadioCheckbox,
     EditText,
     PreferenceHeader,
     AutoFillEditText,
@@ -193,14 +401,21 @@ import { i18n } from '@/preferenceWindow/plugins/i18n'
   }
 })
 export default class System extends Vue {
-  private spotifyIDKey = 10
-  private spotifySecretKey = 100
   private showSpotifyButton = false
   private showRestartButton = false
   private showInvidiousField = false
+  private showYoutubeField = false
+  private showPipedField = false
+  private showJukeboxField = false
+  private showSpotifyUserPass = false
+  private showVolumeMapField = false
 
   private invidiousInstances: string[] = []
   private invidiousDetails = ''
+
+  private pipedInstances: string[] = []
+
+  private extensions: ExtensionDetails[] = []
 
   private async onInvidiousInstanceChange() {
     try {
@@ -235,7 +450,7 @@ export default class System extends Vue {
     return languages
   }
 
-  private onLanguageChanged(key: CheckboxValue) {
+  private onLanguageChanged(key: Checkbox[]) {
     const active = key.find((val) => val.enabled) ?? this.languageDropdown[0]
     console.debug('changing locale to', active.key)
     i18n.locale = active.key
@@ -251,8 +466,96 @@ export default class System extends Vue {
     }
   }
 
+  private async fetchPipedInstances() {
+    const resp = await (
+      await fetch('https://raw.githubusercontent.com/wiki/TeamPiped/Piped-Frontend/Instances.md')
+    ).text()
+    let skipped = 0
+    const lines = resp.split('\n')
+    this.pipedInstances = lines
+      .map((line) => {
+        const split = line.split('|')
+        if (split.length === 5) {
+          if (skipped < 2) {
+            skipped++
+            return
+          }
+          return split[1].trim()
+        }
+      })
+      .filter((instance) => instance?.length ?? 0 > 0) as string[]
+  }
+
   private defaultSystemSettings: SystemSettings[] = []
-  private defaultAudioSettings: Checkbox[] = []
+  private defaultYoutubeAlts: Checkbox[] = []
+
+  get spotifyCheckboxValues(): Checkbox[] {
+    return [
+      {
+        key: 'use_librespot',
+        title: this.$tc('settings.system.spotify.librespotEnable'),
+        enabled: false
+      }
+    ]
+  }
+
+  get librespotOptions(): Checkbox[] {
+    return [
+      {
+        key: 'use_spotify_canvas',
+        title: this.$tc('settings.system.spotify.librespot.useSpotifyCanvas'),
+        enabled: true
+      },
+      {
+        key: 'use_librespot_playback',
+        title: this.$tc('settings.system.spotify.librespot.useLibrespotPlayback'),
+        enabled: true
+      }
+    ]
+  }
+
+  private onSpotifyValueFetch(value: Checkbox[]) {
+    this.showSpotifyUserPass = value.find((val) => val.key === 'use_librespot')?.enabled ?? false
+  }
+
+  get invidiousAdvancedCheckboxValues(): Checkbox[] {
+    return [
+      {
+        key: 'always_proxy',
+        title: this.$tc('settings.system.youtubeAlternative.invidious.always_proxy'),
+        enabled: true
+      }
+    ]
+  }
+
+  private onVolumePersistValueChange(value: Checkbox[]) {
+    const active = value.find((val) => val.enabled)
+
+    this.showVolumeMapField = false
+    if (active?.key === VolumePersistMode.CLAMP_MAP) {
+      this.showVolumeMapField = true
+    }
+  }
+
+  get volumePersistModeCheckboxValues(): Checkbox[] {
+    return [
+      {
+        key: VolumePersistMode.SINGLE,
+        title: this.$tc('settings.system.volumePersistMode.noPersist'),
+        enabled: true
+      },
+      {
+        key: VolumePersistMode.SEPARATE_VOLUME_MAP,
+        title: this.$tc('settings.system.volumePersistMode.persistSeparateVolumes'),
+        enabled: false
+      },
+      {
+        key: VolumePersistMode.CLAMP_MAP,
+        title: this.$tc('settings.system.volumePersistMode.persistClampVolume'),
+        enabled: false
+      }
+    ]
+  }
 
   get audioCheckboxValues(): Checkbox[] {
     return [
@@ -265,10 +568,60 @@ export default class System extends Vue {
         key: 'sponsorblock',
         title: this.$tc('settings.system.audioSettings.sponsorBlock'),
         enabled: false
-      },
+      }
+    ]
+  }
+
+  get youtubeAdvancedCheckboxValues() {
+    return [
       {
         key: 'youtube_embeds',
-        title: this.$tc('settings.system.audioSettings.useEmbeds'),
+        title: this.$tc('settings.system.youtubeAlternative.youtube.useEmbeds'),
+        enabled: true
+      }
+    ]
+  }
+
+  get youtubeAlternativeCheckboxValues(): Checkbox[] {
+    return [
+      {
+        key: 'use_youtube',
+        title: this.$tc('settings.system.youtubeAlternative.useYoutube'),
+        enabled: true
+      },
+      {
+        key: 'use_invidious',
+        title: this.$tc('settings.system.youtubeAlternative.useInvidious'),
+        enabled: false
+      },
+      {
+        key: 'use_piped',
+        title: this.$tc('settings.system.youtubeAlternative.usePiped'),
+        enabled: false
+      }
+    ]
+  }
+
+  get lyricsCheckboxValues(): Checkbox[] {
+    return [
+      {
+        title: this.$tc('settings.system.lyrics.az_lyrics'),
+        key: 'az_lyrics',
+        enabled: true
+      },
+      {
+        title: this.$tc('settings.system.lyrics.google_lyrics'),
+        key: 'google_lyrics',
+        enabled: true
+      },
+      {
+        title: this.$tc('settings.system.lyrics.spotify_lyrics'),
+        key: 'spotify_lyrics',
+        enabled: true
+      },
+      {
+        title: this.$tc('settings.system.lyrics.genius_lyrics'),
+        key: 'genius_lyrics',
         enabled: true
       }
     ]
@@ -280,16 +633,45 @@ export default class System extends Vue {
       this.minimizeToTrayCheckbox,
       this.hardwareAcceleration,
       this.watchFileChanges,
-      this.useInvidiousCheckbox
+      this.enableJukeboxMode,
+      this.lastLoadedPlaybackState
     ]
   }
 
-  get useInvidiousCheckbox() {
+  get lastLoadedPlaybackState(): SystemSettings {
     return {
-      key: 'use_invidious',
-      title: this.$tc('settings.system.systemSettings.useInvidious'),
+      key: 'last_loaded_playback_state',
+      title: this.$tc('settings.system.systemSettings.lastLoadedPlaybackState'),
       enabled: false
     }
+  }
+
+  get enableJukeboxMode() {
+    return {
+      key: 'jukebox_mode_toggle',
+      title: this.$tc('settings.system.systemSettings.enableJukeboxMode'),
+      enabled: false
+    }
+  }
+
+  get jukeboxOptionalFields(): Checkbox[] {
+    return [
+      {
+        key: 'jukebox_skip',
+        title: this.$tc('settings.system.jukebox.optional_skip'),
+        enabled: false
+      },
+      {
+        key: 'jukebox_shuffle',
+        title: this.$tc('settings.system.jukebox.optional_shuffle'),
+        enabled: false
+      },
+      {
+        key: 'jukebox_repeat',
+        title: this.$tc('settings.system.jukebox.optional_repeat'),
+        enabled: false
+      }
+    ]
   }
 
   get youtubeEnvExists() {
@@ -332,54 +714,142 @@ export default class System extends Vue {
     }
   }
 
-  private openSpotifyHelp() {
-    window.WindowUtils.openExternal('https://github.com/Moosync/Moosync#enabling-spotify-integration')
-  }
-
-  private closeModal() {
-    this.$bvModal.hide('spotify-automate-modal')
-  }
-
-  private onAudioPrefFetch(value: SystemSettings[]) {
-    this.defaultAudioSettings = JSON.parse(JSON.stringify(value))
-  }
-
-  private onAudioPrefChange(value: Checkbox[]) {
-    for (let i = 0; i < value.length; i++) {
-      if (value[i].key === 'youtube_embeds') {
-        this.showRestartButton = this.defaultAudioSettings[i].enabled !== value[i].enabled
+  get queueCheckboxValues(): SystemSettings[] {
+    return [
+      {
+        key: 'clear_queue_playlist',
+        title: this.$tc('settings.system.queueSettings.clearQueue'),
+        enabled: false
       }
+    ]
+  }
+
+  get volumeMapProviders() {
+    const ret = [
+      {
+        key: 'local',
+        title: 'Local',
+        clamp: 100
+      },
+      {
+        key: 'youtube',
+        title: 'Youtube',
+        clamp: 100
+      },
+      {
+        key: 'spotify',
+        title: 'Spotify',
+        clamp: 100
+      }
+    ]
+
+    for (const e of this.extensions) {
+      ret.push({
+        key: e.packageName,
+        title: e.name,
+        clamp: 100
+      })
     }
+
+    return ret
+  }
+
+  get scrobbleProviderCheckboxValues(): Checkbox[] {
+    const ret = [
+      {
+        key: 'local',
+        title: 'Local',
+        enabled: true
+      },
+      {
+        key: 'youtube',
+        title: 'Youtube',
+        enabled: true
+      },
+      {
+        key: 'spotify',
+        title: 'Spotify',
+        enabled: true
+      }
+    ]
+
+    for (const e of this.extensions) {
+      ret.push({
+        key: e.packageName,
+        title: e.name,
+        enabled: true
+      })
+    }
+
+    return ret
+  }
+
+  private openSpotifyHelp() {
+    window.WindowUtils.openExternal('https://moosync.app/wiki/integrations#enabling-spotify-integration')
+  }
+
+  private openYoutubeHelp() {
+    window.WindowUtils.openExternal('https://moosync.app/wiki/integrations#enabling-youtube-integration')
+  }
+
+  private closeSpotifyAutomateModal() {
+    this.$bvModal.hide('spotify-automate-modal')
   }
 
   private onSystemPrefFetch(value: SystemSettings[]) {
     this.defaultSystemSettings = JSON.parse(JSON.stringify(value))
-    this.showInvidiousField = value.find((val) => val.key === 'use_invidious')?.enabled ?? false
+    this.showJukeboxField =
+      this.defaultSystemSettings.find((val) => val.key === this.enableJukeboxMode.key)?.enabled ?? false
   }
 
   private onSystemPrefChange(value: SystemSettings[]) {
     if (Array.isArray(value)) {
       for (let i = 0; i < value.length; i++) {
-        if (value[i].key === 'hardwareAcceleration' || value[i].key === 'use_invidious') {
-          if (value[i].key === 'use_invidious') {
-            this.showInvidiousField = value[i].enabled
-          }
+        if (value[i].key === this.hardwareAcceleration.key) {
           if (this.defaultSystemSettings[i]?.enabled !== value[i].enabled) {
             this.showRestartButton = true
             break
           } else {
             this.showRestartButton = false
           }
+
+          if (value[i].key === this.enableJukeboxMode.key) {
+            this.showJukeboxField = value[i].enabled
+          }
         }
       }
     }
+  }
+
+  private onYoutubeAlternativesChanged(value: Checkbox[]) {
+    if (Array.isArray(value)) {
+      this.showYoutubeField = value.find((val) => val.key === 'use_youtube')?.enabled ?? false
+      this.showInvidiousField = value.find((val) => val.key === 'use_invidious')?.enabled ?? false
+      this.showPipedField = value.find((val) => val.key === 'use_piped')?.enabled ?? false
+
+      for (const val of value) {
+        if (val.enabled !== this.defaultYoutubeAlts.find((val1) => val1.key === val.key)?.enabled) {
+          this.showRestartButton = true
+          break
+        } else {
+          this.showRestartButton = false
+        }
+      }
+    }
+  }
+
+  private onYoutubeAlternativesFetched(value: Checkbox[]) {
+    this.defaultYoutubeAlts = JSON.parse(JSON.stringify(value))
+    this.showYoutubeField = value.find((val) => val.key === 'use_youtube')?.enabled ?? false
+    this.showInvidiousField = value.find((val) => val.key === 'use_invidious')?.enabled ?? false
+    this.showPipedField = value.find((val) => val.key === 'use_piped')?.enabled ?? false
   }
 
   private async restartApp() {
     await window.WindowUtils.restartApp()
   }
 
-  private onSpotifyValueFetch(value: string) {
+  private onSpotifySecretsFetch(value: string) {
     if (!value) {
       this.showSpotifyButton = true
     } else {
@@ -393,14 +863,11 @@ export default class System extends Vue {
 
   private async openSpotifyAutomation() {
     const data = await window.WindowUtils.automateSpotify()
-    this.closeModal()
+    this.closeSpotifyAutomateModal()
 
     if (data) {
       window.PreferenceUtils.saveSelective('spotify.client_id', data.clientID, false)
       window.PreferenceUtils.saveSelective('spotify.client_secret', data.clientSecret, false)
-
-      this.spotifyIDKey += 1
-      this.spotifySecretKey += 1
     }
   }
 
@@ -408,8 +875,28 @@ export default class System extends Vue {
     await window.WindowUtils.updateZoom()
   }
 
+  private refreshPage = false
+  private showClearPreferencesDisclaimer() {
+    this.$bvModal.show('clear-preferences-modal')
+  }
+
+  private async clearPreferences() {
+    await window.PreferenceUtils.resetToDefault()
+    await this.restartApp()
+  }
+
+  private closeClearPreferencesModal() {
+    this.$bvModal.hide('clear-preferences-modal')
+  }
+
+  private async fetchExtensions() {
+    this.extensions = await window.ExtensionUtils.getAllExtensions()
+  }
+
   created() {
+    this.fetchExtensions()
     this.fetchInvidiousInstances()
+    this.fetchPipedInstances()
   }
 }
 </script>
@@ -421,7 +908,7 @@ export default class System extends Vue {
 .title
   text-align: left
 
-.create-button
+.create-button, .delete-button
   font-size: 16px
   font-weight: 400
   color: var(--textInverse)
@@ -432,6 +919,11 @@ export default class System extends Vue {
   padding: 6px 20px 6px 20px
   margin-top: 30px
   border: 0
+
+
+.delete-button
+  background-color: #db2626
+  color: white
 
 .close-icon
   position: absolute

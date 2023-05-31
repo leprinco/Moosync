@@ -8,79 +8,82 @@
 -->
 
 <template>
-  <b-container class="h-100">
-    <TabCarousel
-      :items="searchItems"
-      :showExtraSongListActions="false"
-      :singleSelectMode="true"
-      :defaultSelected="searchItems[0].key"
-      :showBackgroundOnSelect="true"
-      @onItemsChanged="onProviderChanged"
-    />
+  <div class="w-100 h-100">
+    <b-container fluid class="h-100 w-100 search-container">
+      <TabCarousel
+        :items="providers"
+        :showExtraSongListActions="false"
+        :singleSelectMode="true"
+        :defaultSelected="activeProvider"
+        :showBackgroundOnSelect="true"
+        @onItemsChanged="onProviderChanged"
+      />
 
-    <TabCarousel
-      :items="subCategories"
-      :showExtraSongListActions="false"
-      :singleSelectMode="true"
-      :defaultSelected="subCategories[0].key"
-      :showBackgroundOnSelect="true"
-      @onItemsChanged="onSubcategoriesChanged"
-    />
+      <TabCarousel
+        :items="subCategories"
+        :showExtraSongListActions="false"
+        :singleSelectMode="true"
+        :defaultSelected="activeSubcategory"
+        :showBackgroundOnSelect="true"
+        @onItemsChanged="onSubcategoriesChanged"
+      />
 
-    <div v-if="!isFetching">
-      <transition
-        appear
-        name="custom-slide-fade"
-        :enter-active-class="`animate__animated ${transitionEnterActiveClass} animate__fast`"
-        :leave-active-class="`animate__animated ${transitionExitActiveClass} animate__fast`"
-      >
-        <b-row
-          class="scroller-row w-100"
-          v-if="activeSubcategory === 'songs'"
-          :key="`${activeProvider}-${activeSubcategory}`"
+      <div v-if="!isFetching">
+        <transition
+          appear
+          name="custom-slide-fade"
+          :enter-active-class="`animate__animated ${transitionEnterActiveClass} animate__fast`"
+          :leave-active-class="`animate__animated ${transitionExitActiveClass} animate__fast`"
         >
-          <b-col class="h-100">
-            <RecycleScroller
-              class="scroller w-100 h-100"
-              :items="currentSongList"
-              :item-size="94"
-              key-field="_id"
-              :direction="'vertical'"
-            >
-              <template v-slot="{ item, index }">
-                <SongListCompactItem
-                  :item="item"
-                  :index="index"
-                  :selected="selected"
-                  @onRowDoubleClicked="queueSong([arguments[0]])"
-                  @onRowSelected="onRowSelected"
-                  @onRowContext="onRowContext"
-                  @onPlayNowClicked="playTop([arguments[0]])"
-                  @onArtistClicked="gotoArtist"
-                />
-              </template>
-            </RecycleScroller>
-          </b-col>
-        </b-row>
+          <b-row
+            class="scroller-row w-100"
+            v-if="activeSubcategory === 'songs'"
+            :key="`${activeProvider}-${activeSubcategory}`"
+          >
+            <b-col class="h-100">
+              <RecycleScroller
+                class="scroller w-100 h-100"
+                :items="currentSongList"
+                :item-size="94"
+                key-field="_id"
+                :direction="'vertical'"
+              >
+                <template v-slot="{ item, index }">
+                  <SongListCompactItem
+                    :item="item"
+                    :index="index"
+                    :selected="selected"
+                    @onRowDoubleClicked="queueSong([arguments[0]])"
+                    @onRowSelected="onRowSelected"
+                    @onRowContext="onRowContext"
+                    @onPlayNowClicked="playTop([arguments[0]])"
+                    @onArtistClicked="gotoArtist"
+                  />
+                </template>
+              </RecycleScroller>
+            </b-col>
+          </b-row>
 
-        <b-row class="scroller-row w-100" v-else :key="`${activeProvider}-${activeSubcategory}`">
-          <b-col col xl="2" md="3" v-for="entity in currentEntityList" :key="entity[entityKeyField]">
-            <CardView
-              @click.native="onCardClick(entity)"
-              :title="entity[entityTitleField]"
-              :imgSrc="entity[entityImageField]"
-            >
-              <template #defaultCover> <component :is="defaultCoverComponent" /></template>
-            </CardView>
-          </b-col>
-        </b-row>
-      </transition>
-    </div>
-    <div v-else>
-      <b-spinner label="Loading..."></b-spinner>
-    </div>
-    <div v-if="noResults" class="no-results">{{ noResultsReason }}</div>
-  </b-container>
+          <b-row class="scroller-row w-100" v-else :key="`${activeProvider}-${activeSubcategory}`">
+            <b-col col xl="2" md="3" v-for="entity in currentEntityList" :key="entity[entityKeyField]">
+              <CardView
+                @click.native="onCardClick(entity)"
+                :title="entity[entityTitleField]"
+                :imgSrc="entity[entityImageField]"
+                @CardContextMenu="onCardContextMenu(arguments[0], entity)"
+              >
+                <template #defaultCover> <component :is="defaultCoverComponent" /></template>
+              </CardView>
+            </b-col>
+          </b-row>
+        </transition>
+      </div>
+      <div v-else>
+        <b-spinner label="Loading..."></b-spinner>
+      </div>
+      <div v-if="noResults" class="no-results">{{ noResultsReason }}</div>
+    </b-container>
+  </div>
 </template>
 
 <script lang="ts">
@@ -99,6 +102,9 @@ import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import SongListMixin from '@/utils/ui/mixins/SongListMixin'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { ProviderScopes } from '@/utils/commonConstants'
+import { YoutubeAlts } from '@/mainWindow/store/providers'
 
 @Component({
   components: {
@@ -111,37 +117,52 @@ import RouterPushes from '@/utils/ui/mixins/RouterPushes'
     GenreDefault
   }
 })
-export default class SearchPage extends mixins(PlayerControls, SongListMixin, ContextMenuMixin, RouterPushes) {
-  private optionalProviders: TabCarouselItem[] = []
-  private activeProvider = ''
-  private activeSubcategory: keyof SearchResult = 'songs'
+export default class SearchPage extends mixins(
+  PlayerControls,
+  SongListMixin,
+  ContextMenuMixin,
+  RouterPushes,
+  ProviderMixin
+) {
   private oldSubcategory = this.activeSubcategory
 
   private fetchMap: Record<string, boolean> = {}
 
-  private get isFetching() {
+  get isFetching() {
     return this.fetchMap[this.activeProvider]
   }
 
-  private get noResultsReason() {
-    if (this.activeProvider === vxm.providers.youtubeProvider.key) {
-      if (!vxm.providers.loggedInYoutube) {
-        return 'Login to Youtube to use this feature'
-      }
+  get activeProvider() {
+    return vxm.themes.lastSearchTab[0]
+  }
 
-      if (vxm.providers.useInvidious) {
-        if (this.activeSubcategory !== 'songs') {
-          return 'Searching artists, playlists and albums is currently not supported using Invidious'
+  set activeProvider(item: string) {
+    vxm.themes.lastSearchTab = [item, this.activeSubcategory]
+  }
+
+  get activeSubcategory() {
+    return vxm.themes.lastSearchTab[1]
+  }
+
+  set activeSubcategory(item: keyof SearchResult) {
+    vxm.themes.lastSearchTab = [this.activeProvider, item]
+  }
+
+  get noResultsReason() {
+    if (this.activeProvider === vxm.providers.youtubeProvider.key) {
+      if (vxm.providers.youtubeAlt === YoutubeAlts.INVIDIOUS) {
+        if (this.activeSubcategory === 'albums') {
+          return 'Searching albums is currently not supported using Invidious'
+        }
+      } else if (vxm.providers.youtubeAlt === YoutubeAlts.YOUTUBE) {
+        if (this.activeSubcategory === 'albums') {
+          return 'Searching albums is currently not supported for Youtube'
         }
       }
-    }
-
-    if (this.activeProvider === vxm.providers.spotifyProvider.key && !vxm.providers.loggedInSpotify) {
+    } else if (this.activeProvider === vxm.providers.spotifyProvider.key && !vxm.providers.loggedInSpotify) {
       return 'Login to Spotify to use this feature'
-    }
-
-    if (this.activeProvider !== 'local') {
-      return 'You might need to login with the extension to use this feature'
+    } else if (this.activeProvider !== 'local') {
+      return 'Nothing found'
     }
 
     return 'Nothing found'
@@ -157,7 +178,7 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
     return false
   }
 
-  private get defaultCoverComponent() {
+  get defaultCoverComponent() {
     switch (this.activeSubcategory) {
       case 'artists':
         return 'ArtistDefault'
@@ -171,26 +192,32 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
     }
   }
 
-  private get searchItems(): TabCarouselItem[] {
-    return [
-      {
-        title: 'Local',
-        key: 'local'
-      },
-      {
-        title: 'Youtube',
-        key: vxm.providers.youtubeProvider.key
-      },
-      {
-        title: 'Spotify',
-        key: vxm.providers.spotifyProvider.key
-      },
-      ...this.optionalProviders
-    ]
+  private fetchProviders() {
+    const parsedProviders: TabCarouselItem[] = []
+    parsedProviders.push({
+      title: 'Local',
+      key: 'local',
+      defaultChecked: this.activeProvider === 'local'
+    })
+
+    const providers = this.getProvidersByScope(ProviderScopes.SEARCH)
+    parsedProviders.push(
+      ...providers.map((val) => ({
+        title: val.Title,
+        key: val.key,
+        defaultChecked: this.activeProvider === val.key
+      }))
+    )
+
+    return parsedProviders
   }
 
-  private get subCategories(): TabCarouselItem[] {
-    return [
+  get providers() {
+    return this.fetchProviders()
+  }
+
+  get subCategories(): TabCarouselItem[] {
+    const subCategories: TabCarouselItem[] = [
       {
         title: 'Songs',
         key: 'songs'
@@ -208,9 +235,15 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
         key: 'albums'
       }
     ]
+
+    for (const s of subCategories) {
+      s.defaultChecked = this.activeSubcategory === s.key
+    }
+
+    return subCategories
   }
 
-  private get currentSongList() {
+  get currentSongList() {
     if (this.activeProvider) {
       return this.results[this.activeProvider]?.songs ?? []
     }
@@ -218,7 +251,7 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
     return []
   }
 
-  private get currentEntityList() {
+  get currentEntityList() {
     if (this.activeProvider) {
       const providerResults = this.results[this.activeProvider]
       if (providerResults) {
@@ -244,7 +277,7 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
     }
   }
 
-  private get entityTitleField() {
+  get entityTitleField() {
     switch (this.activeSubcategory) {
       default:
       case 'songs':
@@ -260,7 +293,7 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
     }
   }
 
-  private get entityImageField() {
+  get entityImageField() {
     switch (this.activeSubcategory) {
       default:
       case 'songs':
@@ -276,8 +309,8 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
     }
   }
 
-  private transitionEnterActiveClass = 'animate__slideInLeft'
-  private transitionExitActiveClass = 'animate__slideOutLeft'
+  transitionEnterActiveClass = 'animate__slideInLeft'
+  transitionExitActiveClass = 'animate__slideOutLeft'
 
   private results: Record<string, SearchResult> = {}
 
@@ -288,9 +321,13 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
   @Watch('searchTerm', { immediate: true })
   private onSearchTermChanged() {
     this.fetchLocalSongList()
-    this.fetchProviderSongList(vxm.providers.youtubeProvider)
-    this.fetchProviderSongList(vxm.providers.spotifyProvider)
-    this.fetchExtensionSongList()
+
+    for (const p of this.providers) {
+      const provider = this.getProviderByKey(p.key)
+      if (provider) {
+        this.fetchProviderSongList(provider)
+      }
+    }
   }
 
   private async fetchLocalSongList() {
@@ -302,44 +339,25 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
   private async fetchProviderSongList(provider: GenericProvider) {
     Vue.set(this.fetchMap, provider.key, true)
 
-    Vue.set(this.results, provider.key, {
-      songs: await provider.searchSongs(this.searchTerm),
-      artists: await provider.searchArtists(this.searchTerm),
-      playlists: await provider.searchPlaylists(this.searchTerm),
-      albums: await provider.searchAlbum(this.searchTerm),
-      genres: []
-    })
+    try {
+      Vue.set(this.results, provider.key, {
+        songs: await provider.searchSongs(this.searchTerm),
+        artists: await provider.searchArtists(this.searchTerm),
+        playlists: await provider.searchPlaylists(this.searchTerm),
+        albums: await provider.searchAlbum(this.searchTerm),
+        genres: []
+      })
+    } catch (e) {
+      console.error(e)
+    }
     Vue.set(this.fetchMap, provider.key, false)
   }
 
-  private async fetchExtensionSongList() {
-    for (const p of this.optionalProviders) {
-      Vue.set(this.fetchMap, p.key, true)
-
-      window.ExtensionUtils.sendEvent({
-        type: 'requestedSearchResult',
-        data: [this.searchTerm],
-        packageName: p.key
-      }).then((data) => {
-        if (data && data[p.key]) {
-          Vue.set(this.results, p.key, {
-            songs: data[p.key]?.songs,
-            artists: data[p.key]?.artists,
-            playlists: data[p.key]?.playlists,
-            albums: data[p.key]?.albums,
-            genre: []
-          })
-        }
-        Vue.set(this.fetchMap, p.key, false)
-      })
-    }
-  }
-
-  private onProviderChanged({ key, checked }: { key: string; checked: boolean }) {
+  onProviderChanged({ key, checked }: { key: string; checked: boolean }) {
     if (checked) this.activeProvider = key
   }
 
-  private onSubcategoriesChanged({ key, checked }: { key: string; checked: boolean }) {
+  onSubcategoriesChanged({ key, checked }: { key: string; checked: boolean }) {
     if (checked) {
       this.activeSubcategory = key as keyof SearchResult
 
@@ -358,18 +376,6 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
     }
   }
 
-  private async fetchSearchProviders() {
-    const providers = await window.ExtensionUtils.getRegisteredSearchProviders()
-    for (const [key, value] of Object.entries(providers)) {
-      this.optionalProviders.push({ title: value, key })
-    }
-    await this.fetchExtensionSongList()
-  }
-
-  mounted() {
-    this.fetchSearchProviders()
-  }
-
   private onRowContext(event: PointerEvent, item: Song) {
     this.getContextMenu(event, {
       type: 'SONGS',
@@ -377,26 +383,39 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
     })
   }
 
-  private onCardClick(item: typeof this.currentEntityList[0]) {
+  onCardClick(item: (typeof this.currentEntityList)[0]) {
     switch (this.activeSubcategory) {
       case 'artists':
-        this.gotoArtist(item as Artists)
+        this.gotoArtist(item as Artists, [this.activeProvider])
         break
       case 'playlists':
         this.gotoPlaylist(item as Playlist)
         break
       case 'albums':
-        this.gotoAlbum(item as Album)
+        this.gotoAlbum(item as Album, [this.activeProvider])
         break
       case 'genres':
         this.gotoGenre(item as Genre)
         break
     }
   }
+
+  onCardContextMenu(event: PointerEvent, item: (typeof this.currentEntityList)[0]) {
+    switch (this.activeSubcategory) {
+      case 'playlists':
+        this.getContextMenu(event, {
+          type: 'PLAYLIST',
+          args: { playlist: item as ExtendedPlaylist, isRemote: this.activeProvider !== 'local' }
+        })
+        break
+      default:
+        break
+    }
+  }
 }
 </script>
 
-<style lang="sass">
+<style lang="sass" scoped>
 .scroller-row
   position: absolute
   height: calc(100% - 140px)
@@ -405,4 +424,7 @@ export default class SearchPage extends mixins(PlayerControls, SongListMixin, Co
 .no-results
   font-size: 18px
   margin-top: 35px
+
+.search-container
+  padding-top: 20px
 </style>

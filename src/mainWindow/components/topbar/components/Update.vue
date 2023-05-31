@@ -9,7 +9,7 @@
 
 <template>
   <div>
-    <UpdateIcon v-if="showIcon" @click.native="confirmUpdate" />
+    <UpdateIcon @click.native="confirmUpdate" />
     <ConfirmationModal keyword="update Moosync" id="updateConfirmationModal" @confirm="updateNow" />
   </div>
 </template>
@@ -17,7 +17,6 @@
 import UpdateIcon from '@/icons/UpdateIcon.vue'
 
 import { Component, Vue } from 'vue-property-decorator'
-import { vxm } from '@/mainWindow/store'
 import ConfirmationModal from '@/commonComponents/ConfirmationModal.vue'
 
 @Component({
@@ -26,12 +25,8 @@ import ConfirmationModal from '@/commonComponents/ConfirmationModal.vue'
     ConfirmationModal
   }
 })
-export default class TopBar extends Vue {
-  get showIcon() {
-    return vxm.themes.isUpdateAvailable
-  }
-
-  private confirmUpdate() {
+export default class Update extends Vue {
+  confirmUpdate() {
     this.$bvModal.show('updateConfirmationModal')
   }
 

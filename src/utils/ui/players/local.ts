@@ -8,37 +8,56 @@
  */
 
 import { Player } from './player'
+import { wrapHTMLAudioElement as wrapPlayerInstance } from './wrapper/htmlAudioElement'
 
 export class LocalPlayer extends Player {
-  playerInstance: CustomAudioInstance
+  playerInstance!: CustomAudioInstance
   private track: MediaElementAudioSourceNode | undefined
   private context: AudioContext | undefined
 
-  constructor(playerInstance: CustomAudioInstance) {
-    super()
-    this.playerInstance = playerInstance
-    this.playerInstance.load()
+  public provides(): PlayerTypes[] {
+    return ['LOCAL', 'URL']
   }
 
-  load(src?: string, volume?: number, autoplay?: boolean): void {
-    src && (this.playerInstance.src = src)
-    this.playerInstance.load()
+  get key() {
+    return 'LOCAL'
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  public async canPlay(_: string): Promise<boolean> {
+    return true
+  }
+
+  // TODO: Typecheck playerInstance somehow
+  protected async _initialize(playerInstance: unknown): Promise<void> {
+    if (
+      playerInstance &&
+      (playerInstance instanceof HTMLAudioElement || (playerInstance as CustomAudioInstance).isCustomAudio)
+    ) {
+      this.playerInstance = wrapPlayerInstance(playerInstance as CustomAudioInstance)
+    } else {
+      throw new Error('passed player is not an instance of CustomAudioInstance')
+    }
+  }
+
+  protected async _load(src?: string, volume?: number, autoplay?: boolean): Promise<void> {
+    if (src) {
+      console.debug('Loading src', src)
+      this.playerInstance.setSrc(src, autoplay)
+    }
     volume && (this.volume = volume)
-    autoplay && this.play()
   }
 
-  async play(): Promise<void> {
+  protected async _play(): Promise<void> {
     if (this.playerInstance.paused) await this.playerInstance?.play()
   }
 
-  pause(): void {
+  protected _pause(): void {
     if (!this.playerInstance.paused) this.playerInstance?.pause()
   }
 
-  stop(): void {
-    this.playerInstance.removeAttribute('src')
-    this.playerInstance.srcObject = null
-    this.playerInstance.load()
+  protected _stop(): void {
+    this.playerInstance.stop()
   }
 
   get currentTime(): number {
@@ -71,10 +90,21 @@ export class LocalPlayer extends Player {
   }
 
   protected listenOnError(callback: (err: Error) => void): void {
-    this.playerInstance.onerror = (event, source, line, col, err) => err && callback && callback(err)
+    this.playerInstance.onerror = (event, source, line, col, err) => {
+      console.log('error', event, source, line, col, err)
+      if (callback) {
+        if (err) {
+          callback(err)
+        } else {
+          if (typeof event === 'string') {
+            callback(new Error(event))
+          } else if (event instanceof Event) {
+            callback(new Error(`${event.type}: loading source`))
+          }
+        }
+      }
+    }
   }
-
-  private listeners: { [key: string]: () => void } = {}
 
   protected listenOnStateChange(callback: (state: PlayerState) => void): void {
     const play = () => callback('PLAYING')
@@ -84,10 +114,6 @@ export class LocalPlayer extends Player {
     this.playerInstance.addEventListener('play', play)
     this.playerInstance.addEventListener('pause', pause)
     this.playerInstance.addEventListener('ended', stop)
-
-    this.listeners['play'] = play
-    this.listeners['pause'] = pause
-    this.listeners['ended'] = stop
   }
 
   protected listenOnBuffer(callback: () => void): void {
@@ -95,10 +121,15 @@ export class LocalPlayer extends Player {
   }
 
   removeAllListeners(): void {
-    this.playerInstance.onended = null
-    this.playerInstance.ontimeupdate = null
-    for (const [key, value] of Object.entries(this.listeners)) {
-      this.playerInstance.removeEventListener(key as keyof HTMLMediaElementEventMap, value)
+    if (this.playerInstance) {
+      this.playerInstance.onended = null
+      this.playerInstance.ontimeupdate = null
+      this.playerInstance.onload = null
+      this.playerInstance.onloadeddata = null
+      this.playerInstance.onloadstart = null
+      for (const [key, value] of Object.entries(this.playerInstance.listeners ?? {})) {
+        this.playerInstance.removeEventListener(key as keyof HTMLMediaElementEventMap, value)
+      }
     }
   }
 

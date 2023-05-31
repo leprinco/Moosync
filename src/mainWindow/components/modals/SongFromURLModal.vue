@@ -17,10 +17,14 @@
             <b-img
               v-else
               class="song-url-cover"
-              :src="getValidImageHigh(parsedSong)"
+              :src="getImgSrc(getValidImageHigh(parsedSong))"
               @error="handleImageError"
               referrerPolicy="no-referrer"
             ></b-img>
+
+            <div v-if="isLoading" class="loading-spinner d-flex justify-content-center">
+              <b-spinner class="align-self-center" />
+            </div>
           </b-col>
           <b-col cols="9">
             <b-row no-gutters class="song-url-details">
@@ -55,7 +59,7 @@
       </b-container>
       <div class="mt-3 warning" v-if="!isLoggedIn">* Requires to be logged in to respective services</div>
       <b-button class="close-button ml-3" @click="close">Close</b-button>
-      <b-button class="create-button" @click="addToLibrary">Add</b-button>
+      <b-button class="create-button" :disabled="!addButtonEnabled" @click="addToLibrary">Add</b-button>
     </div>
   </b-modal>
 </template>
@@ -71,6 +75,8 @@ import { v4 } from 'uuid'
 import { mixins } from 'vue-class-component'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { ProviderScopes } from '@/utils/commonConstants'
 
 @Component({
   components: {
@@ -78,56 +84,75 @@ import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
     InputGroup
   }
 })
-export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong) {
+export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong, ProviderMixin) {
   @Prop({ default: 'SongFromURL' })
-  private id!: string
+  id!: string
 
-  private forceEmptyImg = false
+  forceEmptyImg = false
 
-  private parsedSong: Song | undefined | null = null
+  parsedSong: Song | null = null
 
-  private songTitle = ''
-  private songArtist = ''
+  songTitle = ''
+  songArtist = ''
+
+  isLoading = false
+
+  addButtonEnabled = false
 
   private refreshCallback?: () => void
 
-  private handleImageError() {
+  handleImageError() {
     this.forceEmptyImg = true
   }
 
-  private isLoggedIn = false
+  isLoggedIn = false
 
-  private async parseURL(url: string) {
-    this.forceEmptyImg = false
-    this.parsedSong =
-      (await vxm.providers.youtubeProvider.getSongDetails(url)) ??
-      (await vxm.providers.spotifyProvider.getSongDetails(url)) ??
-      (await this.parseFromExtension(url)) ??
-      (await this.parseStream(url)) ??
-      null
+  async parseURL(url: string) {
+    if (url) {
+      this.isLoading = true
+      this.addButtonEnabled = false
 
-    if (this.parsedSong) {
-      this.songTitle = this.parsedSong.title ?? ''
-      this.songArtist = this.parsedSong.artists?.map((val) => val.artist_name).join(', ') ?? ''
-    } else {
-      this.songTitle = ''
-      this.songArtist = ''
-    }
-  }
+      this.forceEmptyImg = false
 
-  private async parseFromExtension(url: string): Promise<Song | undefined> {
-    const res = await window.ExtensionUtils.sendEvent({
-      type: 'requestedSongFromURL',
-      data: [url]
-    })
+      this.parsedSong = (await window.FileUtils.scanSingleSong(url)).song
 
-    if (res) {
-      for (const value of Object.values(res)) {
-        if (value && value.song) {
-          return value.song
+      if (!this.parsedSong) {
+        const providers = this.getProvidersByScope(ProviderScopes.SONG_FROM_URL)
+        for (const p of providers) {
+          console.debug('matching url to', p, p.matchSongUrl(url))
+          if (p.matchSongUrl(url)) {
+            try {
+              this.parsedSong = (await p.getSongDetails(url)) ?? null
+              if (this.parsedSong) {
+                break
+              }
+            } catch (e) {
+              console.error(e)
+            }
+          }
         }
       }
+
+      if (!this.parsedSong) {
+        this.parsedSong = (await this.parseStream(url)) ?? null
+      }
+
+      if (this.parsedSong) {
+        this.songTitle = this.parsedSong.title ?? ''
+        this.songArtist = this.parsedSong.artists?.map((val) => val.artist_name).join(', ') ?? ''
+        this.addButtonEnabled = true
+      } else {
+        this.songTitle = ''
+        this.songArtist = ''
+      }
+    } else {
+      this.addButtonEnabled = false
+      this.songTitle = ''
+      this.songArtist = ''
+      this.parsedSong = null
     }
+
+    this.isLoading = false
   }
 
   private async parseStream(url: string): Promise<Song | undefined> {
@@ -160,7 +185,7 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong) {
     return ret
   }
 
-  private addToLibrary() {
+  addToLibrary() {
     if (this.parsedSong) {
       this.addSongsToLibrary({
         ...this.parsedSong,
@@ -173,7 +198,7 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong) {
     }
   }
 
-  private close() {
+  close() {
     this.parsedSong = null
     this.songTitle = ''
     this.songArtist = ''
@@ -184,7 +209,8 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong) {
     bus.$on(EventBus.SHOW_SONG_FROM_URL_MODAL, (refreshCallback: () => void) => {
       this.refreshCallback = refreshCallback
       this.forceEmptyImg = false
-      this.isLoggedIn = vxm.providers.youtubeProvider.loggedIn && vxm.providers.spotifyProvider.loggedIn
+      this.addButtonEnabled = false
+      this.isLoggedIn = vxm.providers.loggedInYoutube && vxm.providers.loggedInSpotify
       this.$bvModal.show(this.id)
     })
   }
@@ -309,4 +335,13 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong) {
 
 .warning
   color: #EB2525
+
+.loading-spinner
+  position: absolute
+  left:  0
+  top: 0
+  width: 100%
+  height: 100%
+  background: rgba(0, 0, 0, 0.4)
+  border-radius: 16px
 </style>

@@ -20,9 +20,13 @@
       :detailsButtonGroup="buttonGroups"
       :isLoading="isLoading"
       :isRemote="isRemote"
+      :onSongContextMenuOverride="onSongContextMenuOverride"
       @playAll="playPlaylist"
       @addToQueue="addPlaylistToQueue"
       @addToLibrary="addPlaylistToLibrary"
+      @onScrollEnd="loadNextPage"
+      @onSearchChange="onSearchChange"
+      @playRandom="playRandom"
     />
   </div>
 </template>
@@ -33,36 +37,49 @@ import SongView from '@/mainWindow/components/songView/SongView.vue'
 
 import { mixins } from 'vue-class-component'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
-import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
+import { ProviderScopes } from '@/utils/commonConstants'
+import { arrayDiff, emptyGen, getRandomFromArray } from '@/utils/common'
+import ProviderFetchMixin from '@/utils/ui/mixins/ProviderFetchMixin'
 
 @Component({
   components: {
     SongView
   }
 })
-export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
+export default class SinglePlaylistView extends mixins(ContextMenuMixin, ProviderFetchMixin) {
   @Prop({ default: () => () => undefined })
   private enableRefresh!: () => void
 
-  private songList: Song[] = []
+  private isAddedInLibrary = false
 
-  private isLoading = false
+  private invalidateCache = false
 
-  private playlist: ExtendedPlaylist | null = null
+  private providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_SONGS)
+
+  private getPlaylistOwnerProvider() {
+    if (this.playlist?.playlist_id) {
+      for (const p of this.providers) {
+        if (p.matchEntityId(this.playlist?.playlist_id)) {
+          return p
+        }
+      }
+    }
+  }
 
   get buttonGroups(): SongDetailButtons {
     return {
       enableContainer: true,
-      enableLibraryStore: !!this.isRemote()
+      enableLibraryStore: this.isRemote() && !this.isAddedInLibrary,
+      playRandom: !!(this.filteredSongList.length > 150)
     }
   }
 
   get defaultDetails(): SongDetailDefaults {
     return {
       defaultTitle: this.playlist?.playlist_name ?? '',
-      defaultSubSubtitle: this.$tc('songView.details.songCount', this.songList.length),
+      defaultSubSubtitle: this.$tc('songView.details.songCount', this.filteredSongList.length),
       defaultCover: this.playlist?.playlist_coverPath ?? ''
     }
   }
@@ -79,19 +96,48 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
     return this.$route.query.extension
   }
 
-  private isRemote() {
-    return this.isYoutube || this.isSpotify || this.isExtension
+  isRemote() {
+    return !!(this.isYoutube || this.isSpotify || this.isExtension)
   }
 
-  private async refresh(invalidateCache = false) {
-    this.fetchPlaylist()
-
-    this.songList = []
-    await this.fetchSongListAsync(invalidateCache)
+  private async refresh() {
+    this.clearSongList()
+    this.clearNextPageTokens()
+    await this.fetchSongList()
   }
 
-  created() {
+  async created() {
+    this.localSongFetch = async (sortBy) =>
+      window.SearchUtils.searchSongsByOptions({
+        playlist: {
+          playlist_id: this.$route.query.playlist_id as string
+        },
+        sortBy
+      })
+
+    this.generator = (provider, nextPageToken) => {
+      if (this.playlist) {
+        return provider.getPlaylistContent(
+          provider.sanitizeId(this.playlist.playlist_id, 'PLAYLIST'),
+          this.invalidateCache,
+          nextPageToken
+        )
+      } else {
+        return emptyGen()
+      }
+    }
+
+    this.isAddedInLibrary = !!(
+      await window.SearchUtils.searchEntityByOptions<Playlist>({
+        playlist: { playlist_id: this.playlist.playlist_id }
+      })
+    )[0]
     this.refresh()
+
+    const owner = this.getPlaylistOwnerProvider()
+    if (owner) {
+      this.onProviderChanged({ key: owner?.key, checked: true })
+    }
   }
 
   mounted() {
@@ -101,12 +147,13 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
 
   private listenGlobalRefresh() {
     bus.$on(EventBus.REFRESH_PAGE, () => {
-      this.refresh(true)
+      this.invalidateCache = true
+      this.refresh()
     })
   }
 
-  private fetchPlaylist() {
-    this.playlist = {
+  private get playlist() {
+    return {
       playlist_id: this.$route.query.playlist_id as string,
       playlist_name: this.$route.query.playlist_name as string,
       playlist_coverPath: this.$route.query.playlist_coverPath as string,
@@ -116,95 +163,48 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin) {
     }
   }
 
-  private async fetchLocalSongList() {
-    this.isLoading = true
-    if (this.playlist) {
-      this.songList = await window.SearchUtils.searchSongsByOptions({
-        playlist: {
-          playlist_id: this.playlist.playlist_id as string
-        },
-        sortBy: vxm.themes.songSortBy
-      })
-    }
-    this.isLoading = false
-  }
-
-  private async fetchYoutube(invalidateCache = false) {
-    this.isLoading = true
-    const generator = vxm.providers.youtubeProvider.getPlaylistContent(
-      (this.$route.query.id as string)?.replace('youtube-playlist:', ''),
-      invalidateCache
-    )
-
-    if (generator) {
-      for await (const items of generator) {
-        this.songList.push(...items)
-      }
-    }
-    this.isLoading = false
-  }
-
-  private async fetchSpotify(invalidateCache = false) {
-    this.isLoading = true
-    const generator = vxm.providers.spotifyProvider.getPlaylistContent(
-      (this.$route.query.id as string)?.replace('spotify-playlist:', ''),
-      invalidateCache
-    )
-
-    if (generator) {
-      for await (const items of generator) {
-        this.songList.push(...items)
-      }
+  async playPlaylist() {
+    const clearQueue = (await window.PreferenceUtils.loadSelectiveArrayItem<Checkbox>('queue.clear_queue_playlist'))
+      ?.enabled
+    if (clearQueue) {
+      this.clearQueue()
     }
 
-    this.isLoading = false
+    this.playTop(this.filteredSongList)
+    this.fetchAll(this.queueSong)
   }
 
-  private async fetchExtension(invalidateCache = false) {
-    this.isLoading = true
-    const extension = this.playlist?.extension
-    const playlistId = this.playlist?.playlist_id
+  async addPlaylistToQueue() {
+    this.queueSong(this.filteredSongList)
+    this.fetchAll(this.queueSong)
+  }
 
-    if (playlistId && extension) {
-      const data = await window.ExtensionUtils.sendEvent({
-        type: 'requestedPlaylistSongs',
-        data: [playlistId, invalidateCache],
-        packageName: extension
-      })
+  addPlaylistToLibrary() {
+    window.DBUtils.createPlaylist(this.playlist)
+    this.$toasted.show(`Added ${this.playlist.playlist_name} to library`)
+  }
 
-      if (data && data[extension]) {
-        this.songList.push(...(data[extension] as SongsReturnType).songs)
+  onSearchChange() {
+    this.fetchAll()
+  }
+
+  async playRandom() {
+    await this.fetchAll()
+    const randomSongs = getRandomFromArray(this.filteredSongList, 100)
+    this.queueSong(randomSongs)
+  }
+
+  onSongContextMenuOverride(event: PointerEvent, songs: Song[]) {
+    this.getContextMenu(event, {
+      type: 'PLAYLIST_SONGS',
+      args: {
+        playlistId: this.playlist.playlist_id,
+        songs,
+        isRemote: this.isRemote(),
+        refreshCallback: () =>
+          this.filteredSongList.splice(0, this.filteredSongList.length, ...arrayDiff(this.filteredSongList, songs))
       }
-    }
-
-    this.isLoading = false
-  }
-
-  private async fetchSongListAsync(invalidateCache = false) {
-    if (this.playlist) {
-      if (!this.isRemote()) {
-        return this.fetchLocalSongList()
-      }
-
-      if (!this.isExtension) {
-        if (this.isYoutube) return this.fetchYoutube(invalidateCache)
-        else if (this.isSpotify) return this.fetchSpotify(invalidateCache)
-      } else {
-        return this.fetchExtension(invalidateCache)
-      }
-    }
-  }
-
-  private playPlaylist() {
-    this.playTop(this.songList)
-  }
-
-  private addPlaylistToQueue() {
-    this.queueSong(this.songList)
-  }
-
-  private addPlaylistToLibrary() {
-    this.addSongsToLibrary(...this.songList)
+    })
   }
 }
 </script>

@@ -20,14 +20,17 @@ type ContextMenuArgs =
   | {
       type: 'GENERAL_SONGS'
       args: {
-        sortOptions?: Sort<SongSortOptions>
-        refreshCallback?: () => void
+        sortOptions?: Sort<SongSortOptions[]>
+        showHiddenToggle?: boolean
+        isShowingHidden?: boolean
+        refreshCallback?: (showHidden?: boolean) => void
       }
     }
   | {
       type: 'PLAYLIST'
       args: {
-        playlist: Playlist
+        playlist: ExtendedPlaylist
+        isRemote: boolean
         deleteCallback?: () => void
       }
     }
@@ -45,12 +48,19 @@ type ContextMenuArgs =
         refreshCallback: () => void
         song: Song
         songIndex: number
+        sortOptions: Optional<Sort<SongSortOptions[]>, 'current'>
       }
     }
   | {
       type: 'ENTITY_SORT'
       args: {
         sortOptions: Sort<NormalSortOptions>
+      }
+    }
+  | {
+      type: 'PLAYLIST_SORT'
+      args: {
+        sortOptions: Sort<PlaylistSortOptions>
       }
     }
   | {
@@ -68,11 +78,24 @@ type ContextMenuArgs =
   | {
       type: 'SONG_SORT'
       args: {
-        sortOptions: Sort<SongSortOptions>
+        sortOptions: Sort<SongSortOptions[]>
+      }
+    }
+  | {
+      type: 'PLAYLIST_SONGS'
+      args: {
+        exclude?: string
+        refreshCallback?: () => void
+        songs: Song[]
+        isRemote?: boolean
+        playlistId: string
       }
     }
 
-type SongSortOptions = { type: 'title' | 'date_added'; asc: boolean }
+type SongSortOptions = {
+  type: 'title' | 'date_added' | 'playCount' | 'album' | 'artist' | 'genre' | 'track_no'
+  asc: boolean
+}
 type PlaylistSortOptions = { type: 'name' | 'provider'; asc: boolean }
 type NormalSortOptions = { type: 'name'; asc: boolean }
 

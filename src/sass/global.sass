@@ -150,8 +150,8 @@ img
 .icon-container
   z-index: 1
   position: absolute
-  top: 16px
-  left: 0px
+  top: 25px
+  left: 8px
   padding-left: 2px
   padding-right: 4px
   border-radius: 0 8px 8px 0
@@ -165,8 +165,12 @@ img
   top: 0
   opacity: 0
 
+.overlay-base
+  transition: opacity 0.2s ease
+
 .img-container
   position: relative
+  transition: opacity 0.2s ease
   &:hover
     .overlay-base
       opacity: 0.2
@@ -363,23 +367,6 @@ img
 @import 'node_modules/bootstrap/scss/bootstrap-grid.scss'
 @import 'node_modules/bootstrap-vue/src/index.scss'
 @import 'node_modules/@voerro/vue-tagsinput/dist/style'
-
-@include media-breakpoint-down(md)
-  .slider-container
-    right: -200px
-    bottom: 85px
-    height: 40px
-    width: 175px
-    max-width: 175px
-    position: absolute
-    background: var(--tertiary)
-    border-radius: 16px
-    padding-left: 15px !important
-    transform: rotate(-90deg)
-    transform-origin: 0px 88px
-    transition: opacity 0.2s ease-in-out
-    z-index: 9999
-    opacity: 0
 
 @include media-breakpoint-up(lg)
   .slider-container

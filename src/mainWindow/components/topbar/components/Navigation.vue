@@ -30,11 +30,11 @@ import NavForward from '@/icons/NavForwardIcon.vue'
   }
 })
 export default class Notifications extends Vue {
-  private forward() {
+  forward() {
     this.$router.forward()
   }
 
-  private back() {
+  back() {
     this.$router.back()
   }
 }

@@ -11,51 +11,19 @@
   <b-container fluid class="item-container" @contextmenu="getItemContextMenu">
     <b-row class="item-row">
       <b-col cols="auto" class="img-container h-100 d-flex justify-content-start">
-        <b-img
-          class="h-100 image"
-          v-if="!forceEmptyImg && image"
-          :src="image"
-          @error="handlerImageError(arguments[0], handlerError)"
-          referrerPolicy="no-referrer"
+        <LowImageCol
+          @click.native="playSong"
+          height="56px"
+          width="56px"
+          :src="getValidImageLow(song)"
+          :showEqualizer="current"
+          :isSongPlaying="isSongPlaying"
         />
-        <SongDefault v-else class="h-100 image" />
-        <div @click="playSong" class="play-button d-flex justify-content-center">
-          <Play2 class="align-self-center" />
-        </div>
-        <div v-if="current" class="now-playing d-flex justify-content-center">
-          <AnimatedEqualizer class="animated-playing" />
-        </div>
       </b-col>
       <b-col xl="8" lg="7" cols="5">
         <div class="d-flex">
           <div class="text-left song-title text-truncate">{{ song.title }}</div>
-          <YoutubeIcon
-            v-if="iconType === 'YOUTUBE'"
-            :color="'#E62017'"
-            :filled="true"
-            :dropShadow="true"
-            class="provider-icon"
-          />
-          <SpotifyIcon
-            v-if="iconType === 'SPOTIFY'"
-            :color="'#1ED760'"
-            :filled="true"
-            :dropShadow="true"
-            class="provider-icon"
-          />
-
-          <inline-svg
-            class="provider-icon"
-            v-if="iconURL && iconType === 'URL' && iconURL.endsWith('svg')"
-            :src="iconURL"
-          />
-          <img
-            referrerPolicy="no-referrer"
-            v-if="iconURL && iconType === 'URL' && !iconURL.endsWith('svg')"
-            :src="iconURL"
-            alt="provider icon"
-            class="provider-icon"
-          />
+          <IconHandler :item="song" />
         </div>
 
         <div class="text-left song-subtitle text-truncate">
@@ -78,96 +46,69 @@ import { Component, Prop } from 'vue-property-decorator'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
 import { vxm } from '@/mainWindow/store'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
-import Play2 from '@/icons/PlayIcon2.vue'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
-import YoutubeIcon from '@/icons/YoutubeIcon.vue'
-import SpotifyIcon from '@/icons/SpotifyIcon.vue'
 import TrashIcon from '@/icons/TrashIcon.vue'
 
-import AnimatedEqualizer from '@/icons/AnimatedEqualizerIcon.vue'
-
+import LowImageCol from '@/mainWindow/components/generic/LowImageCol.vue'
+import IconHandler from '@/mainWindow/components/generic/IconHandler.vue'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import ErrorHandler from '@/utils/ui/mixins/errorHandler'
+import { bus } from '@/mainWindow/main'
+import { EventBus } from '@/utils/main/ipc/constants'
 
 @Component({
   components: {
     SongDefault,
-    Play2,
-    YoutubeIcon,
-    SpotifyIcon,
-    AnimatedEqualizer,
-    TrashIcon
+    IconHandler,
+    TrashIcon,
+    LowImageCol
   }
 })
-export default class MusicInfo extends mixins(ImgLoader, PlayerControls, ContextMenuMixin, ErrorHandler) {
+export default class QueueItem extends mixins(ImgLoader, PlayerControls, ContextMenuMixin, ErrorHandler) {
   @Prop({ default: '' })
-  private songID!: string
+  song!: Song
 
   @Prop({ default: false })
-  private current!: boolean
+  current!: boolean
 
   @Prop({ default: -1 })
-  private index!: number
-
-  private image: string | null = null
-
-  private iconType = ''
-  private iconURL = ''
+  index!: number
 
   get queueProvider() {
     return this.isSyncing ? vxm.sync : vxm.player
   }
 
-  private async getIconType() {
-    this.iconURL = ''
-    if (this.song.providerExtension) {
-      const icon = await window.ExtensionUtils.getExtensionIcon(this.song.providerExtension)
-      if (icon) {
-        this.iconURL = 'media://' + icon
-        return 'URL'
-      }
-    }
-
-    return this.song.type
+  get isSongPlaying() {
+    return vxm.player.playerState === 'PLAYING'
   }
 
-  async created() {
-    this.iconType = (await this.getIconType()) ?? ''
-    if (this.isSyncing) {
-      const tmp = await window.FileUtils.isImageExists(this.songID)
-      if (tmp) this.image = 'media://' + tmp
-    }
-    if (!this.image) this.image = this.getImgSrc(this.getValidImageLow(this.song))
-  }
-
-  get song() {
-    return this.queueProvider.queueData[this.songID]
-  }
-
-  private playSong() {
+  playSong() {
     this.playFromQueue(this.index)
   }
 
-  private removeSong() {
+  removeSong() {
+    bus.$emit(EventBus.IGNORE_MUSIC_INFO_SCROLL)
     this.removeFromQueue(this.index)
   }
 
-  private getItemContextMenu(event: Event) {
+  private sortQueue(options: SongSortOptions[]) {
+    vxm.themes.queueSortBy = options
+  }
+
+  getItemContextMenu(event: Event) {
     this.getContextMenu(event, {
       type: 'QUEUE_ITEM',
       args: {
         isRemote: this.song.type === 'YOUTUBE' || this.song.type === 'SPOTIFY',
         song: this.song,
         songIndex: this.index,
-        refreshCallback: () => this.removeSong()
+        refreshCallback: () => this.removeSong(),
+        sortOptions: {
+          callback: this.sortQueue,
+          current: vxm.themes.queueSortBy
+        }
       }
     })
-  }
-
-  private forceEmptyImg = false
-
-  private handlerError() {
-    this.forceEmptyImg = true
   }
 }
 </script>
@@ -236,8 +177,4 @@ export default class MusicInfo extends mixins(ImgLoader, PlayerControls, Context
 
 .text-content
   min-width: 0%
-
-.animated-playing
-  padding-top: 14px
-  padding-bottom: 14px
 </style>

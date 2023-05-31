@@ -80,7 +80,7 @@ import { vxm } from '@/mainWindow/store'
 export default class Sidebar extends Vue {
   private roomInput = ''
   private showRoomsButton = true
-  private hasFrame = false
+  hasFrame = false
 
   get roomID() {
     return vxm.sync.roomID
@@ -98,7 +98,7 @@ export default class Sidebar extends Vue {
     this.hasFrame = await window.WindowUtils.hasFrame()
   }
 
-  private toggleOpen() {
+  toggleOpen() {
     this.isOpen = !this.isOpen
 
     // Delay showing of rooms button since it makes the toggle button smaller while sidebar size is transitioning

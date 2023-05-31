@@ -7,8 +7,7 @@
  *  See LICENSE in the project root for license information.
  */
 
-import axios from 'axios'
-import { createWriteStream } from 'fs'
+import { v4 } from 'uuid'
 
 export function arrayDiff<T>(arr1: T[], arr2: T[]) {
   return arr1.filter((x) => !arr2.includes(x))
@@ -16,6 +15,9 @@ export function arrayDiff<T>(arr1: T[], arr2: T[]) {
 
 export function convertDuration(n: number) {
   if (n) {
+    if (!isFinite(n) || n < 0) {
+      return 'Live'
+    }
     const tmp = new Date(n * 1000).toISOString().substring(11, 19)
 
     if (tmp[0] == '0' && tmp[1] == '0') {
@@ -37,34 +39,62 @@ export function getVersion(verS: string) {
   return 0
 }
 
-export function sortSongList(songList: Song[], options: SongSortOptions): Song[] {
-  return songList.sort((a, b) => {
-    const field: keyof Song = options.type as keyof Song
-    const first = a[field]
-    const second = b[field]
+export function isEmpty<T>(val: T | undefined): val is undefined {
+  return typeof val === 'undefined' || val === null
+}
 
-    if (first && second) {
-      if (!options.asc) {
-        return second.toString().localeCompare(first.toString())
-      } else {
-        return first.toString().localeCompare(second.toString())
+function sortAsc(first: unknown, second: unknown) {
+  if (typeof first === 'string' && typeof second === 'string') return first.localeCompare(second)
+
+  if (typeof first === 'number' && typeof second === 'number') return first - second
+
+  return 0
+}
+
+function getSortField(song: Song, field: SongSortOptions['type']) {
+  if (field === 'album') {
+    return song.album?.album_name
+  }
+
+  if (field === 'artist') {
+    return song.artists?.[0].artist_name
+  }
+
+  if (field === 'genre') {
+    return song.genre?.[0]
+  }
+
+  return song[field as keyof Song]
+}
+
+export function sortSongListFn(options: SongSortOptions[]) {
+  const fn = (a: Song, b: Song) => {
+    for (const o of options) {
+      const first: unknown = getSortField(a, o.type)
+      const second: unknown = getSortField(b, o.type)
+
+      if (!isEmpty(first) && !isEmpty(second)) {
+        if (first !== second) {
+          if (!o.asc) {
+            return sortAsc(second, first)
+          } else {
+            return sortAsc(first, second)
+          }
+        }
       }
     }
 
     return 0
-  })
+  }
+
+  return fn
 }
 
-export async function downloadFile(url: string, dest: string) {
-  const file = createWriteStream(dest)
-  const resp = await axios({
-    url,
-    responseType: 'stream'
-  })
+export function sortSongList(songList: Song[], options: SongSortOptions[]): Song[] {
+  if (!Array.isArray(options)) options = [options]
+  songList = songList.sort(sortSongListFn(options))
 
-  return new Promise<void>((resolve, reject) => {
-    resp.data.pipe(file).on('finish', resolve).on('error', reject)
-  })
+  return songList
 }
 
 const iso8601DurationRegex =
@@ -154,25 +184,12 @@ export function getErrorMessage(...args: unknown[]) {
   return ret
 }
 
-export function sanitizeArtistName(name: string, capitalize = false) {
-  let sanitized = name
+export function sanitizeArtistName(name: string) {
+  return name
     .trim()
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .toLowerCase()
     .replaceAll('vevo', '')
-
-  if (capitalize) {
-    const toTitleCase = (str: string) => {
-      return str
-        .toLowerCase()
-        .split(' ')
-        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-        .join(' ')
-    }
-    sanitized = toTitleCase(sanitized)
-  }
-
-  return sanitized
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -204,4 +221,104 @@ export function mergeDeep(target: Record<string, unknown>, ...sources: any[]): R
   }
 
   return mergeDeep(target, ...sources)
+}
+
+// https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
+export function escapeRegExp(str: string) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+// https://stackoverflow.com/a/19270021
+export function getRandomFromArray(arr: unknown[], n: number) {
+  const result = new Array(n)
+  let len = arr.length
+  const taken = new Array(len)
+  n = Math.min(n, len - 1)
+  while (n--) {
+    const x = Math.floor(Math.random() * len)
+    result[n] = arr[x in taken ? taken[x] : x]
+    taken[x] = --len in taken ? taken[len] : len
+  }
+  return result
+}
+
+export function sanitizeSong(ext: string, ...songs: Song[]): Song[] {
+  return songs.map((val) => ({
+    ...val,
+    artists: sanitizeArtists(ext, ...(val.artists ?? [])),
+    album: val.album && sanitizeAlbums(ext, val.album)[0],
+    _id: `${ext}:${val._id ?? v4()}`,
+    providerExtension: ext
+  }))
+}
+
+export function sanitizePlaylist(ext: string, isLocal: boolean, ...playlists: Playlist[]): ExtendedPlaylist[] {
+  return playlists.map((val) => ({
+    ...val,
+    playlist_id: `${ext}:${val.playlist_id ?? v4()}`,
+    extension: ext,
+    isLocal
+  }))
+}
+
+export function sanitizeAlbums(ext: string, ...albums: Album[]): Album[] {
+  return albums.map((val) => ({
+    ...val,
+    album_id: `${ext}:${val.album_id ?? v4()}`,
+    album_extra_info: {
+      extensions: {
+        [ext]: sanitizeExtraInfo(val.album_extra_info?.extensions?.[ext])
+      }
+    }
+  }))
+}
+
+export function sanitizeExtraInfo(extra_info?: Record<string, unknown>) {
+  const ret: Record<string, string | undefined> = {}
+  if (extra_info) {
+    for (const [key, val] of Object.entries(extra_info)) {
+      if (typeof val !== 'string') {
+        ret[key] = JSON.stringify(val)
+      } else {
+        ret[key] = val as string
+      }
+    }
+  }
+
+  return ret
+}
+
+export function sanitizeArtists(ext: string, ...artists: Artists[]): Artists[] {
+  return artists.map((val) => ({
+    ...val,
+    artist_id: `${ext}:${val.artist_id ?? v4()}`,
+    artist_extra_info: {
+      extensions: {
+        [ext]: sanitizeExtraInfo(val.artist_extra_info?.extensions?.[ext])
+      }
+    }
+  }))
+}
+
+export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+export function isAlbum(data: unknown): data is Album {
+  return !!(data as Album).album_id
+}
+
+export function isArtist(data: unknown): data is Artists {
+  return !!(data as Artists).artist_id
+}
+
+export function isGenre(data: unknown): data is Genre {
+  return !!(data as Genre).genre_id
+}
+
+export async function* emptyGen() {
+  yield { songs: [] }
+}
+
+export function isThemeDetails(data: unknown): data is ThemeDetails {
+  const tmpData = data as ThemeDetails
+  return !!(tmpData.id && tmpData.theme)
 }

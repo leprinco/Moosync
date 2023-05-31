@@ -37,7 +37,7 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class SpotifyIcon extends Vue {
   @Prop({ default: false })
-  private filled!: boolean
+  filled!: boolean
 }
 </script>
 

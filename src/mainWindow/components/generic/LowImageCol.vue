@@ -8,11 +8,7 @@
 -->
 
 <template>
-  <b-col cols="auto" class="img-container justify-content-around ms-auto" @click="emitClick">
-    <div
-      class="play-button me-auto justify-content-center d-flex align-items-center h-100 w-100"
-      :style="{ height, width }"
-    ></div>
+  <div cols="auto" class="img-container justify-content-around ms-auto" @click="emitClick">
     <img
       referrerPolicy="no-referrer"
       v-if="!forceEmptyImg"
@@ -24,10 +20,14 @@
       @error="handleCoverError"
     />
     <SongDefault :style="{ height, width }" v-else class="coverimg me-auto d-flex align-items-center" />
-    <div class="play-button d-flex justify-content-center">
+    <div class="play-button d-flex justify-content-center" v-if="showPlayHoverButton">
       <Play2 class="align-self-center" />
     </div>
-  </b-col>
+
+    <div v-if="showEqualizer" class="equalizer-bg d-flex justify-content-center">
+      <AnimatedEqualizer :isRunning="isSongPlaying" class="animated-playing" />
+    </div>
+  </div>
 </template>
 
 <script lang="ts">
@@ -36,35 +36,46 @@ import Component, { mixins } from 'vue-class-component'
 import Play2 from '@/icons/PlayIcon2.vue'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
 import { Prop, Watch } from 'vue-property-decorator'
+import AnimatedEqualizer from '@/icons/AnimatedEqualizerIcon.vue'
 
 @Component({
   components: {
     Play2,
-    SongDefault
+    SongDefault,
+    AnimatedEqualizer
   }
 })
 export default class LowImageCol extends mixins(ImgLoader) {
   @Prop({ default: '' })
-  private src!: string
+  src!: string
 
   @Prop({ default: '' })
-  private height!: string
+  height!: string
 
   @Prop({ default: '' })
-  private width!: string
+  width!: string
 
-  private forceEmptyImg = false
+  @Prop({ default: false })
+  showEqualizer!: boolean
+
+  @Prop({ default: false })
+  isSongPlaying!: boolean
+
+  @Prop({ default: true })
+  showPlayHoverButton!: boolean
+
+  forceEmptyImg = false
 
   @Watch('src')
-  private onSrcChange() {
+  onSrcChange() {
     this.forceEmptyImg = false
   }
 
-  private handleCoverError() {
+  handleCoverError() {
     this.forceEmptyImg = true
   }
 
-  private emitClick() {
+  emitClick() {
     this.$emit('imgClicked')
   }
 }
@@ -84,6 +95,7 @@ export default class LowImageCol extends mixins(ImgLoader) {
   position: absolute
   top: 0
   border-radius: 10px
+  cursor: pointer
 
 .play-button
   opacity: 0
@@ -93,4 +105,17 @@ export default class LowImageCol extends mixins(ImgLoader) {
 
 .coverimg
   object-fit: cover
+
+.animated-playing
+  padding-top: 14px
+  padding-bottom: 14px
+
+
+.equalizer-bg
+  width: calc(80px - (12px * 2))
+  height: calc(80px - (12px * 2))
+  background: rgba(0, 0, 0, 0.6)
+  position: absolute
+  top: 0
+  border-radius: 10px
 </style>

@@ -21,9 +21,8 @@
           </b-col>
           <b-col cols="auto" class="logo-title"> oosync </b-col>
         </b-row>
-        <span class="logo-title version" v-else>{{ version }}</span>
       </b-col>
-      <b-col cols="auto" class="buttons-group">
+      <b-col cols="auto" class="buttons-group" v-if="!isJukeboxModeActive">
         <b-row no-gutters>
           <b-col cols="auto">
             <div class="titlebar-buttons minimize-button" @click="onMinimize()">
@@ -92,6 +91,9 @@ export default class Sidebar extends Vue {
   @Prop({ default: 'main-window' })
   private windowType!: 'main-window' | 'preference-window'
 
+  @Prop({ default: false })
+  private isJukeboxModeActive!: boolean
+
   private isMaximized = false
   private resizedFinished: NodeJS.Timeout | undefined
 
@@ -113,10 +115,6 @@ export default class Sidebar extends Vue {
   async created() {
     this.hasFrame = await window.WindowUtils.hasFrame()
     this.showTitlebarIcons = await window.WindowUtils.showTitlebarIcons()
-  }
-
-  private get version() {
-    return process.env.MOOSYNC_VERSION
   }
 
   mounted() {
@@ -173,9 +171,6 @@ export default class Sidebar extends Vue {
   margin-top: 4px
   margin-bottom: 4px
   margin-left: 10px
-
-.version
-  padding-left: 10px
 
 .logo-title
   margin-left: 4px

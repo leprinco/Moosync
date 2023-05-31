@@ -10,7 +10,7 @@
 <template>
   <div class="h-100 d-flex align-items-center search-container">
     <div class="w-100 searchbar-container" :class="showSearchResults ? 'half-border' : 'full-border'">
-      <Search class="search-icon" />
+      <SearchIcon class="search-icon" />
       <b-form-input
         class="searchbar"
         :placeholder="$t('topbar.searchPlaceholder')"
@@ -53,7 +53,7 @@
 
 <script lang="ts">
 import { Component } from 'vue-property-decorator'
-import Search from '@/icons/SearchIcon.vue'
+import SearchIcon from '@/icons/SearchIcon.vue'
 import AltArrowIcon from '@/icons/AltArrowIcon.vue'
 
 import SingleSearchResult from '@/mainWindow/components/generic/SingleSearchResult.vue'
@@ -63,17 +63,17 @@ import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 
 @Component({
   components: {
-    Search,
+    SearchIcon,
     SingleSearchResult,
     AltArrowIcon
   }
 })
 export default class Sidebar extends mixins(PlayerControls, ImgLoader) {
-  private showSearchResults = false
-  private results: Song[] = []
-  private inputText = ''
+  showSearchResults = false
+  results: Song[] = []
+  inputText = ''
 
-  private handleInputFocus(event: FocusEvent) {
+  handleInputFocus(event: FocusEvent) {
     switch (event.type) {
       case 'blur':
         this.showSearchResults = false
@@ -84,11 +84,11 @@ export default class Sidebar extends mixins(PlayerControls, ImgLoader) {
     }
   }
 
-  private handleClick(index: number) {
+  handleClick(index: number) {
     this.playTop([this.results[index]])
   }
 
-  private openSearchPage() {
+  openSearchPage() {
     this.$router
       .push({
         name: 'search',
@@ -100,7 +100,7 @@ export default class Sidebar extends mixins(PlayerControls, ImgLoader) {
       .catch((e) => console.error(e))
     this.showSearchResults = false
   }
-  private async onTextChange(value: string) {
+  async onTextChange(value: string) {
     if (value) {
       value = `%${value}%`
       this.showSearchResults = true
@@ -137,7 +137,7 @@ export default class Sidebar extends mixins(PlayerControls, ImgLoader) {
   border: none
   height: 24px
   margin-top: -12px
-  width: calc(100% - 24px - 18px - 15px)
+  width: calc(100% - 24px - 18px - 15px - 30px)
   position: absolute
   transition: background 0.3s cubic-bezier(0.39, 0.58, 0.57, 1), border-radius 1000ms
   text-align: left

@@ -9,6 +9,7 @@
 
 export const extensionRequestsKeys = [
   'get-songs',
+  'get-entity',
   'add-songs',
   'add-playlist',
   'add-song-to-playlist',
@@ -31,7 +32,8 @@ export const extensionUIRequestsKeys = [
   'get-player-state',
   'open-login-modal',
   'close-login-modal',
-  'show-toast'
+  'show-toast',
+  'update-preferences'
 ] as const
 export const playerControlRequests = ['play', 'pause', 'stop', 'next', 'prev'] as const
 export const mainRequestsKeys = [
@@ -46,15 +48,11 @@ export const mainRequestsKeys = [
   'on-clicked-context-menu',
   'set-log-level',
   'get-accounts',
-  'perform-account-login'
+  'perform-account-login',
+  'get-display-name'
 ] as const
 
-export const providerExtensionKeys = [
-  'get-search-providers',
-  'get-artist-songs-providers',
-  'get-album-songs-providers',
-  'get-playlist-providers'
-] as const
+export const providerExtensionKeys = ['get-extension-provider-scopes'] as const
 
 export type extensionUIRequests = typeof extensionUIRequestsKeys[number] | typeof playerControlRequests[number]
 export type extensionRequests = typeof extensionRequestsKeys[number] | extensionUIRequests

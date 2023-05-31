@@ -11,14 +11,19 @@
   <b-container fluid class="path-container w-100">
     <b-row no-gutters align-v="center">
       <PreferenceHeader v-if="title" :title="title" :tooltip="tooltip" />
-      <b-col cols="auto" align-self="start" class="new-directories ml-auto justify-content-center">
+      <b-col
+        cols="auto"
+        align-self="start"
+        class="new-directories ml-auto justify-content-center"
+        v-if="showRefreshIcon"
+      >
         <RefreshIcon
           title="Rescan directories for music"
           @click.native="emitRefresh"
           class="refresh-icon button-grow"
         />
       </b-col>
-      <b-col cols="auto" class="new-directories ml-4">
+      <b-col cols="auto" :class="`new-directories ${showRefreshIcon ? 'ml-4' : 'ml-auto'}`">
         <div class="add-directories-button" v-if="!bottomButton" @click="openFileBrowser">
           {{ $t('settings.paths.addFolder') }}
         </div>
@@ -42,7 +47,7 @@
           :class="{ 'no-checkbox-margin': !enableCheckbox, 'ml-3': enableCheckbox }"
           class="justify-content-start"
         >
-          <div class="item-text text-truncate">{{ path.path }}</div>
+          <div class="item-text text-truncate" :title="path.path">{{ path.path }}</div>
         </b-col>
         <b-col cols="auto" align-self="center" class="ml-auto">
           <div class="remove-button w-100" @click="removePath(index)">{{ $t('settings.paths.remove') }}</div>
@@ -77,7 +82,9 @@ import RefreshIcon from '@/icons/RefreshIcon.vue'
     RefreshIcon
   }
 })
-export default class DirectoryGroup extends Mixins(ExtensionPreferenceMixin) {
+export default class DirectoryGroup extends Mixins<ExtensionPreferenceMixin<DirectoryGroupValue>>(
+  ExtensionPreferenceMixin
+) {
   @Prop({ default: 5 })
   private height!: number
 
@@ -90,6 +97,9 @@ export default class DirectoryGroup extends Mixins(ExtensionPreferenceMixin) {
   @Prop({ default: false })
   private isMainWindow!: boolean
 
+  @Prop({ default: false })
+  private showRefreshIcon!: boolean
+
   @Prop()
   private title!: string
 
@@ -97,8 +107,8 @@ export default class DirectoryGroup extends Mixins(ExtensionPreferenceMixin) {
   private tooltip!: string
 
   private togglePath(index: number) {
-    if (index >= 0) {
-      const path = (this.value as DirectoryGroupValue)[index]
+    if (this.value && index >= 0) {
+      const path = this.value[index]
       ;(this.value as DirectoryGroupValue)[index].enabled = (
         document.getElementById(`path-${this.packageName}-${path.path}`) as HTMLInputElement
       ).checked
@@ -111,17 +121,17 @@ export default class DirectoryGroup extends Mixins(ExtensionPreferenceMixin) {
   }
 
   private removePath(index: number) {
-    if (index >= 0) {
-      ;(this.value as DirectoryGroupValue).splice(index, 1)
+    if (this.value && index >= 0) {
+      this.value.splice(index, 1)
       this.onInputChange()
     }
   }
 
   private openFileBrowser() {
     window.WindowUtils.openFileBrowser(this.isMainWindow, false).then((data) => {
-      if (!data.canceled) {
+      if (!data.canceled && this.value) {
         for (const path of data.filePaths) {
-          ;(this.value as DirectoryGroupValue).push({ path, enabled: true })
+          this.value.push({ path, enabled: true })
         }
         this.onInputChange()
       }

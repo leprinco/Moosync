@@ -9,46 +9,50 @@
 
 <template>
   <div class="h-100 w-100 parent">
-    <b-container fluid>
-      <b-row no-gutters class="page-title">{{ $t('pages.genres') }}</b-row>
-      <b-row class="d-flex">
-        <b-col col xl="2" md="3" v-for="genre in genres" :key="genre.genre_id">
-          <CardView
-            :title="genre.genre_name ? genre.genre_name : 'Unknown'"
-            :imgSrc="genre.genre_coverPath"
-            @click.native="gotoGenre(genre)"
-          >
-            <template #defaultCover> <SongDefault /></template>
-          </CardView>
-        </b-col>
-      </b-row>
-    </b-container>
+    <CardRecycleScroller
+      :title="$t('pages.genres')"
+      :itemList="genresList"
+      :titleKey="'genre_name'"
+      :keyField="'genre_id'"
+      :isSortAsc="isSortAsc"
+      @click="gotoGenre"
+      @generalContextMenu="contextHandler"
+    >
+      <template #defaultCover>
+        <SongDefault />
+      </template>
+    </CardRecycleScroller>
   </div>
 </template>
 
 <script lang="ts">
 import { Component } from 'vue-property-decorator'
-import CardView from '@/mainWindow/components/generic/CardView.vue'
+import CardRecycleScroller from '@/mainWindow/components/generic/CardRecycleScroller.vue'
 import { mixins } from 'vue-class-component'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
+import { vxm } from '@/mainWindow/store'
 
 @Component({
   components: {
-    CardView,
+    CardRecycleScroller,
     SongDefault
   }
 })
 export default class Genres extends mixins(RouterPushes) {
-  private genres: Genre[] = []
-  private async getgenres() {
-    this.genres = await window.SearchUtils.searchEntityByOptions({
+  public genresList: Genre[] = []
+  private async getGenres() {
+    this.genresList = await window.SearchUtils.searchEntityByOptions({
       genre: true
     })
   }
 
+  get isSortAsc() {
+    return vxm.themes.entitySortBy?.asc ?? true
+  }
+
   mounted() {
-    this.getgenres()
+    this.getGenres()
   }
 }
 </script>

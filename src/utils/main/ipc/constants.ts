@@ -24,7 +24,8 @@ export enum IpcEvents {
   NOTIFIER = 'notifier',
   EXTENSION_HOST = 'extensionHost',
   UPDATE = 'update',
-  MPRIS = 'mpris'
+  MPRIS = 'mpris',
+  SPOTIFY = 'spotify'
 }
 
 export enum StoreEvents {
@@ -44,12 +45,16 @@ export enum SearchEvents {
   GET_YT_AUDIO_URL = 'getYTAudioURL',
   SCRAPE_LASTFM = 'scrapeLastFM',
   SCRAPE_LYRICS = 'scrapeLyrics',
-  REQUEST_INVIDIOUS = 'requestInvidious'
+  REQUEST_INVIDIOUS = 'requestInvidious',
+  GET_YT_PLAYLIST = 'getYTPlaylist',
+  GET_YT_PLAYLIST_CONTENT = 'getYTPlaylistContent',
+  GET_PLAY_COUNT = 'getPlayCount'
 }
 
 export enum PreferenceEvents {
   SAVE_SELECTIVE_PREFERENCES = 'saveSelectivePreferences',
   LOAD_SELECTIVE_PREFERENCES = 'loadSelectivePreferences',
+  LOAD_SELECTIVE_ARRAY = 'loadSelectiveArray',
   PREFERENCE_REFRESH = 'preferenceRefresh',
   SET_THEME = 'setTheme',
   GET_THEME = 'getTheme',
@@ -62,7 +67,12 @@ export enum PreferenceEvents {
   THEME_REFRESH = 'themeRefresh',
   SONG_VIEW_REFRESH = 'songViewRefresh',
   SET_LANGUAGE = 'setLanguage',
-  LANGUAGE_REFRESH = 'languageRefresh'
+  LANGUAGE_REFRESH = 'languageRefresh',
+  LISTEN_PREFERENCE = 'listenPreference',
+  RESET_TO_DEFAULT = 'resetToDefault',
+  TRANSFORM_CSS = 'transformCSS',
+  PACK_THEME = 'packTheme',
+  IMPORT_THEME = 'importTheme'
 }
 
 export enum WindowEvents {
@@ -97,7 +107,13 @@ export enum WindowEvents {
 
   UPDATE_ZOOM = 'updateZoom',
 
-  GET_PLATFORM = 'getPlatform'
+  GET_PLATFORM = 'getPlatform',
+
+  TOGGLE_FULLSCREEN = 'toggleFullscreen',
+  ENABLE_FULLSCREEN = 'enableFullscreen',
+  DISABLE_FULLSCREEN = 'disableFullscreen',
+
+  HANDLE_RELOAD = 'handleReload'
 }
 
 export enum AlbumEvents {
@@ -112,7 +128,9 @@ export enum GenreEvents {
 
 export enum ScannerEvents {
   SCAN_MUSIC = 'scanMusic',
+  SCAN_SINGLE_SONG = 'scanSingleSong',
   SCAN_SINGLE_PLAYLIST = 'scanSinglePlaylist',
+  RESET_SCAN_TASK = 'resetScanTask',
   GET_PROGRESS = 'getProgress',
 
   PROGRESS_CHANNEL = 'progressChannel'
@@ -122,6 +140,7 @@ export enum PlaylistEvents {
   CREATE_PLAYLIST = 'createPlaylist',
   UPDATE_PLAYLIST = 'updatePlaylist',
   ADD_TO_PLAYLIST = 'AddToPlaylist',
+  REMOVE_FROM_PLAYLIST = 'removeFromPlaylist',
   GET_ALL_PLAYLISTS = 'getPlaylists',
   GET_PLAYLIST = 'getPlaylist',
   ADDED_PLAYLIST = 'addedPlaylist',
@@ -147,7 +166,10 @@ export enum SongEvents {
   SAVE_IMAGE_TO_FILE = 'saveImageToFile',
   AUDIO_EXISTS = 'fileExists',
   IMAGE_EXISTS = 'imageExists',
-  GOT_FILE_PATH = 'gotSongPath'
+  GOT_FILE_PATH = 'gotSongPath',
+
+  INCREMENT_PLAY_COUNT = 'incrementPlayCount',
+  INCREMENT_PLAY_TIME = 'incrementPlayTime'
 }
 
 export enum LoggerEvents {
@@ -159,6 +181,15 @@ export enum LoggerEvents {
   WATCH_LOGS = 'watchLogs',
   UNWATCH_LOGS = 'unwatchLogs',
   TOGGLE_DEBUG = 'toggleDebug'
+}
+
+export enum SpotifyEvents {
+  CONNECT = 'connect',
+  LISTEN_EVENT = 'listenEvent',
+  REMOVE_EVENT = 'removeEvent',
+  COMMAND = 'command',
+  CLOSE = 'close',
+  GET_TOKEN = 'getToken'
 }
 
 export enum NotifierEvents {
@@ -188,10 +219,8 @@ export enum ExtensionHostEvents {
   GET_REGISTERED_ACCOUNTS = 'getRegisteredAccounts',
   PERFORM_ACCOUNT_LOGIN = 'performAccountLogin',
   ON_EXTENSIONS_CHANGED = 'onExtensionsChanged',
-  GET_REGISTERED_SEARCH_PROVIDERS = 'getRegisteredSearchProviders',
-  GET_REGISTERED_ARTIST_SONG_PROVIDERS = 'getRegisteredArtistSongProviders',
-  GET_REGISTERED_PLAYLIST_PROVIDERS = 'getRegisteredPlaylistProviders',
-  GET_REGISTERED_ALBUM_SONG_PROVIDERS = 'getRegisteredAlbumSongProviders'
+  GET_EXTENSION_PROVIDER_SCOPES = 'getExtensionProviderScopes',
+  GET_DISPLAY_NAME = 'getDisplayName'
 }
 
 export enum ServiceProviderEvents {
@@ -217,9 +246,14 @@ export enum EventBus {
   SHOW_SONG_INFO_MODAL = 'show-song-info-modal',
   SHOW_ENTITY_INFO_MODAL = 'show-entity-info-modal',
   SHOW_OAUTH_MODAL = 'show-oauth-modal',
+  SHOW_PIN_ENTRY_MODAL = 'show-pin-entry-modal',
   HIDE_OAUTH_MODAL = 'hide-oauth-modal',
   SHOW_FORM_MODAL = 'show-form-modal',
-  REFRESH_USERNAMES = 'refresh-usernames',
+  SHOW_INCORRECT_PLAYBACK_MODAL = 'show-incorrect-playback-modal',
+  REFRESH_ACCOUNTS = 'refresh-accounts',
   REFRESH_PAGE = 'refresh-page',
-  REFRESH_LYRICS = 'refresh-lyrics'
+  REFRESH_LYRICS = 'refresh-lyrics',
+  UPDATE_OPTIONAL_PROVIDER = 'update-optional-provider',
+  FORCE_LOAD_SONG = 'force-load-song',
+  IGNORE_MUSIC_INFO_SCROLL = 'ignore-music-info-scroll'
 }

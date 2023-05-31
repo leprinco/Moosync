@@ -13,9 +13,19 @@
       <b-row no-gutters class="page-title">
         <b-col cols="auto">{{ $t('pages.playlists') }}</b-col>
         <b-col class="button-grow" @click="newPlaylist" cols="auto"><PlusIcon class="add-icon mb-2" /></b-col>
+        <b-col class="align-self-center">
+          <TabCarousel
+            :items="tabCarouselItems"
+            :alignProvidersToEnd="true"
+            @onItemsChanged="onTabProvidersChanged"
+            @onSortClicked="sortMenuHandler"
+            @onSearchChange="onSearchChange"
+            :isSortAsc="isSortAsc"
+          />
+        </b-col>
       </b-row>
       <b-row class="d-flex">
-        <b-col col xl="2" md="3" v-for="playlist in allPlaylists" :key="playlist.playlist_id" class="card-col">
+        <b-col col xl="2" md="3" v-for="playlist in filteredPlaylists" :key="playlist.playlist_id" class="card-col">
           <CardView
             :title="playlist.playlist_name"
             :imgSrc="playlist.playlist_coverPath"
@@ -24,33 +34,38 @@
             @click.native="gotoPlaylist(playlist)"
             @CardContextMenu="getPlaylistMenu(arguments[0], playlist)"
           >
-            <template slot="icon">
-              <SpotifyIcon
-                v-if="playlist.playlist_id && playlist.playlist_id.startsWith('spotify')"
-                color="#07C330"
-                :filled="true"
-              />
-              <YoutubeIcon
-                v-if="playlist.playlist_id && playlist.playlist_id.startsWith('youtube')"
-                color="#E62017"
-                :filled="true"
-              />
-              <inline-svg v-if="playlist.icon && playlist.icon.endsWith('svg')" :src="playlist.icon" />
-              <img
-                v-if="playlist.icon && !playlist.icon.endsWith('svg')"
-                :src="playlist.icon"
-                alt="provider logo"
-                referrerPolicy="no-referrer"
-              />
+            <template #icon>
+              <IconHandler class="h-100" :item="playlist" />
             </template>
 
             <template #defaultCover>
-              <PlaylistDefault />
+              <PlaylistDefault v-if="playlist.playlist_id !== FAVORITES_PLAYLIST_ID" />
+              <FavPlaylistIcon v-else />
             </template>
           </CardView>
         </b-col>
       </b-row>
-      <DeleteModal id="playlistDeleteModal" @confirm="deletePlaylist" />
+      <DeleteModal
+        id="playlistDeleteModal"
+        @confirm="deletePlaylist"
+        :itemName="playlistInAction && playlistInAction.playlist_name"
+      />
+      <MultiButtonModal
+        :show="showMultiButtonModal"
+        :slots="2"
+        @click-1="showNewPlaylistModal"
+        @click-2="showPlaylistFromURLModal"
+      >
+        <template #1>
+          <CreatePlaylistIcon />
+        </template>
+        <template #1-title> {{ $t('contextMenu.playlist.new') }} </template>
+
+        <template #2>
+          <ImportPlaylistIcon />
+        </template>
+        <template #2-title> {{ $t('contextMenu.playlist.addFromURL') }} </template>
+      </MultiButtonModal>
     </b-container>
   </div>
 </template>
@@ -62,100 +77,184 @@ import { mixins } from 'vue-class-component'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import { vxm } from '@/mainWindow/store'
-import SpotifyIcon from '@/icons/SpotifyIcon.vue'
-import YoutubeIcon from '@/icons/YoutubeIcon.vue'
 import PlaylistDefault from '@/icons/PlaylistDefaultIcon.vue'
 import DeleteModal from '../../../commonComponents/ConfirmationModal.vue'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
 import PlusIcon from '@/icons/PlusIcon.vue'
+import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
+import { FAVORITES_PLAYLIST_ID } from '@/utils/commonConstants'
+import FavPlaylistIcon from '@/icons/FavPlaylistIcon.vue'
+import CreatePlaylistIcon from '@/icons/CreatePlaylistIcon.vue'
+import ImportPlaylistIcon from '@/icons/ImportPlaylistIcon.vue'
+import ImgLoader from '@/utils/ui/mixins/ImageLoader'
+import IconHandler from '../../components/generic/IconHandler.vue'
+import TabCarousel from '../../components/generic/TabCarousel.vue'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
+import MultiButtonModal from '@/commonComponents/MultiButtonModal.vue'
 
 @Component({
   components: {
     CardView,
-    SpotifyIcon,
-    YoutubeIcon,
     PlaylistDefault,
     DeleteModal,
-    PlusIcon
+    PlusIcon,
+    FavPlaylistIcon,
+    IconHandler,
+    TabCarousel,
+    CreatePlaylistIcon,
+    ImportPlaylistIcon,
+    MultiButtonModal
   }
 })
-export default class Playlists extends mixins(RouterPushes, ContextMenuMixin) {
+export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, ProviderMixin, ImgLoader) {
   @Prop({ default: () => () => undefined })
   private enableRefresh!: () => void
 
-  private allPlaylists: ExtendedPlaylist[] = []
+  showMultiButtonModal = false
 
-  private playlistInAction: Playlist | undefined
-
-  private getIconBgColor(playlist: Playlist) {
-    if (playlist.playlist_id?.startsWith('youtube')) {
-      return '#E62017'
-    }
-
-    if (playlist.playlist_id?.startsWith('spotify')) {
-      return '#07C330'
-    }
+  private searchText = ''
+  onSearchChange(searchText: string) {
+    this.searchText = searchText ?? ''
   }
 
-  private async fetchPlaylistsFromExtension(invalidateCache: boolean) {
+  get allPlaylists(): ExtendedPlaylist[] {
+    return [...this.localPlaylists, ...this.remotePlaylists]
+  }
+
+  get filteredPlaylists(): ExtendedPlaylist[] {
     const playlists: ExtendedPlaylist[] = []
-
-    const providers = await window.ExtensionUtils.getRegisteredPlaylistProviders()
-    for (const key of Object.keys(providers)) {
-      ;(async () => {
-        const data = await window.ExtensionUtils.sendEvent({
-          type: 'requestedPlaylists',
-          data: [invalidateCache],
-          packageName: key
-        })
-
-        if (data && data[key]) {
-          const icon = await window.ExtensionUtils.getExtensionIcon(key)
-          for (const p of (data[key] as PlaylistReturnType).playlists) {
-            playlists.push({
-              ...p,
-              icon: (p.icon && 'media://' + p.icon) ?? (icon && 'media://' + icon)
-            })
-          }
-        }
-      })()
+    for (const p of Object.values(this.activeProviders).filter((val) => val.checked)) {
+      if (p.key === 'local') {
+        playlists.push(...this.localPlaylists)
+      } else {
+        playlists.push(
+          ...this.allPlaylists.filter((val) => val.extension === p.key || val.playlist_id.startsWith(p.key))
+        )
+      }
     }
+    return playlists.filter((val) => val.playlist_name.toLowerCase().includes(this.searchText))
+  }
 
-    return playlists
+  private localPlaylists: ExtendedPlaylist[] = []
+  private remotePlaylists: ExtendedPlaylist[] = []
+
+  playlistInAction: Playlist | null = null
+
+  private activeProviders: Record<string, { key: string; checked: boolean }> = {}
+
+  onTabProvidersChanged(data: { key: string; checked: boolean }) {
+    this.$set(this.activeProviders, data.key, data)
+  }
+
+  FAVORITES_PLAYLIST_ID = FAVORITES_PLAYLIST_ID
+
+  private get providers() {
+    return this.getAllProviders()
+  }
+
+  private providersWithPlaylists: GenericProvider[] = []
+
+  get tabCarouselItems(): TabCarouselItem[] {
+    return [
+      {
+        title: 'Local',
+        key: 'local',
+        defaultChecked: true
+      },
+      ...this.providersWithPlaylists
+        .filter((val, index) => this.providersWithPlaylists.indexOf(val) === index)
+        .map((val) => ({
+          key: val.key,
+          title: val.Title,
+          defaultChecked: true
+        }))
+    ]
+  }
+
+  getIconBgColor(playlist: Playlist) {
+    for (const p of this.getAllProviders()) {
+      if (p.matchEntityId(playlist.playlist_id)) {
+        return p.BgColor
+      }
+    }
   }
 
   private async getPlaylists(invalidateCache = false) {
-    const localPlaylists = await window.SearchUtils.searchEntityByOptions<Playlist>({
-      playlist: true
-    })
-    this.allPlaylists = [...localPlaylists]
+    this.localPlaylists.splice(0, this.localPlaylists.length)
+    this.remotePlaylists.splice(0, this.remotePlaylists.length)
+    this.providersWithPlaylists.splice(0, this.providersWithPlaylists.length)
 
     const promises: Promise<unknown>[] = []
-    promises.push(
-      vxm.providers.youtubeProvider
-        .getUserPlaylists(invalidateCache)
-        .then((data) => this.allPlaylists.push(...data))
-        .then(this.sort)
-    )
-    promises.push(
-      vxm.providers.spotifyProvider
-        .getUserPlaylists(invalidateCache)
-        .then((data) => this.allPlaylists.push(...data))
-        .then(this.sort)
-    )
 
-    promises.push(
-      this.fetchPlaylistsFromExtension(invalidateCache)
-        .then((data) => this.allPlaylists.push(...data))
-        .then(this.sort)
-    )
+    await this.getLocalPlaylists()
+
+    for (const p of this.providers) {
+      promises.push(
+        p
+          .getUserPlaylists(invalidateCache)
+          .then((val) => {
+            if (val.length > 0) {
+              this.pushPlaylistToList(val.map((val1) => ({ ...val1, isLocal: false })))
+              this.providersWithPlaylists.push(p)
+            }
+          })
+          .then(this.sort)
+      )
+    }
 
     await Promise.all(promises)
   }
 
+  private async getLocalPlaylists() {
+    const localPlaylists = await window.SearchUtils.searchEntityByOptions<Playlist>({
+      playlist: true
+    })
+
+    for (const p of localPlaylists) {
+      const extended: ExtendedPlaylist = {
+        ...p,
+        isLocal: true
+      }
+      if (this.allPlaylists.findIndex((val) => val.playlist_id === p.playlist_id) === -1) {
+        if (p.extension && !p.icon) {
+          p.icon = await window.ExtensionUtils.getExtensionIcon(p.extension)
+        }
+        // this.localPlaylists.push(p)
+
+        let providerMatch = false
+        for (const provider of this.providers) {
+          if (provider.matchEntityId(p.playlist_id)) {
+            providerMatch = true
+            this.remotePlaylists.push(extended)
+            this.providersWithPlaylists.push(provider)
+          }
+        }
+
+        if (!providerMatch) {
+          this.localPlaylists.push(extended)
+        }
+      }
+    }
+  }
+
+  private async pushPlaylistToList(playlists: ExtendedPlaylist[]) {
+    for (const p of playlists) {
+      if (this.allPlaylists.findIndex((val) => val.playlist_id === p.playlist_id) === -1) {
+        if (p.extension && !p.icon) {
+          p.icon = await window.ExtensionUtils.getExtensionIcon(p.extension)
+        }
+        this.remotePlaylists.push(p)
+      }
+    }
+  }
+
   private setSort(options: PlaylistSortOptions) {
     vxm.themes.playlistSortBy = options
+  }
+
+  get isSortAsc() {
+    return vxm.themes.playlistSortBy?.asc ?? true
   }
 
   private sort() {
@@ -174,7 +273,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin) {
     })
   }
 
-  private contextHandler(event: MouseEvent) {
+  contextHandler(event: MouseEvent) {
     this.getContextMenu(event, {
       type: 'GENERAL_PLAYLIST',
       args: {
@@ -187,13 +286,34 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin) {
     })
   }
 
-  private deletePlaylist() {
-    if (this.playlistInAction) window.DBUtils.removePlaylist(this.playlistInAction.playlist_id)
+  sortMenuHandler(event: MouseEvent) {
+    console.log('clicked on sort')
+    this.getContextMenu(event, {
+      type: 'PLAYLIST_SORT',
+      args: {
+        sortOptions: {
+          callback: this.setSort,
+          current: vxm.themes.playlistSortBy
+        }
+      }
+    })
+  }
+
+  deletePlaylist() {
+    if (this.playlistInAction) window.DBUtils.removePlaylist(this.playlistInAction)
     this.refresh()
   }
 
-  private newPlaylist() {
+  newPlaylist() {
+    this.showMultiButtonModal = !this.showMultiButtonModal
+  }
+
+  showNewPlaylistModal() {
     bus.$emit(EventBus.SHOW_NEW_PLAYLIST_MODAL, [], () => this.refresh())
+  }
+
+  showPlaylistFromURLModal() {
+    bus.$emit(EventBus.SHOW_PLAYLIST_FROM_URL_MODAL, [], () => this.refresh())
   }
 
   mounted() {
@@ -214,11 +334,15 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin) {
     })
   }
 
-  private getPlaylistMenu(event: Event, playlist: Playlist) {
+  getPlaylistMenu(event: Event, playlist: ExtendedPlaylist) {
     this.playlistInAction = playlist
     this.getContextMenu(event, {
       type: 'PLAYLIST',
-      args: { playlist: playlist, deleteCallback: () => this.$bvModal.show('playlistDeleteModal') }
+      args: {
+        playlist: playlist,
+        isRemote: !playlist.isLocal,
+        deleteCallback: () => this.$bvModal.show('playlistDeleteModal')
+      }
     })
   }
 }

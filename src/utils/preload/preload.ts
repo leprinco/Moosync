@@ -22,11 +22,14 @@ import {
   NotifierEvents,
   MprisEvents
 } from '@/utils/main/ipc/constants'
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webFrame } from 'electron'
 
 import { IpcRendererHolder } from '@/utils/preload/ipc/index'
 import { LogLevelDesc } from 'loglevel'
 import { ButtonEnum, PlayerButtons } from 'media-controller'
+import ytpl from 'ytpl'
+import { ConstructorConfig, PlayerEvent, PlayerEventTypes, TokenScope } from 'librespot-node'
+import { SpotifyEvents } from '../main/ipc/constants'
 
 const ipcRendererHolder = new IpcRendererHolder(ipcRenderer)
 
@@ -49,16 +52,22 @@ contextBridge.exposeInMainWorld('DBUtils', {
       params: { playlist_id: playlistID, song_ids: songIDs }
     }),
 
-  removePlaylist: (playlistID: string) =>
-    ipcRendererHolder.send<PlaylistRequests.RemoveExportPlaylist>(IpcEvents.PLAYLIST, {
-      type: PlaylistEvents.REMOVE_PLAYLIST,
-      params: { playlist_id: playlistID }
+  removeFromPlaylist: (playlistID: string, ...songIDs: Song[]) =>
+    ipcRendererHolder.send<PlaylistRequests.AddToPlaylist>(IpcEvents.PLAYLIST, {
+      type: PlaylistEvents.REMOVE_FROM_PLAYLIST,
+      params: { playlist_id: playlistID, song_ids: songIDs }
     }),
 
-  exportPlaylist: (playlistID: string) =>
+  removePlaylist: (playlist: Playlist) =>
+    ipcRendererHolder.send<PlaylistRequests.RemoveExportPlaylist>(IpcEvents.PLAYLIST, {
+      type: PlaylistEvents.REMOVE_PLAYLIST,
+      params: { playlist }
+    }),
+
+  exportPlaylist: (playlist: Playlist) =>
     ipcRendererHolder.send<PlaylistRequests.RemoveExportPlaylist>(IpcEvents.PLAYLIST, {
       type: PlaylistEvents.EXPORT,
-      params: { playlist_id: playlistID }
+      params: { playlist }
     }),
 
   storeSongs: (songs: Song[]) =>
@@ -81,7 +90,7 @@ contextBridge.exposeInMainWorld('DBUtils', {
 
   updateAlbum: (album: Album) =>
     ipcRendererHolder.send<SongRequests.UpdateAlbum>(IpcEvents.SONG, {
-      type: SongEvents.UPDATE_ARTIST,
+      type: SongEvents.UPDATE_ALBUM,
       params: { album }
     }),
 
@@ -95,6 +104,18 @@ contextBridge.exposeInMainWorld('DBUtils', {
     ipcRendererHolder.send<SongRequests.Lyrics>(IpcEvents.SONG, {
       type: SongEvents.UPDATE_LYRICS,
       params: { id, lyrics }
+    }),
+
+  incrementPlayCount: (song_id: string) =>
+    ipcRendererHolder.send<SongRequests.PlayCount>(IpcEvents.SONG, {
+      type: SongEvents.INCREMENT_PLAY_COUNT,
+      params: { song_id }
+    }),
+
+  incrementPlayTime: (song_id: string, duration: number) =>
+    ipcRendererHolder.send<SongRequests.PlayTime>(IpcEvents.SONG, {
+      type: SongEvents.INCREMENT_PLAY_TIME,
+      params: { song_id, duration }
     })
 })
 
@@ -111,13 +132,31 @@ contextBridge.exposeInMainWorld('PreferenceUtils', {
       params: { key, isExtension, defaultValue }
     }),
 
+  loadSelectiveArrayItem: <T>(key: string, defaultValue?: T) =>
+    ipcRendererHolder.send<PreferenceRequests.Load>(IpcEvents.PREFERENCES, {
+      type: PreferenceEvents.LOAD_SELECTIVE_ARRAY,
+      params: { key, isExtension: false, defaultValue }
+    }),
+
   notifyPreferenceChanged: (key: string, value: unknown) =>
     ipcRendererHolder.send<PreferenceRequests.PreferenceChange>(IpcEvents.PREFERENCES, {
       type: PreferenceEvents.PREFERENCE_REFRESH,
       params: { key, value }
     }),
-  listenPreferenceChange: (callback: (...args: unknown[]) => void) =>
-    ipcRendererHolder.on(PreferenceEvents.PREFERENCE_REFRESH, callback)
+
+  listenPreferenceChanged: (key: string, isMainWindow: boolean, callback: (key: string, value: unknown) => void) => {
+    ipcRendererHolder
+      .send<PreferenceRequests.ListenKey>(IpcEvents.PREFERENCES, {
+        type: PreferenceEvents.LISTEN_PREFERENCE,
+        params: { key, isMainWindow }
+      })
+      .then((channel) => ipcRendererHolder.on(channel as string, callback))
+  },
+  resetToDefault: () =>
+    ipcRendererHolder.send(IpcEvents.PREFERENCES, {
+      type: PreferenceEvents.RESET_TO_DEFAULT,
+      params: undefined
+    })
 })
 
 contextBridge.exposeInMainWorld('Store', {
@@ -159,6 +198,12 @@ contextBridge.exposeInMainWorld('FileUtils', {
       params: { playlistPath }
     }),
 
+  scanSingleSong: (songPath: string) =>
+    ipcRendererHolder.send<ScannerRequests.ScanSingleSong>(IpcEvents.SCANNER, {
+      type: ScannerEvents.SCAN_SINGLE_SONG,
+      params: { songPath }
+    }),
+
   saveAudioToFile: (path: string, blob: Buffer) =>
     ipcRendererHolder.send<SongRequests.SaveBuffer>(IpcEvents.SONG, {
       type: SongEvents.SAVE_AUDIO_TO_FILE,
@@ -190,15 +235,47 @@ contextBridge.exposeInMainWorld('FileUtils', {
     }),
 
   listenInitialFileOpenRequest: (callback: (paths: string[]) => void) =>
-    ipcRendererHolder.on(SongEvents.GOT_FILE_PATH, callback)
+    ipcRendererHolder.on(SongEvents.GOT_FILE_PATH, callback),
+
+  resetScanTask: () =>
+    ipcRendererHolder.send(IpcEvents.SCANNER, {
+      type: ScannerEvents.RESET_SCAN_TASK,
+      params: undefined
+    })
 })
 
 contextBridge.exposeInMainWorld('SearchUtils', {
-  searchSongsByOptions: (options?: SongAPIOptions) =>
-    ipcRendererHolder.send<SearchRequests.SongOptions>(IpcEvents.SEARCH, {
+  searchSongsByOptions: async (options?: SongAPIOptions, fullFetch = false) => {
+    const songs = (await ipcRendererHolder.send<SearchRequests.SongOptions>(IpcEvents.SEARCH, {
       type: SearchEvents.SEARCH_SONGS_BY_OPTIONS,
       params: { options }
-    }),
+    })) as Song[]
+
+    if (!fullFetch) {
+      return songs.map((val) => ({
+        _id: val._id,
+        album: val.album,
+        artists: val.artists,
+        date: val.date,
+        date_added: val.date_added,
+        duration: val.duration,
+        genre: val.genre,
+        icon: val.icon,
+        path: val.path,
+        playCount: val.playCount,
+        playbackUrl: val.playbackUrl,
+        providerExtension: val.providerExtension,
+        showInLibrary: val.showInLibrary,
+        song_coverPath_high: val.song_coverPath_high,
+        song_coverPath_low: val.song_coverPath_low,
+        title: val.title,
+        type: val.type,
+        track_no: val.track_no,
+        url: val.url
+      }))
+    }
+    return songs
+  },
 
   searchEntityByOptions: <T extends Artists | Album | Genre | Playlist>(options: EntityApiOptions<T>) =>
     ipcRendererHolder.send<SearchRequests.EntityOptions>(IpcEvents.SEARCH, {
@@ -230,27 +307,45 @@ contextBridge.exposeInMainWorld('SearchUtils', {
       params: { videoID }
     }),
 
+  getYTPlaylist: (id: string) =>
+    ipcRendererHolder.send<SearchRequests.YTPlaylist>(IpcEvents.SEARCH, {
+      type: SearchEvents.GET_YT_PLAYLIST,
+      params: { id }
+    }),
+
+  getYTPlaylistContent: (id: string, continuation: ytpl.Continuation) =>
+    ipcRendererHolder.send<SearchRequests.YTPlaylistContent>(IpcEvents.SEARCH, {
+      type: SearchEvents.GET_YT_PLAYLIST_CONTENT,
+      params: { id, nextPageToken: continuation }
+    }),
+
   scrapeLastFM: (url: string) =>
     ipcRendererHolder.send<SearchRequests.LastFMSuggestions>(IpcEvents.SEARCH, {
       type: SearchEvents.SCRAPE_LASTFM,
       params: { url }
     }),
 
-  searchLyrics: (artists: string[], title: string) =>
+  searchLyrics: (song: Song) =>
     ipcRendererHolder.send<SearchRequests.LyricsScrape>(IpcEvents.SEARCH, {
       type: SearchEvents.SCRAPE_LYRICS,
-      params: { artists, title }
+      params: { song }
     }),
 
-  requestInvidious: <K extends InvidiousResponses.InvidiousApiResources>(
-    resource: K,
-    search: InvidiousResponses.SearchObject<K>,
+  requestInvidious: <T extends InvidiousResponses.InvidiousApiResources, K extends InvidiousResponses.SearchTypes>(
+    resource: T,
+    search: InvidiousResponses.SearchObject<T, K>,
     authorization: string,
     invalidateCache: boolean
   ) =>
     ipcRendererHolder.send<SearchRequests.InvidiousRequest>(IpcEvents.SEARCH, {
       type: SearchEvents.REQUEST_INVIDIOUS,
       params: { resource, search, authorization, invalidateCache }
+    }),
+
+  getPlayCount: (...songIds: string[]) =>
+    ipcRendererHolder.send<SearchRequests.PlayCount>(IpcEvents.SEARCH, {
+      type: SearchEvents.GET_PLAY_COUNT,
+      params: { songIds }
     })
 })
 
@@ -271,6 +366,24 @@ contextBridge.exposeInMainWorld('ThemeUtils', {
     ipcRendererHolder.send<PreferenceRequests.ThemeID>(IpcEvents.PREFERENCES, {
       type: PreferenceEvents.GET_THEME,
       params: { id: id ?? 'default' }
+    }),
+
+  transformCSS: (cssPath: string) =>
+    ipcRendererHolder.send<PreferenceRequests.TransformCSS>(IpcEvents.PREFERENCES, {
+      type: PreferenceEvents.TRANSFORM_CSS,
+      params: { cssPath }
+    }),
+
+  packTheme: (id: string) =>
+    ipcRendererHolder.send<PreferenceRequests.ThemeID>(IpcEvents.PREFERENCES, {
+      type: PreferenceEvents.PACK_THEME,
+      params: { id }
+    }),
+
+  importTheme: (themeZipPath: string) =>
+    ipcRendererHolder.send<PreferenceRequests.ImportTheme>(IpcEvents.PREFERENCES, {
+      type: PreferenceEvents.IMPORT_THEME,
+      params: { themeZipPath }
     }),
 
   getAllThemes: () =>
@@ -301,16 +414,7 @@ contextBridge.exposeInMainWorld('ThemeUtils', {
     ipcRendererHolder.send<PreferenceRequests.LanguageKey>(IpcEvents.PREFERENCES, {
       type: PreferenceEvents.SET_LANGUAGE,
       params: { key }
-    }),
-
-  listenThemeChanged: (callback: (themeId: ThemeDetails) => void) =>
-    ipcRendererHolder.on(PreferenceEvents.THEME_REFRESH, callback),
-
-  listenSongViewChanged: (callback: (menu: songMenu) => void) =>
-    ipcRendererHolder.on(PreferenceEvents.SONG_VIEW_REFRESH, callback),
-
-  listenLanguageChanged: (callback: (language: string) => void) =>
-    ipcRendererHolder.on(PreferenceEvents.LANGUAGE_REFRESH, callback)
+    })
 })
 
 contextBridge.exposeInMainWorld('WindowUtils', {
@@ -335,6 +439,24 @@ contextBridge.exposeInMainWorld('WindowUtils', {
   maxWindow: (isMainWindow: boolean) =>
     ipcRendererHolder.send<WindowRequests.MainWindowCheck>(IpcEvents.BROWSER_WINDOWS, {
       type: WindowEvents.MAX_WIN,
+      params: { isMainWindow }
+    }),
+
+  toggleFullscreen: (isMainWindow: boolean) =>
+    ipcRendererHolder.send<WindowRequests.MainWindowCheck>(IpcEvents.BROWSER_WINDOWS, {
+      type: WindowEvents.TOGGLE_FULLSCREEN,
+      params: { isMainWindow }
+    }),
+
+  enableFullscreen: (isMainWindow: boolean) =>
+    ipcRendererHolder.send<WindowRequests.MainWindowCheck>(IpcEvents.BROWSER_WINDOWS, {
+      type: WindowEvents.ENABLE_FULLSCREEN,
+      params: { isMainWindow }
+    }),
+
+  disableFullscreen: (isMainWindow: boolean) =>
+    ipcRendererHolder.send<WindowRequests.MainWindowCheck>(IpcEvents.BROWSER_WINDOWS, {
+      type: WindowEvents.DISABLE_FULLSCREEN,
       params: { isMainWindow }
     }),
 
@@ -409,7 +531,12 @@ contextBridge.exposeInMainWorld('WindowUtils', {
     ipcRendererHolder.send(IpcEvents.BROWSER_WINDOWS, { type: WindowEvents.UPDATE_ZOOM, params: undefined }),
 
   getPlatform: () =>
-    ipcRendererHolder.send(IpcEvents.BROWSER_WINDOWS, { type: WindowEvents.GET_PLATFORM, params: undefined })
+    ipcRendererHolder.send(IpcEvents.BROWSER_WINDOWS, { type: WindowEvents.GET_PLATFORM, params: undefined }),
+
+  clearRSS: clearCache,
+
+  handleReload: () =>
+    ipcRendererHolder.send(IpcEvents.BROWSER_WINDOWS, { type: WindowEvents.HANDLE_RELOAD, params: undefined })
 })
 
 contextBridge.exposeInMainWorld('LoggerUtils', {
@@ -527,14 +654,25 @@ contextBridge.exposeInMainWorld('ExtensionUtils', {
   listenExtInstallStatus: (callback: (data: ExtInstallStatus) => void) =>
     ipcRendererHolder.on(ExtensionHostEvents.EXT_INSTALL_STATUS, callback),
 
-  getRegisteredAccounts: () =>
-    ipcRendererHolder.send(IpcEvents.EXTENSION_HOST, {
+  getRegisteredAccounts: (packageName: string) =>
+    ipcRendererHolder.send<ExtensionHostRequests.ProviderScopes>(IpcEvents.EXTENSION_HOST, {
       type: ExtensionHostEvents.GET_REGISTERED_ACCOUNTS,
-      params: undefined
+      params: { packageName }
     }),
 
-  listenAccountRegistered: (callback: (details: AccountDetails) => void) => {
-    ipcRendererHolder.on(ExtensionHostEvents.ON_ACCOUNT_REGISTERED, callback)
+  listenAccountRegistered: (
+    callback: (details: { packageName: string; data: StrippedAccountDetails }) => void,
+    packageName: string
+  ) => {
+    ipcRendererHolder.on(ExtensionHostEvents.ON_ACCOUNT_REGISTERED, (details: Parameters<typeof callback>[0]) => {
+      if (packageName) {
+        if (details.packageName === packageName) {
+          callback(details)
+        }
+      } else {
+        callback(details)
+      }
+    })
   },
 
   performAccountLogin: (packageName: string, accountId: string, login: boolean) =>
@@ -546,28 +684,16 @@ contextBridge.exposeInMainWorld('ExtensionUtils', {
   listenExtensionsChanged: (callback: () => void) =>
     ipcRendererHolder.on(ExtensionHostEvents.ON_EXTENSIONS_CHANGED, callback),
 
-  getRegisteredSearchProviders: () =>
-    ipcRendererHolder.send(IpcEvents.EXTENSION_HOST, {
-      type: ExtensionHostEvents.GET_REGISTERED_SEARCH_PROVIDERS,
-      params: undefined
+  getExtensionProviderScopes: (packageName: string) =>
+    ipcRendererHolder.send<ExtensionHostRequests.ProviderScopes>(IpcEvents.EXTENSION_HOST, {
+      type: ExtensionHostEvents.GET_EXTENSION_PROVIDER_SCOPES,
+      params: { packageName }
     }),
 
-  getRegisteredArtistSongProviders: () =>
-    ipcRendererHolder.send(IpcEvents.EXTENSION_HOST, {
-      type: ExtensionHostEvents.GET_REGISTERED_ARTIST_SONG_PROVIDERS,
-      params: undefined
-    }),
-
-  getRegisteredAlbumSongProviders: () =>
-    ipcRendererHolder.send(IpcEvents.EXTENSION_HOST, {
-      type: ExtensionHostEvents.GET_REGISTERED_ALBUM_SONG_PROVIDERS,
-      params: undefined
-    }),
-
-  getRegisteredPlaylistProviders: () =>
-    ipcRendererHolder.send(IpcEvents.EXTENSION_HOST, {
-      type: ExtensionHostEvents.GET_REGISTERED_PLAYLIST_PROVIDERS,
-      params: undefined
+  getExtensionDisplayName: (packageName: string) =>
+    ipcRendererHolder.send<ExtensionHostRequests.ProviderScopes>(IpcEvents.EXTENSION_HOST, {
+      type: ExtensionHostEvents.GET_DISPLAY_NAME,
+      params: { packageName }
     })
 })
 
@@ -601,3 +727,59 @@ contextBridge.exposeInMainWorld('MprisUtils', {
   listenMediaButtonPress: (callback: (args: typeof ButtonEnum) => void) =>
     ipcRendererHolder.on(MprisEvents.ON_BUTTON_PRESSED, callback)
 })
+
+contextBridge.exposeInMainWorld('SpotifyPlayer', {
+  connect: (config: ConstructorConfig) =>
+    ipcRendererHolder.send<SpotifyRequests.Config>(IpcEvents.SPOTIFY, {
+      type: SpotifyEvents.CONNECT,
+      params: config
+    }),
+
+  on: <T extends PlayerEventTypes>(event: T, listener: (event: PlayerEvent<T>) => void) => {
+    const responseChannel = window.crypto?.randomUUID() ?? Date.now().toString()
+    ipcRendererHolder.send<SpotifyRequests.EventListener>(IpcEvents.SPOTIFY, {
+      type: SpotifyEvents.LISTEN_EVENT,
+      params: { event },
+      responseChannel
+    })
+
+    ipcRendererHolder.on(responseChannel, listener)
+    return responseChannel
+  },
+
+  off: <T extends PlayerEventTypes>(responseChannel: string, event: T, listener: (event: PlayerEvent<T>) => void) => {
+    ipcRendererHolder.send<SpotifyRequests.EventListener>(IpcEvents.SPOTIFY, {
+      type: SpotifyEvents.REMOVE_EVENT,
+      params: { event }
+    })
+
+    ipcRendererHolder.off(responseChannel, listener)
+  },
+
+  command: <T extends SpotifyRequests.SpotifyCommands>(command: T, args: never[]) =>
+    ipcRendererHolder.send<SpotifyRequests.Command<T>>(IpcEvents.SPOTIFY, {
+      type: SpotifyEvents.COMMAND,
+      params: {
+        command,
+        args
+      }
+    }),
+
+  close: () =>
+    ipcRendererHolder.send(IpcEvents.SPOTIFY, {
+      type: SpotifyEvents.CLOSE,
+      params: undefined
+    }),
+
+  getToken: (scopes: TokenScope[]) =>
+    ipcRendererHolder.send<SpotifyRequests.Token>(IpcEvents.SPOTIFY, {
+      type: SpotifyEvents.GET_TOKEN,
+      params: {
+        scopes
+      }
+    })
+})
+
+function clearCache() {
+  webFrame.clearCache()
+}

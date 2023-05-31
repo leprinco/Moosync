@@ -14,6 +14,7 @@ import log from 'loglevel'
 import path from 'path'
 import { prefixLogger } from '../../main/logger/utils'
 import { readFile } from 'fs/promises'
+import { v4 } from 'uuid'
 
 export abstract class AbstractExtensionManager {
   abstract instantiateAndRegister(extension: UnInitializedExtensionItem): Promise<void>
@@ -25,10 +26,18 @@ export abstract class AbstractExtensionManager {
 export class ExtensionManager extends AbstractExtensionManager {
   private extensionRegistry = new InMemoryRegistry()
   private logsPath: string
+  private installPath: string
 
-  constructor(logsPath: string) {
+  private extensionCommunicator: ExtensionCommunicator = {
+    extensionRetriever: this.getExtensions.bind(this),
+    addPreference: this.addPreference.bind(this),
+    removePreference: this.removePreference.bind(this)
+  }
+
+  constructor(logsPath: string, installPath: string) {
     super()
     this.logsPath = logsPath
+    this.installPath = installPath
   }
 
   private register(extensionItem: ExtensionItem) {
@@ -57,6 +66,8 @@ export class ExtensionManager extends AbstractExtensionManager {
     delete env['GH_TOKEN']
 
     env['MOOSYNC_VERSION'] = process.env.MOOSYNC_VERSION
+    env['installPath'] = this.installPath
+
     return env
   }
 
@@ -65,7 +76,10 @@ export class ExtensionManager extends AbstractExtensionManager {
     const events = require('events')
     const vm = new NodeVM({
       console: 'redirect',
-      sandbox: {},
+      sandbox: {
+        URL,
+        URLSearchParams
+      },
       env: this.getProcessEnv(),
       nesting: true,
       require: {
@@ -89,7 +103,7 @@ export class ExtensionManager extends AbstractExtensionManager {
     return {
       __dirname: path.dirname(entryFilePath),
       __filename: entryFilePath,
-      api: new ExtensionRequestGenerator(packageName),
+      api: new ExtensionRequestGenerator(packageName, this.extensionCommunicator),
       logger: child
     }
   }
@@ -151,7 +165,10 @@ export class ExtensionManager extends AbstractExtensionManager {
     if (vmObj) {
       const global = this.setGlobalObjectToVM(vmObj.vm, extension.packageName, extension.entry)
 
-      const preferences = vmObj.factory.registerPreferences ? await vmObj.factory.registerPreferences() : []
+      const preferences = await (vmObj.factory.registerPreferences?.() ??
+        vmObj.factory.registerUserPreferences?.() ??
+        [])
+
       const instance = await vmObj.factory.create()
 
       console.debug('Instantiated', extension.name)
@@ -178,6 +195,40 @@ export class ExtensionManager extends AbstractExtensionManager {
 
   getExtensions(options?: getExtensionOptions): Iterable<ExtensionItem> {
     return this.extensionRegistry.get(options)
+  }
+
+  private notifyPreferencesChanged(packageName: string) {
+    process.send?.({
+      type: 'update-preferences',
+      channel: v4(),
+      data: undefined,
+      extensionName: packageName
+    } as extensionUIRequestMessage)
+  }
+
+  private addPreference(packageName: string, preference: ExtensionPreferenceGroup) {
+    for (const e of this.extensionRegistry.get({ packageName })) {
+      if (e.preferences.find((val) => val.key === preference.key)) {
+        console.warn('Preference already exists, skipping...')
+        return
+      }
+      e.preferences.push(preference)
+      this.notifyPreferencesChanged(packageName)
+      return
+    }
+  }
+
+  private removePreference(packageName: string, key: string) {
+    for (const e of this.extensionRegistry.get({ packageName })) {
+      const i = e.preferences.findIndex((val) => val.key === key)
+      if (i !== -1) {
+        e.preferences.splice(i, 1)
+        this.notifyPreferencesChanged(packageName)
+      } else {
+        console.warn('Preference with key', key, 'does not exist')
+      }
+      return
+    }
   }
 
   setStarted(packageName: string, status: boolean) {

@@ -10,7 +10,7 @@
 <template>
   <div class="d-flex h-100 w-100">
     <b-container fluid>
-      <TabCarousel v-on="$listeners" :items="optionalProviders" />
+      <TabCarousel class="tab-carousel" v-on="$listeners" :items="optionalProviders" :isSortAsc="isSortAsc" />
       <b-row v-if="isLoading">
         <b-col class="mb-2">
           <b-spinner>{{ $t('loading') }}</b-spinner>
@@ -23,6 +23,7 @@
           :item-size="94"
           key-field="_id"
           :direction="'vertical'"
+          @scroll.native="onScroll"
           v-click-outside="clearSelection"
         >
           <template v-slot="{ item, index }">
@@ -51,6 +52,7 @@ import { Component, Prop } from 'vue-property-decorator'
 import SongListCompactItem from './SongListCompactItem.vue'
 import EllipsisIcon from '@/icons/EllipsisIcon.vue'
 import TabCarousel from '../../generic/TabCarousel.vue'
+import { vxm } from '@/mainWindow/store'
 
 @Component({
   components: {
@@ -61,12 +63,12 @@ import TabCarousel from '../../generic/TabCarousel.vue'
 })
 export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
   @Prop({ default: () => [] })
-  private optionalProviders!: TabCarouselItem[]
+  optionalProviders!: TabCarouselItem[]
 
   @Prop({ default: false })
-  private isLoading!: boolean
+  isLoading!: boolean
 
-  private onRowContext(event: Event, item: Song) {
+  onRowContext(event: Event, item: Song) {
     this.$emit(
       'onRowContext',
       event,
@@ -74,16 +76,24 @@ export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
     )
   }
 
-  private onRowDoubleClicked(item: Song) {
+  onRowDoubleClicked(item: Song) {
     this.$emit('onRowDoubleClicked', item)
   }
 
-  private onPlayNowClicked(item: Song) {
+  onPlayNowClicked(item: Song) {
     this.$emit('onRowPlayNowClicked', item)
   }
 
-  private onArtistClicked(item: Artists) {
+  onArtistClicked(item: Artists) {
     this.$emit('onArtistClicked', item)
+  }
+
+  onScroll(e: Event) {
+    this.$emit('scroll', e)
+  }
+
+  get isSortAsc() {
+    return vxm.themes.songSortBy?.[0]?.asc ?? true
   }
 }
 </script>
@@ -95,4 +105,7 @@ export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
 
 .full-height
   height: calc(100% - 40px - 13px)
+
+.tab-carousel
+  margin-bottom: 15px
 </style>

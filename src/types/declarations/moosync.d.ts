@@ -1,10 +1,18 @@
+type LogLines = {
+  id: number
+  time: string
+  level: LogLevels
+  process: string
+  message: string
+}
+
 interface InvidiousSong extends Song {
   invidiousPlaybackUrl?: string
 }
 
 interface ExtendedPlaylist extends Playlist {
   extension?: string
-  isRemote?: boolean
+  isLocal: boolean
 }
 
 type StrippedAccountDetails = Omit<Omit<AccountDetails, 'signinCallback'>, 'signoutCallback'>
@@ -30,3 +38,6 @@ declare namespace NodeJS {
     FanartTVApiKey: string
   }
 }
+
+type ValueOf<T> = T[keyof T]
+type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>

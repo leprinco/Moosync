@@ -12,10 +12,23 @@ import { v4 } from 'uuid'
 import { YTPlayerWrapper } from './wrapper/ytPlayer'
 import { LocalPlayer } from './local'
 import localforage from 'localforage'
+import { vxm } from '@/mainWindow/store'
 
 type YouTubePlayerQuality = 'small' | 'medium' | 'large' | 'hd720' | 'hd1080' | 'highres' | 'default'
 
 export class YoutubePlayer extends LocalPlayer {
+  public provides(): PlayerTypes[] {
+    return ['YOUTUBE', 'SPOTIFY']
+  }
+
+  get key() {
+    return 'YOUTUBE'
+  }
+
+  public async canPlay(src: string): Promise<boolean> {
+    return src.length === 11 || vxm.providers.youtubeProvider.matchSongUrl(src)
+  }
+
   private sponsorBlock = new SponsorBlock(v4())
   private cacheStore = localforage.createInstance({
     driver: [localforage.INDEXEDDB],
@@ -24,15 +37,22 @@ export class YoutubePlayer extends LocalPlayer {
 
   private currentSegments: Segment[] = []
 
-  constructor(playerInstance: HTMLDivElement, useEmbed = true) {
+  protected async _initialize({
+    playerInstance,
+    useEmbed
+  }: {
+    playerInstance: HTMLDivElement
+    useEmbed: boolean
+  }): Promise<void> {
     if (useEmbed) {
-      super(new YTPlayerWrapper(playerInstance))
+      super._initialize(new YTPlayerWrapper(playerInstance))
     } else {
       const audio = document.createElement('audio')
       audio.crossOrigin = 'anonymous'
       audio.preload = 'auto'
       playerInstance.append(audio)
-      super(audio)
+      ;(audio as unknown as CustomAudioInstance).isCustomAudio = true
+      super._initialize(audio)
     }
   }
 
@@ -84,8 +104,9 @@ export class YoutubePlayer extends LocalPlayer {
     return url
   }
 
-  async load(src?: string, volume?: number, autoplay?: boolean) {
+  protected async _load(src?: string, volume?: number, autoplay?: boolean) {
     if (src) {
+      console.debug('Loading src', src)
       src = this.extractVideoID(src)
       if (src) {
         this.getSponsorblock(src)
@@ -93,12 +114,8 @@ export class YoutubePlayer extends LocalPlayer {
       }
     }
 
-    if (src) {
-      src && (this.playerInstance.src = src)
-      volume && (this.volume = volume)
-      autoplay && this.play()
-    }
-    volume && (this.volume = volume)
+    console.debug('Got final youtube video ID', src)
+    super._load(src, volume, autoplay)
   }
 
   protected listenOnTimeUpdate(callback: (time: number) => void): void {

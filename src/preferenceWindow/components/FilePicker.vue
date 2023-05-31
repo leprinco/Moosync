@@ -15,9 +15,25 @@
         <b-col cols="auto" align-self="center" class="ml-4 folder-icon">
           <FolderIcon @click.native="openFileBrowser" />
         </b-col>
-        <b-col cols="auto" align-self="center" class="ml-3 justify-content-start">
+        <b-col
+          :id="popoverTarget"
+          cols="auto"
+          align-self="center"
+          :title="value"
+          class="ml-3 justify-content-start"
+          @click="copy"
+        >
           <div class="item-text text-truncate">{{ value }}</div>
         </b-col>
+        <b-popover
+          id="clipboard-popover"
+          :show.sync="showPopover"
+          :target="popoverTarget"
+          triggers="click blur"
+          placement="top"
+        >
+          Copied!
+        </b-popover>
       </b-row>
     </b-row>
   </b-container>
@@ -28,16 +44,21 @@ import { Component, Mixins, Prop } from 'vue-property-decorator'
 import PreferenceHeader from './PreferenceHeader.vue'
 import { ExtensionPreferenceMixin } from '../mixins/extensionPreferenceMixin'
 import FolderIcon from '@/icons/FolderIcon.vue'
+import { v4 } from 'uuid'
 
 @Component({
   components: { PreferenceHeader, FolderIcon }
 })
-export default class FilePicker extends Mixins(ExtensionPreferenceMixin) {
+export default class FilePicker extends Mixins<ExtensionPreferenceMixin<string>>(ExtensionPreferenceMixin) {
   @Prop()
   private title!: string
 
   @Prop()
   private tooltip!: string
+
+  private popoverTarget = v4()
+  private showPopover = false
+  private popoverTimeout: ReturnType<typeof setTimeout> | undefined
 
   private openFileBrowser() {
     window.WindowUtils.openFileBrowser(false, false).then((data) => {
@@ -46,6 +67,19 @@ export default class FilePicker extends Mixins(ExtensionPreferenceMixin) {
         this.onInputChange()
       }
     })
+  }
+
+  private copy() {
+    if (this.popoverTimeout) {
+      clearTimeout(this.popoverTimeout)
+      this.popoverTimeout = undefined
+    }
+
+    navigator.clipboard.writeText(this.value ?? '')
+    this.showPopover = true
+    this.popoverTimeout = setTimeout(() => {
+      this.showPopover = false
+    }, 1000)
   }
 }
 </script>

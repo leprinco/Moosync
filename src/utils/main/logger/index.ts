@@ -10,4 +10,7 @@ prefixLogger(app.getPath('logs'), mainLogger)
 const rendererLogger = log.getLogger('Renderer')
 prefixLogger(app.getPath('logs'), rendererLogger)
 
-export { mainLogger as logger, rendererLogger }
+const librespotLogger = log.getLogger('Librespot')
+prefixLogger(app.getPath('logs'), librespotLogger)
+
+export { mainLogger as logger, rendererLogger, librespotLogger }

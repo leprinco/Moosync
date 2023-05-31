@@ -1,4 +1,5 @@
 /*
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider';
  *  providers.d.ts is a part of Moosync.
  *
  *  Copyright 2021-2022 by Sahil Gupte <sahilsachingupte@gmail.com>. All rights reserved.
@@ -11,4 +12,7 @@ interface Recommendations {
   songs: Song[]
 }
 
-type Providers = 'Youtube' | 'Spotify' | 'LastFM' | 'Invidious'
+interface Provider {
+  username: string
+  provider: import('@/utils/ui/providers/generics/genericProvider').GenericProvider
+}

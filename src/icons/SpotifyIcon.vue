@@ -46,12 +46,12 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class SpotifyIcon extends Vue {
   @Prop({ default: 'white' })
-  private color!: string
+  color!: string
 
   @Prop({ default: false })
-  private dropShadow!: boolean
+  dropShadow!: boolean
 
   @Prop({ default: false })
-  private filled!: boolean
+  filled!: boolean
 }
 </script>

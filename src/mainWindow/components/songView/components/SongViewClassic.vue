@@ -8,30 +8,33 @@
 -->
 
 <template>
-  <div class="w-100 h-100">
-    <b-row align-v="center" class="details-background">
-      <SongDetails
-        class="details-container h-100"
-        :defaultDetails="defaultDetails"
-        :buttonGroup="detailsButtonGroup"
-        :currentSong="currentSong"
-        v-on="$listeners"
-      />
-    </b-row>
-    <b-row class="list-container">
-      <SongList
-        :songList="songList"
-        :extrafields="[
-          { key: 'index', label: 'Sr. No' },
-          { key: 'title', label: 'Title' },
-          { key: 'album_name', label: 'Album' },
-          { key: 'artist_name', label: 'Artists' }
-        ]"
-        :isLoading="isLoading"
-        v-on="$listeners"
-      />
-    </b-row>
-  </div>
+  <b-row class="w-100 h-100">
+    <b-col class="w-100 h-100">
+      <b-row no-gutters align-v="center" class="details-background">
+        <SongDetails
+          class="details-container h-100"
+          :defaultDetails="defaultDetails"
+          :buttonGroup="detailsButtonGroup"
+          :currentSong="currentSong"
+          :optionalProviders="optionalProviders"
+          v-on="$listeners"
+        />
+      </b-row>
+      <b-row no-gutters class="list-container">
+        <SongList
+          :songList="songList"
+          :extrafields="[
+            { key: 'index', label: 'Sr. No' },
+            { key: 'title', label: 'Title' },
+            { key: 'album_name', label: 'Album' },
+            { key: 'artist_name', label: 'Artists' }
+          ]"
+          :isLoading="isLoading"
+          v-on="$listeners"
+        />
+      </b-row>
+    </b-col>
+  </b-row>
 </template>
 
 <script lang="ts">
@@ -50,30 +53,34 @@ import ModelHelper from '@/utils/ui/mixins/ModelHelper'
 })
 export default class SongViewClassic extends mixins(ImgLoader, ModelHelper) {
   @Prop({ default: () => [] })
-  private songList!: Song[]
+  songList!: Song[]
 
   @Prop({ default: false })
-  private currentSong!: Song | undefined | null
+  currentSong!: Song | undefined | null
 
   @Prop({ default: false })
-  private isLoading!: boolean
+  isLoading!: boolean
+
+  @Prop({ default: () => [] })
+  optionalProviders!: TabCarouselItem[]
 
   @Prop({
     default: () => {
       return { defaultTitle: '', defaultSubtitle: '', defaultCover: '' }
     }
   })
-  private defaultDetails!: SongDetailDefaults
+  defaultDetails!: SongDetailDefaults
 
   @Prop({
     default: () => {
       return {
         enableContainer: false,
-        enableLibraryStore: false
+        enableLibraryStore: false,
+        playRandom: false
       }
     }
   })
-  private detailsButtonGroup!: SongDetailButtons
+  detailsButtonGroup!: SongDetailButtons
 }
 </script>
 
@@ -82,7 +89,8 @@ export default class SongViewClassic extends mixins(ImgLoader, ModelHelper) {
   height: 25%
   max-height: 200px
   margin-top: 15px
-  width: calc(100% - 30px)
+  margin-left: 15px
+  margin-right: 15px
   border-radius: 28px
   background: var(--secondary)
 

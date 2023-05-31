@@ -1,20 +1,27 @@
 import { saveSelectivePreference, loadSelectivePreference, store } from '../db/preferences'
 import { SystemThemeHandler } from './system'
+import { promises as fsP } from 'fs'
+import path from 'path'
+import { app } from 'electron'
+import { isEmpty, isThemeDetails } from '../../common'
 
 /**
  * Saves theme under key "themes"
  * @param theme details of theme to save
  */
-export function saveTheme(theme: ThemeDetails) {
-  store.set(`themes.${theme.id}`, theme)
+export async function saveTheme(theme: ThemeDetails) {
+  const themeDir = path.join(app.getPath('appData'), app.getName(), 'themes', theme.id)
+  await fsP.mkdir(themeDir, { recursive: true })
+  await fsP.writeFile(path.join(themeDir, 'config.json'), JSON.stringify(theme))
 }
 
 /**
  * Removes theme by id
  * @param id of theme
  */
-export function removeTheme(id: string) {
-  store.delete(`themes.${id}` as never)
+export async function removeTheme(id: string) {
+  const themeDir = path.join(app.getPath('appData'), app.getName(), 'themes', id)
+  await fsP.rm(themeDir, { maxRetries: 5, recursive: true })
 }
 
 /**
@@ -22,15 +29,83 @@ export function removeTheme(id: string) {
  * @param id of theme
  * @returns details of theme if found otherwise undefined
  */
-export function loadTheme(id: string): ThemeDetails | undefined {
-  return store.get(`themes.${id}`) as ThemeDetails | undefined
+export async function loadTheme(id: string): Promise<ThemeDetails | undefined> {
+  if (id === 'default') {
+    return defaultTheme
+  }
+
+  const themeDir = path.join(app.getPath('appData'), app.getName(), 'themes', id)
+
+  try {
+    const data = await fsP.readFile(path.join(themeDir, 'config.json'), { encoding: 'utf-8' })
+    const parsed = JSON.parse(data)
+    if (isThemeDetails(parsed)) {
+      if (parsed.theme.customCSS && !path.isAbsolute(parsed.theme.customCSS)) {
+        parsed.theme.customCSS = path.resolve(themeDir, parsed.theme.customCSS)
+      }
+      return parsed
+    }
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+function validateTheme(theme: unknown): ThemeDetails | undefined {
+  const tryTheme = theme as ThemeDetails
+  if (!isEmpty(tryTheme.id) && !isEmpty(tryTheme.name)) {
+    return {
+      id: tryTheme.id,
+      name: tryTheme.name,
+      author: tryTheme.author,
+      theme: {
+        accent: tryTheme?.theme?.accent,
+        primary: tryTheme?.theme?.primary,
+        secondary: tryTheme?.theme?.secondary,
+        tertiary: tryTheme?.theme?.tertiary,
+        textPrimary: tryTheme?.theme?.textPrimary,
+        textSecondary: tryTheme?.theme?.textSecondary,
+        textInverse: tryTheme?.theme?.textInverse,
+        divider: tryTheme?.theme?.divider,
+        customCSS: tryTheme?.theme?.customCSS
+      }
+    }
+  }
 }
 
 /**
  * Fetches all themes
  * @returns Dictionary of themes with their id's as keys
  */
-export function loadAllThemes(): { [key: string]: ThemeDetails } | undefined {
+export async function loadAllThemes() {
+  const themeDir = path.join(app.getPath('appData'), app.getName(), 'themes')
+  const ret: { [key: string]: ThemeDetails } = {}
+
+  const dirs = await fsP.readdir(themeDir, { withFileTypes: true })
+  for (const d of dirs) {
+    if (d.isDirectory()) {
+      try {
+        const data = JSON.parse(
+          await fsP.readFile(path.join(themeDir, d.name, 'config.json'), { encoding: 'utf-8' })
+        ) as ThemeDetails
+        const theme = validateTheme(data)
+        if (theme) {
+          ret[data.id] = theme
+        }
+      } catch {
+        continue
+      }
+    }
+  }
+
+  return ret
+}
+
+/**
+ * Fetches all themes
+ * @deprecated
+ * @returns Dictionary of themes with their id's as keys
+ */
+export function loadAllThemesLegacy(): { [key: string]: ThemeDetails } | undefined {
   return store.get(`themes`) as { [key: string]: ThemeDetails } | undefined
 }
 
@@ -58,15 +133,29 @@ export function getSongView(): songMenu {
   return loadSelectivePreference('songView', false, 'compact' as songMenu) ?? 'compact'
 }
 
+const defaultTheme: ThemeDetails = {
+  id: 'default',
+  name: 'Default',
+  author: 'Moosync',
+  theme: {
+    primary: '#212121',
+    secondary: '#282828',
+    tertiary: '#151515',
+    textPrimary: '#ffffff',
+    textSecondary: '#565656',
+    textInverse: '#000000',
+    accent: '#65CB88',
+    divider: 'rgba(79, 79, 79, 0.67)'
+  }
+}
+
 /**
  * Gets active theme
  * @returns details of active theme if exists otherwise undefined
  */
-export function getActiveTheme() {
+export async function getActiveTheme(): Promise<ThemeDetails> {
   const id = loadSelectivePreference('activeTheme', false) as string
-  if (id) {
-    return loadTheme(id)
-  }
+  return (await loadTheme(id)) ?? defaultTheme
 }
 
 export async function setupSystemThemes() {
@@ -117,6 +206,50 @@ export function setupDefaultThemes() {
   for (const key in themes) {
     if (!store.has(`themes.${key}`)) {
       saveTheme(themes[key])
+    }
+  }
+}
+
+export async function transformCSS(cssPath: string, root?: string) {
+  if (root) {
+    cssPath = path.resolve(root, cssPath)
+  }
+  await fsP.access(cssPath)
+
+  let css = await fsP.readFile(cssPath, { encoding: 'utf-8' })
+
+  const match = css.matchAll(new RegExp('@import', 'g'))
+  for (const m of match) {
+    const line = m.input
+    if (line) {
+      const importPath = line?.match(/(["'])((\\{2})*|(.*?[^\\](\\{2})*))\1/)
+      if (importPath) {
+        const imported = await transformCSS(importPath[2], path.dirname(cssPath))
+        css = css.replaceAll(line, imported)
+      }
+    }
+  }
+
+  return css
+}
+
+export async function migrateThemes() {
+  const themes = loadAllThemesLegacy()
+  const baseDir = path.join(app.getPath('appData'), app.getName(), 'themes')
+  await fsP.mkdir(baseDir, { recursive: true })
+  if (themes) {
+    for (const value of Object.values(themes)) {
+      const themeDir = path.join(baseDir, value.id)
+
+      try {
+        await fsP.access(themeDir)
+      } catch {
+        await fsP.mkdir(themeDir, { recursive: true })
+
+        const configPath = path.join(themeDir, 'config.json')
+        await fsP.writeFile(configPath, JSON.stringify(value))
+        continue
+      }
     }
   }
 }

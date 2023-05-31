@@ -8,16 +8,39 @@
  */
 
 import { IpcEvents, MprisEvents } from './constants'
-import { ButtonEnum, MediaController, PlaybackStateEnum } from 'media-controller'
+import MediaController, { ButtonEnum, PlaybackStateEnum, PlayerButtons } from 'media-controller'
 import { WindowHandler } from '../windowManager'
+
+function checkStarted() {
+  return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value
+
+    descriptor.value = async function (...args: unknown[]) {
+      if (this instanceof MprisChannel && this.isStarted) {
+        return originalMethod.bind(this)(...args)
+      }
+    }
+  }
+}
 
 export class MprisChannel implements IpcChannelInterface {
   name = IpcEvents.MPRIS
-  private controller = new MediaController()
+  private controller = MediaController
+
+  private buttonState: MprisRequests.ButtonStatus = {}
+
+  private buttonStatusCallbacks: ((buttons: PlayerButtons) => void)[] = []
+
+  isStarted = false
 
   constructor() {
-    this.controller.createPlayer('Moosync')
-    this.onButtonPressed()
+    try {
+      this.controller.createPlayer('Moosync')
+      this.isStarted = true
+      this.setOnButtonPressed()
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   handle(event: Electron.IpcMainEvent, request: IpcRequest): void {
@@ -34,6 +57,7 @@ export class MprisChannel implements IpcChannelInterface {
     }
   }
 
+  @checkStarted()
   private onSongInfoChange(event: Electron.IpcMainEvent, request: IpcRequest<MprisRequests.SongInfo>) {
     if (request.params) {
       const { title, albumName, artistName, albumArtist, thumbnail, genres } = request.params
@@ -49,18 +73,25 @@ export class MprisChannel implements IpcChannelInterface {
       } else {
         this.controller.updatePlayerDetails({ title, albumName, artistName, thumbnail, genres, albumArtist })
       }
+
+      if (this.buttonState) {
+        this.controller.setButtonStatus(this.buttonState)
+      }
     }
 
     event.reply(request.responseChannel)
   }
 
+  @checkStarted()
   private onPlaybackStateChanged(event: Electron.IpcMainEvent, request: IpcRequest<MprisRequests.PlaybackState>) {
     if (request.params.state) {
       switch (request.params.state) {
         case 'PLAYING':
+          this.handlePlayPauseButtonState(true)
           this.controller.setPlaybackStatus(PlaybackStateEnum.Playing)
           break
         case 'PAUSED':
+          this.handlePlayPauseButtonState(false)
           this.controller.setPlaybackStatus(PlaybackStateEnum.Paused)
           break
         case 'STOPPED':
@@ -74,25 +105,45 @@ export class MprisChannel implements IpcChannelInterface {
     event.reply(request.responseChannel)
   }
 
+  @checkStarted()
   private setButtonStatus(event: Electron.IpcMainEvent, request: IpcRequest<MprisRequests.ButtonStatus>) {
     if (request.params) {
-      const { play, pause, next, prev, shuffle, loop } = request.params
-      this.controller.setButtonStatus({
-        play,
-        pause,
-        next,
-        prev,
-        shuffle,
-        loop
+      this.buttonState = { ...this.buttonState, ...request.params }
+
+      this.controller.setButtonStatus(this.buttonState)
+
+      this.buttonStatusCallbacks.forEach((val) => {
+        val(this.buttonState)
       })
     }
 
     event.reply(request.responseChannel)
   }
 
-  private onButtonPressed() {
-    this.controller.setButtonPressCallback((args) => {
-      WindowHandler.getWindow(true)?.webContents.send(MprisEvents.ON_BUTTON_PRESSED, args as typeof ButtonEnum)
-    })
+  @checkStarted()
+  private handlePlayPauseButtonState(isPlaying: boolean) {
+    this.buttonState['play'] = !isPlaying
+    this.buttonState['pause'] = isPlaying
+
+    this.controller.setButtonStatus(this.buttonState)
+  }
+
+  @checkStarted()
+  public onButtonPressed(button: ValueOf<typeof ButtonEnum>) {
+    WindowHandler.getWindow(true)?.webContents.send(MprisEvents.ON_BUTTON_PRESSED, button)
+  }
+
+  @checkStarted()
+  private setOnButtonPressed() {
+    this.controller.setButtonPressCallback(this.onButtonPressed.bind(this))
+  }
+
+  @checkStarted()
+  public onButtonStatusChange(callback: (buttons: PlayerButtons) => void) {
+    this.buttonStatusCallbacks.push(callback)
+  }
+
+  public get buttonStatus() {
+    return this.buttonState
   }
 }

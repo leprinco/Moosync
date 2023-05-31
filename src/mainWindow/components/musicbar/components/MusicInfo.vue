@@ -15,9 +15,17 @@
       enter-active-class="animate__animated animate__fadeIn"
       leave-active-class="animate__animated animate__fadeOut animate__faster"
     >
+      <video
+        v-if="showSpotifyCanvas && spotifyCanvas"
+        class="bg-img w-100 h-100"
+        :src="spotifyCanvas"
+        :key="spotifyCanvas"
+        autoplay
+        loop
+      />
       <b-img
         class="bg-img"
-        v-if="computedImg"
+        v-else-if="computedImg"
         :src="computedImg"
         :key="computedImg"
         referrerPolicy="no-referrer"
@@ -58,7 +66,7 @@
         </b-col>
         <b-col offset="1" cols="7" class="right-container h-100">
           <div class="h-100" v-if="queueOrder.length > 0">
-            <b-row>
+            <b-row v-if="!isJukeboxModeActive">
               <b-col cols="auto" class="d-flex">
                 <div class="rounded-btn" @click="saveAsPlaylist">Save as playlist</div>
                 <div class="rounded-btn" @click="clear">Clear</div>
@@ -66,31 +74,23 @@
             </b-row>
             <b-row class="queue-container-outer">
               <b-col class="h-100 queue-container mr-4">
-                <draggable
-                  class="h-100"
-                  v-model="queueOrder"
-                  ghost-class="ghost"
-                  @start="drag = true"
-                  @end="
-                    () => {
-                      drag = false
-                      onDragEnd()
-                    }
-                  "
-                  @change="handleIndexChange"
+                <RecycleScroller
+                  class="w-100 h-100"
+                  :items="queueOrder"
+                  :item-size="94"
+                  ref="recycle-scroller"
+                  key-field="id"
+                  :direction="'vertical'"
                 >
-                  <transition-group name="flip-list">
+                  <template v-slot="{ item, index }">
                     <QueueItem
-                      v-for="(element, index) in queueOrder"
-                      :key="element.id"
-                      :id="`queue-item-${element.id}`"
-                      :ref="`queue-item-${element.id}`"
-                      :songID="element.songID"
+                      :id="`queue-item-${item.id}`"
+                      :song="getSong(item.songID)"
                       :index="index"
                       :current="index === currentIndex"
                     />
-                  </transition-group>
-                </draggable>
+                  </template>
+                </RecycleScroller>
               </b-col>
             </b-row>
           </div>
@@ -118,6 +118,9 @@ import { EventBus } from '@/utils/main/ipc/constants'
 import SongDetailsCompact from '@/mainWindow/components/songView/components/SongDetailsCompact.vue'
 import { PeerMode } from '@/mainWindow/store/syncState'
 import CrossIcon from '@/icons/CrossIcon.vue'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
+import PlayerControls from '@/utils/ui/mixins/PlayerControls'
+import Vue from 'vue/types/umd'
 
 @Component({
   components: {
@@ -128,10 +131,18 @@ import CrossIcon from '@/icons/CrossIcon.vue'
     CrossIcon
   }
 })
-export default class MusicInfo extends mixins(ImageLoader, ModelHelper) {
-  private hasFrame = false
+export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxMixin, PlayerControls) {
+  hasFrame = false
   private ignoreScroll = false
-  private lyrics = ''
+  lyrics = ''
+
+  public getSong(songId: string) {
+    return this.queueProvider.queueData[songId]
+  }
+
+  get spotifyCanvas() {
+    return vxm.themes.currentSpotifyCanvas
+  }
 
   get queueProvider() {
     return vxm.sync.mode !== PeerMode.UNDEFINED ? vxm.sync : vxm.player
@@ -145,12 +156,13 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper) {
     return vxm.themes.showPlayer
   }
 
-  private close() {
+  close() {
     bus.$emit('onToggleSlider', false)
   }
 
-  private onDragEnd() {
+  onDragEnd() {
     this.ignoreScroll = true
+    vxm.themes.queueSortBy = undefined
   }
 
   private scrollToActive() {
@@ -159,22 +171,21 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper) {
       return
     }
 
-    const elem = this.$refs[`queue-item-${this.queueOrder[this.currentIndex]?.id}`]
-    if (elem) {
-      ;((elem as (Vue | Element)[])[0] as Vue).$el.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-        inline: 'center'
-      })
-    }
+    ;(this.$refs['recycle-scroller'] as Vue)?.$el.scrollTo({
+      top: this.currentIndex * 94,
+      behavior: 'smooth'
+    })
   }
 
   async created() {
     this.hasFrame = await window.WindowUtils.hasFrame()
   }
 
-  mounted() {
+  async mounted() {
+    await this.$nextTick()
     this.scrollToActive()
+
+    bus.$on(EventBus.IGNORE_MUSIC_INFO_SCROLL, () => (this.ignoreScroll = true))
   }
 
   private async getLyricsFromExtension() {
@@ -193,32 +204,66 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper) {
     bus.$emit(EventBus.REFRESH_LYRICS, this.lyrics)
   }
 
-  @Watch('currentSong', { immediate: true })
-  async onSongChange() {
-    this.lyrics = ''
+  get showSpotifyCanvas() {
+    return vxm.themes.showSpotifyCanvas
+  }
 
+  private async fetchSpotifyCanvas() {
+    if (
+      this.currentSong &&
+      this.showSpotifyCanvas &&
+      (await vxm.providers.spotifyProvider.getLoggedIn()) &&
+      vxm.providers.spotifyProvider.canPlayPremium
+    ) {
+      let trackId: string | undefined
+      if (this.currentSong.type === 'SPOTIFY') {
+        trackId = this.currentSong.url
+      } else {
+        const searchRes = (
+          await vxm.providers.spotifyProvider.searchSongs(
+            `${
+              this.currentSong.artists ? this.currentSong.artists?.map((val) => val.artist_name).join(', ') + ' - ' : ''
+            }${this.currentSong.title}`
+          )
+        )[0]
+
+        trackId = searchRes.url
+      }
+      const resp = await window.SpotifyPlayer.command('GET_CANVAS', [`spotify:track:${trackId}`])
+      vxm.themes.currentSpotifyCanvas = resp.canvases?.at(0)?.url ?? null
+    }
+  }
+
+  private async fetchLyrics() {
     if (this.currentSong) {
       if (this.currentSong.lyrics) {
         this.lyrics = this.currentSong.lyrics
       } else {
         this.lyrics = 'Searching Lyrics...'
 
-        const { _id, title, artists } = this.currentSong
-        const resp =
-          (await this.getLyricsFromExtension()) ??
-          (await window.SearchUtils.searchLyrics(artists?.map((val) => val.artist_name ?? '') ?? [], title))
+        const { _id } = this.currentSong
+        const resp = (await this.getLyricsFromExtension()) ?? (await window.SearchUtils.searchLyrics(this.currentSong))
 
+        // Don't update lyrics if song has changed while fetching lyrics
         if (this.currentSong._id === _id) {
-          this.currentSong.lyrics = resp
-          this.lyrics = resp || 'No lyrics found...'
+          this.lyrics = (resp as string) || 'No lyrics found...'
         }
-        window.DBUtils.updateLyrics(_id, resp)
+        window.DBUtils.updateLyrics(_id, resp as string)
       }
     }
   }
 
+  @Watch('currentSong', { immediate: true })
+  async onSongChange() {
+    this.lyrics = ''
+
+    this.fetchSpotifyCanvas()
+    this.fetchLyrics()
+  }
+
   @Watch('currentIndex')
-  async onIndexChange() {
+  async onIndexChange(old: number, newVal: number) {
+    console.log(old, newVal)
     await this.$nextTick()
     this.scrollToActive()
   }
@@ -246,7 +291,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper) {
     return this.remoteCover ?? this.getImgSrc(this.getValidImageHigh(this.currentSong))
   }
 
-  private clear() {
+  clear() {
     if (this.queueOrder.length > 0) {
       if (this.queueOrder.length === 1) {
         this.queueOrder = []
@@ -267,7 +312,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper) {
     return songs
   }
 
-  private saveAsPlaylist() {
+  saveAsPlaylist() {
     bus.$emit(EventBus.SHOW_NEW_PLAYLIST_MODAL, this.parseQueueItems())
   }
 
@@ -282,11 +327,11 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper) {
   }
 
   @Prop({ default: () => null })
-  private currentSong!: Song | null
+  currentSong!: Song | null
 
   private formattedDuration = convertDuration
 
-  private onToggleLyrics() {
+  onToggleLyrics() {
     vxm.themes.showPlayer = vxm.themes.showPlayer === 1 ? 2 : 1
   }
 }

@@ -35,7 +35,11 @@ function registerLogger() {
 
   console.info = (...args: unknown[]) => {
     preservedConsoleInfo.apply(console, args)
-    window.LoggerUtils.info(...args)
+    try {
+      window.LoggerUtils.info(...args)
+    } catch {
+      window.LoggerUtils.info(...args.map((val) => JSON.stringify(val)))
+    }
   }
 
   console.error = (...args: unknown[]) => {
@@ -46,17 +50,29 @@ function registerLogger() {
 
   console.warn = (...args: unknown[]) => {
     preservedConsoleWarn.apply(console, args)
-    window.LoggerUtils.warn(...args)
+    try {
+      window.LoggerUtils.warn(...args)
+    } catch {
+      window.LoggerUtils.warn(...args.map((val) => JSON.stringify(val)))
+    }
   }
 
   console.debug = (...args: unknown[]) => {
     preservedConsoleDebug.apply(console, args)
-    window.LoggerUtils.debug(...args)
+    try {
+      window.LoggerUtils.debug(...args)
+    } catch {
+      window.LoggerUtils.debug(...args.map((val) => JSON.stringify(val)))
+    }
   }
 
   console.trace = (...args: unknown[]) => {
     preservedConsoleTrace.apply(console, args)
-    window.LoggerUtils.trace(...args)
+    try {
+      window.LoggerUtils.trace(...args)
+    } catch {
+      window.LoggerUtils.trace(...args.map((val) => JSON.stringify(val)))
+    }
   }
 
   window.onerror = (err) => {
@@ -66,6 +82,11 @@ function registerLogger() {
 
   Vue.config.errorHandler = (err) => {
     console.error(err)
+  }
+
+  window.onunhandledrejection = (ev) => {
+    const message = ev.reason.message ?? JSON.stringify(ev.reason) ?? ev.reason
+    window.LoggerUtils.error('Uncaught in promise', message)
   }
 }
 

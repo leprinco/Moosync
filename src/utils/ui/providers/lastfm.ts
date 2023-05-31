@@ -7,15 +7,13 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { GenericAuth } from './generics/genericAuth'
-import { GenericRecommendation } from './generics/genericRecommendations'
-import { GenericScrobbler } from './generics/genericScrobbler'
-import axios from 'axios'
-import { cache } from '@/utils/ui/providers/generics/genericProvider'
 import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { md5 } from 'hash-wasm'
 import { EventBus } from '@/utils/main/ipc/constants'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
+import { ProviderScopes } from '@/utils/commonConstants'
+import { FetchWrapper } from './generics/fetchWrapper'
 
 const AUTH_BASE_URL = 'https://www.last.fm/api/'
 const API_BASE_URL = 'https://ws.audioscrobbler.com/2.0'
@@ -38,12 +36,9 @@ type authenticatedBody = {
 
 type sessionKey = string
 
-export class LastFMProvider extends GenericAuth implements GenericScrobbler, GenericRecommendation {
+export class LastFMProvider extends GenericProvider {
   private _session: sessionKey | undefined
-  private api = axios.create({
-    adapter: cache.adapter,
-    baseURL: API_BASE_URL
-  })
+  private api = new FetchWrapper()
   private scrobbleTimeout: ReturnType<typeof setTimeout> | undefined
   private oAuthChannel: string | undefined
 
@@ -55,31 +50,39 @@ export class LastFMProvider extends GenericAuth implements GenericScrobbler, Gen
     return 'lastfm'
   }
 
+  provides(): ProviderScopes[] {
+    return [ProviderScopes.RECOMMENDATIONS, ProviderScopes.SCROBBLES]
+  }
+
   private setLoggedInStatus() {
     vxm.providers.loggedInLastFM = !!this._session
   }
 
   public async getLoggedIn() {
+    await this.authInitialized
+    if (!this._session) {
+      this._session = (await this.fetchStoredToken()) ?? undefined
+    }
     this.setLoggedInStatus()
     return !!this._session
   }
 
-  private isEnvExists() {
-    return !!(process.env.LastFmApiKey && process.env.LastFmSecret)
-  }
-
   public async updateConfig(): Promise<boolean> {
-    const conf = (await window.PreferenceUtils.loadSelective('lastfm')) as { api_key: string; client_secret: string }
-    if (conf || this.isEnvExists()) {
-      this._config = {
-        key: process.env.LastFmApiKey ?? conf.api_key,
-        secret: process.env.LastFmSecret ?? conf.client_secret
-      }
+    const conf = (await window.PreferenceUtils.loadSelective('lastfm')) as
+      | { client_id: string; client_secret: string }
+      | undefined
+    const key = conf?.client_id ?? process.env.LastFmApiKey
+    const secret = conf?.client_secret ?? process.env.LastFmSecret
+    if (key && secret) {
+      this._config = { key, secret }
 
       this._session = (await this.fetchStoredToken()) ?? undefined
+      this.authInitializedResolver()
+      return true
     }
 
-    return !!(conf && conf.api_key && conf.client_secret) || this.isEnvExists()
+    this.authInitializedResolver()
+    return false
   }
 
   private async getMethodSignature(...params: object[]) {
@@ -105,7 +108,7 @@ export class LastFMProvider extends GenericAuth implements GenericScrobbler, Gen
   }
 
   private async populateRequest<T extends ApiResources>(
-    axiosMethod: 'GET' | 'POST',
+    fetchMethod: 'GET' | 'POST',
     lastFmMethod: T,
     data?: object,
     token?: string
@@ -135,13 +138,14 @@ export class LastFMProvider extends GenericAuth implements GenericScrobbler, Gen
         format: 'json'
       })
 
-      const resp = await this.api({
-        method: axiosMethod,
-        params: axiosMethod === 'GET' && parsedParams,
-        data: axiosMethod === 'POST' && parsedParams
+      const resp = await this.api.request('', {
+        baseURL: API_BASE_URL,
+        method: fetchMethod,
+        search: fetchMethod === 'GET' ? parsedParams : {},
+        body: fetchMethod === 'POST' ? parsedParams : undefined
       })
 
-      return resp.data
+      return resp.json()
     }
   }
 
@@ -225,7 +229,7 @@ export class LastFMProvider extends GenericAuth implements GenericScrobbler, Gen
 
       this.populateRequest('POST', ApiResources.UPDATE_NOW_PLAYING, {
         ...parsedSong,
-        artist: song.artists && song.artists[0].artist_name
+        artist: song.artists && song.artists.length > 0 && song.artists[0].artist_name
       })
 
       if (this.scrobbleTimeout) {
@@ -243,8 +247,13 @@ export class LastFMProvider extends GenericAuth implements GenericScrobbler, Gen
   }
 
   public async getUserDetails() {
-    const resp = await this.populateRequest('GET', ApiResources.GET_USER_INFO)
-    return (this.username = resp?.user?.name ?? '')
+    try {
+      const resp = await this.populateRequest('GET', ApiResources.GET_USER_INFO)
+      return (this.username = resp?.user?.name ?? '')
+    } catch (e) {
+      console.error(e)
+      return 'Failed to get username'
+    }
   }
 
   private async parseTrack(track: string, artist: string) {
@@ -265,7 +274,7 @@ export class LastFMProvider extends GenericAuth implements GenericScrobbler, Gen
   }
 
   public async *getRecommendations(): AsyncGenerator<Song[]> {
-    if (await this.getLoggedIn()) {
+    if ((await this.getLoggedIn()) && (await this.getUserDetails()) && this.username) {
       const resp = await window.SearchUtils.scrapeLastFM(
         `https://www.last.fm/player/station/user/${this.username}/recommended`
       )
@@ -321,5 +330,25 @@ export class LastFMProvider extends GenericAuth implements GenericScrobbler, Gen
         }
       }
     }
+  }
+
+  public get Title(): string {
+    return 'LastFM'
+  }
+
+  public get BgColor(): string {
+    return '#BA0000'
+  }
+
+  public get IconComponent(): string {
+    return 'LastFMIcon'
+  }
+
+  public matchEntityId(id: string): boolean {
+    return id.startsWith('lastfm:')
+  }
+
+  public sanitizeId(id: string): string {
+    return id.replace('lastfm:', '')
   }
 }

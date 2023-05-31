@@ -27,6 +27,6 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class LastFMBig extends Vue {
   @Prop({ default: false })
-  private active!: string
+  active!: string
 }
 </script>

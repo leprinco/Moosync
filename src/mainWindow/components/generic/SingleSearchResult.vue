@@ -70,11 +70,11 @@ export default class SingleSearchResult extends mixins(PlayerControls, ImgLoader
   id!: string | null
 
   @Prop({ default: true })
-  private playable!: boolean
+  playable!: boolean
 
-  private forceEmptyImg = false
+  forceEmptyImg = false
 
-  private handleCoverError() {
+  handleCoverError() {
     this.forceEmptyImg = true
   }
 
@@ -82,15 +82,15 @@ export default class SingleSearchResult extends mixins(PlayerControls, ImgLoader
     this.forceEmptyImg = false
   }
 
-  private emitImgClick() {
+  emitImgClick() {
     if (this.playable) this.$emit('imgClick', this.id)
   }
 
-  private emitTitleClick() {
+  emitTitleClick() {
     this.$emit('titleClick', this.id)
   }
 
-  private emitContextMenu(event: Event) {
+  emitContextMenu(event: Event) {
     this.$emit('onContextMenu', event, this.id)
   }
 }
@@ -112,6 +112,7 @@ export default class SingleSearchResult extends mixins(PlayerControls, ImgLoader
   position: absolute
   top: 0
   border-radius: 10px
+  cursor: pointer
 
 .play-button
   opacity: 0

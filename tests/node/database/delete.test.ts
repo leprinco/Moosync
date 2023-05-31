@@ -21,7 +21,7 @@ test('Remove a song from DB', async () => {
   let count = inserted.length
 
   for (const i of inserted) {
-    await SongDB.removeSong(i._id)
+    await SongDB.removeSong(i)
 
     const oldCount = count
     count = SongDB.getSongByOptions().length

@@ -9,28 +9,26 @@
 
 <template>
   <div class="h-100 w-100 parent" @contextmenu="contextHandler">
-    <b-container fluid>
-      <b-row no-gutters class="page-title">{{ $t('pages.albums') }}</b-row>
-      <b-row class="d-flex">
-        <b-col col xl="2" md="3" v-for="album in filteredAlbumList" :key="album.album_id">
-          <CardView
-            :title="album.album_name"
-            :imgSrc="album.album_coverPath_high"
-            @click.native="gotoAlbum(album)"
-            @CardContextMenu="singleItemContextHandler(album, arguments[0])"
-          >
-            <template #defaultCover>
-              <AlbumDefault />
-            </template>
-          </CardView>
-        </b-col>
-      </b-row>
-    </b-container>
+    <CardRecycleScroller
+      :title="$t('pages.albums')"
+      :itemList="filteredAlbumList"
+      :titleKey="'album_name'"
+      :imageKey="'album_coverPath_high'"
+      :keyField="'album_id'"
+      @click="gotoAlbum"
+      @CardContextMenu="singleItemContextHandler"
+      @generalContextMenu="contextHandler"
+      :isSortAsc="isSortAsc"
+    >
+      <template #defaultCover>
+        <AlbumDefault />
+      </template>
+    </CardRecycleScroller>
   </div>
 </template>
 
 <script lang="ts">
-import CardView from '@/mainWindow/components/generic/CardView.vue'
+import CardRecycleScroller from '@/mainWindow/components/generic/CardRecycleScroller.vue'
 import { mixins } from 'vue-class-component'
 import { Component } from 'vue-property-decorator'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
@@ -40,7 +38,7 @@ import { vxm } from '@/mainWindow/store'
 
 @Component({
   components: {
-    CardView,
+    CardRecycleScroller,
     AlbumDefault
   }
 })
@@ -58,6 +56,10 @@ export default class Albums extends mixins(RouterPushes, ContextMenuMixin) {
     return this.albumList.filter((x) => {
       return x.album_name !== null
     })
+  }
+
+  get isSortAsc() {
+    return vxm.themes.entitySortBy?.asc ?? true
   }
 
   private setSort(options: NormalSortOptions) {
@@ -78,7 +80,7 @@ export default class Albums extends mixins(RouterPushes, ContextMenuMixin) {
     })
   }
 
-  private singleItemContextHandler(album: Album, event: MouseEvent) {
+  public singleItemContextHandler(album: Album, event: MouseEvent) {
     this.getContextMenu(event, {
       type: 'ALBUM',
       args: {
@@ -87,7 +89,7 @@ export default class Albums extends mixins(RouterPushes, ContextMenuMixin) {
     })
   }
 
-  private contextHandler(event: MouseEvent) {
+  public contextHandler(event: MouseEvent) {
     this.getContextMenu(event, {
       type: 'ENTITY_SORT',
       args: {

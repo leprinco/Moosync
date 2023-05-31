@@ -8,22 +8,21 @@
  */
 
 import { IpcEvents, SearchEvents } from './constants'
-import { getDisabledPaths, loadPreferences } from '@/utils/main/db/preferences'
+import { getDisabledPaths } from '@/utils/main/db/preferences'
 
-import { SongDB } from '@/utils/main/db'
+import { getSongDB } from '@/utils/main/db'
 import { YTScraper } from '../fetchers/searchYT'
-import { AZLyricsFetcher } from '../fetchers/lyrics'
+import { LyricsFetcher } from '../fetchers/lyrics'
 import { LastFMScraper } from '../fetchers/lastfm'
 import { InvidiousRequester } from '../fetchers/invidious'
 import { loadSelectivePreference } from '../db/preferences'
-import { InvidiousApiResources } from '@/utils/commonConstants'
 
 export class SearchChannel implements IpcChannelInterface {
   name = IpcEvents.SEARCH
   private ytScraper = new YTScraper()
   private lastFmScraper = new LastFMScraper()
   private invidiousRequester = new InvidiousRequester()
-  private azLyricsFetcher = new AZLyricsFetcher()
+  private azLyricsFetcher = new LyricsFetcher()
 
   handle(event: Electron.IpcMainEvent, request: IpcRequest): void {
     switch (request.type) {
@@ -38,6 +37,12 @@ export class SearchChannel implements IpcChannelInterface {
         break
       case SearchEvents.YT_SUGGESTIONS:
         this.getYTSuggestions(event, request as IpcRequest<SearchRequests.YTSuggestions>)
+        break
+      case SearchEvents.GET_YT_PLAYLIST:
+        this.getYTPlaylist(event, request as IpcRequest<SearchRequests.YTPlaylist>)
+        break
+      case SearchEvents.GET_YT_PLAYLIST_CONTENT:
+        this.getYTPlaylistContent(event, request as IpcRequest<SearchRequests.YTPlaylistContent>)
         break
       case SearchEvents.GET_YT_AUDIO_URL:
         this.getYTAudioURL(event, request as IpcRequest<SearchRequests.YTSuggestions>)
@@ -54,16 +59,15 @@ export class SearchChannel implements IpcChannelInterface {
       case SearchEvents.REQUEST_INVIDIOUS:
         this.requestInvidious(event, request as IpcRequest<SearchRequests.InvidiousRequest>)
         break
+      case SearchEvents.GET_PLAY_COUNT:
+        this.getPlayCount(event, request as IpcRequest<SearchRequests.PlayCount>)
+        break
     }
   }
 
   private async searchAll(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.Search>) {
-    const preferences = loadPreferences()
     if (request.params && request.params.searchTerm) {
-      event.reply(
-        request.responseChannel,
-        SongDB.searchAll(request.params.searchTerm, getDisabledPaths(preferences.musicPaths))
-      )
+      event.reply(request.responseChannel, getSongDB().searchAll(request.params.searchTerm, getDisabledPaths()))
     }
     event.reply(request.responseChannel)
   }
@@ -79,8 +83,8 @@ export class SearchChannel implements IpcChannelInterface {
   private async searchYT(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.SearchYT>) {
     if (request.params && request.params.title) {
       try {
-        const useInvidious =
-          loadSelectivePreference<SystemSettings[]>('system', false, [])?.find((val) => val.key === 'use_invidious')
+        const youtubeAlt =
+          loadSelectivePreference<Checkbox[]>('youtubeAlt', false, [])?.find((val) => val.key === 'use_invidious')
             ?.enabled ?? false
 
         let data: SearchResult = {
@@ -90,7 +94,7 @@ export class SearchChannel implements IpcChannelInterface {
           albums: [],
           genres: []
         }
-        if (!useInvidious) {
+        if (!youtubeAlt) {
           data = await this.ytScraper.searchTerm(
             request.params.title,
             request.params.artists,
@@ -98,15 +102,6 @@ export class SearchChannel implements IpcChannelInterface {
             request.params.scrapeYTMusic,
             request.params.scrapeYoutube
           )
-        } else {
-          const searchTerm = `${request.params.artists ? request.params.artists.join(', ') + ' - ' : ''}${
-            request.params.title
-          }`
-          const resp = await this.invidiousRequester.makeInvidiousRequest(InvidiousApiResources.SEARCH, {
-            params: { q: searchTerm, type: 'video', sort_by: 'relevance' }
-          })
-
-          if (resp) data.songs = this.invidiousRequester.parseSongs(resp)
         }
         event.reply(request.responseChannel, data)
       } catch (e) {
@@ -117,9 +112,9 @@ export class SearchChannel implements IpcChannelInterface {
   }
 
   private getYTSuggestions(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.YTSuggestions>) {
-    if (request.params && request.params.videoID) {
+    if (request.params) {
       this.ytScraper
-        .getSuggestions(request.params.videoID)
+        .getSuggestions(request.params.videoID ?? '')
         .then((data) => event.reply(request.responseChannel, data))
         .catch((e) => {
           console.error(e)
@@ -129,14 +124,30 @@ export class SearchChannel implements IpcChannelInterface {
   }
 
   private searchSongByOptions(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.SongOptions>) {
-    const preferences = loadPreferences()
-    const data = SongDB.getSongByOptions(request.params.options, getDisabledPaths(preferences.musicPaths))
+    const data = getSongDB().getSongByOptions(request.params.options, getDisabledPaths())
     event.reply(request.responseChannel, data)
+  }
+
+  private async getYTPlaylist(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.YTPlaylist>) {
+    if (request.params && request.params.id) {
+      const data = await this.ytScraper.parsePlaylistFromID(request.params.id)
+      event.reply(request.responseChannel, data)
+    }
+  }
+
+  private async getYTPlaylistContent(
+    event: Electron.IpcMainEvent,
+    request: IpcRequest<SearchRequests.YTPlaylistContent>
+  ) {
+    if (request.params && request.params.id) {
+      const data = await this.ytScraper.getPlaylistContent(request.params.id, request.params.nextPageToken)
+      event.reply(request.responseChannel, data)
+    }
   }
 
   private async searchEntityByOptions(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.EntityOptions>) {
     if (request.params && request.params.options) {
-      event.reply(request.responseChannel, SongDB.getEntityByOptions(request.params.options))
+      event.reply(request.responseChannel, getSongDB().getEntityByOptions(request.params.options))
     }
   }
 
@@ -148,8 +159,8 @@ export class SearchChannel implements IpcChannelInterface {
   }
 
   private async scrapeLyrics(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.LyricsScrape>) {
-    if (request.params && request.params.artists && request.params.title) {
-      const resp = await this.azLyricsFetcher.getLyrics(request.params.artists, request.params.title)
+    if (request.params && request.params.song) {
+      const resp = await this.azLyricsFetcher.getLyrics(request.params.song)
       event.reply(request.responseChannel, resp)
     }
   }
@@ -163,6 +174,14 @@ export class SearchChannel implements IpcChannelInterface {
         request.params.invalidateCache
       )
       event.reply(request.responseChannel, resp)
+    }
+    event.reply(request.responseChannel)
+  }
+
+  private getPlayCount(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.PlayCount>) {
+    if (request.params.songIds) {
+      const data = getSongDB().getPlayCount(...request.params.songIds)
+      event.reply(request.responseChannel, data)
     }
     event.reply(request.responseChannel)
   }

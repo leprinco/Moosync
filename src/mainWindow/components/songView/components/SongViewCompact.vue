@@ -14,6 +14,7 @@
         :defaultDetails="defaultDetails"
         :buttonGroup="detailsButtonGroup"
         :currentSong="currentSong"
+        :isLoading="isLoading"
         v-on="$listeners"
       />
     </b-col>
@@ -40,32 +41,33 @@ import SongDetailsCompact from './SongDetailsCompact.vue'
 })
 export default class SongViewCompact extends mixins(PlayerControls, RemoteSong, ImgLoader) {
   @Prop({ default: () => [] })
-  private songList!: Song[]
+  songList!: Song[]
 
   @Prop({ default: false })
-  private currentSong!: Song | undefined | null
+  currentSong!: Song | undefined | null
 
   @Prop({ default: false })
-  private isLoading!: boolean
+  isLoading!: boolean
 
   @Prop({ default: () => [] })
-  private optionalProviders!: TabCarouselItem[]
+  optionalProviders!: TabCarouselItem[]
 
   @Prop({
     default: () => {
       return { defaultTitle: '', defaultSubtitle: '', defaultCover: '' }
     }
   })
-  private defaultDetails!: SongDetailDefaults
+  defaultDetails!: SongDetailDefaults
 
   @Prop({
     default: () => {
       return {
         enableContainer: false,
-        enableLibraryStore: false
+        enableLibraryStore: false,
+        playRandom: false
       }
     }
   })
-  private detailsButtonGroup!: SongDetailButtons
+  detailsButtonGroup!: SongDetailButtons
 }
 </script>

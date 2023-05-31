@@ -8,7 +8,13 @@
     :class="{ selectedItem: selected.includes(index) }"
   >
     <b-row no-gutters align-content="center" class="w-100">
-      <LowImageCol @click.native="onPlayNowClicked(item)" height="56px" width="56px" :src="getValidImageLow(item)" />
+      <LowImageCol
+        @click.native="onPlayNowClicked(item)"
+        height="56px"
+        width="56px"
+        :src="getValidImageLow(item)"
+        :showPlayHoverButton="showPlayHoverButton"
+      />
       <b-col cols="5" class="ml-2" align-self="center">
         <b-row no-gutters align-v="center">
           <b-col cols="auto" class="d-flex">
@@ -16,33 +22,7 @@
               {{ item.title }}
             </div>
 
-            <YoutubeIcon
-              v-if="iconType === 'YOUTUBE'"
-              :color="'#E62017'"
-              :filled="true"
-              :dropShadow="true"
-              class="provider-icon"
-            />
-            <SpotifyIcon
-              v-if="iconType === 'SPOTIFY'"
-              :color="'#1ED760'"
-              :filled="true"
-              :dropShadow="true"
-              class="provider-icon"
-            />
-
-            <inline-svg
-              class="provider-icon"
-              v-if="iconURL && iconType === 'URL' && iconURL.endsWith('svg')"
-              :src="iconURL"
-            />
-            <img
-              referrerPolicy="no-referrer"
-              v-if="iconURL && iconType === 'URL' && !iconURL.endsWith('svg')"
-              :src="iconURL"
-              alt="provider icon"
-              class="provider-icon"
-            />
+            <IconHandler :item="item" />
           </b-col>
         </b-row>
         <b-row no-gutters class="flex-nowrap">
@@ -58,12 +38,13 @@
         </b-row>
       </b-col>
       <b-col cols="auto" align-self="center" offset="1" class="ml-auto timestamp">
-        {{ item._id === currentSong && currentSong._id ? 'Now Playing' : formattedDuration(item.duration) }}
+        {{ item._id === currentSong?._id && currentSong._id ? 'Now Playing' : formattedDuration(item.duration) }}
       </b-col>
-      <b-col cols="auto" align-self="center" class="button-icon ml-5">
+      <b-col cols="auto" align-self="center" class="button-icon ml-5" v-if="showAddToQueueButton">
         <AddToQueue title="Add song to queue" @click.native="onRowDoubleClicked(item)"
       /></b-col>
       <b-col
+        v-if="!isJukeboxModeActive && showEllipsis"
         cols="auto"
         align-self="center"
         class="ml-5 mr-3 py-2 ellipsis-icon"
@@ -82,27 +63,27 @@ import { mixins } from 'vue-class-component'
 import { Component, Prop } from 'vue-property-decorator'
 import LowImageCol from '@/mainWindow/components/generic/LowImageCol.vue'
 import Ellipsis from '@/icons/EllipsisIcon.vue'
-import YoutubeIcon from '@/icons/YoutubeIcon.vue'
-import SpotifyIcon from '@/icons/SpotifyIcon.vue'
+
 import AddToQueue from '@/icons/AddToQueueIcon.vue'
 import PlainPlay from '@/icons/AddToLibraryIcon.vue'
 import { vxm } from '@/mainWindow/store'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
+import IconHandler from '@/mainWindow/components/generic/IconHandler.vue'
 
 @Component({
   components: {
     LowImageCol,
     Ellipsis,
-    YoutubeIcon,
-    SpotifyIcon,
+    IconHandler,
     PlainPlay,
     AddToQueue
   }
 })
-export default class SongListCompactItem extends mixins(ImgLoader) {
-  private formattedDuration = convertDuration
+export default class SongListCompactItem extends mixins(ImgLoader, JukeboxMixin) {
+  formattedDuration = convertDuration
 
-  private iconType = ''
-  private iconURL = ''
+  iconType = ''
+  iconURL = ''
 
   private async getIconType() {
     this.iconURL = ''
@@ -124,36 +105,45 @@ export default class SongListCompactItem extends mixins(ImgLoader) {
   }
 
   @Prop({ default: () => [] })
-  private selected!: number[]
+  selected!: number[]
 
   @Prop({ default: () => null })
-  private item!: Song
+  item!: Song
 
   @Prop({ default: 0 })
-  private index!: number
+  index!: number
 
-  private get currentSong() {
+  @Prop({ default: true })
+  showPlayHoverButton!: boolean
+
+  @Prop({ default: true })
+  showEllipsis!: boolean
+
+  @Prop({ default: true })
+  showAddToQueueButton!: boolean
+
+  get currentSong() {
     return vxm.player.currentSong
   }
 
-  private onRowDoubleClicked(item: Song) {
+  onRowDoubleClicked(item: Song) {
     this.$emit('onRowDoubleClicked', item)
   }
 
-  private onRowContext(event: MouseEvent, item: Song) {
+  onRowContext(event: MouseEvent, item: Song) {
     event.stopPropagation()
     this.$emit('onRowContext', event, item)
   }
 
-  private onRowSelected(index: number) {
+  onRowSelected(index: number) {
     this.$emit('onRowSelected', index)
   }
 
-  private onPlayNowClicked(item: Song) {
+  onPlayNowClicked(item: Song) {
     this.$emit('onPlayNowClicked', item)
   }
 
-  private async onSubtitleClicked(artist: Artists) {
+  async onSubtitleClicked(artist: Artists) {
     this.$emit('onArtistClicked', artist)
   }
 

@@ -10,6 +10,7 @@
 <template>
   <b-row align-h="end" align-v="center" no-gutters>
     <b-col
+      v-if="!isJukeboxModeActive"
       cols="auto"
       class="slider-container d-flex"
       :style="{ opacity: `${showVolume ? '1' : ''}`, visibility: `${showVolume ? 'visible' : 'hidden'}` }"
@@ -27,15 +28,17 @@
         id="myRange"
         aria-label="volume"
         v-model="volume"
+        @mousewheel="handleScrollEvent"
       />
     </b-col>
-    <b-col cols="auto">
+    <b-col cols="auto" v-if="!isJukeboxModeActive">
       <VolumeIcon
         class="volume-icon align-self-center"
-        @click.native="volumeIconClick"
+        @click.native="muteToggle"
         :cut="volume == 0"
         @mouseenter.native="handleVolumeIconMouseEnter"
         @mouseleave.native="handleVolumeIconMouseLeave"
+        @mousewheel.native="handleScrollEvent"
       />
     </b-col>
     <b-col cols="auto" class="expand-icon ml-3" :class="{ open: sliderOpen }" @click="emitToggleSlider">
@@ -45,12 +48,14 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component } from 'vue-property-decorator'
 import VolumeIcon from '@/icons/VolumeIcon.vue'
 import ExpandIcon from '@/icons/ExpandIcon.vue'
-import { vxm } from '@/mainWindow/store'
 import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue'
 import { bus } from '@/mainWindow/main'
+import { mixins } from 'vue-class-component'
+import PlayerControls from '@/utils/ui/mixins/PlayerControls'
+import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 
 @Component({
   components: {
@@ -59,42 +64,25 @@ import { bus } from '@/mainWindow/main'
     Timestamp
   }
 })
-export default class ExtraControls extends Vue {
+export default class ExtraControls extends mixins(PlayerControls, JukeboxMixin) {
   private sliderOpen = false
-  private oldVolume = 50
 
   private volumeIconHover = false
   private showVolume = false
 
-  get volume() {
-    return vxm.player.volume
-  }
-
-  set volume(value: number) {
-    // Fuck javascript floating precision
-    value = Math.floor(value)
-    vxm.player.volume = value
-    if (value != 0) {
-      this.oldVolume = value
-    }
-  }
-
-  private volumeIconClick() {
-    if (this.volume !== 0) {
-      this.oldVolume = this.volume
-      this.volume = 0
-    } else {
-      this.volume = this.oldVolume
-    }
-  }
-
   private emitToggleSlider() {
-    bus.$emit('onToggleSlider', !this.sliderOpen)
+    bus.$emit('onToggleSlider')
   }
 
   mounted() {
-    bus.$on('onToggleSlider', () => {
-      this.sliderOpen = !this.sliderOpen
+    bus.$on('onToggleSlider', (val: boolean) => {
+      if (typeof val !== 'undefined') {
+        this.sliderOpen = val
+      } else {
+        this.sliderOpen = !this.sliderOpen
+      }
+
+      bus.$emit('onToggleSliderWindow', this.sliderOpen)
     })
   }
 
@@ -127,6 +115,14 @@ export default class ExtraControls extends Vue {
   private handleSliderMouseLeave() {
     this.showVolume = false
     this.leaveTimeout && clearTimeout(this.leaveTimeout)
+  }
+
+  private handleScrollEvent(e: WheelEvent) {
+    if (e.deltaY < 0) {
+      this.volume += 3
+    } else {
+      this.volume -= 3
+    }
   }
 }
 </script>
@@ -172,7 +168,30 @@ export default class ExtraControls extends Vue {
 .test
   min-width: 0
 
+@media only screen and (max-width : 565px)
+
+
 @media only screen and (max-width : 800px)
   .expand-icon
     display: none
+
+  .slider-container
+    right: -232px !important
+
+@media only screen and (max-width : 992px)
+  .slider-container
+    right: -200px
+    bottom: 85px
+    height: 40px
+    width: 175px
+    max-width: 175px
+    position: absolute
+    background: var(--tertiary)
+    border-radius: 16px
+    padding-left: 15px !important
+    transform: rotate(-90deg)
+    transform-origin: 0px 88px
+    transition: opacity 0.2s ease-in-out
+    z-index: 9999
+    opacity: 0
 </style>

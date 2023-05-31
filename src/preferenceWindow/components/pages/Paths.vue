@@ -27,7 +27,9 @@
                   <b-progress-bar class="progress-bar" :value="currentValue" animated />
                 </b-progress>
               </b-col>
-              <b-col cols="auto" class="ml-3"> {{ ((currentValue / totalValue) * 100).toPrecision(2) }}% </b-col>
+              <b-col cols="auto" class="ml-3">
+                {{ Math.min(((currentValue / totalValue) * 100).toPrecision(2), 100) }}%
+              </b-col>
             </b-row>
           </b-container>
 
@@ -35,19 +37,50 @@
             :title="$t('settings.paths.songDirectories')"
             :tooltip="$t('settings.paths.songDirectories_tooltip')"
             :defaultValue="[]"
-            prefKey="musicPaths"
+            key="musicPaths"
             @refresh="forceRescan"
+            :enableCheckbox="false"
+            :showRefreshIcon="true"
           />
+
+          <DirectoryGroup
+            :title="$t('settings.paths.songDirectories_exclude')"
+            :tooltip="$t('settings.paths.songDirectories_exclude_tooltip')"
+            :defaultValue="[]"
+            key="exclude_musicPaths"
+            class="mt-2"
+            :enableCheckbox="false"
+            :showRefreshIcon="false"
+          />
+
+          <EditText
+            :title="$t('settings.paths.splitter')"
+            :tooltip="$t('settings.paths.splitter_tooltip')"
+            class="mt-2"
+            key="scan_splitter"
+            :defaultValue="splitterRegex"
+          />
+
+          <EditText
+            :title="$t('settings.paths.scan_interval')"
+            :tooltip="$t('settings.paths.scan_interval_tooltip')"
+            class="mt-2"
+            type="number"
+            key="scan_interval"
+            :onValueChange="onScanIntervalChange"
+            :defaultValue="30"
+          />
+
           <FilePicker
             :title="$t('settings.paths.artworkPath')"
             :tooltip="$t('settings.paths.artworkPath_tooltip')"
-            prefKey="artworkPath"
+            key="artworkPath"
             class="mt-5"
           />
           <FilePicker
             :title="$t('settings.paths.thumbnailPath')"
             :tooltip="$t('settings.paths.thumbnailPath_tooltip')"
-            prefKey="thumbnailPath"
+            key="thumbnailPath"
             class="mt-5"
           />
         </div>
@@ -61,11 +94,13 @@ import { Component } from 'vue-property-decorator'
 import Vue from 'vue'
 import FilePicker from '../FilePicker.vue'
 import DirectoryGroup from '../DirectoryGroup.vue'
+import EditText from '../EditText.vue'
 
 @Component({
   components: {
     DirectoryGroup,
-    FilePicker
+    FilePicker,
+    EditText
   }
 })
 export default class Paths extends Vue {
@@ -87,6 +122,10 @@ export default class Paths extends Vue {
     window.WindowUtils.openExternal('https://moosync.app/wiki/#known-bugs')
   }
 
+  get splitterRegex() {
+    return ';'
+  }
+
   async created() {
     this.setProgress(await window.FileUtils.getScanProgress())
     window.FileUtils.listenScanProgress(async (progress) => {
@@ -94,6 +133,10 @@ export default class Paths extends Vue {
     })
 
     this.isLibvipsAvailable = await window.NotifierUtils.isLibvipsAvailable()
+  }
+
+  async onScanIntervalChange() {
+    await window.FileUtils.resetScanTask()
   }
 }
 </script>

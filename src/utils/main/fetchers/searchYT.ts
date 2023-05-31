@@ -13,6 +13,8 @@ import path from 'path'
 import { CacheHandler } from './cacheFile'
 import ytsr from 'ytsr'
 import ytdl from 'ytdl-core'
+import ytpl from 'ytpl'
+import { escapeRegExp } from '@/utils/common'
 
 interface YTMusicWMatchIndex extends Song {
   matchIndex: number
@@ -63,30 +65,40 @@ export class YTScraper extends CacheHandler {
       albums: [],
       genres: []
     }
+
+    const id = this.isYoutubeURL(title)
+    if (id) {
+      this.getFromLink(id).then((val) => res.songs.splice(0, 0, val))
+    }
+
     try {
       scrapeYTMusic &&
         promises.push(
-          this.scrapeYTMusic(title, artists, matchTitle).then((data) => {
-            res.songs.push(...data.songs)
-            res.artists.push(...data.artists)
-            res.playlists.push(...data.playlists)
-            res.albums.push(...data.albums)
-            res.genres.push(...data.genres)
-          })
+          this.scrapeYTMusic(title, artists, matchTitle)
+            .then((data) => {
+              res.songs.push(...data.songs)
+              res.artists.push(...data.artists)
+              res.playlists.push(...data.playlists)
+              res.albums.push(...data.albums)
+              res.genres.push(...data.genres)
+            })
+            .catch((e) => console.error(e))
         )
 
       scrapeYoutube &&
         promises.push(
-          this.scrapeYoutube(title, artists, matchTitle).then((data) => {
-            res.songs.push(...data.songs)
-            res.artists.push(...data.artists)
-            res.playlists.push(...data.playlists)
-            res.albums.push(...data.albums)
-            res.genres.push(...data.genres)
-          })
+          this.scrapeYoutube(title, artists, matchTitle)
+            .then((data) => {
+              res.songs.push(...data.songs)
+              res.artists.push(...data.artists)
+              res.playlists.push(...data.playlists)
+              res.albums.push(...data.albums)
+              res.genres.push(...data.genres)
+            })
+            .catch((e) => console.error(e))
         )
 
-      await Promise.all(promises)
+      await Promise.allSettled(promises)
 
       if (
         res.songs.length > 0 ||
@@ -129,8 +141,9 @@ export class YTScraper extends CacheHandler {
               }
             }
           })) ?? [],
-        duration: s.duration?.totalSeconds ?? 0,
+        duration: s.duration?.totalSeconds || -1,
         url: s.youtubeId,
+        playbackUrl: s.youtubeId,
         date_added: Date.now(),
         type: 'YOUTUBE'
       })
@@ -142,11 +155,10 @@ export class YTScraper extends CacheHandler {
   private parseYoutubeMusicArtist(...artist: ytMusic.Artist[]): Artists[] {
     const artists: Artists[] = []
     for (const a of artist) {
-      console.log(a.thumbnails?.find((val) => val))
       artists.push({
         artist_id: `youtube-author:${a.artistId}`,
         artist_name: a.name,
-        artist_coverPath: a.thumbnails?.find((val) => val),
+        artist_coverPath: this.getHighResThumbnail((a as Record<string, string>).thumbnailUrl),
         artist_extra_info: {
           youtube: {
             channel_id: a.artistId
@@ -222,8 +234,9 @@ export class YTScraper extends CacheHandler {
             }
           ]
         : undefined,
-      duration: vid.duration ? this.parseYoutubeDuration(vid.duration ?? '') : 0,
+      duration: vid.duration ? this.parseYoutubeDuration(vid.duration ?? '') || -1 : -1,
       url: vid.url,
+      playbackUrl: vid.url,
       date_added: Date.now(),
       type: 'YOUTUBE'
     }
@@ -256,7 +269,6 @@ export class YTScraper extends CacheHandler {
     const term = `${artists ? artists.join(', ') + ' - ' : ''}${title}`
 
     const resp = await ytsr(term)
-    console.log(resp)
     const ret: SearchResult = {
       songs: [],
       artists: [],
@@ -311,7 +323,7 @@ export class YTScraper extends CacheHandler {
 
     for (const s of songs) {
       if (s.title) {
-        if (s.title.match(new RegExp(searchTerm, 'i'))) {
+        if (s.title.match(new RegExp(escapeRegExp(searchTerm), 'i'))) {
           finalMatches.push({
             ...s,
             matchIndex: 1
@@ -368,14 +380,57 @@ export class YTScraper extends CacheHandler {
     return costs[s2.length]
   }
 
-  public async getWatchURL(id: string) {
-    const cache = this.getCache(`watchURL:${id}`)
-    if (cache) {
-      return cache
+  private isYoutubePlaylistURL(url: string) {
+    if (
+      url.match(
+        /^((?:https?:)?\/\/)?((?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/
+      )
+    ) {
+      return new URL(url)?.searchParams?.get('list')
     }
+  }
 
-    const data = await ytdl.getInfo(id)
+  private isYoutubeURL(url: string) {
+    try {
+      return ytdl.getVideoID(url)
+    } catch {
+      // probably not a youtube url
+    }
+  }
 
+  private async getFromLink(id: string): Promise<Song> {
+    const resp = await ytdl.getBasicInfo(id)
+    const videoDetails = resp.videoDetails
+
+    return {
+      _id: `youtube:${videoDetails.videoId}`,
+      title: videoDetails.title,
+      duration: parseInt(videoDetails.lengthSeconds),
+      song_coverPath_high: videoDetails.thumbnails.map((val) => val.url).filter((val) => val)[0],
+      artists: videoDetails.author
+        ? [
+            {
+              artist_id: `youtube-author:${videoDetails.author.id}`,
+              artist_name: videoDetails.author.name,
+              artist_coverPath:
+                videoDetails.author.avatar ??
+                videoDetails.author.thumbnails?.map((val) => val.url).filter((val) => val)[0],
+              artist_extra_info: {
+                youtube: {
+                  channel_id: videoDetails.author.id
+                }
+              }
+            }
+          ]
+        : undefined,
+      playbackUrl: videoDetails.video_url,
+      url: videoDetails.video_url,
+      date_added: Date.now(),
+      type: 'YOUTUBE'
+    }
+  }
+
+  private findBestFormat(data: ytdl.videoInfo) {
     let format
     try {
       format = ytdl.chooseFormat(data.formats, {
@@ -387,10 +442,86 @@ export class YTScraper extends CacheHandler {
 
     try {
       const expiry = parseInt(new URL(format.url).searchParams.get('expire') ?? '0') * 1000
-      expiry > 0 && this.addToCache(`watchURL:${id}`, format.url, expiry)
+      expiry > 0 && this.addToCache(`watchURL:${data.videoDetails.videoId}`, format.url, expiry)
     } catch (e) {
       console.warn('Failed to add watch URL to cache', format.url)
     }
     return format.url
+  }
+
+  public async getWatchURL(id: string) {
+    const cache = this.getCache(`watchURL:${id}`)
+    if (cache) {
+      return cache
+    }
+
+    try {
+      const data = await ytdl.getInfo(id)
+      return this.findBestFormat(data)
+    } catch (e) {
+      console.error('Failed to fetch video ID', id)
+      return ''
+    }
+  }
+
+  public async parsePlaylistFromID(id: string): Promise<Playlist | undefined> {
+    const cache = this.getCache(`playlist:${id}`)
+    if (cache) {
+      return JSON.parse(cache)
+    }
+
+    try {
+      const playlist = await ytpl(id)
+      const parsed = {
+        playlist_id: `youtube-playlist:${playlist.id}`,
+        playlist_name: playlist.title,
+        playlist_coverPath:
+          playlist.bestThumbnail.url ?? playlist.thumbnails.filter((val) => val.url)[0].url ?? undefined,
+        playlist_desc: playlist.description ?? undefined
+      }
+
+      this.addToCache(`playlist:${id}`, JSON.stringify(parsed))
+      return parsed
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  public async getPlaylistContent(
+    id: string,
+    page?: ytpl.Continuation
+  ): Promise<{ songs: Song[]; nextPageToken?: ytpl.Continuation }> {
+    const cache = this.getCache(`playlistContent:${id}:page:${JSON.stringify((page as unknown[])?.at(1))}`)
+    if (cache) {
+      return JSON.parse(cache)
+    }
+
+    // JSON.stringify cannot set Infinity.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (page && (page as any).length >= 3 && (page as any)[3]?.limit === null) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(page as any)[3].limit = Infinity
+    }
+
+    const songList: Song[] = []
+    let songs: ytpl.ContinueResult | ytpl.Result
+
+    try {
+      if (!page) {
+        songs = await ytpl(id, { pages: 1 })
+      } else {
+        songs = await ytpl.continueReq(page)
+      }
+    } catch (e) {
+      return { songs: [] }
+    }
+
+    for (const s of songs.items) {
+      songList.push(this.parseYoutubeVideo(s as unknown as ytsr.Video))
+    }
+
+    const ret = { songs: songList, nextPageToken: songs.continuation ?? undefined }
+    this.addToCache(`playlistContent:${id}:page:${JSON.stringify((page as unknown[])?.at(1))}`, JSON.stringify(ret))
+    return ret
   }
 }

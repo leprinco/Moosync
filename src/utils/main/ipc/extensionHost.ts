@@ -9,7 +9,7 @@
 
 import { MainHostIPCHandler } from '@/utils/extensions'
 import { ExtensionHostEvents, IpcEvents } from './constants'
-import { SongDB } from '../db/index'
+import { getSongDB } from '../db/index'
 import { createWriteStream } from 'fs'
 import path from 'path'
 import { app } from 'electron'
@@ -53,22 +53,16 @@ export class ExtensionHostChannel implements IpcChannelInterface {
         this.fireContextMenuHandler(event, request as IpcRequest<ExtensionHostRequests.ContextMenuHandler>)
         break
       case ExtensionHostEvents.GET_REGISTERED_ACCOUNTS:
-        this.getRegisteredAccounts(event, request)
+        this.getRegisteredAccounts(event, request as IpcRequest<ExtensionHostRequests.ProviderScopes>)
         break
       case ExtensionHostEvents.PERFORM_ACCOUNT_LOGIN:
         this.performAccountLogin(event, request as IpcRequest<ExtensionHostRequests.AccountLogin>)
         break
-      case ExtensionHostEvents.GET_REGISTERED_SEARCH_PROVIDERS:
-        this.getRegisteredSearchProviders(event, request)
+      case ExtensionHostEvents.GET_EXTENSION_PROVIDER_SCOPES:
+        this.getExtensionProviderScopes(event, request as IpcRequest<ExtensionHostRequests.ProviderScopes>)
         break
-      case ExtensionHostEvents.GET_REGISTERED_ARTIST_SONG_PROVIDERS:
-        this.getRegisteredArtistSongProviders(event, request)
-        break
-      case ExtensionHostEvents.GET_REGISTERED_PLAYLIST_PROVIDERS:
-        this.getRegisteredPlaylistProviders(event, request)
-        break
-      case ExtensionHostEvents.GET_REGISTERED_ALBUM_SONG_PROVIDERS:
-        this.getRegisteredAlbumSongProviders(event, request)
+      case ExtensionHostEvents.GET_DISPLAY_NAME:
+        this.getExtensionDisplayName(event, request as IpcRequest<ExtensionHostRequests.ProviderScopes>)
         break
     }
   }
@@ -78,6 +72,7 @@ export class ExtensionHostChannel implements IpcChannelInterface {
       this.extensionHost
         .installExtension(request.params.path)
         .then((result) => event.reply(request.responseChannel, result))
+        .then(this.notifyExtensionChangedMainWindow)
         .catch(console.error)
       return
     }
@@ -117,10 +112,16 @@ export class ExtensionHostChannel implements IpcChannelInterface {
         .then(() => event.reply(request.responseChannel))
 
       // Remove all song added by this extension
-      const songs = SongDB.getSongByOptions({ song: { extension: request.params.packageName } })
-      for (const s of songs) {
-        await SongDB.removeSong(s._id)
-      }
+      const songs = getSongDB().getSongByOptions({ song: { extension: request.params.packageName } })
+      await getSongDB().removeSong(...songs)
+
+      const playlists = getSongDB().getEntityByOptions<Playlist>({
+        playlist: {
+          extension: request.params.packageName
+        }
+      })
+
+      getSongDB().removePlaylist(...playlists)
     }
     event.reply(request.responseChannel)
   }
@@ -212,6 +213,7 @@ export class ExtensionHostChannel implements IpcChannelInterface {
         return
       }
 
+      this.notifyExtensionChangedMainWindow()
       this.notifyPreferenceWindow({ packageName: ext.packageName, status: 'Installed', progress: 100 })
 
       event.reply(request.responseChannel, true)
@@ -250,8 +252,11 @@ export class ExtensionHostChannel implements IpcChannelInterface {
     return this.extensionHost.setExtensionLogLevel(level)
   }
 
-  public async getRegisteredAccounts(event: Electron.IpcMainEvent, request: IpcRequest) {
-    const items = await this.extensionHost.mainRequestGenerator.getAccounts()
+  public async getRegisteredAccounts(
+    event: Electron.IpcMainEvent,
+    request: IpcRequest<ExtensionHostRequests.ProviderScopes>
+  ) {
+    const items = await this.extensionHost.mainRequestGenerator.getAccounts(request.params.packageName)
     event.reply(request.responseChannel, items)
   }
 
@@ -269,23 +274,19 @@ export class ExtensionHostChannel implements IpcChannelInterface {
     }
   }
 
-  public async getRegisteredSearchProviders(event: Electron.IpcMainEvent, request: IpcRequest) {
-    const items = await this.extensionHost.mainRequestGenerator.getSearchProviders()
+  public async getExtensionProviderScopes(
+    event: Electron.IpcMainEvent,
+    request: IpcRequest<ExtensionHostRequests.ProviderScopes>
+  ) {
+    const items = await this.extensionHost.mainRequestGenerator.getProviderScopes(request.params.packageName)
     event.reply(request.responseChannel, items)
   }
 
-  public async getRegisteredArtistSongProviders(event: Electron.IpcMainEvent, request: IpcRequest) {
-    const items = await this.extensionHost.mainRequestGenerator.getArtistSongProviders()
-    event.reply(request.responseChannel, items)
-  }
-
-  public async getRegisteredAlbumSongProviders(event: Electron.IpcMainEvent, request: IpcRequest) {
-    const items = await this.extensionHost.mainRequestGenerator.getAlbumSongProviders()
-    event.reply(request.responseChannel, items)
-  }
-
-  public async getRegisteredPlaylistProviders(event: Electron.IpcMainEvent, request: IpcRequest) {
-    const items = await this.extensionHost.mainRequestGenerator.getPlaylistProviders()
+  public async getExtensionDisplayName(
+    event: Electron.IpcMainEvent,
+    request: IpcRequest<ExtensionHostRequests.ProviderScopes>
+  ) {
+    const items = await this.extensionHost.mainRequestGenerator.getDisplayName(request.params.packageName)
     event.reply(request.responseChannel, items)
   }
 }

@@ -31,40 +31,41 @@ import PreferenceHeader from './PreferenceHeader.vue'
     PreferenceHeader
   }
 })
-export default class Dropdown extends Mixins(ExtensionPreferenceMixin) {
+export default class Dropdown extends Mixins<ExtensionPreferenceMixin<Checkbox[]>>(ExtensionPreferenceMixin) {
   @Prop()
   private title!: string
 
   @Prop()
   private tooltip!: string
 
-  private activeItem: CheckboxValue[0] | null = null
+  private activeItem: Checkbox[][0] | null = null
 
   private get activeTitle() {
     return this.activeItem?.title ?? ''
   }
 
   private get filteredDropdownList() {
-    return ((this.value as CheckboxValue) ?? this.defaultValue).filter((val) => !val.enabled)
+    return (this.value ?? this.defaultValue).filter((val) => !val.enabled)
   }
 
   created() {
     this.postFetch = () => {
-      this.activeItem =
-        (this.value as CheckboxValue)?.find((val) => val.enabled) ?? (this.defaultValue as CheckboxValue)[0]
+      this.activeItem = this.value?.find((val) => val.enabled) ?? (this.defaultValue as Checkbox[])[0]
     }
   }
 
-  private setSelectedItem(item: CheckboxValue[0]) {
-    for (const i of this.value as CheckboxValue) {
-      if (i.key === item.key) {
-        i.enabled = true
-        this.activeItem = i
-      } else {
-        i.enabled = false
+  private setSelectedItem(item: Checkbox) {
+    if (this.value) {
+      for (const i of this.value) {
+        if (i.key === item.key) {
+          i.enabled = true
+          this.activeItem = i
+        } else {
+          i.enabled = false
+        }
       }
+      this.onInputChange()
     }
-    this.onInputChange()
   }
 }
 </script>
@@ -72,7 +73,7 @@ export default class Dropdown extends Mixins(ExtensionPreferenceMixin) {
 <style lang="sass">
 .dropdown-button
   background-color: var(--tertiary) !important
-  border-radius: 0 !important
+  border-radius: 8px !important
   border: none !important
   padding: 5px 35px 5px 15px
   text-align: start
@@ -87,9 +88,10 @@ export default class Dropdown extends Mixins(ExtensionPreferenceMixin) {
     margin-left: 10px
 
 .dropdown > ul
-  height: 500px
+  max-height: 500px
   overflow-y: auto
   overflow-x: hidden
+  z-index: 9999
   &::-webkit-scrollbar-track
     background: var(--secondary)
   &::-webkit-scrollbar-thumb
@@ -110,4 +112,5 @@ export default class Dropdown extends Mixins(ExtensionPreferenceMixin) {
 .background
   background: var(--tertiary)
   height: 50px
+  overflow: visible !important
 </style>

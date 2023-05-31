@@ -76,9 +76,7 @@
               @contextmenu.native="themeMenu(arguments[0], value)"
               :colors="value.theme"
             />
-            <div class="title">
-              {{ value.name }}
-            </div>
+            <div class="title">{{ value.name }}</div>
             <div class="author">
               {{ value.author }}
             </div>
@@ -86,13 +84,23 @@
         </b-col>
         <b-col cols="5" xl="3" class="p-2">
           <div class="theme-component-container">
-            <Add @click.native="createTheme" />
+            <Add @click.native="openNewThemeModal" />
             {{ $t('settings.themes.createTheme') }}
           </div>
         </b-col>
       </b-row>
     </b-container>
     <DeleteModal v-if="themeToRemove" id="themeDeleteModal" :itemName="themeToRemove.name" @confirm="removeTheme" />
+    <MultiButtonModal :slots="2" :show="showNewThemeModal" @click-1="createTheme" @click-2="importTheme">
+      <template #1>
+        <CreatePlaylistIcon />
+      </template>
+      <template #1-title>{{ $t('settings.themes.createTheme') }}</template>
+      <template #2>
+        <ImportThemeIcon />
+      </template>
+      <template #2-title>{{ $t('settings.themes.importTheme') }}</template>
+    </MultiButtonModal>
   </div>
 </template>
 
@@ -108,6 +116,9 @@ import { ContextMenuComponent, MenuItem } from 'vue-context-menu-popup'
 import DeleteModal from '@/commonComponents/ConfirmationModal.vue'
 import ContextMenu from 'vue-context-menu-popup'
 import 'vue-context-menu-popup/dist/vue-context-menu-popup.css'
+import MultiButtonModal from '../../../commonComponents/MultiButtonModal.vue'
+import CreatePlaylistIcon from '@/icons/CreatePlaylistIcon.vue'
+import ImportThemeIcon from '@/icons/ImportThemeIcon.vue'
 
 @Component({
   components: {
@@ -116,11 +127,16 @@ import 'vue-context-menu-popup/dist/vue-context-menu-popup.css'
     PreferenceHeader,
     DeleteModal,
     ContextMenu,
-    Add
+    Add,
+    MultiButtonModal,
+    CreatePlaylistIcon,
+    ImportThemeIcon
   }
 })
 export default class Themes extends Vue {
   private allThemes: { [key: string]: ThemeDetails } = {}
+
+  private showNewThemeModal = false
 
   private async getAllThemes() {
     this.allThemes = (await window.ThemeUtils.getAllThemes()) ?? {}
@@ -182,6 +198,16 @@ export default class Themes extends Vue {
         navigator.clipboard.writeText(JSON.stringify(theme))
       }
     })
+
+    if (theme.id !== 'default') {
+      this.menu.push({
+        label: 'Export theme',
+        handler: () => {
+          window.ThemeUtils.packTheme(theme.id)
+        }
+      })
+    }
+
     ;(this.$refs['contextMenu'] as ContextMenuComponent).open(event)
   }
 
@@ -189,8 +215,13 @@ export default class Themes extends Vue {
     ;(this.$refs['contextMenu'] as ContextMenuComponent).close()
   }
 
-  private removeTheme() {
-    this.themeToRemove && window.ThemeUtils.removeTheme(this.themeToRemove?.id)
+  private async removeTheme() {
+    const currentTheme = await window.ThemeUtils.getActiveTheme()
+    if (currentTheme.id === this.themeToRemove?.id) {
+      await this.setTheme('default')
+    }
+
+    this.themeToRemove && (await window.ThemeUtils.removeTheme(this.themeToRemove?.id))
     this.getAllThemes()
   }
 
@@ -217,7 +248,7 @@ export default class Themes extends Vue {
   }
 
   private async setTheme(id: string) {
-    window.ThemeUtils.setActiveTheme(id)
+    await window.ThemeUtils.setActiveTheme(id)
     this.activeTheme = id
     this.$root.$emit('themeChanged')
   }
@@ -231,6 +262,25 @@ export default class Themes extends Vue {
     this.$router.push({
       name: 'new_theme'
     })
+  }
+
+  private async importTheme() {
+    const resp = await window.WindowUtils.openFileBrowser(false, true, [
+      {
+        name: 'Moosync theme (.mstx)',
+        extensions: ['mstx']
+      }
+    ])
+
+    for (const filePath of resp.filePaths ?? []) {
+      await window.ThemeUtils.importTheme(filePath)
+    }
+
+    this.getAllThemes()
+  }
+
+  private openNewThemeModal() {
+    this.showNewThemeModal = !this.showNewThemeModal
   }
 
   async created() {
@@ -263,4 +313,10 @@ export default class Themes extends Vue {
 
 .author
   font-size: 14px
+
+.import-button
+  font-size: 16px
+  color: var(--accent)
+  &:hover
+    cursor: pointer
 </style>

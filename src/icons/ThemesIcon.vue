@@ -23,6 +23,6 @@ import { Component, Prop } from 'vue-property-decorator'
 @Component({})
 export default class Themes extends Vue {
   @Prop({ default: false })
-  private active!: boolean
+  active!: boolean
 }
 </script>

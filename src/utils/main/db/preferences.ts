@@ -16,25 +16,40 @@ import { setMinimizeToTray } from '@/utils/main/windowManager'
 import { watch } from 'fs/promises'
 import { setLogLevel } from '../logger/utils'
 import log from 'loglevel'
+import { isEmpty } from '@/utils/common'
+import { defaultKeybinds } from '@/utils/commonConstants'
 
-type MusicPaths = { path: string; enabled: boolean }
-
-const defaultPreferences: Preferences = {
-  isFirstLaunch: true,
-  musicPaths: [{ path: getDefaultMusicPaths(), enabled: true }],
-  thumbnailPath: path.join(app.getPath('appData'), app.getName(), '.thumbnails'),
-  artworkPath: path.join(app.getPath('appData'), app.getName(), '.thumbnails'),
-  system: [],
-  zoomFactor: '100',
-  themes: {}
+const getDefaultPreferences = () => {
+  const musicPath = getDefaultMusicPaths()
+  return {
+    isFirstLaunch: true,
+    musicPaths: musicPath ? [{ path: musicPath, enabled: true }] : [],
+    exclude_musicPaths: [],
+    scan_splitter: ';',
+    thumbnailPath: path.join(app.getPath('appData'), app.getName(), '.thumbnails'),
+    artworkPath: path.join(app.getPath('appData'), app.getName(), '.thumbnails'),
+    youtubeAlt: [],
+    youtubeOptions: [],
+    invidious: [],
+    system: [],
+    audio: [],
+    zoomFactor: '100',
+    themes: {},
+    activeTheme: 'default',
+    hotkeys: defaultKeybinds,
+    logs: [],
+    lyrics_fetchers: []
+  } as Preferences
 }
 
 let ac: AbortController
 
 export const store = new Store({
-  defaults: { prefs: defaultPreferences },
+  defaults: { prefs: getDefaultPreferences() },
   serialize: (value) => JSON.stringify(value)
 })
+
+const preferenceListenKeys: { key: string; isMainWindow: boolean; channel: string }[] = []
 
 /**
  * Saves preferences
@@ -70,13 +85,18 @@ export function getWindowSize(windowName: string, defaultValue: { width: number;
  * @param value
  * @param [isExtension] true if preference is of an extension. false otherwise
  */
-export function saveSelectivePreference(key: string, value: unknown, isExtension = false, notify = false) {
-  if (value !== undefined || value !== null) {
+export function saveSelectivePreference(key: string, value: unknown, isExtension = false) {
+  if (typeof value !== 'undefined' && value !== null) {
     store.set(`prefs.${isExtension ? 'extension.' : ''}${key}`, value)
   } else {
     store.delete(`prefs.${isExtension ? 'extension.' : ''}${key}` as unknown as 'prefs')
   }
-  if (notify) getPreferenceChannel().notifyPreferenceWindow(key)
+
+  const listenKeys = preferenceListenKeys.filter((val) => key.startsWith(val.key))
+  for (const l of listenKeys)
+    if (listenKeys) {
+      getPreferenceChannel().notifyWindow(l.key, loadSelectivePreference(l.key), l.isMainWindow, l.channel)
+    }
 }
 
 /**
@@ -91,6 +111,20 @@ export function loadSelectivePreference<T>(key?: string, isExtension = false, de
   try {
     const pref = store.get(`prefs.${isExtension ? 'extension.' : ''}${key}`, defaultValue)
     return pref
+  } catch (e) {
+    console.error(e)
+  }
+  return defaultValue as T
+}
+
+export function loadSelectiveArrayPreference<T>(key: string, defaultValue?: T): T | undefined {
+  try {
+    const parentKey = key.substring(0, key.lastIndexOf('.'))
+    const childKey = key.substring(key.lastIndexOf('.') + 1)
+    const pref: { key: string }[] = store.get(`prefs.${parentKey}`)
+    if (pref) {
+      return pref.find((val) => val.key === childKey) as T
+    }
   } catch (e) {
     console.error(e)
   }
@@ -162,7 +196,7 @@ export async function onPreferenceChanged(key: string, value: any) {
 
 // TODO: Scan only changed file
 export function shouldWatchFileChanges() {
-  const value = loadSelectivePreference<MusicPaths[]>('musicPaths')
+  const value = loadSelectivePreference<togglePaths>('musicPaths')
   if (value) {
     if (ac) ac.abort()
 
@@ -175,7 +209,7 @@ export function shouldWatchFileChanges() {
   }
 }
 
-export function setupScanWatcher(dirs: MusicPaths[]) {
+export function setupScanWatcher(dirs: togglePaths) {
   console.debug('Setting up scan watcher')
   ac = new AbortController()
   const { signal } = ac
@@ -205,20 +239,16 @@ export function setupScanWatcher(dirs: MusicPaths[]) {
  */
 function validatePrefs(prefs: Preferences): Preferences {
   if (prefs) {
-    if (!prefs.musicPaths) {
-      prefs.musicPaths = defaultPreferences.musicPaths
+    for (const [key, value] of Object.entries(getDefaultPreferences())) {
+      if (isEmpty(prefs[key as keyof Preferences])) {
+        prefs[key as keyof Preferences] = value as never
+      }
     }
 
-    if (!prefs.thumbnailPath) {
-      prefs.thumbnailPath = defaultPreferences.thumbnailPath
-    }
-
-    if (!prefs.artworkPath) {
-      prefs.artworkPath = defaultPreferences.artworkPath
-    }
+    return prefs
   }
 
-  return prefs
+  return getDefaultPreferences()
 }
 
 /**
@@ -236,7 +266,16 @@ export function loadPreferences(): Preferences {
   } catch (e) {
     console.error(e)
   }
-  return defaultPreferences
+  return getDefaultPreferences()
+}
+
+export function getCombinedMusicPaths() {
+  const paths = loadSelectivePreference<togglePaths>('musicPaths', false, [])
+  const excludePaths = loadSelectivePreference<togglePaths>('exclude_musicPaths', false, [])
+  if (paths && excludePaths) {
+    paths.push(...excludePaths.map((val) => ({ ...val, enabled: false })))
+  }
+  return paths
 }
 
 // TODO: Make a generic utils file for methods like these
@@ -245,14 +284,35 @@ export function loadPreferences(): Preferences {
  * @param paths
  * @returns disabled paths
  */
-export function getDisabledPaths(paths: togglePaths): string[] {
-  const disablePaths = []
-  for (const p of paths) {
-    if (!p.enabled) disablePaths.push(p.path)
+export function getDisabledPaths(): string[] {
+  const paths = getCombinedMusicPaths()
+  const disablePaths: string[] = []
+  if (paths) {
+    for (const p of paths) {
+      if (!p.enabled) disablePaths.push(p.path)
+    }
   }
+
   return disablePaths
 }
 
 function getDefaultMusicPaths() {
-  return app.getPath('music')
+  try {
+    return app.getPath('music')
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+export function setPreferenceListenKey(key: string, isMainWindow = false) {
+  const channel = `${key}:mainWindow:${isMainWindow}`
+  console.debug('listening', channel)
+  if (!preferenceListenKeys.some((val) => val.channel === channel)) {
+    preferenceListenKeys.push({ key, isMainWindow, channel })
+  }
+  return channel
+}
+
+export function resetPrefsToDefault() {
+  store.clear()
 }

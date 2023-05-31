@@ -9,6 +9,9 @@ interface Album {
     spotify?: {
       album_id?: string
     }
+    youtube?: {
+      album_id?: string
+    }
     extensions?: Record<string, Record<string, string | undefined> | undefined>
   }
   year?: number
@@ -41,13 +44,14 @@ interface Playlist {
   playlist_id: string
   playlist_name: string
   playlist_desc?: string
-  playlist_coverPath: string | undefined
+  playlist_coverPath?: string | undefined
   playlist_song_count?: number
   playlist_path?: string
   icon?: string
+  extension?: string
 }
 
-type PlayerTypes = 'LOCAL' | 'YOUTUBE' | 'SPOTIFY' | 'URL' | 'DASH'
+type PlayerTypes = 'LOCAL' | 'YOUTUBE' | 'SPOTIFY' | 'URL' | 'DASH' | 'HLS'
 
 interface Song {
   _id: string
@@ -59,7 +63,8 @@ interface Song {
   album?: Album
   artists?: Artists[]
   date?: string
-  year?: number
+  year?: number | string
+
   genre?: string[]
   lyrics?: string
   releaseType?: string[]
@@ -77,6 +82,9 @@ interface Song {
   providerExtension?: string
   icon?: string
   type: PlayerTypes
+  playCount?: number
+  showInLibrary?: boolean
+  track_no?: number
 }
 
 interface SearchableSong {
@@ -89,10 +97,16 @@ interface SearchableSong {
   // MD5 hash
   hash?: string
 
+  size?: number
+  inode?: string
+  deviceno?: string
+
   type?: PlayerTypes
 
   // Will return all songs provided by this extension
   extension?: boolean | string
+
+  showInLibrary?: boolean
 }
 
 type PlayerState = 'PLAYING' | 'PAUSED' | 'STOPPED' | 'LOADING'
@@ -141,8 +155,9 @@ interface Buttons {
 
 type ExtensionPreferenceGroup = {
   key: string
-  title: string
-  description: string
+  title?: string
+  description?: string
+  index?: number
 } & (
   | {
       type: 'CheckboxGroup'
@@ -172,11 +187,24 @@ type ExtensionPreferenceGroup = {
       type: 'ProgressBar'
       default: number
     }
+  | {
+      type: 'TextField'
+      default: string
+    }
+  | {
+      type: 'InfoField'
+      default: string
+    }
 )
 
 interface ExtensionFactory {
-  // Return an instance of the plugin
+  /**
+   * @deprecated
+   * */
   registerPreferences?(): Promise<ExtensionPreferenceGroup[]>
+
+  // Return an instance of the plugin
+  registerUserPreferences?(): Promise<ExtensionPreferenceGroup[]>
 
   /**
    * This method is necessary for the extension to be loaded into moosync
@@ -240,7 +268,7 @@ interface SongAPIOptions {
   /**
    * To sort the results, specify this property
    */
-  sortBy?: SongSortOptions
+  sortBy?: SongSortOptions | SongSortOptions[]
 
   /**
    * If false, then the exact match of all options will be provided.
@@ -249,12 +277,22 @@ interface SongAPIOptions {
    *
    * Eg. If song.title is 'aaa' and album.album_name is 'bbb'
    *
-   * In this scenario if inclusive is false, then all tracks having title as 'aaa'
+   * In this scenario if inclusive is true, then all tracks having title as 'aaa'
    * AND album_name as 'bbb' will be returned
    *
    * If inclusive is false then songs having title as 'aaa' OR album_name as 'bbb' will be returned
+   *
+   * False by default
    */
   inclusive?: boolean
+
+  /**
+   * If true, then inverts the query. It will return all records which don't match the search criteria
+   * If false, then it will return all records which match the search criteria
+   *
+   * false by default
+   */
+  invert?: boolean
 }
 
 /**
@@ -275,6 +313,14 @@ type EntityApiOptions<T extends Artists | Album | Genre | Playlist> = {
    * If inclusive is false then albums having album_name as 'aaa' OR album_id as 'bbb' will be returned
    */
   inclusive?: boolean
+
+  /**
+   * If true, then inverts the query. It will return all records which don't match the search criteria
+   * If false, then it will return all records which match the search criteria
+   *
+   * false by default
+   */
+  invert?: boolean
 } & (T extends Artists
   ? {
       artist: Partial<Artists> | boolean
@@ -342,33 +388,37 @@ type ExtraExtensionEventTypes =
   | 'requestedLyrics'
   | 'requestedArtistSongs'
   | 'requestedAlbumSongs'
+  | 'songAdded'
+  | 'songRemoved'
+  | 'playlistAdded'
+  | 'playlistRemoved'
+  | 'requestedSongFromId'
+  | 'getRemoteURL'
 
-type ExtraExtensionEventReturnType<T extends ExtraExtensionEventTypes> = T extends 'requestedPlaylists'
-  ? PlaylistReturnType | void
-  : T extends 'requestedPlaylistSongs'
-  ? SongsReturnType | void
-  : T extends 'playbackDetailsRequested'
-  ? PlaybackDetailsReturnType | void
-  : T extends 'customRequest'
-  ? CustomRequestReturnType | void
-  : T extends 'requestedSongFromURL'
-  ? SongReturnType | void
-  : T extends 'requestedPlaylistFromURL'
-  ? PlaylistAndSongsReturnType | void
-  : T extends 'requestedSearchResult'
-  ? SearchReturnType | void
-  : T extends 'requestedRecommendations'
-  ? GetRecommendationsReturnType | void
-  : T extends 'requestedLyrics'
-  ? string | void
-  : T extends 'requestedArtistSongs'
-  ? SongsReturnType
-  : T extends 'requestedAlbumSongs'
-  ? SongsReturnType
-  : void
+type ExtraExtensionEventReturnType<T extends ExtraExtensionEventTypes> =
+  | (T extends 'requestedPlaylists'
+      ? PlaylistReturnType
+      : T extends 'requestedPlaylistSongs' | 'requestedArtistSongs' | 'requestedAlbumSongs'
+      ? SongsWithPageTokenReturnType | ForwardRequestReturnType<T>
+      : T extends 'playbackDetailsRequested'
+      ? PlaybackDetailsReturnType | ForwardRequestReturnType<T>
+      : T extends 'customRequest'
+      ? CustomRequestReturnType
+      : T extends 'requestedSongFromURL' | 'requestedSongFromId'
+      ? SongReturnType | ForwardRequestReturnType<T>
+      : T extends 'requestedPlaylistFromURL'
+      ? PlaylistAndSongsReturnType | ForwardRequestReturnType<T>
+      : T extends 'requestedSearchResult'
+      ? SearchReturnType | ForwardRequestReturnType<T>
+      : T extends 'requestedRecommendations'
+      ? RecommendationsReturnType | ForwardRequestReturnType<T>
+      : T extends 'requestedLyrics' | 'getRemoteURL'
+      ? string | ForwardRequestReturnType<T>
+      : void)
+  | void
 
-type ExtraExtensionEventData<T extends ExtraExtensionEventTypes> = T extends 'requestedPlaylistSongs'
-  ? [playlistID: string, invalidateCache: boolean]
+type ExtraExtensionEventData<T extends ExtraExtensionEventTypes | unknown> = T extends 'requestedPlaylistSongs'
+  ? [playlistID: string, invalidateCache: boolean, nextPageToken: unknown | undefined]
   : T extends 'requestedPlaylists'
   ? [invalidateCache: boolean]
   : T extends 'oauthCallback'
@@ -390,18 +440,26 @@ type ExtraExtensionEventData<T extends ExtraExtensionEventTypes> = T extends 're
   : T extends 'customRequest'
   ? [url: string]
   : T extends 'requestedSongFromURL'
-  ? [url: string]
+  ? [url: string, invalidateCache: boolean]
   : T extends 'requestedPlaylistFromURL'
-  ? [url: string]
+  ? [url: string, invalidateCache: boolean]
   : T extends 'requestedSearchResult'
   ? [term: string]
   : T extends 'requestedLyrics'
   ? [song: Song]
   : T extends 'requestedArtistSongs'
-  ? [artist: Artists]
+  ? [artist: Artists, nextPageToken: unknown | undefined]
   : T extends 'requestedAlbumSongs'
-  ? [album: Album]
-  : []
+  ? [album: Album, nextPageToken: unknown | undefined]
+  : T extends 'songAdded' | 'songRemoved'
+  ? [songs: Song[]]
+  : T extends 'playlistAdded' | 'playlistRemoved'
+  ? [playlists: Playlist[]]
+  : T extends 'requestedSongFromId'
+  ? [id: string]
+  : T extends 'getRemoteURL'
+  ? [song: Song]
+  : never[]
 
 type PlaylistReturnType = {
   playlists: Playlist[]
@@ -409,6 +467,11 @@ type PlaylistReturnType = {
 
 type SongsReturnType = {
   songs: Song[]
+}
+
+type SongsWithPageTokenReturnType = {
+  songs: Song[]
+  nextPageToken?: unknown
 }
 
 type SearchReturnType = {
@@ -439,7 +502,6 @@ type PlaylistAndSongsReturnType = {
 }
 
 type RecommendationsReturnType = {
-  providerName: string
   songs: Song[]
 }
 
@@ -449,6 +511,11 @@ type ExtensionContextMenuItem<T extends ContextMenuTypes> = {
   disabled?: boolean
   children?: ExtensionContextMenuItem<T>[]
   handler?: (arg: ExtensionContextMenuHandlerArgs<T>) => void
+}
+
+type ForwardRequestReturnType<T extends ExtraExtensionEventTypes | unknown> = {
+  forwardTo: 'youtube' | 'spotify' | string
+  transformedData?: ExtraExtensionEventData<T>
 }
 
 type ContextMenuTypes =
@@ -513,17 +580,25 @@ interface utils {
    * Helper function that returns extra info stored by this extension only
    */
   getAlbumExtraInfo(album: Album): Record<string, string> | undefined
+
+  readonly packageName: string
+  readonly customRequestBaseUrl: string
 }
 
 interface extensionAPI {
   utils: utils
-  packageName: string
 
   /**
    * Get songs from database filtered by provided options
    * @param options filter the results
    */
   getSongs(options: SongAPIOptions): Promise<Song[] | undefined>
+
+  /**
+   * Get entities such as playlists, artists, albums, genres from database  by provided options
+   * @param options filter the results
+   */
+  getEntity<T extends Artists | Album | Genre | Playlist>(options: EntityApiOptions<T>): Promise<T[] | undefined>
 
   /**
    * Get the current playing track. Undefined if no track is playing
@@ -588,10 +663,17 @@ interface extensionAPI {
   addSongs(...songs: Song[]): Promise<(Song | undefined)[] | undefined>
 
   /**
+   * @deprecated pass song instead of song_id
    * Remove song from library
    * @param song_id id of song to remove
    */
   removeSong(song_id: string): Promise<void>
+
+  /**
+   * Remove song from library
+   * @param song song to remove
+   */
+  removeSong(song: Song): Promise<void>
 
   /**
    * Add playlist to library
@@ -633,7 +715,11 @@ interface extensionAPI {
    */
   on(
     eventName: 'requestedPlaylistSongs',
-    callback: (playlistID: string, invalidateCache: boolean) => Promise<SongsReturnType | void>
+    callback: (
+      playlistID: string,
+      invalidateCache: boolean,
+      nextPageToken?: unknown
+    ) => Promise<SongsWithPageTokenReturnType | ForwardRequestReturnType<'requestedPlaylistSongs'> | void>
   ): void
 
   /**
@@ -678,7 +764,12 @@ interface extensionAPI {
    *
    * Can be used to dynamically provide playbackUrl and/or duration
    */
-  on(eventName: 'playbackDetailsRequested', callback: (song: Song) => Promise<PlaybackDetailsReturnType | void>): void
+  on(
+    eventName: 'playbackDetailsRequested',
+    callback: (
+      song: Song
+    ) => Promise<PlaybackDetailsReturnType | ForwardRequestReturnType<'playbackDetailsRequested'> | void>
+  ): void
 
   /**
    * Event fired when custom url corresponding to the extension is called
@@ -701,50 +792,101 @@ interface extensionAPI {
    * Event fired when user enters url in 'Add song from URL' modal
    * Callback should return parsed song or undefined
    */
-  on(eventName: 'requestedSongFromURL', callback: (url: string) => Promise<SongReturnType | void>): void
+  on(
+    eventName: 'requestedSongFromURL',
+    callback: (url: string) => Promise<SongReturnType | ForwardRequestReturnType<'requestedSongFromURL'> | void>
+  ): void
 
   /**
    * Event fired when user enters url in 'Add playlist from URL' modal
    * Callback should return a playlist and parsed songs in that playlist or undefined
    */
-  on(eventName: 'requestedPlaylistFromURL', callback: (url: string) => Promise<PlaylistAndSongsReturnType | void>): void
+  on(
+    eventName: 'requestedPlaylistFromURL',
+    callback: (
+      url: string
+    ) => Promise<PlaylistAndSongsReturnType | ForwardRequestReturnType<'requestedPlaylistFromURL'> | void>
+  ): void
 
   /**
    * Event fired when user searches a term in search page
    * Callback should return a providerName and result songs or undefined
-   * 
-   * Requires extension to be registered as a provider using {@link registerSearchProvider}
-
    */
-  on(eventName: 'requestedSearchResult', callback: (term: string) => Promise<SearchReturnType | void>): void
+  on(
+    eventName: 'requestedSearchResult',
+    callback: (term: string) => Promise<SearchReturnType | ForwardRequestReturnType<'requestedSearchResult'> | void>
+  ): void
 
   /**
    * Event fired when user opens Explore page
    * Callback should return a providerName and result songs or undefined
    */
-  on(eventName: 'requestedRecommendations', callback: () => Promise<RecommendationsReturnType | void>): void
+  on(
+    eventName: 'requestedRecommendations',
+    callback: () => Promise<RecommendationsReturnType | ForwardRequestReturnType<'requestedRecommendations'> | void>
+  ): void
 
   /**
    * Event fired when lyrics are requested for a song
    * Callback should return a string (HTML formatting) with lyrics or undefined
    */
-  on(eventName: 'requestedLyrics', callback: (song: Song) => Promise<string | void>): void
+  on(
+    eventName: 'requestedLyrics',
+    callback: (song: Song) => Promise<string | ForwardRequestReturnType<'requestedLyrics'> | void>
+  ): void
 
   /**
    * Event fired when songs by a particular artist are requested
    * Callback should return parsed songs or undefined
-   *
-   * Requires extension to be registered as a provider using {@link registerArtistSongProvider}
    */
-  on(eventName: 'requestedArtistSongs', callback: (artist: Artists) => Promise<SongsReturnType | void>)
+  on(
+    eventName: 'requestedArtistSongs',
+    callback: (
+      artist: Artists,
+      nextPageToken?: unknown
+    ) => Promise<SongsWithPageTokenReturnType | ForwardRequestReturnType<'requestedArtistSongs'> | void>
+  ): void
 
   /**
    * Event fired when songs by a particular album are requested
    * Callback should return parsed songs or undefined
-   *
-   * Requires extension to be registered as a provider using {@link registerAlbumSongProvider}
    */
-  on(eventName: 'requestedAlbumSongs', callback: (album: Album) => Promise<SongsReturnType | void>)
+  on(
+    eventName: 'requestedAlbumSongs',
+    callback: (
+      album: Album,
+      nextPageToken?: unknown
+    ) => Promise<SongsWithPageTokenReturnType | ForwardRequestReturnType<'requestedAlbumSongs'> | void>
+  ): void
+
+  /**
+   * Event fired when the app only has id for the song but requires complete details
+   * Callback should return parsed song or undefined
+   */
+  on(
+    eventName: 'requestedSongFromId',
+    callback: (url: string) => Promise<SongReturnType | ForwardRequestReturnType<'requestedSongFromId'> | void>
+  ): void
+
+  /**
+   * Event fired when songs are added to library
+   */
+  on(eventName: 'songAdded', callback: (songs: Song[]) => Promise<void>): void
+
+  /**
+   * Event fired when songs are removed from library
+   */
+  on(eventName: 'songRemoved', callback: (songs: Song[]) => Promise<void>): void
+
+  /**
+   * Event fired when playlist is added to library
+   */
+  on(eventName: 'playlistAdded', callback: (playlist: Playlist[]) => Promise<void>): void
+
+  /**
+   * Event fired when playlist is removed from library
+   */
+  on(eventName: 'playlistRemoved', callback: (songs: Playlist[]) => Promise<void>): void
 
   /**
    * Remove callbacks from extra events
@@ -823,30 +965,6 @@ interface extensionAPI {
   showToast(message: string, duration?: number, type?: 'success' | 'info' | 'error' | 'default')
 
   /**
-   * Register extension as provider of search results. 'requestedSearchResult' can be
-   * listened after calling this method.
-   *
-   * @param title Title to show in search page
-   */
-  registerSearchProvider(title: string): void
-
-  /**
-   * Register extension as provider of artist songs. 'requestedArtistSongs' can be
-   * listened after calling this method
-   *
-   * @param title Title to show in artists page
-   */
-  registerArtistSongProvider(title: string): void
-
-  /**
-   * Register extension as provider of album songs. 'requestedAlbumSongs' can be
-   * listened after calling this method
-   *
-   * @param title Title to show in albums page
-   */
-  registerAlbumSongProvider(title: string): void
-
-  /**
    * Set extra info for an artist. This info is editable by the user using "Show info" context menu
    * option on artist
    * @param object Key-value pairs of editable info
@@ -861,7 +979,19 @@ interface extensionAPI {
   setAlbumEditableInfo(artist_id: string, object: Record<string, string>): Promise<void>
 
   /**
+   * Returns a list of package names of all installed extensions
+   */
+  getInstalledExtensions(): string[]
+
+  addUserPreference(pref: ExtensionPreferenceGroup): void
+  removeUserPreference(key: string): void
+
+  /**
    * Object containing controls for player
    */
   player: playerControls
+}
+
+declare global {
+  const api: extensionAPI
 }
