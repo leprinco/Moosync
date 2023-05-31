@@ -132,6 +132,7 @@ export enum ScannerEvents {
   SCAN_SINGLE_PLAYLIST = 'scanSinglePlaylist',
   RESET_SCAN_TASK = 'resetScanTask',
   GET_PROGRESS = 'getProgress',
+  GET_RECOMMENDED_CPUS = 'getRecommendedCpus',
 
   PROGRESS_CHANNEL = 'progressChannel'
 }

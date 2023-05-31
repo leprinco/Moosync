@@ -54,6 +54,15 @@
           />
 
           <EditText
+            :title="$t('settings.paths.scan_threads')"
+            :tooltip="$t('settings.paths.scan_threadsr_tooltip')"
+            class="mt-2"
+            key="scan_threads"
+            type="number"
+            :defaultValue="scanThreads"
+          />
+
+          <EditText
             :title="$t('settings.paths.splitter')"
             :tooltip="$t('settings.paths.splitter_tooltip')"
             class="mt-2"
@@ -108,6 +117,7 @@ export default class Paths extends Vue {
   private totalValue = 0
 
   private isLibvipsAvailable = true
+  private cpuCount = 0
 
   private forceRescan() {
     window.FileUtils.scan(true)
@@ -126,7 +136,12 @@ export default class Paths extends Vue {
     return ';'
   }
 
+  get scanThreads() {
+    return this.cpuCount
+  }
+
   async created() {
+    this.cpuCount = await window.FileUtils.getCPUs()
     this.setProgress(await window.FileUtils.getScanProgress())
     window.FileUtils.listenScanProgress(async (progress) => {
       this.setProgress(progress)
