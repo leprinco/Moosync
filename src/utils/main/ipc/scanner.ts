@@ -136,37 +136,37 @@ export class ScannerChannel implements IpcChannelInterface {
 
     const lastValue: { songs: Song[]; playlists: Playlist[] } = { songs: [], playlists: [] }
 
-    // for (const p of paths) {
-    await new Promise<typeof lastValue>((resolve) => {
-      scanFiles(
-        paths[1],
-        thumbPath,
-        path.join(app.getPath('appData'), app.getName(), 'databases', 'songs.db'),
-        splitPattern,
-        maxThreads,
-        forceScan,
-        (err, res) => {
-          if (!err) {
-            if (store) {
-              this.storeSong(res)
-            } else {
-              lastValue.songs.push(this.parseScannedSong(res.song))
+    for (const p of paths) {
+      await new Promise<typeof lastValue>((resolve) => {
+        scanFiles(
+          p,
+          thumbPath,
+          path.join(app.getPath('appData'), app.getName(), 'databases', 'songs.db'),
+          splitPattern,
+          maxThreads,
+          forceScan,
+          (err, res) => {
+            if (!err) {
+              if (store) {
+                this.storeSong(res)
+              } else {
+                lastValue.songs.push(this.parseScannedSong(res.song))
+              }
             }
-          }
-        },
-        (err, res) => {
-          if (!err) {
-            if (store) {
-              this.storePlaylist(res)
-            } else {
-              lastValue.playlists.push(this.parseScannedPlaylist(res))
+          },
+          (err, res) => {
+            if (!err) {
+              if (store) {
+                this.storePlaylist(res)
+              } else {
+                lastValue.playlists.push(this.parseScannedPlaylist(res))
+              }
             }
-          }
-        },
-        () => resolve(lastValue)
-      )
-    })
-    // }
+          },
+          () => resolve(lastValue)
+        )
+      })
+    }
 
     return lastValue
   }
@@ -188,6 +188,8 @@ export class ScannerChannel implements IpcChannelInterface {
       request?.params.forceScan,
       true
     )
+
+    this.reportProgress(this.totalScanFiles)
 
     if (this.scanStatus === ScanStatus.QUEUED) {
       return this.scanAll(event, request)
