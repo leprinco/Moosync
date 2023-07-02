@@ -1,9 +1,16 @@
 import DB, { BetterSqlite3Helper } from 'better-sqlite3-helper'
 import { expose } from 'threads/worker'
 import { migrations } from '../db/migrations'
+import { getLogger, levels } from 'loglevel'
+import { v1 } from 'uuid'
+import { prefixLogger } from '../logger/utils'
+
+const logger = getLogger(`Sqlite3Worker (${v1()})`)
+logger.setLevel(process.env.DEBUG_LOGGING ? levels.DEBUG : levels.INFO)
 
 expose({
-  start(dbPath: string) {
+  start(loggerPath: string, dbPath: string) {
+    prefixLogger(loggerPath, logger)
     return start(dbPath)
   },
   async execute(key: keyof BetterSqlite3Helper.DBInstance, ...args: unknown[]) {
@@ -23,10 +30,11 @@ function start(dbPath: string) {
     readonly: false,
     fileMustExist: false,
     WAL: true,
+    verbose: (...args: unknown[]) => logger.debug('Executing query', ...args),
     migrate: {
       migrations: migrations
     }
-  })
+  } as BetterSqlite3Helper.DBOptions)
   registerRegexp(db)
 }
 

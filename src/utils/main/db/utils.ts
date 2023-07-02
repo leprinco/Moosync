@@ -58,7 +58,7 @@ export class DBUtils {
 
   public async start(dbPath: string) {
     const worker = await spawn(new Worker(sqliteWorker))
-    await worker.start(dbPath)
+    await worker.start(app.getPath('logs'), dbPath)
 
     const keys: (keyof BetterSqlite3Mock)[] = [
       'delete',
