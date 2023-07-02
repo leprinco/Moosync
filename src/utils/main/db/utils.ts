@@ -7,34 +7,86 @@
  *  See LICENSE in the project root for license information.
  */
 
-import DB, { BetterSqlite3Helper } from 'better-sqlite3-helper'
+import type { BetterSqlite3Helper } from 'better-sqlite3-helper'
 
 import { app } from 'electron'
-import { migrations } from './migrations'
 import path from 'path'
 import { isEmpty } from '@/utils/common'
 
+// @ts-expect-error it don't want .ts
+import sqliteWorker from 'threads-plugin/dist/loader?name=sqlite!/src/utils/main/workers/sqlite3.ts'
+import { Worker, spawn } from 'threads'
+
+interface BetterSqlite3Mock {
+  exec: () => Promise<void>
+  run: (
+    ...args: Parameters<BetterSqlite3Helper.DBInstance['run']>
+  ) => Promise<ReturnType<BetterSqlite3Helper.DBInstance['run']>>
+  insert: (
+    ...args: Parameters<BetterSqlite3Helper.DBInstance['insert']>
+  ) => Promise<ReturnType<BetterSqlite3Helper.DBInstance['insert']>>
+
+  query: <T>(...args: Parameters<BetterSqlite3Helper.DBInstance['query']>) => Promise<T[]>
+
+  queryFirstCell: <T>(...args: Parameters<BetterSqlite3Helper.DBInstance['queryFirstCell']>) => Promise<T>
+  queryFirstRowObject: <T>(
+    ...args: Parameters<BetterSqlite3Helper.DBInstance['queryFirstRowObject']>
+  ) => Promise<object>
+  queryColumn: <T>(...args: Parameters<BetterSqlite3Helper.DBInstance['queryColumn']>) => Promise<T>
+  queryFirstRow: <T>(...args: Parameters<BetterSqlite3Helper.DBInstance['queryFirstRow']>) => Promise<T>
+
+  delete: (
+    ...args: Parameters<BetterSqlite3Helper.DBInstance['delete']>
+  ) => Promise<ReturnType<BetterSqlite3Helper.DBInstance['delete']>>
+
+  update: (
+    ...args: Parameters<BetterSqlite3Helper.DBInstance['update']>
+  ) => Promise<ReturnType<BetterSqlite3Helper.DBInstance['update']>>
+
+  updateWithBlackList: (
+    ...args: Parameters<BetterSqlite3Helper.DBInstance['updateWithBlackList']>
+  ) => Promise<ReturnType<BetterSqlite3Helper.DBInstance['updateWithBlackList']>>
+}
+
 export class DBUtils {
-  protected db: BetterSqlite3Helper.DBInstance
+  protected db: BetterSqlite3Mock
 
   constructor(dbPath?: string) {
-    this.db = DB({
-      path: dbPath ?? path.join(app.getPath('appData'), app.getName(), 'databases', 'songs.db'),
-      readonly: false,
-      fileMustExist: false,
-      WAL: true,
-      migrate: {
-        migrations: migrations
-      }
-    })
-    this.registerRegexp()
+    this.start(dbPath ?? path.join(app.getPath('appData'), app.getName(), 'databases', 'songs.db'))
+    this.db = {} as BetterSqlite3Mock
+  }
+
+  public async start(dbPath: string) {
+    const worker = await spawn(new Worker(sqliteWorker))
+    await worker.start(dbPath)
+
+    const keys: (keyof BetterSqlite3Mock)[] = [
+      'delete',
+      'exec',
+      'insert',
+      'query',
+      'queryColumn',
+      'queryFirstCell',
+      'queryFirstRow',
+      'queryFirstRowObject',
+      'run',
+      'update',
+      'updateWithBlackList'
+    ]
+
+    for (const k of keys) {
+      this.db[k] = (...args: unknown[]) => worker.execute(k, ...args)
+    }
   }
 
   public close() {
-    if (this.db && this.db.open) this.db.close()
+    // if (this.db && this.db.open) this.db.close()
   }
 
-  protected unMarshalSong(dbSong: marshaledSong, fetchArtists: (artistIds: string[]) => Artists[]): Song {
+  protected async unMarshalSong(
+    dbSong: marshaledSong,
+    fetchArtists: (artistIds: string[]) => Promise<Artists[]>
+  ): Promise<Song> {
     return {
       _id: dbSong._id,
       path: dbSong.path,
@@ -53,7 +105,7 @@ export class DBUtils {
       },
       date: dbSong.date,
       year: dbSong.year,
-      artists: fetchArtists(dbSong.artists?.split(',') ?? []),
+      artists: await fetchArtists(dbSong.artists?.split(',') ?? []),
       genre: dbSong.genre_name ? dbSong.genre_name.split(',') : [],
       lyrics: dbSong.lyrics,
       releaseType: undefined,
@@ -111,22 +163,16 @@ export class DBUtils {
     }
   }
 
-  protected batchUnmarshal(marshaled: marshaledSong[], fetchArtists: (artistIds: string[]) => Artists[]) {
+  protected async batchUnmarshal(
+    marshaled: marshaledSong[],
+    fetchArtists: (artistIds: string[]) => Promise<Artists[]>
+  ) {
     const unmarshaled: Song[] = []
     for (const m of marshaled) {
-      const um = this.unMarshalSong(m, fetchArtists)
+      const um = await this.unMarshalSong(m, fetchArtists)
       unmarshaled.push(um)
     }
     return unmarshaled
-  }
-
-  protected registerRegexp() {
-    this.db.function('regexp', (pattern: string, str: string) => {
-      if (str != null) {
-        return str.match(new RegExp(pattern, 'i')) ? 1 : 0
-      }
-      return 0
-    })
   }
 
   protected addExcludeWhereClause(where: boolean, exclude?: string[]): string {

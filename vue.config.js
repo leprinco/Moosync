@@ -241,7 +241,7 @@ module.exports = {
 
         config
           .plugin('ExternalsPlugin')
-          .use(ExternalsPlugin, [{ type: 'commonjs', include: join(__dirname, 'node_modules', 'sharp') }])
+          .use(ExternalsPlugin, [{ type: 'commonjs', include: join(__dirname, 'node_modules', 'better-sqlite3') }])
         config.plugin('thread').use(ThreadsPlugin, [{ target: 'electron-node-worker', plugins: ['ExternalsPlugin'] }])
 
         // config.plugin('copy').use(BundleAnalyzerPlugin)

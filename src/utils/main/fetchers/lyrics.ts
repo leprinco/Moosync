@@ -22,11 +22,13 @@ export class LyricsFetcher extends CacheHandler {
   }
 
   public async getLyrics(song: Song) {
-    const dbLyrics = getSongDB().getSongByOptions({
-      song: {
-        _id: song._id
-      }
-    })[0]?.lyrics
+    const dbLyrics = (
+      await getSongDB().getSongByOptions({
+        song: {
+          _id: song._id
+        }
+      })
+    )[0]?.lyrics
 
     if (dbLyrics) return dbLyrics
 

@@ -319,7 +319,7 @@ export class WindowHandler {
     getSpotifyPlayerChannel().closePlayer()
     // Stop extension Host
     await getExtensionHostChannel().closeExtensionHost()
-    getSongDB().close()
+    await (await getSongDB()).close()
   }
 
   private handleWindowShow(window: BrowserWindow) {
