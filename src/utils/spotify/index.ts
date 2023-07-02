@@ -59,6 +59,7 @@ class SpotifyPlayerProcess {
   }
 
   private sendEvent<T extends PlayerEventTypes>(event: PlayerEvent<T>) {
+    console.debug('Emitting event', JSON.stringify(event))
     process.send && process.send(event)
   }
 
