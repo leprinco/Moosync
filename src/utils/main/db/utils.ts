@@ -16,6 +16,7 @@ import { isEmpty } from '@/utils/common'
 // @ts-expect-error it don't want .ts
 import sqliteWorker from 'threads-plugin/dist/loader?name=sqlite!/src/utils/main/workers/sqlite3.ts'
 import { Worker, spawn } from 'threads'
+import { WorkerModule } from 'threads/dist/types/worker'
 
 interface BetterSqlite3Mock {
   exec: () => Promise<void>
@@ -48,39 +49,67 @@ interface BetterSqlite3Mock {
   ) => Promise<ReturnType<BetterSqlite3Helper.DBInstance['updateWithBlackList']>>
 }
 
+interface PreStartQueue {
+  command: keyof BetterSqlite3Mock
+  args: unknown[]
+  resolver: (...value: never[]) => void
+}
+
+const keys: (keyof BetterSqlite3Mock)[] = [
+  'delete',
+  'exec',
+  'insert',
+  'query',
+  'queryColumn',
+  'queryFirstCell',
+  'queryFirstRow',
+  'queryFirstRowObject',
+  'run',
+  'update',
+  'updateWithBlackList'
+]
+
 export class DBUtils {
   protected db: BetterSqlite3Mock
+  private worker: Unpromise<ReturnType<typeof spawn<WorkerModule<string>>>> | undefined
+  private preStartQueue: PreStartQueue[] = []
 
   constructor(dbPath?: string) {
     this.start(dbPath ?? path.join(app.getPath('appData'), app.getName(), 'databases', 'songs.db'))
+
+    // Defer all calls till DB has started
     this.db = {} as BetterSqlite3Mock
+    for (const k of keys) {
+      this.db[k] = (...args: unknown[]) =>
+        new Promise<never>((resolve) => {
+          this.preStartQueue.push({
+            command: k,
+            args,
+            resolver: resolve
+          })
+        })
+    }
   }
 
   public async start(dbPath: string) {
-    const worker = await spawn(new Worker(sqliteWorker))
-    await worker.start(app.getPath('logs'), dbPath)
-
-    const keys: (keyof BetterSqlite3Mock)[] = [
-      'delete',
-      'exec',
-      'insert',
-      'query',
-      'queryColumn',
-      'queryFirstCell',
-      'queryFirstRow',
-      'queryFirstRowObject',
-      'run',
-      'update',
-      'updateWithBlackList'
-    ]
+    this.worker = await spawn(new Worker(sqliteWorker))
+    await this.worker.start(app.getPath('logs'), dbPath)
 
     for (const k of keys) {
-      this.db[k] = (...args: unknown[]) => worker.execute(k, ...args)
+      this.db[k] = (...args: unknown[]) => this.worker?.execute(k, ...args) as never
+    }
+
+    // Empty the pre-start queue
+    while (this.preStartQueue.length > 0) {
+      const item = this.preStartQueue.splice(0, 1)[0]
+      this.db[item.command](...(item.args as never[])).then((...value: unknown[]) =>
+        item.resolver(...(value as never[]))
+      )
     }
   }
 
   public close() {
-    // if (this.db && this.db.open) this.db.close()
+    if (this.worker) this.worker.close()
   }
 
   protected async unMarshalSong(

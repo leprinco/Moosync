@@ -41,3 +41,4 @@ declare namespace NodeJS {
 
 type ValueOf<T> = T[keyof T]
 type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>
+type Unpromise<T> = T extends Promise<infer U> ? U : never

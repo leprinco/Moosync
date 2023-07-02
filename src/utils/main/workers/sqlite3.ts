@@ -15,13 +15,16 @@ expose({
   },
   async execute(key: keyof BetterSqlite3Helper.DBInstance, ...args: unknown[]) {
     return await execute(key, ...args)
+  },
+  close() {
+    close()
   }
 })
 
-let db: BetterSqlite3Helper.DBInstance
+let db: BetterSqlite3Helper.DBInstance | undefined = undefined
 
 async function execute(key: keyof BetterSqlite3Helper.DBInstance, ...args: unknown[]) {
-  return await (db[key] as (...args: unknown[]) => unknown)(...args)
+  return await (db?.[key] as (...args: unknown[]) => unknown)(...args)
 }
 
 function start(dbPath: string) {
@@ -36,6 +39,12 @@ function start(dbPath: string) {
     }
   } as BetterSqlite3Helper.DBOptions)
   registerRegexp(db)
+}
+
+function close() {
+  if (db?.open) {
+    db.close()
+  }
 }
 
 function registerRegexp(database: BetterSqlite3Helper.DBInstance) {
