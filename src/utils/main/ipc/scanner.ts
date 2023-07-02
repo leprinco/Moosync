@@ -109,10 +109,10 @@ export class ScannerChannel implements IpcChannelInterface {
   }
 
   private async storeSong(data: SongWithLen) {
-    await getSongDB().store(this.parseScannedSong(data.song))
-
     this.totalScanFiles = data.size
     this.reportProgress(data.current)
+
+    await getSongDB().store(this.parseScannedSong(data.song))
   }
 
   private parseScannedPlaylist(data: ScanPlaylist): Playlist {
