@@ -109,7 +109,6 @@ export class ScannerChannel implements IpcChannelInterface {
   }
 
   private async storeSong(data: SongWithLen) {
-    console.log('storing', data.song.title)
     await getSongDB().store(this.parseScannedSong(data.song))
 
     this.totalScanFiles = data.size
@@ -119,8 +118,8 @@ export class ScannerChannel implements IpcChannelInterface {
   private parseScannedPlaylist(data: ScanPlaylist): Playlist {
     return {
       playlist_name: data.title,
-      playlist_path: 'some path',
-      playlist_id: 'TODO'
+      playlist_path: data.path,
+      playlist_id: data.id
     }
   }
 
