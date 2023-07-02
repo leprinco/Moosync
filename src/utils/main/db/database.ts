@@ -59,7 +59,7 @@ export class SongDBInstance extends DBUtils {
     const existingList: Song[] = []
     for (const newDoc of songsToAdd) {
       if (this.verifySong(newDoc)) {
-        const existing = (await this.getSongByOptions({ song: { _id: newDoc._id } }))[0]
+        const existing = (await this.getSongByOptions({ song: { _id: newDoc._id, path: newDoc.path } }))[0]
         if (existing) {
           existingList.push(existing)
           continue
