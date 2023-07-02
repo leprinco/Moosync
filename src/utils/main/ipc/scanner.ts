@@ -137,6 +137,7 @@ export class ScannerChannel implements IpcChannelInterface {
     const lastValue: { songs: Song[]; playlists: Playlist[] } = { songs: [], playlists: [] }
 
     for (const p of paths) {
+      const promises: Promise<void>[] = []
       await new Promise<typeof lastValue>((resolve) => {
         scanFiles(
           p,
@@ -148,7 +149,7 @@ export class ScannerChannel implements IpcChannelInterface {
           (err, res) => {
             if (!err) {
               if (store) {
-                this.storeSong(res)
+                promises.push(this.storeSong(res))
               } else {
                 lastValue.songs.push(this.parseScannedSong(res.song))
               }
@@ -157,13 +158,13 @@ export class ScannerChannel implements IpcChannelInterface {
           (err, res) => {
             if (!err) {
               if (store) {
-                this.storePlaylist(res)
+                promises.push(this.storePlaylist(res))
               } else {
                 lastValue.playlists.push(this.parseScannedPlaylist(res))
               }
             }
           },
-          () => resolve(lastValue)
+          () => Promise.allSettled(promises).then(() => resolve(lastValue))
         )
       })
     }
