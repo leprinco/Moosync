@@ -977,6 +977,14 @@ export class SongDBInstance extends DBUtils {
       icon: playlist.icon
     }
 
+    if (playlist.playlist_path) {
+      const id: string = await this.db.queryFirstCell(
+        `SELECT playlist_id FROM playlists WHERE playlist_path = ?`,
+        playlist.playlist_path
+      )
+      if (id) return id
+    }
+
     await this.db.insert('playlists', playlistToInsert)
 
     this.notifyExtensionHostPlaylistChanged(true, [playlistToInsert])
