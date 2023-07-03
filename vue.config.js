@@ -240,7 +240,7 @@ module.exports = {
 
         config
           .entry('sqlite3.worker')
-          .add(__dirname + '/src/utils/main/workers/sqlite3.ts')
+          .add(__dirname + '/src/utils/main/db/workers/sqlite3.ts')
           .end()
 
         config.plugin('copy').use(CopyWebpackPlugin, [{ patterns: [{ from: resolve('dev-app-update.yml') }] }])
