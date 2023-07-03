@@ -52,7 +52,22 @@ export class ScannerChannel implements IpcChannelInterface {
       case ScannerEvents.RESET_SCAN_TASK:
         this.resetScanTask(event, request)
         break
+      case ScannerEvents.GET_RECOMMENDED_CPUS:
+        this.getRecommendedCpus(event, request)
+        break
     }
+  }
+
+  private getRecommendedCpus(event?: IpcMainEvent, request?: IpcRequest) {
+    let ret = 0
+    if (process.platform === 'win32') {
+      ret = Math.max(os.cpus().length - 1, 1)
+    } else {
+      ret = os.cpus().length
+    }
+
+    request && event?.reply(request.responseChannel, ret)
+    return ret
   }
 
   private async getScanProgress(event: IpcMainEvent, request: IpcRequest) {
@@ -174,6 +189,8 @@ export class ScannerChannel implements IpcChannelInterface {
 
   public async scanAll(event?: IpcMainEvent, request?: IpcRequest<ScannerRequests.ScanSongs>): Promise<void> {
     if (this.scanStatus !== ScanStatus.UNDEFINED) {
+      console.debug('Another scan already in progress, setting status to queued')
+      this.scanStatus = ScanStatus.QUEUED
       return
     }
 

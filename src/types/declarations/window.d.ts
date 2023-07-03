@@ -190,6 +190,7 @@ interface fileUtils {
   listenInitialFileOpenRequest: (callback: (paths: string[]) => void) => void
 
   resetScanTask: () => Promise<void>
+  getCPUs: () => Promise<number>
 }
 
 /**

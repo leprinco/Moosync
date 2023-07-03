@@ -241,6 +241,12 @@ contextBridge.exposeInMainWorld('FileUtils', {
     ipcRendererHolder.send(IpcEvents.SCANNER, {
       type: ScannerEvents.RESET_SCAN_TASK,
       params: undefined
+    }),
+
+  getCPUs: () =>
+    ipcRendererHolder.send(IpcEvents.SCANNER, {
+      type: ScannerEvents.GET_RECOMMENDED_CPUS,
+      params: undefined
     })
 })
 
