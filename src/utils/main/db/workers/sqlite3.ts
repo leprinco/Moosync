@@ -1134,15 +1134,18 @@ class DBWrapper extends DBUtils {
 
     const stored = this.store(...songs.map((val) => ({ ...val, showInLibrary: false })))
 
-    for (const s of stored) {
-      if (!coverExists && playlist_id !== 'favorites_playlist') {
-        if (s.album?.album_coverPath_high) {
-          this.updatePlaylistCoverPath(playlist_id, s.album.album_coverPath_high)
-          coverExists = true
+    this.db.transaction((stored: Song[]) => {
+      for (const s of stored) {
+        if (!coverExists && playlist_id !== 'favorites_playlist') {
+          if (s.album?.album_coverPath_high) {
+            this.updatePlaylistCoverPath(playlist_id, s.album.album_coverPath_high)
+            coverExists = true
+          }
         }
+        this.db.insert('playlist_bridge', { playlist: playlist_id, song: s._id })
       }
-      this.db.insert('playlist_bridge', { playlist: playlist_id, song: s._id })
-    }
+    })(stored)
+
     this.updateSongCountPlaylists()
   }
 
