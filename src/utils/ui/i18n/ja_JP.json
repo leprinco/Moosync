@@ -51,7 +51,7 @@
       "artist": "アーティスト",
       "genre": "ジャンル",
       "date_added": "追加日",
-      "provider": "プロバイダー",
+      "provider": "提供元",
       "playCount": "再生回数"
     },
     "playlist": {
@@ -79,13 +79,13 @@
       "showInLibrary": "ライブラリに表示",
       "showHidden": "非表示の曲を表示",
       "hideHidden": "非表示の曲を非表示",
-      "openInBrowser": "Open in browser"
+      "openInBrowser": "ブラウザで開く"
     },
     "moreInfo": "詳細情報",
     "incorrectPlayback": "再生がおかしいですか？"
   },
   "providers": {
-    "youtube": "Youtube",
+    "youtube": "YouTube",
     "spotify": "Spotify",
     "invidious": "Invidious",
     "lastfm": "LastFM"
@@ -95,7 +95,7 @@
   "settings": {
     "paths": {
       "songDirectories": "曲のディレクトリ",
-      "songDirectories_tooltip": "すべてのローカル音楽が保存されているディレクトリ",
+      "songDirectories_tooltip": "音楽が保存されている端末内のすべてのディレクトリ",
       "songDirectories_exclude": "ブラックリストに登録されたディレクトリ",
       "songDirectories_exclude_tooltip": "これらのディレクトリ内の曲はスキャンされません",
       "addFolder": "フォルダを追加...",
@@ -106,8 +106,8 @@
       "thumbnailPath_tooltip": "生成されたサムネイルが保存されているディレクトリ",
       "splitter": "アーティスト名の分割パターン",
       "splitter_tooltip": "アーティスト名を分割するには正規表現を使用します。空白の場合は分割を無効にします。",
-      "scan_interval": "Scan interval",
-      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
+      "scan_interval": "スキャン間隔",
+      "scan_interval_tooltip": "スキャンのタスクを実行する間隔を秒単位で設定します。自動スキャンを無効にするには -1 にします。"
     },
     "themes": {
       "songView": "曲表示",
@@ -150,13 +150,13 @@
         "hardwareAcceleration": "GPUハードウェアアクセラレーションを使用",
         "watchFileChanges": "更新がないか音楽ディレクトリを監視",
         "enableJukeboxMode": "ジュークボックスモードへの切り替えを有効化",
-        "lastLoadedPlaybackState": "Load last playback state on startup"
+        "lastLoadedPlaybackState": "起動時に前回の再生状態を読み込む"
       },
       "systemSettings_tooltip": "システムに関連する設定",
       "audioSettings": {
         "title": "音声設定",
-        "gaplessPlayback": "可能な限り間隔なく再生",
-        "sponsorBlock": "SponsorBlockをしYouTubeの曲の主な部分に自動でスキップ"
+        "gaplessPlayback": "可能な限り間をなくして再生",
+        "sponsorBlock": "SponsorBlockを使いYouTubeの曲の主な部分に自動でスキップ"
       },
       "audioSettings_tooltip": "音声再生の設定",
       "invidiousUrlUnsupported": "このURLはInvidious APIに対応していません",
@@ -170,7 +170,7 @@
         "client_secret": "Spotifyクライアントシークレット",
         "client_secret_tooltip": "SpotifyクライアントシークレットはSpotifyにログインするのに必要。クリックで詳細",
         "autoFetchButton": "Spotifyの詳細を自動で取得",
-        "autoFetchPreTitle": "取得",
+        "autoFetchPreTitle": "取得ツール",
         "autoFetchTitle": "クライアントID とシークレット",
         "autoFetchDisclaimer": "Spotifyアカウントにログインするように求められるウィンドウが開きます。 ログイン後は、プロセス全体が自動化されるため、どこもクリックしないでください。",
         "openWindow": "ウィンドウを開く",
@@ -189,10 +189,10 @@
         }
       },
       "youtube": {
-        "client_id": "Youtube クライアントID",
-        "client_secret": "Youtube クライアントシークレット",
-        "client_id_tooltip": "Youtube クライアント ID は、Youtube にログインする必要があります。詳細を知るためにクリックしてください",
-        "client_secret_tooltip": "Youtube クライアントシークレットは、Youtube にログインするために必要です。クリックで詳細"
+        "client_id": "YouTube クライアントID",
+        "client_secret": "YouTube クライアントシークレット",
+        "client_id_tooltip": "YouTube クライアント ID は、YouTube にログインする必要があります。クリックで詳細",
+        "client_secret_tooltip": "YouTube クライアントシークレットは、YouTube にログインするために必要です。クリックで詳細"
       },
       "lastfm": {
         "client_id": "LastFM API キー",
@@ -201,7 +201,7 @@
       "youtubeAlternative": {
         "title": "YouTube 代替サービス",
         "tooltip": "第三者の提供者を介してYouTubeのデータを取得します",
-        "useYoutube": "標準のYoutubeのサービスを使用",
+        "useYoutube": "標準のYouTubeのサービスを使用",
         "useInvidious": "Invidious サービスを使用",
         "usePiped": "Piped サービスを使用",
         "piped": {
@@ -221,7 +221,7 @@
         },
         "youtube": {
           "options": "YouTubeの詳細オプション",
-          "options_tooltip": "Youtube の再生を管理するオプション",
+          "options_tooltip": "YouTube の再生を管理するオプション",
           "useEmbeds": "YouTube からの音声再生に YouTube 埋め込みを使用"
         }
       },
@@ -233,7 +233,7 @@
       "clear_preferences_button": "確認",
       "jukebox": {
         "pin": "ジュークボックスモードのピン",
-        "pin_tooltip": "チスピンはジュークボックスモードを終了するために必要です。数値である必要があります。",
+        "pin_tooltip": "このピンはジュークボックスモードを終了するために必要です。数値である必要があります。",
         "optionalFields": "ボタンの表示",
         "optionalFields_tooltip": "ジュークボックスモードで表示するオプションのボタンを切り替え",
         "optional_skip": "曲スキップボタン",
@@ -245,7 +245,8 @@
         "tooltip": "歌詞の検索に使う歌詞の提供元を選択",
         "az_lyrics": "AZLyricsを使用",
         "google_lyrics": "Google検索の歌詞を使用",
-        "genius_lyrics": "Use Genius"
+        "spotify_lyrics": "Spotify を歌詞に使用 (要 librespot)",
+        "genius_lyrics": "Geniusを使用"
       },
       "queueSettings": {
         "title": "キュー設定",
@@ -268,9 +269,9 @@
     },
     "logs": {
       "logSettings": "ログの設定",
-      "level": "レベル",
+      "level": "対象",
       "process": "処理",
-      "filterMessage": "メッセージの絞り込み"
+      "filterMessage": "メッセージを絞り込み"
     }
   }
 }
