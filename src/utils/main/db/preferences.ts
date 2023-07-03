@@ -178,7 +178,6 @@ export async function onPreferenceChanged(key: string, value: any) {
   }
 
   if (key === 'musicPaths') {
-    getScannerChannel().scanAll()
     shouldWatchFileChanges()
     return
   }
