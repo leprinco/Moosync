@@ -192,7 +192,8 @@ module.exports = {
             schemes: ['moosync']
           }
         ],
-        beforeBuild: 'scripts/fontFix.js'
+        beforeBuild: 'scripts/fontFix.js',
+        afterPack: 'scripts/beforePack.js'
       },
       nodeIntegration: false,
       disableMainProcessTypescript: false,
