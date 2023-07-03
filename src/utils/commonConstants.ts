@@ -151,3 +151,9 @@ export enum VolumePersistMode {
   SEPARATE_VOLUME_MAP = 'SEPARATE_VOLUME_MAP',
   CLAMP_MAP = 'CLAMP_MAP'
 }
+
+export enum ScanStatus {
+  UNDEFINED,
+  SCANNING,
+  QUEUED
+}
