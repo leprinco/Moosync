@@ -238,12 +238,12 @@ module.exports = {
           .add(__dirname + '/src/utils/spotify/index.ts')
           .end()
 
-        config.plugin('copy').use(CopyWebpackPlugin, [{ patterns: [{ from: resolve('dev-app-update.yml') }] }])
-
         config
-          .plugin('ExternalsPlugin')
-          .use(ExternalsPlugin, [{ type: 'commonjs', include: join(__dirname, 'node_modules', 'better-sqlite3') }])
-        config.plugin('thread').use(ThreadsPlugin, [{ target: 'electron-node-worker', plugins: ['ExternalsPlugin'] }])
+          .entry('sqlite3.worker')
+          .add(__dirname + '/src/utils/main/workers/sqlite3.ts')
+          .end()
+
+        config.plugin('copy').use(CopyWebpackPlugin, [{ patterns: [{ from: resolve('dev-app-update.yml') }] }])
 
         // config.plugin('copy').use(BundleAnalyzerPlugin)
       }

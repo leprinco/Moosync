@@ -13,8 +13,6 @@ import { app } from 'electron'
 import path from 'path'
 import { isEmpty } from '@/utils/common'
 
-// @ts-expect-error it don't want .ts
-import sqliteWorker from 'threads-plugin/dist/loader?name=sqlite!/src/utils/main/workers/sqlite3.ts'
 import { Worker, spawn } from 'threads'
 import { WorkerModule } from 'threads/dist/types/worker'
 
@@ -92,7 +90,7 @@ export class DBUtils {
   }
 
   public async start(dbPath: string) {
-    this.worker = await spawn(new Worker(sqliteWorker))
+    this.worker = await spawn(new Worker(__dirname + '/sqlite3.worker.js'))
     await this.worker.start(app.getPath('logs'), dbPath)
 
     for (const k of keys) {
