@@ -20,15 +20,19 @@ export function getSongDB() {
   return _songDB
 }
 
-export function createFavoritesPlaylist() {
-  const isExist = !!getSongDB().getEntityByOptions<Playlist>({
-    playlist: {
-      playlist_id: FAVORITES_PLAYLIST_ID
-    }
-  })[0]
+export async function createFavoritesPlaylist() {
+  const isExist = !!(
+    await getSongDB().getEntityByOptions<Playlist>({
+      playlist: {
+        playlist_id: FAVORITES_PLAYLIST_ID
+      }
+    })
+  )[0]
 
   if (!isExist) {
-    getSongDB().createPlaylist({
+    await (
+      await getSongDB()
+    ).createPlaylist({
       playlist_id: FAVORITES_PLAYLIST_ID,
       playlist_name: 'Favorites',
       playlist_desc: 'Playlist containing your favorite songs'

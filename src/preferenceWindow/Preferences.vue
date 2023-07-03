@@ -32,12 +32,12 @@ import Titlebar from '@/commonComponents/Titlebar.vue'
 import { mixins } from 'vue-class-component'
 import ThemeHandler from '@/utils/ui/mixins/ThemeHandler'
 import Sidebar from '@/preferenceWindow/components/Sidebar.vue'
-import Vue from 'vue'
+import Vue, { DirectiveBinding } from 'vue'
 import { i18n } from '@/preferenceWindow/plugins/i18n'
 
 Vue.directive('click-outside', {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bind: function (el: any, binding) {
+  bind: function (el: any, binding: DirectiveBinding<(e: Event) => void>) {
     // Define Handler and cache it on the element
     const bubble = binding.modifiers.bubble
     const handler = (e: Event) => {

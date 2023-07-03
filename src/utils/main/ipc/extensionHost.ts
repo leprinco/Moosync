@@ -112,16 +112,16 @@ export class ExtensionHostChannel implements IpcChannelInterface {
         .then(() => event.reply(request.responseChannel))
 
       // Remove all song added by this extension
-      const songs = getSongDB().getSongByOptions({ song: { extension: request.params.packageName } })
+      const songs = await getSongDB().getSongByOptions({ song: { extension: request.params.packageName } })
       await getSongDB().removeSong(...songs)
 
-      const playlists = getSongDB().getEntityByOptions<Playlist>({
+      const playlists = await getSongDB().getEntityByOptions<Playlist>({
         playlist: {
           extension: request.params.packageName
         }
       })
 
-      getSongDB().removePlaylist(...playlists)
+      await getSongDB().removePlaylist(...playlists)
     }
     event.reply(request.responseChannel)
   }

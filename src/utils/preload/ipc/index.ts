@@ -16,7 +16,7 @@ export class IpcRendererHolder {
     this.ipcRenderer = renderer
   }
 
-  public send<T>(channel: string, request: IpcRequest<T>): Promise<unknown> {
+  public send<T>(channel: string, request: IpcRequestOptionalChannel<T>): Promise<unknown> {
     if (!request.responseChannel) {
       // require('crypto') seems to be undefined when preload script is first fires
       // Lazy load crypto since we're sure that this will always happen after the crypto is loaded

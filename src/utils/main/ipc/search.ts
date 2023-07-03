@@ -67,7 +67,7 @@ export class SearchChannel implements IpcChannelInterface {
 
   private async searchAll(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.Search>) {
     if (request.params && request.params.searchTerm) {
-      event.reply(request.responseChannel, getSongDB().searchAll(request.params.searchTerm, getDisabledPaths()))
+      event.reply(request.responseChannel, await getSongDB().searchAll(request.params.searchTerm, getDisabledPaths()))
     }
     event.reply(request.responseChannel)
   }
@@ -123,8 +123,8 @@ export class SearchChannel implements IpcChannelInterface {
     }
   }
 
-  private searchSongByOptions(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.SongOptions>) {
-    const data = getSongDB().getSongByOptions(request.params.options, getDisabledPaths())
+  private async searchSongByOptions(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.SongOptions>) {
+    const data = await getSongDB().getSongByOptions(request.params.options, getDisabledPaths())
     event.reply(request.responseChannel, data)
   }
 
@@ -147,7 +147,7 @@ export class SearchChannel implements IpcChannelInterface {
 
   private async searchEntityByOptions(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.EntityOptions>) {
     if (request.params && request.params.options) {
-      event.reply(request.responseChannel, getSongDB().getEntityByOptions(request.params.options))
+      event.reply(request.responseChannel, await getSongDB().getEntityByOptions(request.params.options))
     }
   }
 
@@ -178,9 +178,9 @@ export class SearchChannel implements IpcChannelInterface {
     event.reply(request.responseChannel)
   }
 
-  private getPlayCount(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.PlayCount>) {
+  private async getPlayCount(event: Electron.IpcMainEvent, request: IpcRequest<SearchRequests.PlayCount>) {
     if (request.params.songIds) {
-      const data = getSongDB().getPlayCount(...request.params.songIds)
+      const data = await getSongDB().getPlayCount(...request.params.songIds)
       event.reply(request.responseChannel, data)
     }
     event.reply(request.responseChannel)

@@ -90,15 +90,21 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
             resolveTimeout && clearTimeout(resolveTimeout)
 
             if (m.error) {
-              this.closePlayer()
-              this.spawnProcess()
-
-              if (retries > 2) {
+              if (message.type === 'COMMAND' && ['GET_CANVAS', 'GET_LYRICS'].includes(message.args?.command)) {
                 resolve(new Error(m.error))
                 return
               }
 
-              this.sendAsync(message, retries + 1).then((val) => resolve(val as SpotifyRequests.ReturnType<T>))
+              this.closePlayer()
+              this.spawnProcess().then(() => {
+                if (retries > 2) {
+                  resolve(new Error(m.error))
+                  return
+                }
+
+                this.sendAsync(message, retries + 1).then((val) => resolve(val as SpotifyRequests.ReturnType<T>))
+                return
+              })
               return
             }
             resolve(m.data as SpotifyRequests.ReturnType<T>)
@@ -111,8 +117,13 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
 
           // TODO: Handle this better
           if (message?.args?.['auth']?.['password']) message.args['auth']['password'] = '***'
-          console.error('Failed to resolve message for message', message)
-          resolve(new Error('Failed to resolve message'))
+          console.error('Failed to resolve message for message', message, 'tries', retries)
+          if (retries > 2) {
+            resolve(new Error('Failed to resolve message'))
+            return
+          }
+          this.sendAsync(message, retries + 1).then((val) => resolve(val as SpotifyRequests.ReturnType<T>))
+          return
         }, 5000)
 
         this.playerProcess?.on('message', listener)
@@ -148,7 +159,7 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
       this.playerProcess = undefined
     }
 
-    event?.reply(request?.responseChannel)
+    request && event?.reply(request.responseChannel)
   }
 
   private isEvent<T extends PlayerEventTypes>(val: unknown): val is PlayerEvent<T> {

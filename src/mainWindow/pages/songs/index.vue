@@ -15,6 +15,7 @@
       :songList="songList"
       :afterSongAddRefreshCallback="requestSongs"
       :onGeneralSongContextMenuOverride="getGeneralSongsMenu"
+      :isLoading="isLoading"
       @playAll="playSongs"
       @addToQueue="addSongsToQueue"
       @playRandom="playRandom"
@@ -39,6 +40,7 @@ import { getRandomFromArray } from '@/utils/common'
 export default class AllSongs extends mixins(ContextMenuMixin) {
   songList: Song[] = []
   currentSong: Song | null | undefined = null
+  isLoading = true
 
   get playlists() {
     return vxm.playlist.playlists
@@ -69,6 +71,7 @@ export default class AllSongs extends mixins(ContextMenuMixin) {
         showInLibrary: !showHidden
       }
     })
+    this.isLoading = false
 
     this.showingHidden = showHidden
   }

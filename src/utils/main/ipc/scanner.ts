@@ -66,7 +66,7 @@ export class ScannerChannel implements IpcChannelInterface {
       ret = os.cpus().length
     }
 
-    event?.reply(request?.responseChannel, ret)
+    request && event?.reply(request.responseChannel, ret)
     return ret
   }
 
@@ -79,7 +79,7 @@ export class ScannerChannel implements IpcChannelInterface {
   }
 
   private async destructiveScan(paths: togglePaths) {
-    const allSongs = getSongDB().getSongByOptions()
+    const allSongs = await getSongDB().getSongByOptions()
     const excludePaths = paths.filter((val) => !val.enabled).map((val) => val.path)
     const excludeRegex = new RegExp(excludePaths.length > 0 ? excludePaths.join('|').replaceAll('\\', '\\\\') : /(?!)/)
 
@@ -124,22 +124,22 @@ export class ScannerChannel implements IpcChannelInterface {
   }
 
   private async storeSong(data: SongWithLen) {
-    getSongDB().store(this.parseScannedSong(data.song))
-
     this.totalScanFiles = data.size
     this.reportProgress(data.current)
+
+    await getSongDB().store(this.parseScannedSong(data.song))
   }
 
   private parseScannedPlaylist(data: ScanPlaylist): Playlist {
     return {
       playlist_name: data.title,
-      playlist_path: 'some path',
-      playlist_id: 'TODO'
+      playlist_path: data.path,
+      playlist_id: data.id
     }
   }
 
   private async storePlaylist(data: ScanPlaylist) {
-    getSongDB().createPlaylist(this.parseScannedPlaylist(data))
+    await getSongDB().createPlaylist(this.parseScannedPlaylist(data))
   }
 
   private async scanFilePromisified(paths: string[], forceScan = false, store = false) {
@@ -151,35 +151,40 @@ export class ScannerChannel implements IpcChannelInterface {
 
     const lastValue: { songs: Song[]; playlists: Playlist[] } = { songs: [], playlists: [] }
 
-    return new Promise<typeof lastValue>((resolve) => {
-      scanFiles(
-        paths[0],
-        thumbPath,
-        path.join(app.getPath('appData'), app.getName(), 'databases', 'songs.db'),
-        splitPattern,
-        maxThreads,
-        forceScan,
-        (err, res) => {
-          if (!err) {
-            if (store) {
-              this.storeSong(res)
-            } else {
-              lastValue.songs.push(this.parseScannedSong(res.song))
+    for (const p of paths) {
+      const promises: Promise<void>[] = []
+      await new Promise<typeof lastValue>((resolve) => {
+        scanFiles(
+          p,
+          thumbPath,
+          path.join(app.getPath('appData'), app.getName(), 'databases', 'songs.db'),
+          splitPattern,
+          maxThreads,
+          forceScan,
+          (err, res) => {
+            if (!err) {
+              if (store) {
+                promises.push(this.storeSong(res))
+              } else {
+                lastValue.songs.push(this.parseScannedSong(res.song))
+              }
             }
-          }
-        },
-        (err, res) => {
-          if (!err) {
-            if (store) {
-              this.storePlaylist(res)
-            } else {
-              lastValue.playlists.push(this.parseScannedPlaylist(res))
+          },
+          (err, res) => {
+            if (!err) {
+              if (store) {
+                promises.push(this.storePlaylist(res))
+              } else {
+                lastValue.playlists.push(this.parseScannedPlaylist(res))
+              }
             }
-          }
-        },
-        () => resolve(lastValue)
-      )
-    })
+          },
+          () => Promise.allSettled(promises).then(() => resolve(lastValue))
+        )
+      })
+    }
+
+    return lastValue
   }
 
   public async scanAll(event?: IpcMainEvent, request?: IpcRequest<ScannerRequests.ScanSongs>): Promise<void> {
@@ -189,6 +194,8 @@ export class ScannerChannel implements IpcChannelInterface {
       return
     }
 
+    console.log('starting scan')
+
     const paths = getCombinedMusicPaths() ?? []
     await this.destructiveScan(paths)
 
@@ -196,12 +203,17 @@ export class ScannerChannel implements IpcChannelInterface {
 
     await this.scanFilePromisified(
       paths.filter((val) => val.enabled).map((val) => val.path),
-      request?.params.forceScan
+      request?.params.forceScan,
+      true
     )
+
+    this.reportProgress(this.totalScanFiles)
 
     if (this.scanStatus === ScanStatus.QUEUED) {
       return this.scanAll(event, request)
     }
+
+    this.scanStatus = ScanStatus.UNDEFINED
   }
 
   private async scanSingleSong(event: IpcMainEvent, request: IpcRequest<ScannerRequests.ScanSingleSong>) {
