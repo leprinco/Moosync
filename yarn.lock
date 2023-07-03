@@ -4152,7 +4152,7 @@ bcp-47@^1.0.0:
     is-alphanumerical "^1.0.0"
     is-decimal "^1.0.0"
 
-"better-sqlite-helper@npm:better-sqlite3-helper@^3.1.6":
+better-sqlite3-helper@^3.1.6:
   version "3.1.6"
   resolved "https://registry.yarnpkg.com/better-sqlite3-helper/-/better-sqlite3-helper-3.1.6.tgz#ba433a22023558c73833926037af45fffdb2b9c1"
   integrity sha512-b5sIIQ4Q8hXVoMCicAGp/ElG5NzfiIO9B2fecRs6QD0LEQ6P4oiqT7jkKWC11tQmTPsd032ABb1yRnDICAlchg==
