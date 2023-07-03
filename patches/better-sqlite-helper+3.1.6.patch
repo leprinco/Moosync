@@ -1,7 +1,7 @@
-diff --git a/node_modules/better-sqlite3-helper/src/database.js b/node_modules/better-sqlite3-helper/src/database.js
+diff --git a/node_modules/better-sqlite-helper/src/database.js b/node_modules/better-sqlite-helper/src/database.js
 index 2972b5b..018a722 100644
---- a/node_modules/better-sqlite3-helper/src/database.js
-+++ b/node_modules/better-sqlite3-helper/src/database.js
+--- a/node_modules/better-sqlite-helper/src/database.js
++++ b/node_modules/better-sqlite-helper/src/database.js
 @@ -89,7 +89,8 @@ DB.prototype.connection = function () {
      mkdirp.sync(path.dirname(this.options.path))
      this.db = new Database(this.options.path, {

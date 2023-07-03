@@ -7,7 +7,7 @@
  *  See LICENSE in the project root for license information.
  */
 
-import type { BetterSqlite3Helper } from 'better-sqlite3-helper'
+import type { BetterSqlite3Helper } from 'better-sqlite-helper'
 
 import { app } from 'electron'
 import path from 'path'

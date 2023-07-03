@@ -1,4 +1,4 @@
-import DB, { BetterSqlite3Helper } from 'better-sqlite3-helper'
+import DB, { BetterSqlite3Helper } from 'better-sqlite-helper'
 import { expose } from 'threads/worker'
 import { migrations } from '../db/migrations'
 import { getLogger, levels } from 'loglevel'
