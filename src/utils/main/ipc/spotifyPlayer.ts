@@ -159,7 +159,7 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
       this.playerProcess = undefined
     }
 
-    event?.reply(request?.responseChannel)
+    request && event?.reply(request.responseChannel)
   }
 
   private isEvent<T extends PlayerEventTypes>(val: unknown): val is PlayerEvent<T> {

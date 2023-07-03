@@ -198,7 +198,7 @@ module.exports = {
       disableMainProcessTypescript: false,
       mainProcessTypeChecking: true,
       preload: 'src/utils/preload/preload.ts',
-      externals: ['better-sqlite3', 'vm2', 'sharp'],
+      externals: ['better-sqlite3', 'vm2', 'sharp', 'librespot-node', 'scanner-native'],
       chainWebpackMainProcess: (config) => {
         config.devtool('source-map').end()
         config.module

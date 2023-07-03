@@ -295,7 +295,7 @@ export class WindowHandler {
     win?.webContents.on('did-finish-load', () => win?.webContents.send(WindowEvents.GOT_EXTRA_ARGS, args))
   }
 
-  private async handleWindowClose(event: Event, window: BrowserWindow, isMainWindow: boolean) {
+  private async handleWindowClose(event: Electron.Event, window: BrowserWindow, isMainWindow: boolean) {
     if (window.webContents.isDevToolsOpened()) {
       window.webContents.closeDevTools()
     }
@@ -319,7 +319,7 @@ export class WindowHandler {
     getSpotifyPlayerChannel().closePlayer()
     // Stop extension Host
     await getExtensionHostChannel().closeExtensionHost()
-    await (await getSongDB()).close()
+    await getSongDB().close()
   }
 
   private handleWindowShow(window: BrowserWindow) {

@@ -225,7 +225,7 @@ function findOAuthArg(argv: string[]) {
   return argv?.find((arg) => arg.startsWith('moosync'))
 }
 
-function handleSecondInstance(_: Event, argv: string[]) {
+function handleSecondInstance(event: Electron.Event, argv: string[]) {
   if (process.platform !== 'darwin') {
     const arg = findOAuthArg(argv)
     if (arg) {
