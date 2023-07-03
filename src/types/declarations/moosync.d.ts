@@ -21,7 +21,7 @@ type ExtendedLoginModalData = LoginModalOptions & {
   packageName: string
 }
 
-type Progress = { total: number; current: number }
+type Progress = { total: number; current: number; status: import('@/utils/commonConstants').ScanStatus }
 
 declare namespace NodeJS {
   export interface ProcessEnv {
