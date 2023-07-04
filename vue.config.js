@@ -58,8 +58,7 @@ module.exports = {
       vm2: "require('vm2')",
       sharp: "require('sharp')",
       'librespot-node': 'commonjs librespot-node',
-      'scanner-native': 'commonjs scanner-native',
-      bindings: 'commonjs bindings'
+      'scanner-native': 'commonjs scanner-native'
     },
     devtool: 'source-map',
     resolve: {
@@ -184,7 +183,14 @@ module.exports = {
           }
         ],
         files: ['**/*', '!node_modules/librespot-node/native/target/*'],
-        asarUnpack: ['*.worker.js', 'sandbox.js', 'spotify.js', '**/node_modules/**/*.node'],
+        asarUnpack: [
+          '*.worker.js',
+          'sandbox.js',
+          'spotify.js',
+          '**/node_modules/**/*.node',
+          'node_modules/bindings',
+          'node_modules/file-uri-to-path'
+        ],
         protocols: [
           {
             name: 'Default protocol',
@@ -198,7 +204,7 @@ module.exports = {
       disableMainProcessTypescript: false,
       mainProcessTypeChecking: true,
       preload: 'src/utils/preload/preload.ts',
-      externals: ['better-sqlite3', 'vm2', 'sharp', 'librespot-node', 'scanner-native', 'bindings'],
+      externals: ['better-sqlite3', 'vm2', 'sharp', 'librespot-node', 'scanner-native'],
       chainWebpackMainProcess: (config) => {
         config.devtool('source-map').end()
         config.module
