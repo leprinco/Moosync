@@ -1,11 +1,9 @@
 const webpack = require('webpack')
-const ThreadsPlugin = require('threads-plugin')
 const dotenv = require('dotenv').config({ path: __dirname + '/config.env' })
 const fs = require('fs')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
-const { resolve, join } = require('path')
+const { resolve } = require('path')
 const manifest = require('./package.json')
-const ExternalsPlugin = require('webpack5-externals-plugin')
 
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
@@ -60,7 +58,8 @@ module.exports = {
       vm2: "require('vm2')",
       sharp: "require('sharp')",
       'librespot-node': 'commonjs librespot-node',
-      'scanner-native': 'commonjs scanner-native'
+      'scanner-native': 'commonjs scanner-native',
+      bindings: 'commonjs bindings'
     },
     devtool: 'source-map',
     resolve: {
@@ -199,7 +198,7 @@ module.exports = {
       disableMainProcessTypescript: false,
       mainProcessTypeChecking: true,
       preload: 'src/utils/preload/preload.ts',
-      externals: ['better-sqlite3', 'vm2', 'sharp', 'librespot-node', 'scanner-native'],
+      externals: ['better-sqlite3', 'vm2', 'sharp', 'librespot-node', 'scanner-native', 'bindings'],
       chainWebpackMainProcess: (config) => {
         config.devtool('source-map').end()
         config.module
