@@ -172,12 +172,12 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
 
   playArtist() {
     this.playTop(this.filteredSongList)
-    this.fetchAll(this.queueSong)
+    this.fetchAll((songs) => this.queueSong(songs, false), this.showQueueSongsToast)
   }
 
   addArtistToQueue() {
     this.queueSong(this.filteredSongList)
-    this.fetchAll(this.queueSong)
+    this.fetchAll((songs) => this.queueSong(songs, false), this.showQueueSongsToast)
   }
 
   addArtistToLibrary() {

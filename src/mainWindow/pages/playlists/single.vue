@@ -173,12 +173,12 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
     }
 
     this.playTop(this.filteredSongList)
-    this.fetchAll(this.queueSong)
+    this.fetchAll((songs) => this.queueSong(songs, false), this.showQueueSongsToast)
   }
 
   async addPlaylistToQueue() {
     this.queueSong(this.filteredSongList)
-    this.fetchAll(this.queueSong)
+    this.fetchAll((songs) => this.queueSong(songs, false), this.showQueueSongsToast)
   }
 
   addPlaylistToLibrary() {
