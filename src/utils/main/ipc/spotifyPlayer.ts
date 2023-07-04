@@ -168,7 +168,6 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
 
   private getLogLevel(levelRaw: string) {
     switch (levelRaw) {
-      default:
       case 'debug':
         return librespotLogger.debug
       case 'info':
@@ -187,7 +186,13 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
       const parsedMessage = m.substring(27).trim()
 
       if (parsedMessage) {
-        this.getLogLevel(level)('[' + parsedMessage)
+        const logLevel = this.getLogLevel(level)
+        if (!logLevel) {
+          librespotLogger.error(messageLines.toString())
+          return
+        }
+
+        logLevel('[' + parsedMessage)
       }
     }
   }
