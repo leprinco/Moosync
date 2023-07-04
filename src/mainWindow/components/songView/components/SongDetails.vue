@@ -70,6 +70,7 @@
                   :title="$t('buttons.playRandom')"
                   @click.native="playRandom"
                 />
+                <FetchAllIcon v-if="buttonGroup.fetchAll" :title="$t('buttons.fetchAll')" @click.native="fetchAll" />
               </div>
             </b-col>
             <b-col cols="auto">
@@ -102,6 +103,7 @@ import ImageLoader from '@/utils/ui/mixins/ImageLoader'
 import FileMixin from '@/utils/ui/mixins/FileMixin'
 import { convertDuration } from '@/utils/common'
 import TabCarousel from '../../generic/TabCarousel.vue'
+import FetchAllIcon from '@/icons/FetchAllIcon.vue'
 import RandomIcon from '@/icons/RandomIcon.vue'
 import { vxm } from '@/mainWindow/store'
 
@@ -114,7 +116,8 @@ import { vxm } from '@/mainWindow/store'
     YoutubeIcon,
     SpotifyIcon,
     TabCarousel,
-    RandomIcon
+    RandomIcon,
+    FetchAllIcon
   }
 })
 export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileMixin) {
@@ -204,6 +207,10 @@ export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileM
 
   playRandom() {
     this.$emit('playRandom')
+  }
+
+  fetchAll() {
+    this.$emit('fetchAll')
   }
 
   handleError(e: ErrorEvent) {

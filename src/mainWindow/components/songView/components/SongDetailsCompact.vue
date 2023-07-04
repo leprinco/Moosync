@@ -85,6 +85,7 @@
             v-if="buttonGroup.enableLibraryStore"
           />
           <RandomIcon v-if="buttonGroup.playRandom" :title="$t('buttons.playRandom')" @click.native="playRandom" />
+          <FetchAllIcon v-if="buttonGroup.fetchAll" :title="$t('buttons.fetchAll')" @click.native="fetchAll" />
         </div>
       </b-col>
     </b-row>
@@ -106,6 +107,7 @@ import PinIcon from '@/icons/PinIcon.vue'
 import RandomIcon from '@/icons/RandomIcon.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import Play2 from '@/icons/PlayIcon2.vue'
+import FetchAllIcon from '@/icons/FetchAllIcon.vue'
 
 @Component({
   components: {
@@ -115,7 +117,8 @@ import Play2 from '@/icons/PlayIcon2.vue'
     AddToQueue,
     PinIcon,
     RandomIcon,
-    Play2
+    Play2,
+    FetchAllIcon
   }
 })
 export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, JukeboxMixin) {
@@ -242,6 +245,10 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, Juk
 
   emitClick(event: MouseEvent) {
     this.$emit('click', event)
+  }
+
+  fetchAll() {
+    this.$emit('fetchAll')
   }
 }
 </script>

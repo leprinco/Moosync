@@ -130,4 +130,8 @@ export default class ProviderFetchMixin extends mixins(ProviderMixin) {
   clearNextPageTokens() {
     this.nextPageToken = {}
   }
+
+  hasNextPage() {
+    return Object.keys(this.nextPageToken).length > 0
+  }
 }

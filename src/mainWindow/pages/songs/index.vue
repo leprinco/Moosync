@@ -50,7 +50,8 @@ export default class AllSongs extends mixins(ContextMenuMixin) {
     return {
       enableContainer: true,
       enableLibraryStore: false,
-      playRandom: this.songList.length > 150
+      playRandom: this.songList.length > 150,
+      fetchAll: false
     }
   }
 

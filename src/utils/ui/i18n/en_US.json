@@ -41,7 +41,8 @@
     "playSingle": "Play {title}",
     "addToQueue": "Add {title} to queue",
     "addToLibrary": "Add {title} to library",
-    "playRandom": "Play 100 random songs"
+    "playRandom": "Play 100 random songs",
+    "fetchAll": "Fetch all songs"
   },
   "loading": "Loading...",
   "contextMenu": {

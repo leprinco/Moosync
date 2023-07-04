@@ -18,6 +18,7 @@ interface SongDetailButtons {
   enableContainer: boolean
   enableLibraryStore: boolean
   playRandom: boolean
+  fetchAll: boolean
 }
 
 interface TabCarouselItem {

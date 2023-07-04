@@ -27,6 +27,7 @@
       @onScrollEnd="loadNextPage"
       @onSearchChange="onSearchChange"
       @playRandom="playRandom"
+      @fetchAll="fetchAll"
     />
   </div>
 </template>
@@ -72,7 +73,8 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
     return {
       enableContainer: true,
       enableLibraryStore: this.isRemote() && !this.isAddedInLibrary,
-      playRandom: !!(this.filteredSongList.length > 150)
+      playRandom: !!(this.filteredSongList.length > 150),
+      fetchAll: this.isRemote()
     }
   }
 

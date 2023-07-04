@@ -71,7 +71,8 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     return {
       enableContainer: true,
       enableLibraryStore: true,
-      playRandom: !!(this.filteredSongList.length >= 150)
+      playRandom: !!(this.filteredSongList.length >= 150),
+      fetchAll: this.hasNextPage()
     }
   }
 
