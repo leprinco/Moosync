@@ -16,7 +16,6 @@
       :keyField="'genre_id'"
       :isSortAsc="isSortAsc"
       @click="gotoGenre"
-      @generalContextMenu="contextHandler"
     >
       <template #defaultCover>
         <SongDefault />

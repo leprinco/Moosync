@@ -39,16 +39,21 @@ class DBUtils {
   protected thumbnailPath: string
 
   constructor(dbPath: string, thumbnailPath: string) {
-    this.db = DB({
+    const options: Record<string, unknown> = {
       path: dbPath,
       readonly: false,
       fileMustExist: false,
       WAL: true,
-      verbose: (...args: unknown[]) => logger.debug('Executing query', ...args),
       migrate: {
         migrations: migrations
       }
-    } as BetterSqlite3Helper.DBOptions)
+    }
+
+    if (process.env.DEBUG_LOGGING) {
+      options['verbose'] = (...args: unknown[]) => logger.debug('Executing query', ...args)
+    }
+
+    this.db = DB(options)
     this.registerRegexp()
 
     this.thumbnailPath = thumbnailPath
@@ -295,14 +300,17 @@ class DBWrapper extends DBUtils {
 
           const keys = Object.keys(marshaledSong) as (keyof marshaledSong)[]
 
-          this.db.run(
+          const resp = this.db.run(
             `INSERT OR IGNORE INTO allsongs (${keys.join(',')}) VALUES (${'? ,'.repeat(keys.length).slice(0, -2)});`,
             ...keys.map((val) => marshaledSong[val])
           )
 
+          // If no song is inserted then ignore
+          if (resp.changes === 0) continue
+
           this.storeArtistBridge(artistID, marshaledSong._id)
           this.storeGenreBridge(genreID, marshaledSong._id)
-          this.storeAlbumBridge(albumID, marshaledSong._id)
+          albumID && this.storeAlbumBridge(albumID, marshaledSong._id)
 
           if (newDoc.artists && artistID.length > 0) {
             for (const i in newDoc.artists) {
@@ -430,7 +438,7 @@ class DBWrapper extends DBUtils {
       }
 
       const albumIDs = this.storeAlbum(newAlbum)
-      this.storeAlbumBridge(albumIDs, songID)
+      albumIDs && this.storeAlbumBridge(albumIDs, songID)
     }
   }
 
@@ -776,26 +784,22 @@ class DBWrapper extends DBUtils {
                 ALBUMS
      ============================= */
 
-  private storeAlbum(album: Album): string {
-    let id: string | undefined
+  private storeAlbum(album: Album): string | undefined {
     if (album.album_name) {
-      id = this.db.queryFirstCell(
-        `SELECT album_id FROM albums WHERE album_name = ? COLLATE NOCASE`,
-        album.album_name.trim()
+      const resp = this.db.query(
+        `INSERT INTO albums (album_id, album_name, album_coverPath_low, album_coverPath_high, album_artist) VALUES (?, ?, ?, ?, ?) 
+          ON CONFLICT (album_name) 
+          DO UPDATE SET album_name = EXCLUDED.album_name
+          RETURNING album_id;`,
+        v4(),
+        album.album_name,
+        album.album_coverPath_low,
+        album.album_coverPath_high,
+        album.album_artist
       )
-      if (!id) {
-        id = v4()
-        this.db.run(
-          `INSERT INTO albums (album_id, album_name, album_coverPath_low, album_coverPath_high, album_artist) VALUES(?, ?, ?, ?, ?)`,
-          id,
-          album.album_name.trim(),
-          album.album_coverPath_low,
-          album.album_coverPath_high,
-          album.album_artist
-        )
-      }
+
+      return resp?.[0].album_id
     }
-    return id as string
   }
 
   public async updateAlbum(album: Album) {
@@ -863,13 +867,16 @@ class DBWrapper extends DBUtils {
     if (genre) {
       for (const a of genre) {
         if (a) {
-          const id = this.db.queryFirstCell(`SELECT genre_id FROM genres WHERE genre_name = ? COLLATE NOCASE`, a)
-          if (id) genreID.push(id)
-          else {
-            const id = v4()
-            this.db.insert('genres', { genre_id: id, genre_name: a.trim() })
-            genreID.push(id)
-          }
+          const resp = this.db.query(
+            `INSERT INTO genres (genre_id, genre_name) VALUES (?, ?) 
+          ON CONFLICT (genre_name) 
+          DO UPDATE SET genre_name = EXCLUDED.genre_name
+          RETURNING genre_id;`,
+            v4(),
+            a
+          )
+
+          genreID.push(resp?.[0].genre_id)
         }
       }
     }
