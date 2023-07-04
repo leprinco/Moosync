@@ -69,7 +69,28 @@ class DBUtils {
     })
   }
 
-  protected unMarshalSong(dbSong: marshaledSong, fetchArtists: (artistIds: string[]) => Artists[]): Song {
+  private parseArtists(artistStr: string) {
+    const artists = artistStr.split(',')
+    const ret: Artists[] = []
+    for (const a of artists) {
+      const split = a.split(';')
+      if (split.length !== 4) {
+        console.error('invalid artist info')
+        continue
+      }
+
+      ret.push({
+        artist_id: split[0],
+        artist_name: Buffer.from(split[1], 'hex').toString('utf8'),
+        artist_coverPath: Buffer.from(split[2], 'hex').toString('utf8'),
+        artist_extra_info: JSON.parse(Buffer.from(split[3], 'hex').toString('utf8') || '{}')
+      })
+    }
+
+    return ret
+  }
+
+  protected unMarshalSong(dbSong: marshaledSong): Song {
     return {
       _id: dbSong._id,
       path: dbSong.path,
@@ -88,7 +109,7 @@ class DBUtils {
       },
       date: dbSong.date,
       year: dbSong.year,
-      artists: fetchArtists(dbSong.artists?.split(',') ?? []),
+      artists: (dbSong.artists && this.parseArtists(dbSong.artists)) || [],
       genre: dbSong.genre_name ? dbSong.genre_name.split(',') : [],
       lyrics: dbSong.lyrics,
       releaseType: undefined,
@@ -146,10 +167,10 @@ class DBUtils {
     }
   }
 
-  protected batchUnmarshal(marshaled: marshaledSong[], fetchArtists: (artistIds: string[]) => Artists[]) {
+  protected batchUnmarshal(marshaled: marshaledSong[]) {
     const unmarshaled: Song[] = []
     for (const m of marshaled) {
-      const um = this.unMarshalSong(m, fetchArtists)
+      const um = this.unMarshalSong(m)
       unmarshaled.push(um)
     }
     return unmarshaled
@@ -223,7 +244,7 @@ class DBUtils {
   }
 
   protected addGroupConcatClause() {
-    return `group_concat(artist_id) as artists, group_concat(genre_name) as genre_name`
+    return `group_concat(artist_id || ';' || hex(artist_name) || ';' || hex(artist_coverPath) || ';' || hex(artist_extra_info)) as artists, group_concat(genre_name) as genre_name`
   }
 
   protected getSelectClause() {
@@ -259,17 +280,10 @@ class DBWrapper extends DBUtils {
 
   public store(...songsToAdd: Song[]): Song[] {
     const newList: Song[] = []
-    const existingList: Song[] = []
 
     this.db.transaction((songsToAdd: Song[]) => {
       for (const newDoc of songsToAdd) {
         if (this.verifySong(newDoc)) {
-          const existing = this.getSongByOptions({ song: { _id: newDoc._id, path: newDoc.path } })[0]
-          if (existing) {
-            existingList.push(existing)
-            continue
-          }
-
           const artistID = newDoc.artists ? this.storeArtists(...newDoc.artists) : []
           const albumID = newDoc.album ? this.storeAlbum(newDoc.album) : ''
           const genreID = newDoc.genre ? this.storeGenre(...newDoc.genre) : []
@@ -277,14 +291,18 @@ class DBWrapper extends DBUtils {
           newDoc._id = this.getSongId(newDoc._id ?? v4(), newDoc.providerExtension)
 
           const marshaledSong = this.marshalSong(newDoc)
+          marshaledSong.duration = marshaledSong.duration || -1
 
-          this.db.insert('allsongs', { ...marshaledSong, duration: marshaledSong.duration || -1 })
+          const keys = Object.keys(marshaledSong) as (keyof marshaledSong)[]
+
+          this.db.run(
+            `INSERT OR IGNORE INTO allsongs (${keys.join(',')}) VALUES (${'? ,'.repeat(keys.length).slice(0, -2)});`,
+            ...keys.map((val) => marshaledSong[val])
+          )
 
           this.storeArtistBridge(artistID, marshaledSong._id)
           this.storeGenreBridge(genreID, marshaledSong._id)
           this.storeAlbumBridge(albumID, marshaledSong._id)
-
-          this.updateAllSongCounts()
 
           if (newDoc.artists && artistID.length > 0) {
             for (const i in newDoc.artists) {
@@ -303,14 +321,7 @@ class DBWrapper extends DBUtils {
       }
     })(songsToAdd)
 
-    return [...newList, ...existingList]
-  }
-
-  private updateAllSongCounts() {
-    this.updateSongCountAlbum()
-    this.updateSongCountArtists()
-    this.updateSongCountGenre()
-    this.updateSongCountPlaylists()
+    return newList
   }
 
   private getCountBySong(bridge: string, column: string, song: string) {
@@ -358,8 +369,6 @@ class DBWrapper extends DBUtils {
     for (const path of pathsToRemove) {
       await this.removeFile(path)
     }
-
-    this.updateAllSongCounts()
   }
 
   private updateSongArtists(newArtists: Artists[], oldArtists: Artists[] | undefined, songID: string) {
@@ -486,8 +495,7 @@ class DBWrapper extends DBUtils {
           }
         }
 
-        await this.db.updateWithBlackList('allsongs', marshalled, ['_id = ?', song._id], ['_id'])
-        this.updateAllSongCounts()
+        this.db.updateWithBlackList('allsongs', marshalled, ['_id = ?', song._id], ['_id'])
         return
       }
 
@@ -659,16 +667,7 @@ class DBWrapper extends DBUtils {
       ...args
     )
 
-    return this.batchUnmarshal(songs, (artistIds) => {
-      return [...new Set(artistIds)].map(
-        (val) =>
-          this.getEntityByOptions<Artists>({
-            artist: {
-              artist_id: val
-            }
-          })[0]
-      )
-    })
+    return this.batchUnmarshal(songs)
   }
 
   private getTableByProperty(key: string) {
@@ -849,48 +848,15 @@ class DBWrapper extends DBUtils {
     this.db.update('albums', { album_extra_info: JSON.stringify(toUpdateInfo) }, ['album_id = ?', id])
   }
 
-  /**
-   * Updates song count of all albums
-   */
-  private updateSongCountAlbum() {
-    for (const row of this.db.query(`SELECT album_id FROM albums`)) {
-      this.db.run(
-        `UPDATE albums SET album_song_count = (SELECT count(id) FROM album_bridge WHERE album = ?) WHERE album_id = ?`,
-        (row as Album).album_id,
-        (row as Album).album_id
-      )
-    }
-  }
-
   private storeAlbumBridge(albumID: string, songID: string) {
     if (albumID) {
-      const exists = this.db.queryFirstCell(
-        `SELECT COUNT(id) FROM album_bridge WHERE album = ? AND song = ?`,
-        albumID,
-        songID
-      )
-      if (exists === 0) {
-        this.db.insert('album_bridge', { song: songID, album: albumID })
-      }
+      this.db.run(`INSERT OR IGNORE INTO album_bridge (song, album) VALUES (?, ?)`, songID, albumID)
     }
   }
 
   /* ============================= 
                 GENRE
      ============================= */
-
-  /**
-   * Updates song count of all genres
-   */
-  private updateSongCountGenre() {
-    for (const row of this.db.query(`SELECT genre_id FROM genres`)) {
-      this.db.run(
-        `UPDATE genres SET genre_song_count = (SELECT count(id) FROM genre_bridge WHERE genre = ?) WHERE genre_id = ?`,
-        (row as Genre).genre_id,
-        (row as Genre).genre_id
-      )
-    }
-  }
 
   private storeGenre(...genre: string[]) {
     const genreID: string[] = []
@@ -912,14 +878,7 @@ class DBWrapper extends DBUtils {
 
   private storeGenreBridge(genreID: string[], songID: string) {
     for (const i of genreID) {
-      const exists = this.db.queryFirstCell(
-        `SELECT COUNT(id) FROM genre_bridge WHERE genre = ? AND song = ?`,
-        i,
-        songID
-      )
-      if (exists === 0) {
-        this.db.insert('genre_bridge', { song: songID, genre: i })
-      }
+      this.db.run(`INSERT OR IGNORE INTO genre_bridge (song, genre) VALUES (?, ?)`, songID, i)
     }
   }
 
@@ -969,36 +928,19 @@ class DBWrapper extends DBUtils {
       if (a.artist_name) {
         const sanitizedName = sanitizeArtistName(a.artist_name)
 
-        let id = this.db.queryFirstCell(
-          `SELECT artist_id FROM artists WHERE sanitized_artist_name = ? OR artist_name = ? COLLATE NOCASE`,
-          sanitizedName,
+        const resp = this.db.query(
+          `INSERT INTO artists (artist_id, artist_name, sanitized_artist_name) VALUES (?, ?, ?) 
+          ON CONFLICT (sanitized_artist_name) 
+          DO UPDATE SET sanitized_artist_name = EXCLUDED.sanitized_artist_name
+          RETURNING artist_id;`,
+          v4(),
+          a.artist_name,
           sanitizedName
         )
-        if (id) {
-          artistID.push(id)
-          const existingArtist = this.db.queryFirstRow<Artists>(
-            `SELECT * FROM artists WHERE artist_id = ? COLLATE NOCASE`,
-            id
-          )
 
-          if (existingArtist) {
-            if (a.artist_mbid) {
-              if (!existingArtist.artist_mbid) {
-                this.db.update('artists', a.artist_mbid, ['artist_id = ?', id])
-              }
+        artistID.push(resp?.[0].artist_id)
 
-              if (!existingArtist.artist_coverPath && a.artist_coverPath) {
-                this.db.update('artists', a.artist_coverPath, ['artist_id = ?', id])
-              }
-            }
-          }
-        } else {
-          id = v4()
-          this.db.insert('artists', { artist_id: id, artist_name: a.artist_name, sanitized_artist_name: sanitizedName })
-          artistID.push(id)
-        }
-
-        this.updateArtistExtraInfo(id, a.artist_extra_info ?? {})
+        this.updateArtistExtraInfo(resp?.[0].artist_id, a.artist_extra_info ?? {})
       }
     }
     return artistID
@@ -1034,27 +976,7 @@ class DBWrapper extends DBUtils {
 
   private storeArtistBridge(artistID: string[], songID: string) {
     for (const i of artistID) {
-      const exists = this.db.queryFirstCell(
-        `SELECT COUNT(id) FROM artist_bridge WHERE artist = ? AND song = ?`,
-        i,
-        songID
-      )
-      if (exists === 0) {
-        this.db.insert('artist_bridge', { song: songID, artist: i })
-      }
-    }
-  }
-
-  /**
-   * Updates song count of all genres
-   */
-  private updateSongCountArtists() {
-    for (const row of this.db.query(`SELECT artist_id FROM artists`)) {
-      this.db.run(
-        `UPDATE artists SET artist_song_count = (SELECT count(id) FROM artist_bridge WHERE artist = ?) WHERE artist_id = ?`,
-        (row as Artists).artist_id,
-        (row as Artists).artist_id
-      )
+      this.db.run(`INSERT OR IGNORE INTO artist_bridge (song, artist) VALUES (?, ?)`, songID, i)
     }
   }
 
@@ -1145,8 +1067,6 @@ class DBWrapper extends DBUtils {
         this.db.insert('playlist_bridge', { playlist: playlist_id, song: s._id })
       }
     })(stored)
-
-    this.updateSongCountPlaylists()
   }
 
   /**
@@ -1157,20 +1077,6 @@ class DBWrapper extends DBUtils {
   public removeFromPlaylist(playlist: string, ...songs: Song[]) {
     for (const s of songs.map((val) => val._id)) {
       this.db.delete('playlist_bridge', { playlist: playlist, song: s })
-    }
-    this.updateSongCountPlaylists()
-  }
-
-  /**
-   * Updates song count of all playlists
-   */
-  private updateSongCountPlaylists() {
-    for (const row of this.db.query(`SELECT playlist_id FROM playlists`)) {
-      this.db.run(
-        `UPDATE playlists SET playlist_song_count = (SELECT count(id) FROM playlist_bridge WHERE playlist = ?) WHERE playlist_id = ?`,
-        (row as Playlist).playlist_id,
-        (row as Playlist).playlist_id
-      )
     }
   }
 

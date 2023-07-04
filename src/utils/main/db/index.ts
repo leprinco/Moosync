@@ -27,12 +27,10 @@ export async function createFavoritesPlaylist() {
         playlist_id: FAVORITES_PLAYLIST_ID
       }
     })
-  )[0]
+  )?.[0]
 
   if (!isExist) {
-    await (
-      await getSongDB()
-    ).createPlaylist({
+    await getSongDB().createPlaylist({
       playlist_id: FAVORITES_PLAYLIST_ID,
       playlist_name: 'Favorites',
       playlist_desc: 'Playlist containing your favorite songs'
