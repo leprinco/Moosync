@@ -274,7 +274,7 @@ export class SpotifyProvider extends GenericProvider {
 
     const resp = await this.api.request(url, {
       baseURL: BASE_URL,
-      serialize: (params) => qs.stringify(params, { arrayFormat: 'repeat', encode: false }),
+      serialize: (params) => qs.stringify(params, { arrayFormat: 'comma', encode: false }),
       search: search.params,
       headers: { Authorization: `Bearer ${accessToken}` },
       invalidateCache
@@ -607,16 +607,19 @@ export class SpotifyProvider extends GenericProvider {
         }
       })
 
-      let libraryTracks = await window.SearchUtils.searchSongsByOptions({
-        song: {
-          type: 'SPOTIFY'
-        }
-      })
+      let libraryTracks = (
+        await window.SearchUtils.searchSongsByOptions({
+          song: {
+            type: 'SPOTIFY'
+          }
+        })
+      ).filter((val) => val._id.startsWith('spotify:'))
 
       if (libraryTracks.length > 5) {
         libraryTracks = libraryTracks.sort(() => 0.5 - Math.random()).slice(0, 5)
       }
 
+      console.log(libraryTracks)
       seedTracks.push(...libraryTracks.map((val) => val._id.replace('spotify:', '')))
 
       if (seedTracks.length < 5) {
@@ -634,18 +637,25 @@ export class SpotifyProvider extends GenericProvider {
         }
       }
 
-      for (const item of userArtists.items) {
+      for (const item of userArtists.items.slice(0, 5)) {
         seedArtists.push(item.id)
       }
 
-      const recommendationsResp = await this.populateRequest(ApiResources.RECOMMENDATIONS, {
+      const recommendationsArtistsResp = await this.populateRequest(ApiResources.RECOMMENDATIONS, {
         params: {
-          seed_artists: seedArtists,
+          seed_artists: seedArtists
+        }
+      })
+
+      yield this.parseRecommendations(recommendationsArtistsResp)
+
+      const recommendationsTracksResp = await this.populateRequest(ApiResources.RECOMMENDATIONS, {
+        params: {
           seed_tracks: seedTracks
         }
       })
 
-      yield this.parseRecommendations(recommendationsResp)
+      yield this.parseRecommendations(recommendationsTracksResp)
     }
   }
 
