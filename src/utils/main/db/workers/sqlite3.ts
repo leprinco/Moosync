@@ -921,7 +921,10 @@ class DBWrapper extends DBUtils {
     } else {
       res = this.db.query(`SELECT song_id, play_count, play_time FROM analytics`)
     }
-    return res.map((val) => ({ [val.song_id]: { playCount: val.play_count, playTime: val.play_time } }))
+    return Object.assign(
+      {},
+      ...res.map((val) => ({ [val.song_id]: { playCount: val.play_count, playTime: val.play_time } }))
+    )
   }
 
   public incrementPlayTime(song_id: string, duration: number) {
