@@ -267,7 +267,7 @@ declare namespace InvidiousResponses {
     : T extends InvidiousApiResources.VIDEO_DETAILS
     ? VideoDetails.VideoResponse
     : T extends InvidiousApiResources.TRENDING
-    ? VideoDetails.VideoResponse
+    ? VideoDetails.VideoResponse[]
     : T extends InvidiousApiResources.SEARCH
     ? SearchResults.SearchResponse<K>
     : T extends InvidiousApiResources.STATS

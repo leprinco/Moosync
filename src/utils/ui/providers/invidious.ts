@@ -31,7 +31,8 @@ export class InvidiousProvider extends GenericProvider {
       ProviderScopes.ARTIST_SONGS,
       ProviderScopes.PLAYLIST_FROM_URL,
       ProviderScopes.SONG_FROM_URL,
-      ProviderScopes.PLAYLIST_SONGS
+      ProviderScopes.PLAYLIST_SONGS,
+      ProviderScopes.RECOMMENDATIONS
     ]
   }
 
@@ -265,7 +266,7 @@ export class InvidiousProvider extends GenericProvider {
 
   public async *getRecommendations(): AsyncGenerator<Song[]> {
     const resp = await this.populateRequest(InvidiousApiResources.TRENDING, { params: { type: 'music' } }, false)
-    if (resp) yield this.parsePlaylistItems([resp])
+    if (resp) yield this.parsePlaylistItems(resp)
   }
 
   public async *getArtistSongs(
