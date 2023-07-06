@@ -21,6 +21,7 @@ import path from 'path'
 
 import type { SongWithLen, Song as ScanSong, Playlist as ScanPlaylist } from 'scanner-native'
 import { v4 } from 'uuid'
+import { MetadataFetcher } from '../fetchers/metadata'
 
 enum ScanStatus {
   UNDEFINED,
@@ -31,6 +32,7 @@ enum ScanStatus {
 export class ScannerChannel implements IpcChannelInterface {
   name = IpcEvents.SCANNER
   private scanStatus: ScanStatus = ScanStatus.UNDEFINED
+  private scrapeStatus: ScanStatus = ScanStatus.UNDEFINED
 
   private totalScanFiles = 0
   private currentScanFile = 0
@@ -187,14 +189,34 @@ export class ScannerChannel implements IpcChannelInterface {
     return lastValue
   }
 
+  public async runScraper() {
+    if (this.scrapeStatus !== ScanStatus.UNDEFINED) {
+      console.debug('Another scrape job already in progress, setting status to queued')
+      this.scrapeStatus = ScanStatus.QUEUED
+      return
+    }
+
+    this.scrapeStatus = ScanStatus.SCANNING as ScanStatus
+
+    const artists = await getSongDB().getEntityByOptions<Artists>({
+      artist: true
+    })
+    const fetcher = new MetadataFetcher()
+    await fetcher.fetchMBID(artists)
+
+    if (this.scrapeStatus === ScanStatus.QUEUED) {
+      await this.runScraper()
+    }
+
+    this.scanStatus = ScanStatus.UNDEFINED
+  }
+
   public async scanAll(event?: IpcMainEvent, request?: IpcRequest<ScannerRequests.ScanSongs>): Promise<void> {
     if (this.scanStatus !== ScanStatus.UNDEFINED) {
       console.debug('Another scan already in progress, setting status to queued')
       this.scanStatus = ScanStatus.QUEUED
       return
     }
-
-    console.log('starting scan')
 
     const paths = getCombinedMusicPaths() ?? []
     await this.destructiveScan(paths)
@@ -214,6 +236,9 @@ export class ScannerChannel implements IpcChannelInterface {
     }
 
     this.scanStatus = ScanStatus.UNDEFINED
+    this.runScraper()
+
+    request && event?.reply(request.responseChannel)
   }
 
   private async scanSingleSong(event: IpcMainEvent, request: IpcRequest<ScannerRequests.ScanSingleSong>) {

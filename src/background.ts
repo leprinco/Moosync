@@ -19,7 +19,7 @@ import { oauthHandler } from '@/utils/main/oauth/handler'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import { getExtensionHostChannel, registerIpcChannels } from '@/utils/main/ipc'
 import { setInitialPreferences, loadPreferences, shouldWatchFileChanges } from './utils/main/db/preferences'
-import { setupScanTask } from '@/utils/main/scheduler/index'
+import { setupScanTask, setupScrapeTask } from '@/utils/main/scheduler/index'
 import { migrateThemes, setupDefaultThemes, setupSystemThemes } from './utils/main/themes/preferences'
 import { logger } from './utils/main/logger/index'
 import { setupUpdateCheckTask } from '@/utils/main/scheduler/index'
@@ -179,6 +179,7 @@ async function onReady() {
   // Setup scheduler tasks
   setupScanTask()
   setupUpdateCheckTask()
+  setupScrapeTask()
   shouldWatchFileChanges()
 }
 

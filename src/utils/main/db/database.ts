@@ -41,7 +41,7 @@ export class SongDBInstance extends DBWorkerWrapper implements GenericDBInstance
   }
 
   async removeSong(...songs: Song[]): Promise<void> {
-    const resp = await this.execute('removeSong', songs)
+    await this.execute('removeSong', songs)
     this.notifyExtensionHostSongChanged(false, songs)
   }
 
