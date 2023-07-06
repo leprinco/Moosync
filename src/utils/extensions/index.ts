@@ -258,7 +258,7 @@ class ExtensionRequestHandler {
   }
 
   private requestToRenderer(message: extensionRequestMessage) {
-    const fireAndForgetRequests: (typeof message)['type'][] = ['update-preferences']
+    const fireAndForgetRequests: (typeof message)['type'][] = ['update-preferences', 'extension-updated']
     return new Promise((resolve) => {
       if (!fireAndForgetRequests.includes(message.type)) {
         let listener: (event: Electron.IpcMainEvent, data: extensionReplyMessage) => void

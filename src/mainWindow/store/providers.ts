@@ -85,14 +85,28 @@ export class ProviderStore extends VuexModule.With({ namespaced: 'providers' }) 
 
   @mutation
   addExtensionProvider(provider: ExtensionProvider) {
-    if (this._extensionProviders.findIndex((val) => val.key === provider.key) === -1) {
+    const index = this._extensionProviders.findIndex((val) => val.key === provider.key)
+    if (index === -1) {
       this._extensionProviders.push(provider)
+    } else {
+      this._extensionProviders.splice(index, 1, provider)
     }
   }
 
   @mutation
   clearExtensionProviders() {
     this._extensionProviders.splice(0, this._extensionProviders.length)
+  }
+
+  @action
+  async updateExtensionProvider(packageName: string) {
+    console.log('updating extension', packageName)
+    const scopes = (await window.ExtensionUtils.getExtensionProviderScopes(packageName))[packageName]
+    if (scopes.length > 0) {
+      this.addExtensionProvider(new ExtensionProvider(packageName, scopes))
+    }
+
+    console.log(this._extensionProviders)
   }
 
   @action
