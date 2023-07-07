@@ -20,7 +20,7 @@
 
 <script lang="ts">
 import Tooltip from '@/commonComponents/Tooltip.vue'
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue } from 'vue-facing-decorator'
 
 @Component({
   components: { Tooltip }

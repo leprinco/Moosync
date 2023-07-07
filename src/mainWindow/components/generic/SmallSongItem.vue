@@ -53,8 +53,8 @@
 import { convertDuration } from '@/utils/common'
 import ImageLoader from '@/utils/ui/mixins/ImageLoader'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
-import { mixins } from 'vue-class-component'
-import { Component, Prop } from 'vue-property-decorator'
+import { mixins } from 'vue-facing-decorator'
+import { Component, Prop } from 'vue-facing-decorator'
 import IconHandler from './IconHandler.vue'
 import LowImageCol from './LowImageCol.vue'
 

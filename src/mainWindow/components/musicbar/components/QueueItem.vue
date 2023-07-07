@@ -41,8 +41,8 @@
 </template>
 
 <script lang="ts">
-import { mixins } from 'vue-class-component'
-import { Component, Prop } from 'vue-property-decorator'
+import { mixins } from 'vue-facing-decorator'
+import { Component, Prop } from 'vue-facing-decorator'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
 import { vxm } from '@/mainWindow/store'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
@@ -87,7 +87,7 @@ export default class QueueItem extends mixins(ImgLoader, PlayerControls, Context
   }
 
   removeSong() {
-    bus.$emit(EventBus.IGNORE_MUSIC_INFO_SCROLL)
+    bus.emit(EventBus.IGNORE_MUSIC_INFO_SCROLL)
     this.removeFromQueue(this.index)
   }
 

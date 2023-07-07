@@ -10,18 +10,16 @@
 import '@/preferenceWindow/plugins/vueBootstrap'
 import '@/sass/global.sass'
 import '@/preferenceWindow/plugins/recycleScroller'
-import { i18n } from './plugins/i18n'
 import 'animate.css'
 
 import App from './Preferences.vue'
-import Vue from 'vue'
-import router from '@/preferenceWindow/plugins/router'
+import { router } from '@/preferenceWindow/plugins/router'
 import { getErrorMessage } from '@/utils/common'
+import { createApp } from 'vue'
+import { i18n } from '@/mainWindow/plugins/i18n'
+import EventEmitter from 'events'
 
-Vue.config.productionTip = false
-Vue.config.devtools = false
-
-function registerLogger() {
+function registerLogger(app: ReturnType<typeof createApp>) {
   const preservedConsoleInfo = console.info
   const preservedConsoleError = console.error
   const preservedConsoleWarn = console.warn
@@ -60,17 +58,32 @@ function registerLogger() {
       console.error(...error)
     }
 
-    Vue.config.errorHandler = (err) => {
+    app.config.errorHandler = (err) => {
       console.error(err)
     }
   }
 }
 
-registerLogger()
+export const bus = new EventEmitter()
 
-new Vue({
-  components: { App },
-  router,
-  i18n,
-  template: '<App/>'
-}).$mount('#app')
+const app = createApp(App)
+app.use(i18n)
+app.use(router)
+
+app.directive('click-outside', {
+  mounted(el, binding) {
+    el.clickOutsideEvent = function (e: any) {
+      if (el !== e.target && !el.contains(e.target)) {
+        binding.value(e, el)
+      }
+    }
+    document.body.addEventListener('click', el.clickOutsideEvent)
+  },
+  unmounted(el) {
+    document.body.removeEventListener('click', el.clickOutsideEvent)
+  }
+})
+
+registerLogger(app)
+
+app.mount('#app')

@@ -47,8 +47,8 @@
 <script lang="ts">
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import SongListMixin from '@/utils/ui/mixins/SongListMixin'
-import { mixins } from 'vue-class-component'
-import { Component, Prop } from 'vue-property-decorator'
+import { mixins } from 'vue-facing-decorator'
+import { Component, Prop } from 'vue-facing-decorator'
 import SongListCompactItem from './SongListCompactItem.vue'
 import EllipsisIcon from '@/icons/EllipsisIcon.vue'
 import TabCarousel from '../../generic/TabCarousel.vue'

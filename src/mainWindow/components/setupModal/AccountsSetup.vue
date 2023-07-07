@@ -47,13 +47,13 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator'
+import { Component } from 'vue-facing-decorator'
 import Logo from '@/icons/LogoIcon.vue'
 import DirectoryGroup from '@/preferenceWindow/components/DirectoryGroup.vue'
 import YoutubeBig from '@/icons/YoutubeBigIcon.vue'
 import SpotifyBig from '@/icons/SpotifyBigIcon.vue'
 import LastFMBig from '@/icons/LastFMBigIcon.vue'
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import AccountsMixin from '@/utils/ui/mixins/AccountsMixin'
 import ConfirmationModal from '../../../commonComponents/ConfirmationModal.vue'
 import { vxm } from '@/mainWindow/store'
@@ -100,7 +100,7 @@ export default class AccountsSetup extends mixins(AccountsMixin) {
       if (this.activeSignout.provider) {
         await this.activeSignout.provider.signOut()
 
-        this.$set(this.activeSignout, 'username', (await this.activeSignout.provider.getUserDetails()) ?? '')
+        this.activeSignout['username'] = (await this.activeSignout.provider.getUserDetails()) ?? ''
         this.activeSignout = null
       }
     }

@@ -96,8 +96,8 @@
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import FileMixin from '@/utils/ui/mixins/FileMixin'
 
-import Component, { mixins } from 'vue-class-component'
-import { Prop, Watch } from 'vue-property-decorator'
+import { mixins, Component } from 'vue-facing-decorator'
+import { Prop, Watch } from 'vue-facing-decorator'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
 import { convertDuration } from '@/utils/common'
 import PlainPlay from '@/icons/PlainPlayIcon.vue'

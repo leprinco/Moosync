@@ -7,13 +7,13 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component } from 'vue-property-decorator'
+import { Component } from 'vue-facing-decorator'
 import { EventBus } from '@/utils/main/ipc/constants'
 import { MenuItem } from 'vue-context-menu-popup'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import { bus } from '@/mainWindow/main'
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import { vxm } from '@/mainWindow/store'
 import JukeboxMixin from './JukeboxMixin'
 import ProviderMixin from './ProviderMixin'
@@ -119,7 +119,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       {
         label: this.$tc('contextMenu.playlist.new'),
         handler: () => {
-          bus.$emit(EventBus.SHOW_NEW_PLAYLIST_MODAL, item)
+          bus.emit(EventBus.SHOW_NEW_PLAYLIST_MODAL, item)
         }
       }
     ]
@@ -152,7 +152,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     if (refreshCallback) {
       items.push({
         label: this.$tc('contextMenu.song.addFromURL'),
-        handler: () => bus.$emit(EventBus.SHOW_SONG_FROM_URL_MODAL, refreshCallback)
+        handler: () => bus.emit(EventBus.SHOW_SONG_FROM_URL_MODAL, refreshCallback)
       })
 
       if (showHiddenToggle) {
@@ -193,7 +193,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
 
     const url = await provider?.getRemoteURL(song)
     if (url) window.WindowUtils.openExternal(url)
-    else this.$toasted.error(`No URL found for ${song.title}`)
+    else this.$toast(`No URL found for ${song.title}`, { type: 'error' })
   }
 
   private async getSongContextMenu(
@@ -250,7 +250,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
           },
           {
             label: this.$tc('contextMenu.song.addFromURL'),
-            handler: () => bus.$emit(EventBus.SHOW_SONG_FROM_URL_MODAL, refreshCallback)
+            handler: () => bus.emit(EventBus.SHOW_SONG_FROM_URL_MODAL, refreshCallback)
           }
         ]
       )
@@ -283,7 +283,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     items.push({
       label: this.$tc('contextMenu.moreInfo'),
       handler: () => {
-        bus.$emit(EventBus.SHOW_SONG_INFO_MODAL, item[0])
+        bus.emit(EventBus.SHOW_SONG_INFO_MODAL, item[0])
       }
     })
     return items
@@ -312,7 +312,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
         label: this.$tc('contextMenu.playlist.save'),
         handler: async () => {
           await window.DBUtils.createPlaylist(playlist)
-          this.$toasted.show(`Added ${playlist.playlist_name} to library`)
+          this.$toast(`Added ${playlist.playlist_name} to library`)
         }
       })
     }
@@ -325,7 +325,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       {
         label: this.$tc('contextMenu.playlist.addFromURL'),
         handler: () => {
-          bus.$emit(EventBus.SHOW_PLAYLIST_FROM_URL_MODAL, refreshCallback)
+          bus.emit(EventBus.SHOW_PLAYLIST_FROM_URL_MODAL, refreshCallback)
         }
       },
       ...this.getPlaylistSortByMenu(sort)
@@ -360,7 +360,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       {
         label: this.$tc('contextMenu.song.moveManually'),
         handler: () => {
-          bus.$emit(EventBus.SHOW_FORM_MODAL, this.$tc('contextMenu.song.manualIndex'), (value: number) => {
+          bus.emit(EventBus.SHOW_FORM_MODAL, this.$tc('contextMenu.song.manualIndex'), (value: number) => {
             this.setSongIndex(itemIndex, value)
           })
         }
@@ -371,7 +371,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     items.push({
       label: this.$tc('contextMenu.moreInfo'),
       handler: () => {
-        bus.$emit(EventBus.SHOW_SONG_INFO_MODAL, item)
+        bus.emit(EventBus.SHOW_SONG_INFO_MODAL, item)
       }
     })
 
@@ -403,7 +403,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       items.push({
         label: this.$tc('contextMenu.incorrectPlayback'),
         handler: () => {
-          bus.$emit(EventBus.SHOW_INCORRECT_PLAYBACK_MODAL, item)
+          bus.emit(EventBus.SHOW_INCORRECT_PLAYBACK_MODAL, item)
         }
       })
     }
@@ -414,7 +414,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     return {
       label: this.$tc('contextMenu.moreInfo'),
       handler: () => {
-        bus.$emit(EventBus.SHOW_ENTITY_INFO_MODAL, entity)
+        bus.emit(EventBus.SHOW_ENTITY_INFO_MODAL, entity)
       }
     }
   }
@@ -540,7 +540,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
 
   private emitMenu(event: Event, items: { label: string; handler?: () => void }[]) {
     if (!this.isJukeboxModeActive) {
-      bus.$emit(EventBus.SHOW_CONTEXT, event, items)
+      bus.emit(EventBus.SHOW_CONTEXT, event, items)
     }
   }
 }

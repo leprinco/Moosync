@@ -20,6 +20,8 @@ export abstract class GenericProvider {
   protected authInitialized: Promise<void>
   protected authInitializedResolver!: () => void
 
+  public loggedIn = false
+
   constructor() {
     this.updateConfig()
     this.authInitialized = new Promise<void>((r) => (this.authInitializedResolver = r))

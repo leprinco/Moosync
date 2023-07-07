@@ -52,12 +52,12 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator'
+import { Component } from 'vue-facing-decorator'
 import SearchIcon from '@/icons/SearchIcon.vue'
 import AltArrowIcon from '@/icons/AltArrowIcon.vue'
 
 import SingleSearchResult from '@/mainWindow/components/generic/SingleSearchResult.vue'
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 

@@ -144,7 +144,7 @@ export class SpotifyProvider extends GenericProvider {
               issued_at: token.expiry_from_epoch - token.expires_in
             })
 
-            bus.$emit(EventBus.REFRESH_ACCOUNTS, this.key)
+            bus.emit(EventBus.REFRESH_ACCOUNTS, this.key)
             this.canPlayPremium = true
 
             console.debug('Can use librespot')
@@ -194,7 +194,7 @@ export class SpotifyProvider extends GenericProvider {
         }
 
         const url = await this.auth.makeAuthorizationRequest()
-        bus.$emit(EventBus.SHOW_OAUTH_MODAL, {
+        bus.emit(EventBus.SHOW_OAUTH_MODAL, {
           providerName: 'Spotify',
           url,
           providerColor: '#1ED760',
@@ -204,7 +204,7 @@ export class SpotifyProvider extends GenericProvider {
 
         await once(this.auth.authStateEmitter, AuthStateEmitter.ON_TOKEN_RESPONSE)
 
-        bus.$emit(EventBus.HIDE_OAUTH_MODAL)
+        bus.emit(EventBus.HIDE_OAUTH_MODAL)
 
         return true
       }
@@ -233,7 +233,7 @@ export class SpotifyProvider extends GenericProvider {
           issued_at: token.expiry_from_epoch - token.expires_in
         })
 
-        bus.$emit(EventBus.REFRESH_ACCOUNTS, this.key)
+        bus.emit(EventBus.REFRESH_ACCOUNTS, this.key)
       }
     }
   }

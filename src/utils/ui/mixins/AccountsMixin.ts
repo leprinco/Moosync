@@ -7,11 +7,11 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component } from 'vue-property-decorator'
+import { Component } from 'vue-facing-decorator'
 import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import ProviderMixin from './ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
 
@@ -39,7 +39,7 @@ export default class AccountsMixin extends mixins(ProviderMixin) {
 
   async getUserDetails(provider: Provider) {
     const username = (await provider?.provider.getUserDetails()) ?? ''
-    this.$set(provider, 'username', username)
+    provider['username'] = username
     // if (!provider.username) {
     //   provider.provider.signOut()
     // }
@@ -89,7 +89,7 @@ export default class AccountsMixin extends mixins(ProviderMixin) {
       { immediate: true, deep: false }
     )
 
-    bus.$on(EventBus.REFRESH_ACCOUNTS, (providerKey?: string) => {
+    bus.on(EventBus.REFRESH_ACCOUNTS, (providerKey?: string) => {
       if (providerKey) {
         const provider = this.providers.find((val) => val?.provider.key === providerKey)
         if (provider) {

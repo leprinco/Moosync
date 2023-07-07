@@ -28,9 +28,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Watch } from 'vue-property-decorator'
+import { Component, Watch } from 'vue-facing-decorator'
 import Titlebar from '@/commonComponents/Titlebar.vue'
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import ThemeHandler from '@/utils/ui/mixins/ThemeHandler'
 import ContextMenu from './components/generic/Context.vue'
 import NewPlaylistModal from '@/mainWindow/components/modals/NewPlaylistModal.vue'
@@ -47,7 +47,6 @@ import { EventBus } from '@/utils/main/ipc/constants'
 import OAuthModal from './components/modals/OAuthModal.vue'
 import FormModal from './components/modals/FormModal.vue'
 import EntityInfoModal from './components/modals/EntityInfoModal.vue'
-import { i18n } from './plugins/i18n'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { ProviderScopes, VolumePersistMode } from '@/utils/commonConstants'
@@ -150,13 +149,13 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
   private watchLibrespotUserChange() {
     window.PreferenceUtils.listenPreferenceChanged('spotify.username', true, async () => {
       if (await vxm.providers.spotifyProvider.updateConfig()) {
-        bus.$emit(EventBus.REFRESH_ACCOUNTS, vxm.providers.spotifyProvider.key)
+        bus.emit(EventBus.REFRESH_ACCOUNTS, vxm.providers.spotifyProvider.key)
       }
     })
 
     window.PreferenceUtils.listenPreferenceChanged('secure.spotify.password', true, async () => {
       if (await vxm.providers.spotifyProvider.updateConfig()) {
-        bus.$emit(EventBus.REFRESH_ACCOUNTS, vxm.providers.spotifyProvider.key)
+        bus.emit(EventBus.REFRESH_ACCOUNTS, vxm.providers.spotifyProvider.key)
       }
     })
   }
@@ -198,13 +197,13 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     const langs = await window.PreferenceUtils.loadSelective<Checkbox[]>('system_language')
     const active = (langs ?? []).find((val) => val.enabled)
     if (active) {
-      i18n.locale = active?.key
+      this.$i18n.locale = active?.key
     }
 
     window.PreferenceUtils.listenPreferenceChanged('system_language', true, (_, value: Checkbox[]) => {
       const activeLang = value.find((val) => val.enabled)?.key
       if (activeLang) {
-        i18n.locale = activeLang
+        this.$i18n.locale = activeLang
       }
     })
   }
@@ -264,8 +263,8 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
         if (obj.id === 'completed-scan') {
           vxm.themes.refreshPage = true
         }
-        this.$toasted.show(obj.message, {
-          className: obj.id === 'completed-scan' ? 'success-toast' : 'custom-toast'
+        this.$toast(obj.message, {
+          type: obj.id === 'completed-scan' ? 'success' : 'default'
         })
       }
     })
@@ -388,12 +387,12 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       }
 
       if (data.type === 'open-login-modal') {
-        bus.$emit(EventBus.SHOW_OAUTH_MODAL, data.data)
+        bus.emit(EventBus.SHOW_OAUTH_MODAL, data.data)
         window.ExtensionUtils.replyToRequest({ ...data, data: true })
       }
 
       if (data.type === 'close-login-modal') {
-        bus.$emit(EventBus.HIDE_OAUTH_MODAL)
+        bus.emit(EventBus.HIDE_OAUTH_MODAL)
         window.ExtensionUtils.replyToRequest({ ...data, data: true })
       }
 
@@ -402,8 +401,8 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       }
 
       if (data.type === 'show-toast') {
-        this.$toasted.show(data.data.message, {
-          duration: Math.max(data.data.duration, 5000),
+        this.$toast(data.data.message, {
+          autoClose: Math.max(data.data.duration, 5000),
           type: data.data.type
         })
         window.ExtensionUtils.replyToRequest({ ...data, data: true })
@@ -501,7 +500,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       })
     )
 
-    bus.$on('forceSeek', (newVal: number) =>
+    bus.on('forceSeek', (newVal: number) =>
       window.ExtensionUtils.sendEvent({
         type: 'seeked',
         data: [newVal]
@@ -553,7 +552,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
   private async handleInitialSetup() {
     const isFirstLaunch = await window.PreferenceUtils.loadSelective<boolean>('isFirstLaunch', false, true)
     if (isFirstLaunch) {
-      bus.$emit(EventBus.SHOW_SETUP_MODAL)
+      bus.emit(EventBus.SHOW_SETUP_MODAL)
       await window.FileUtils.scan()
       await window.PreferenceUtils.saveSelective('isFirstLaunch', false, false)
     }

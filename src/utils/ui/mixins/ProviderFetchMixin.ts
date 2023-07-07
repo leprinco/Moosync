@@ -1,14 +1,13 @@
-import Component from 'vue-class-component'
-import Vue from 'vue'
+import { Component } from 'vue-facing-decorator'
 import { GenericProvider } from '../providers/generics/genericProvider'
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import { vxm } from '@/mainWindow/store'
 import ProviderMixin from './ProviderMixin'
 
 @Component
 export default class ProviderFetchMixin extends mixins(ProviderMixin) {
   private loadingMap: Record<string, boolean> = {}
-  private songList: Song[] = []
+  public songList: Song[] = []
   generator:
     | ((
         provider: GenericProvider,
@@ -47,7 +46,7 @@ export default class ProviderFetchMixin extends mixins(ProviderMixin) {
   }
 
   private async fetchProviderSonglist(provider: GenericProvider) {
-    Vue.set(this.loadingMap, provider.key, true)
+    this.loadingMap[provider.key] = true
     if (this.generator) {
       for await (const items of this.generator(provider, this.nextPageToken[provider.key])) {
         this.nextPageToken[provider.key] = items.nextPageToken
@@ -64,20 +63,16 @@ export default class ProviderFetchMixin extends mixins(ProviderMixin) {
       }
     }
 
-    Vue.set(this.loadingMap, provider.key, false)
+    this.loadingMap[provider.key] = false
   }
 
   private isFetching = false
 
   async fetchSongList() {
-    Vue.set(this.loadingMap, 'local', true)
+    this.loadingMap['local'] = true
     this.songList = (await this.localSongFetch?.(vxm.themes.songSortBy)) ?? []
-    Vue.set(
-      this.optionalSongList,
-      'local',
-      this.songList.map((val) => val._id)
-    )
-    Vue.set(this.loadingMap, 'local', false)
+    this.optionalSongList['local'] = this.songList.map((val) => val._id)
+    this.loadingMap['local'] = false
   }
 
   public async fetchAll(afterFetch?: (songs: Song[]) => void, onFetchEnded?: (songCount: number) => void) {
@@ -123,7 +118,7 @@ export default class ProviderFetchMixin extends mixins(ProviderMixin) {
   }
 
   onProviderChanged({ key, checked }: { key: string; checked: boolean }) {
-    Vue.set(this.activeProviders, key, checked)
+    this.activeProviders[key] = checked
     if (checked) {
       this.fetchRemoteProviderByKey(key)
     }

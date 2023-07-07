@@ -10,16 +10,13 @@
 import Extensions from '@/preferenceWindow/components/pages/Extensions.vue'
 import NewTheme from '../components/pages/NewTheme.vue'
 import Paths from '@/preferenceWindow/components/pages/Paths.vue'
-import Router from 'vue-router'
 import System from '../components/pages/System.vue'
 import Keybinds from '../components/pages/Keybinds.vue'
 import Themes from '../components/pages/Themes.vue'
-import Vue from 'vue'
 import Logs from '../components/pages/Logs.vue'
+import VueRouter from 'vue-router'
 
-Vue.use(Router)
-
-const routes = [
+const routes: VueRouter.RouteRecordRaw[] = [
   {
     path: '/',
     redirect: { name: 'paths' }
@@ -61,4 +58,9 @@ const routes = [
   }
 ]
 
-export default new Router({ routes })
+export const router = VueRouter.createRouter({
+  history: process.env.IS_ELECTRON
+    ? VueRouter.createWebHashHistory(process.env.BASE_URL)
+    : VueRouter.createWebHistory(process.env.BASE_URL),
+  routes
+})

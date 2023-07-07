@@ -375,8 +375,8 @@ type InvidiousInstances = [
   }
 ][]
 
-import { Component } from 'vue-property-decorator'
-import Vue from 'vue'
+import { Component } from 'vue-facing-decorator'
+import { Vue } from 'vue-facing-decorator'
 import CheckboxGroup from '../CheckboxGroup.vue'
 import EditText from '../EditText.vue'
 import PreferenceHeader from '../PreferenceHeader.vue'
@@ -385,7 +385,6 @@ import AutoFillEditText from '../AutoFillEditText.vue'
 import { InvidiousApiResources } from '@/utils/commonConstants'
 import Dropdown from '../Dropdown.vue'
 import { messages } from '@/utils/ui/i18n'
-import { i18n } from '@/preferenceWindow/plugins/i18n'
 import RadioCheckbox from '../RadioCheckbox.vue'
 import { VolumePersistMode } from '../../../utils/commonConstants'
 
@@ -453,7 +452,7 @@ export default class System extends Vue {
   private onLanguageChanged(key: Checkbox[]) {
     const active = key.find((val) => val.enabled) ?? this.languageDropdown[0]
     console.debug('changing locale to', active.key)
-    i18n.locale = active.key
+    this.$i18n.locale = active.key
     window.ThemeUtils.setLanguage(active.key)
   }
 
@@ -792,7 +791,7 @@ export default class System extends Vue {
     window.WindowUtils.openExternal('https://moosync.app/wiki/integrations#enabling-youtube-integration')
   }
 
-  private closeSpotifyAutomateModal() {
+  closeSpotifyAutomateModal() {
     this.$bvModal.hide('spotify-automate-modal')
   }
 
@@ -880,7 +879,7 @@ export default class System extends Vue {
     this.$bvModal.show('clear-preferences-modal')
   }
 
-  private async clearPreferences() {
+  async clearPreferences() {
     await window.PreferenceUtils.resetToDefault()
     await this.restartApp()
   }

@@ -11,7 +11,6 @@ import { action, mutation } from 'vuex-class-component'
 
 import { VuexModule } from './module'
 import { v4 } from 'uuid'
-import Vue from 'vue'
 import { VolumePersistMode } from '../../utils/commonConstants'
 
 class Queue implements GenericQueue<Song> {
@@ -41,7 +40,7 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
     this._volume = vol
     if (this.currentSong) {
       const type = this.currentSong.providerExtension ?? this.currentSong.type
-      Vue.set(this.volumeMap, type, vol)
+      this.volumeMap[type] = vol
     }
   }
 

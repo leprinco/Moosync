@@ -7,7 +7,7 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue } from 'vue-facing-decorator'
 import { vxm } from '@/mainWindow/store'
 import { GenericProvider } from '../providers/generics/genericProvider'
 import { ProviderScopes } from '@/utils/commonConstants'

@@ -7,13 +7,12 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component } from 'vue-property-decorator'
+import { Component, mixins } from 'vue-facing-decorator'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import ModelHelper from '@/utils/ui/mixins/ModelHelper'
 import { PeerMode } from '@/mainWindow/store/syncState'
 import { SyncHolder } from '../sync/syncHandler'
 import { bus } from '@/mainWindow/main'
-import { mixins } from 'vue-class-component'
 import { vxm } from '@/mainWindow/store'
 
 @Component
@@ -259,7 +258,7 @@ export default class SyncMixin extends mixins(ModelHelper, ImgLoader) {
     this.peerHolder.onQueueOrderChange = this.onRemoteQueueOrderChange
     this.peerHolder.onQueueDataChange = this.onRemoteQueueDataChange
     // TODO: Handle this event somewhere
-    this.peerHolder.peerConnectionStateHandler = (id, state) => bus.$emit('onPeerConnectionStateChange', id, state)
+    this.peerHolder.peerConnectionStateHandler = (id, state) => bus.emit('onPeerConnectionStateChange', id, state)
     this.peerHolder.onSeek = this.onRemoteSeek
     this.peerHolder.onReadyRequested = this.handleReadyRequest
     this.peerHolder.onReadyEmitted = this.handleReadyEmitted

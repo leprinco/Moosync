@@ -40,6 +40,22 @@ module.exports = {
       filename: 'preferenceWindow.html'
     }
   },
+  // chainWebpack: (config) => {
+  //   config.resolve.alias.set('vue', '@vue/compat')
+  //   config.module
+  //     .rule('vue')
+  //     .use('vue-loader')
+  //     .tap((options) => {
+  //       return {
+  //         ...options,
+  //         compilerOptions: {
+  //           compatConfig: {
+  //             MODE: 2
+  //           }
+  //         }
+  //       }
+  //     })
+  // },
   configureWebpack: {
     plugins: [
       new webpack.DefinePlugin({
@@ -203,7 +219,7 @@ module.exports = {
       nodeIntegration: false,
       disableMainProcessTypescript: false,
       mainProcessTypeChecking: true,
-      preload: 'src/utils/preload/preload.ts',
+      // preload: 'src/utils/preload/preload.ts',
       externals: ['better-sqlite3', 'vm2', 'sharp', 'librespot-node', 'scanner-native'],
       chainWebpackMainProcess: (config) => {
         config.devtool('source-map').end()
@@ -233,20 +249,20 @@ module.exports = {
           return args
         })
 
-        config
-          .entry('sandbox')
-          .add(__dirname + '/src/utils/extensions/sandbox/index.ts')
-          .end()
+        // config
+        //   .entry('sandbox')
+        //   .add(__dirname + '/src/utils/extensions/sandbox/index.ts')
+        //   .end()
 
-        config
-          .entry('spotify')
-          .add(__dirname + '/src/utils/spotify/index.ts')
-          .end()
+        // config
+        //   .entry('spotify')
+        //   .add(__dirname + '/src/utils/spotify/index.ts')
+        //   .end()
 
-        config
-          .entry('sqlite3.worker')
-          .add(__dirname + '/src/utils/main/db/workers/sqlite3.ts')
-          .end()
+        // config
+        //   .entry('sqlite3.worker')
+        //   .add(__dirname + '/src/utils/main/db/workers/sqlite3.ts')
+        //   .end()
 
         config.plugin('copy').use(CopyWebpackPlugin, [{ patterns: [{ from: resolve('dev-app-update.yml') }] }])
 

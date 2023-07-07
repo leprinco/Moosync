@@ -90,7 +90,7 @@ export class InvidiousProvider extends GenericProvider {
             }
           })
 
-          bus.$emit(EventBus.SHOW_OAUTH_MODAL, {
+          bus.emit(EventBus.SHOW_OAUTH_MODAL, {
             providerName: 'Invidious',
             url: AUTH_BASE_URL + '/authorize_token?scopes=:*&callback_url=https://moosync.app/invidious&expire=360000',
             providerColor: '#E62017',
@@ -102,7 +102,7 @@ export class InvidiousProvider extends GenericProvider {
           )
         })
 
-        bus.$emit(EventBus.HIDE_OAUTH_MODAL)
+        bus.emit(EventBus.HIDE_OAUTH_MODAL)
         return resp
       }
       return false

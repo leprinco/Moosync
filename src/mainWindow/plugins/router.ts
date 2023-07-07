@@ -9,27 +9,23 @@
  *  See LICENSE in the project root for license information.
  */
 
-import Router, { RouteConfig } from 'vue-router'
-import Vue from 'vue'
+import VueRouter from 'vue-router'
 
-Vue.use(Router)
-
-const routes: RouteConfig[] = [
+const routes: VueRouter.RouteRecordRaw[] = [
   {
     name: 'index',
     path: '',
-    component: () => import('@/mainWindow/pages/index.vue') 
+    component: () => import('@/mainWindow/pages/index.vue')
   },
   {
     name: 'albums',
     path: 'albums',
-    component: () => import('@/mainWindow/pages/albums/index.vue') 
+    component: () => import('@/mainWindow/pages/albums/index.vue')
   },
   {
     name: 'artists',
     path: 'artists',
     component: () => import('@/mainWindow/pages/artists/index.vue')
-
   },
   {
     name: 'genre',
@@ -45,54 +41,47 @@ const routes: RouteConfig[] = [
     name: 'recommendations',
     path: 'recommendations',
     component: () => import('@/mainWindow/pages/recommendations/index.vue')
-
-
   },
   {
     name: 'search',
     path: 'search',
     component: () => import('@/mainWindow/pages/search/index.vue')
-
   },
   {
     name: 'songs',
     path: 'songs',
     component: () => import('@/mainWindow/pages/songs/index.vue')
-
   },
   {
     name: 'albums-single',
     path: 'albums/single',
     props: true,
     component: () => import('@/mainWindow/pages/albums/single.vue')
-
   },
   {
     name: 'artists-single',
     path: 'artists/single',
     props: true,
-        component: () => import('@/mainWindow/pages/artists/single.vue')
-
+    component: () => import('@/mainWindow/pages/artists/single.vue')
   },
   {
     name: 'genre-single',
     path: 'genre/single',
     props: true,
-        component: () => import('@/mainWindow/pages/genre/single.vue')
-
+    component: () => import('@/mainWindow/pages/genre/single.vue')
   },
   {
     name: 'playlists-single',
     path: 'playlists/single',
     props: true,
-        component: () => import('@/mainWindow/pages/playlists/single.vue')
-
+    component: () => import('@/mainWindow/pages/playlists/single.vue')
   }
 ]
 
-export default new Router({
-  mode: process.env.IS_ELECTRON ? 'hash' : 'history',
-  base: process.env.BASE_URL,
+export const router = VueRouter.createRouter({
+  history: process.env.IS_ELECTRON
+    ? VueRouter.createWebHashHistory(process.env.BASE_URL)
+    : VueRouter.createWebHistory(process.env.BASE_URL),
   routes: [
     {
       path: '/',

@@ -99,8 +99,8 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator'
-import Vue from 'vue'
+import { Component } from 'vue-facing-decorator'
+import { Vue } from 'vue-facing-decorator'
 import FilePicker from '../FilePicker.vue'
 import DirectoryGroup from '../DirectoryGroup.vue'
 import EditText from '../EditText.vue'

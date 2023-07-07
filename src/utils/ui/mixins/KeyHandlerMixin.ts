@@ -7,9 +7,9 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component } from 'vue-property-decorator'
+import { Component } from 'vue-facing-decorator'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import { bus } from '@/mainWindow/main'
 import { defaultKeybinds, HotkeyEvents } from '@/utils/commonConstants'
 
@@ -94,13 +94,13 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
         window.WindowUtils.openExternal('https://github.com/Moosync/Moosync#readme')
         break
       case HotkeyEvents.QUEUE_CLOSE:
-        bus.$emit('onToggleSlider', false)
+        bus.emit('onToggleSlider', false)
         break
       case HotkeyEvents.QUEUE_OPEN:
-        bus.$emit('onToggleSlider', true)
+        bus.emit('onToggleSlider', true)
         break
       case HotkeyEvents.QUEUE_TOGGLE:
-        bus.$emit('onToggleSlider')
+        bus.emit('onToggleSlider')
         break
       case HotkeyEvents.FULLSCREEN:
         window.WindowUtils.toggleFullscreen(true)

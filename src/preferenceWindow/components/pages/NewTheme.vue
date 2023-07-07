@@ -100,7 +100,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue } from 'vue-facing-decorator'
 import ThemeComponentClassic from '../ThemeComponentClassic.vue'
 import { v1, v4 } from 'uuid'
 import PreferenceHeader from '../PreferenceHeader.vue'
@@ -108,6 +108,7 @@ import ThemeComponentCompact from '../ThemeComponentCompact.vue'
 import ColorPicker from '../ColorPicker.vue'
 import NavBack from '@/icons/NavBackIcon.vue'
 import FolderIcon from '@/icons/FolderIcon.vue'
+import { bus } from '@/mainWindow/main'
 
 @Component({
   components: {
@@ -120,14 +121,14 @@ import FolderIcon from '@/icons/FolderIcon.vue'
   }
 })
 export default class NewTheme extends Vue {
-  private customTheme: ThemeItem = this.defaultTheme
+  customTheme: ThemeItem = this.defaultTheme
 
-  private title = ''
-  private author = ''
+  title = ''
+  author = ''
   private currentThemeID = ''
 
-  private popoverTarget = v4()
-  private showPopover = false
+  popoverTarget = v4()
+  showPopover = false
   private popoverTimeout: ReturnType<typeof setTimeout> | undefined
 
   themeKeys: ThemeKey[] = [
@@ -155,19 +156,19 @@ export default class NewTheme extends Vue {
     }
   }
 
-  private getThemeTitle(key: string) {
+  getThemeTitle(key: string) {
     return this.$tc(`settings.themes.${key}`)
   }
 
-  private toggleColorPicker(type: ThemeKey) {
+  toggleColorPicker(type: ThemeKey) {
     ;(this.$refs[type] as ColorPicker[])[0]?.toggleColorPicker()
   }
 
-  private onColorChange(attr: ThemeKey, color: string) {
-    this.$set(this.customTheme, attr, color)
+  onColorChange(attr: ThemeKey, color: string) {
+    this.customTheme[attr] = color
   }
 
-  private getRandomID() {
+  getRandomID() {
     return v1()
   }
 
@@ -180,18 +181,18 @@ export default class NewTheme extends Vue {
     }
   }
 
-  private dismiss() {
+  dismiss() {
     this.$router.push({
       name: 'themes'
     })
   }
 
-  private async saveTheme() {
+  async saveTheme() {
     await window.ThemeUtils.saveTheme(this.generateThemeMetadata())
     const currentTheme = await window.ThemeUtils.getActiveTheme()
     if (currentTheme.id === this.currentThemeID) {
       await window.ThemeUtils.setActiveTheme(this.currentThemeID)
-      this.$root.$emit('themeChanged')
+      bus.emit('themeChanged')
     }
     this.dismiss()
   }
@@ -222,7 +223,7 @@ export default class NewTheme extends Vue {
   async created() {
     this.parseClipboard()
 
-    this.currentThemeID = this.$route.params['currentTheme']
+    this.currentThemeID = this.$route.params['currentTheme'].toString()
     if (this.currentThemeID) {
       const theme = await window.ThemeUtils.getTheme(this.currentThemeID)
       if (theme) {
@@ -235,7 +236,7 @@ export default class NewTheme extends Vue {
     }
   }
 
-  private openFileBrowser() {
+  openFileBrowser() {
     window.WindowUtils.openFileBrowser(false, true, [
       {
         extensions: ['css'],
@@ -243,12 +244,12 @@ export default class NewTheme extends Vue {
       }
     ]).then((data) => {
       if (!data.canceled && data.filePaths.length > 0) {
-        this.$set(this.customTheme, 'customCSS', data.filePaths[0])
+        this.customTheme['customCSS'] = data.filePaths[0]
       }
     })
   }
 
-  private copy() {
+  copy() {
     if (this.popoverTimeout) {
       clearTimeout(this.popoverTimeout)
       this.popoverTimeout = undefined

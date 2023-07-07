@@ -16,7 +16,7 @@
 <script lang="ts">
 import UpdateIcon from '@/icons/UpdateIcon.vue'
 
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue } from 'vue-facing-decorator'
 import ConfirmationModal from '@/commonComponents/ConfirmationModal.vue'
 
 @Component({
@@ -32,7 +32,7 @@ export default class Update extends Vue {
 
   updateNow() {
     window.UpdateUtils.updateNow()
-    this.$toasted.show('Update is downloading')
+    this.$toast('Update is downloading')
   }
 }
 </script>

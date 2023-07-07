@@ -60,8 +60,8 @@
 </template>
 
 <script lang="ts">
-import { mixins } from 'vue-class-component'
-import { Component, Prop, Ref, Watch } from 'vue-property-decorator'
+import { mixins } from 'vue-facing-decorator'
+import { Component, Prop, Ref, Watch } from 'vue-facing-decorator'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import SortIcon from '@/icons/SortIcon.vue'
 import SortIconAlt from '@/icons/SortIconAlt.vue'
@@ -244,7 +244,7 @@ export default class TabCarousel extends mixins(ContextMenuMixin) {
 
     this.onItemsChanged(this.items)
 
-    bus.$on(EventBus.UPDATE_OPTIONAL_PROVIDER, (providerKey: string) => {
+    bus.on(EventBus.UPDATE_OPTIONAL_PROVIDER, (providerKey: string) => {
       this.selectedProviders.push(providerKey)
     })
   }

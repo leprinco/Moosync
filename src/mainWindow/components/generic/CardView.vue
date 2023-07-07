@@ -42,8 +42,8 @@
 
 <script lang="ts">
 import ImageLoader from '@/utils/ui/mixins/ImageLoader'
-import { mixins } from 'vue-class-component'
-import { Component, Prop, Watch } from 'vue-property-decorator'
+import { mixins } from 'vue-facing-decorator'
+import { Component, Prop, Watch } from 'vue-facing-decorator'
 import ErrorHandler from '@/utils/ui/mixins/errorHandler'
 import Play2 from '@/icons/PlayIcon2.vue'
 

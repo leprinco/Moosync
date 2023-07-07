@@ -15,16 +15,13 @@ import { PlaylistStore } from '@/mainWindow/store/playlists'
 import { ProviderStore } from '@/mainWindow/store/providers'
 import { SyncStore } from '@/mainWindow/store/syncState'
 import { ThemeStore } from './themes'
-import Vue from 'vue'
-import Vuex from 'vuex'
+import { createStore } from 'vuex'
 import { createPersist } from '@/utils/ui/store/persist'
 import { getProxy } from './vuexProvider'
 import { ProxyWatchers } from 'vuex-class-component/dist/interfaces'
 import { PlayerRepositoryStore } from './playersRepo'
 
-Vue.use(Vuex)
-
-export const store = new Vuex.Store({
+export const store = createStore({
   modules: {
     ...extractVuexModule(PlayerStore),
     ...extractVuexModule(PlaylistStore),

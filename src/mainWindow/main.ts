@@ -8,7 +8,6 @@
  */
 
 import '@/mainWindow/plugins/recycleScroller'
-import '@/mainWindow/plugins/toasted'
 import '@/mainWindow/plugins/vueBootstrap'
 import '@/mainWindow/plugins/tags-typeahead'
 import '@/mainWindow/plugins/vueSliderBar'
@@ -16,17 +15,16 @@ import '@/mainWindow/plugins/inlineSVG'
 import { i18n } from '@/mainWindow/plugins/i18n'
 import '@/sass/global.sass'
 import 'animate.css'
+import Vue3Toastify, { type ToastContainerOptions } from 'vue3-toastify'
 
 import App from '@/mainWindow/App.vue'
-import Vue from 'vue'
-import router from '@/mainWindow/plugins/router'
+import { router } from '@/mainWindow/plugins/router'
 import { store } from '@/mainWindow/store'
 import { getErrorMessage } from '@/utils/common'
+import EventEmitter from 'events'
+import { createApp } from 'vue'
 
-Vue.config.productionTip = false
-Vue.config.devtools = false
-
-function registerLogger() {
+function registerLogger(app: ReturnType<typeof createApp>) {
   const preservedConsoleInfo = console.info
   const preservedConsoleError = console.error
   const preservedConsoleWarn = console.warn
@@ -80,7 +78,7 @@ function registerLogger() {
     console.error(...error)
   }
 
-  Vue.config.errorHandler = (err) => {
+  app.config.errorHandler = (err) => {
     console.error(err)
   }
 
@@ -90,14 +88,36 @@ function registerLogger() {
   }
 }
 
-registerLogger()
+export const bus = new EventEmitter()
 
-export const bus = new Vue()
+const app = createApp(App)
+app.use(i18n)
+app.use(router)
+app.use(store)
+app.use<ToastContainerOptions>(Vue3Toastify, {
+  autoClose: 3000
+})
 
-new Vue({
-  components: { App },
-  router,
-  store,
-  i18n,
-  template: '<App/>'
-}).$mount('#app')
+function isImage(e: HTMLElement) {
+  const tagName = e.tagName.toLowerCase()
+  const parentTagName = e.parentElement?.tagName.toLowerCase()
+  return tagName === 'img' || tagName === 'svg' || parentTagName === 'svg'
+}
+
+app.directive('click-outside', {
+  mounted(el, binding) {
+    el.clickOutsideEvent = function (e: any) {
+      if (el !== e.target && !el.contains(e.target) && !isImage(e.target)) {
+        binding.value(e, el)
+      }
+    }
+    document.body.addEventListener('click', el.clickOutsideEvent)
+  },
+  unmounted(el) {
+    document.body.removeEventListener('click', el.clickOutsideEvent)
+  }
+})
+
+registerLogger(app)
+
+app.mount('#app')

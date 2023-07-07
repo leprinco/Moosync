@@ -53,7 +53,7 @@ export class ExtensionProvider extends GenericProvider {
     this._username = details.username
     this._accountId = details.id
 
-    bus.$emit(EventBus.REFRESH_ACCOUNTS, this.key)
+    bus.emit(EventBus.REFRESH_ACCOUNTS, this.key)
   }
 
   public get canLogin() {

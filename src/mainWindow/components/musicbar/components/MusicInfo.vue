@@ -104,8 +104,8 @@
 </template>
 
 <script lang="ts">
-import { mixins } from 'vue-class-component'
-import { Component, Prop, Watch } from 'vue-property-decorator'
+import { mixins } from 'vue-facing-decorator'
+import { Component, Prop, Watch } from 'vue-facing-decorator'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
 import ImageLoader from '@/utils/ui/mixins/ImageLoader'
 import ModelHelper from '@/utils/ui/mixins/ModelHelper'
@@ -120,7 +120,6 @@ import { PeerMode } from '@/mainWindow/store/syncState'
 import CrossIcon from '@/icons/CrossIcon.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
-import Vue from 'vue/types/umd'
 
 @Component({
   components: {
@@ -157,7 +156,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   }
 
   close() {
-    bus.$emit('onToggleSlider', false)
+    bus.emit('onToggleSlider', false)
   }
 
   onDragEnd() {
@@ -171,7 +170,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
       return
     }
 
-    ;(this.$refs['recycle-scroller'] as Vue)?.$el.scrollTo({
+    ;(this.$refs['recycle-scroller'] as any)?.$el.scrollTo({
       top: this.currentIndex * 94,
       behavior: 'smooth'
     })
@@ -185,7 +184,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
     await this.$nextTick()
     this.scrollToActive()
 
-    bus.$on(EventBus.IGNORE_MUSIC_INFO_SCROLL, () => (this.ignoreScroll = true))
+    bus.on(EventBus.IGNORE_MUSIC_INFO_SCROLL, () => (this.ignoreScroll = true))
   }
 
   private async getLyricsFromExtension() {
@@ -206,7 +205,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
 
   @Watch('lyrics', { immediate: true })
   onLyricsChange() {
-    bus.$emit(EventBus.REFRESH_LYRICS, this.lyrics)
+    bus.emit(EventBus.REFRESH_LYRICS, this.lyrics)
   }
 
   get showSpotifyCanvas() {
@@ -317,7 +316,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   }
 
   saveAsPlaylist() {
-    bus.$emit(EventBus.SHOW_NEW_PLAYLIST_MODAL, this.parseQueueItems())
+    bus.emit(EventBus.SHOW_NEW_PLAYLIST_MODAL, this.parseQueueItems())
   }
 
   private handleIndexChange(change: {

@@ -65,8 +65,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Ref } from 'vue-property-decorator'
-import Vue from 'vue'
+import { Component, Ref } from 'vue-facing-decorator'
+import { Vue } from 'vue-facing-decorator'
 import EditText from '../EditText.vue'
 import DirectoryGroup from '../DirectoryGroup.vue'
 import FilePicker from '../FilePicker.vue'
@@ -78,6 +78,7 @@ import ProgressBar from '../Progressbar.vue'
 import ButtonGroup from '../ButtonGroup.vue'
 import TextField from '../TextField.vue'
 import InfoField from '../InfoField.vue'
+import { nextTick } from 'vue'
 
 @Component({
   components: {
@@ -95,10 +96,10 @@ import InfoField from '../InfoField.vue'
   }
 })
 export default class Extensions extends Vue {
-  private extensions: ExtensionDetails[] = []
-  private page = 0
-  private offset = 5
-  private activeTab_ = 0
+  extensions: ExtensionDetails[] = []
+  page = 0
+  offset = 5
+  activeTab_ = 0
 
   @Ref('extContent')
   private content!: HTMLDivElement[]
@@ -142,15 +143,15 @@ export default class Extensions extends Vue {
     return this.extensionsWithPrefs.slice(this.page * this.offset, this.page * this.offset + this.offset)
   }
 
-  private nextPage() {
+  nextPage() {
     if (this.page * this.offset + this.offset < this.extensions.length) this.page++
   }
 
-  private prevPage() {
+  prevPage() {
     if (this.page > 0) this.page--
   }
 
-  private isComponentExists(type: string) {
+  isComponentExists(type: string) {
     if (this.$options.components) return !!this.$options.components[type]
     return false
   }
@@ -160,7 +161,7 @@ export default class Extensions extends Vue {
       if (!data.canceled) {
         window.ExtensionUtils.install(...data.filePaths).then((result) => {
           if (result.success) {
-            Vue.nextTick().then(() => this.fetchExtensions())
+            nextTick().then(() => this.fetchExtensions())
           }
         })
       }
@@ -174,7 +175,7 @@ export default class Extensions extends Vue {
     }
   }
 
-  private onExtensionChanged() {
+  onExtensionChanged() {
     return this.fetchExtensions()
   }
 }

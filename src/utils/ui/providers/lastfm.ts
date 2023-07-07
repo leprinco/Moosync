@@ -175,7 +175,7 @@ export class LastFMProvider extends GenericProvider {
           resolve(false)
         })
 
-        bus.$emit(EventBus.SHOW_OAUTH_MODAL, {
+        bus.emit(EventBus.SHOW_OAUTH_MODAL, {
           providerName: 'LastFM',
           url: AUTH_BASE_URL + `auth/?api_key=${this._config?.key}&cb=https://moosync.app/lastfm`,
           providerColor: '#BA0000',
@@ -187,7 +187,7 @@ export class LastFMProvider extends GenericProvider {
         )
       })
 
-      bus.$emit(EventBus.HIDE_OAUTH_MODAL)
+      bus.emit(EventBus.HIDE_OAUTH_MODAL)
       return resp
     } else {
       return true

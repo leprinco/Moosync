@@ -48,12 +48,12 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator'
+import { Component } from 'vue-facing-decorator'
 import VolumeIcon from '@/icons/VolumeIcon.vue'
 import ExpandIcon from '@/icons/ExpandIcon.vue'
 import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue'
 import { bus } from '@/mainWindow/main'
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 
@@ -71,18 +71,18 @@ export default class ExtraControls extends mixins(PlayerControls, JukeboxMixin) 
   private showVolume = false
 
   private emitToggleSlider() {
-    bus.$emit('onToggleSlider')
+    bus.emit('onToggleSlider')
   }
 
   mounted() {
-    bus.$on('onToggleSlider', (val: boolean) => {
+    bus.on('onToggleSlider', (val: boolean) => {
       if (typeof val !== 'undefined') {
         this.sliderOpen = val
       } else {
         this.sliderOpen = !this.sliderOpen
       }
 
-      bus.$emit('onToggleSliderWindow', this.sliderOpen)
+      bus.emit('onToggleSliderWindow', this.sliderOpen)
     })
   }
 

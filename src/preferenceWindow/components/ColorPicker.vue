@@ -32,8 +32,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch } from 'vue-property-decorator'
-import Vue from 'vue'
+import { Component, Prop, Watch } from 'vue-facing-decorator'
+import { Vue } from 'vue-facing-decorator'
 import colorPicker from '@caohenghu/vue-colorpicker'
 
 @Component({

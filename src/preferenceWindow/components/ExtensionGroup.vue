@@ -55,7 +55,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue } from 'vue-facing-decorator'
 import DeleteModal from '../../commonComponents/ConfirmationModal.vue'
 import PreferenceHeader from './PreferenceHeader.vue'
 import DiscoverExtensionsModal from './DiscoverExtensionModal.vue'

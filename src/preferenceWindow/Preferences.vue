@@ -27,35 +27,12 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator'
+import { Component } from 'vue-facing-decorator'
 import Titlebar from '@/commonComponents/Titlebar.vue'
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import ThemeHandler from '@/utils/ui/mixins/ThemeHandler'
 import Sidebar from '@/preferenceWindow/components/Sidebar.vue'
-import Vue, { DirectiveBinding } from 'vue'
-import { i18n } from '@/preferenceWindow/plugins/i18n'
-
-Vue.directive('click-outside', {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bind: function (el: any, binding: DirectiveBinding<(e: Event) => void>) {
-    // Define Handler and cache it on the element
-    const bubble = binding.modifiers.bubble
-    const handler = (e: Event) => {
-      if (bubble || (!el.contains(e.target) && el !== e.target)) {
-        binding.value(e)
-      }
-    }
-    el.__vueClickOutside__ = handler
-    // add Event Listeners
-    document.addEventListener('mousedown', handler)
-  },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  unbind: function (el: any) {
-    // Remove Event Listeners
-    document.removeEventListener('mousedown', el.__vueClickOutside__)
-    el.__vueClickOutside__ = null
-  }
-})
+import { bus } from './main'
 
 @Component({
   components: {
@@ -66,7 +43,7 @@ Vue.directive('click-outside', {
 export default class App extends mixins(ThemeHandler) {
   mounted() {
     this.getLanguage()
-    this.$root.$on('themeChanged', this.fetchThemeFromID)
+    bus.on('themeChanged', this.fetchThemeFromID)
     this.registerDevTools()
     this.listenArgs()
   }
@@ -75,7 +52,7 @@ export default class App extends mixins(ThemeHandler) {
     const langs = await window.PreferenceUtils.loadSelective<Checkbox[]>('system_language')
     const active = (langs ?? []).find((val) => val.enabled)
     if (active) {
-      i18n.locale = active?.key
+      this.$i18n.locale = active?.key
     }
   }
 
@@ -87,7 +64,7 @@ export default class App extends mixins(ThemeHandler) {
     })
   }
 
-  private get version() {
+  get version() {
     return process.env.MOOSYNC_VERSION
   }
 

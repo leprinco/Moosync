@@ -71,9 +71,9 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop } from 'vue-facing-decorator'
 import CardView from '@/mainWindow/components/generic/CardView.vue'
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import { vxm } from '@/mainWindow/store'
@@ -144,7 +144,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   private activeProviders: Record<string, { key: string; checked: boolean }> = {}
 
   onTabProvidersChanged(data: { key: string; checked: boolean }) {
-    this.$set(this.activeProviders, data.key, data)
+    this.activeProviders[data.key] = data
   }
 
   FAVORITES_PLAYLIST_ID = FAVORITES_PLAYLIST_ID
@@ -309,11 +309,11 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   }
 
   showNewPlaylistModal() {
-    bus.$emit(EventBus.SHOW_NEW_PLAYLIST_MODAL, [], () => this.refresh())
+    bus.emit(EventBus.SHOW_NEW_PLAYLIST_MODAL, [], () => this.refresh())
   }
 
   showPlaylistFromURLModal() {
-    bus.$emit(EventBus.SHOW_PLAYLIST_FROM_URL_MODAL, [], () => this.refresh())
+    bus.emit(EventBus.SHOW_PLAYLIST_FROM_URL_MODAL, [], () => this.refresh())
   }
 
   mounted() {
@@ -329,7 +329,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   }
 
   private listenGlobalRefresh() {
-    bus.$on(EventBus.REFRESH_PAGE, () => {
+    bus.on(EventBus.REFRESH_PAGE, () => {
       this.refresh(true)
     })
   }

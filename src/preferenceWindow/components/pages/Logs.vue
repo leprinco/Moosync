@@ -136,8 +136,8 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator'
-import Vue from 'vue'
+import { Component } from 'vue-facing-decorator'
+import { Vue } from 'vue-facing-decorator'
 import CheckboxGroup from '../CheckboxGroup.vue'
 import SearchIcon from '@/icons/SearchIcon.vue'
 import RefreshIcon from '../../../icons/RefreshIcon.vue'

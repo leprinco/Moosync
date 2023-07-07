@@ -33,10 +33,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Watch } from 'vue-property-decorator'
+import { Component, Watch } from 'vue-facing-decorator'
 import SongView from '@/mainWindow/components/songView/SongView.vue'
 
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import { emptyGen, getRandomFromArray } from '@/utils/common'
@@ -135,7 +135,7 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
       for (const p of this.$route.query.defaultProviders) {
         if (p) {
           this.onProviderChanged({ key: p, checked: true })
-          bus.$emit(EventBus.UPDATE_OPTIONAL_PROVIDER, p)
+          bus.emit(EventBus.UPDATE_OPTIONAL_PROVIDER, p)
         }
       }
     }

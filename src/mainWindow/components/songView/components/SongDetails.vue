@@ -90,8 +90,8 @@
 </template>
 
 <script lang="ts">
-import { mixins } from 'vue-class-component'
-import { Component, Prop, Watch } from 'vue-property-decorator'
+import { mixins } from 'vue-facing-decorator'
+import { Component, Prop, Watch } from 'vue-facing-decorator'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
 import PlainPlay from '@/icons/PlainPlayIcon.vue'
 import AddToLibrary from '@/icons/AddToLibraryIcon.vue'

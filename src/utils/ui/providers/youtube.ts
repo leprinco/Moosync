@@ -119,7 +119,7 @@ export class YoutubeProvider extends GenericProvider {
         }
 
         const url = await this.auth.makeAuthorizationRequest()
-        bus.$emit(EventBus.SHOW_OAUTH_MODAL, {
+        bus.emit(EventBus.SHOW_OAUTH_MODAL, {
           providerName: 'Youtube',
           url,
           providerColor: '#E62017',
@@ -129,7 +129,7 @@ export class YoutubeProvider extends GenericProvider {
 
         await once(this.auth.authStateEmitter, AuthStateEmitter.ON_TOKEN_RESPONSE)
 
-        bus.$emit(EventBus.HIDE_OAUTH_MODAL)
+        bus.emit(EventBus.HIDE_OAUTH_MODAL)
         return true
       }
       return false

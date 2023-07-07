@@ -33,10 +33,10 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop } from 'vue-facing-decorator'
 import SongView from '@/mainWindow/components/songView/SongView.vue'
 
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
@@ -148,7 +148,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   }
 
   private listenGlobalRefresh() {
-    bus.$on(EventBus.REFRESH_PAGE, () => {
+    bus.on(EventBus.REFRESH_PAGE, () => {
       this.invalidateCache = true
       this.refresh()
     })
@@ -183,7 +183,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
 
   addPlaylistToLibrary() {
     window.DBUtils.createPlaylist(this.playlist)
-    this.$toasted.show(`Added ${this.playlist.playlist_name} to library`)
+    this.$toast(`Added ${this.playlist.playlist_name} to library`)
   }
 
   onSearchChange() {

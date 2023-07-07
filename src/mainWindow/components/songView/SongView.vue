@@ -44,8 +44,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch } from 'vue-property-decorator'
-import { mixins } from 'vue-class-component'
+import { Component, Prop, Watch } from 'vue-facing-decorator'
+import { mixins } from 'vue-facing-decorator'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import ModelHelper from '@/utils/ui/mixins/ModelHelper'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
@@ -104,7 +104,7 @@ export default class AllSongs extends mixins(
 
     const playCounts = await window.SearchUtils.getPlayCount(...difference.map((val) => val._id))
     for (const song of difference) {
-      this.$set(song, 'playCount', playCounts[song._id] ?? 0)
+      song['playCount'] = playCounts[song._id]?.playCount ?? 0
     }
   }
 

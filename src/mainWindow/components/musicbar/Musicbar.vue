@@ -68,8 +68,8 @@ import Controls from '@/mainWindow/components/musicbar/components/Controls.vue'
 import Details from '@/mainWindow/components/musicbar/components/Details.vue'
 import ExtraControls from '@/mainWindow/components/musicbar/components/ExtraControls.vue'
 import MusicInfo from '@/mainWindow/components/musicbar/components/MusicInfo.vue'
-import { Component, Watch } from 'vue-property-decorator'
-import { mixins } from 'vue-class-component'
+import { Component, Watch } from 'vue-facing-decorator'
+import { mixins } from 'vue-facing-decorator'
 import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
@@ -148,7 +148,7 @@ export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
   }
 
   updateTimestmp(value: number) {
-    bus.$emit('forceSeek', value / 1000)
+    bus.emit('forceSeek', value / 1000)
     this.forceSeek = value / 1000
   }
 
@@ -178,7 +178,7 @@ export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
 
   async mounted() {
     this.hasFrame = await window.WindowUtils.hasFrame()
-    bus.$on('onToggleSliderWindow', this.toggleSlider)
+    bus.on('onToggleSliderWindow', this.toggleSlider)
     this.iconType = (await this.getIconType()) ?? ''
   }
 }

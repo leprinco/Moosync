@@ -62,7 +62,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue } from 'vue-facing-decorator'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
 import EditIcon from '@/icons/EditIcon.vue'
 import { bus } from '@/mainWindow/main'
@@ -259,7 +259,7 @@ export default class EntityInfoModal extends Vue {
   }
 
   mounted() {
-    bus.$on(EventBus.SHOW_ENTITY_INFO_MODAL, (entity: Artists | Album | Playlist) => {
+    bus.on(EventBus.SHOW_ENTITY_INFO_MODAL, (entity: Artists | Album | Playlist) => {
       this.forceEmptyImg = false
       this.entity = entity
       this.tmpEntity = JSON.parse(JSON.stringify(entity))

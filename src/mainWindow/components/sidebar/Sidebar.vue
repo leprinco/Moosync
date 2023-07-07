@@ -67,8 +67,9 @@ import Rooms from '@/icons/RoomsIcon.vue'
 import Toggle from '@/icons/ToggleIcon.vue'
 import Tabs from '@/mainWindow/components/sidebar/components/Tabs.vue'
 import { PeerMode } from '@/mainWindow/store/syncState'
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue } from 'vue-facing-decorator'
 import { vxm } from '@/mainWindow/store'
+import { bus } from '@/mainWindow/main'
 
 @Component({
   components: {
@@ -121,11 +122,11 @@ export default class Sidebar extends Vue {
   }
 
   private joinRoom() {
-    this.$root.$emit('join-room', this.roomInput)
+    bus.emit('join-room', this.roomInput)
   }
 
   private createRoom() {
-    this.$root.$emit('create-room')
+    bus.emit('create-room')
   }
 }
 </script>

@@ -21,8 +21,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch } from 'vue-property-decorator'
-import { Mixins } from 'vue-property-decorator'
+import { Component, Prop, Watch } from 'vue-facing-decorator'
+import { mixins } from 'vue-facing-decorator'
 import PreferenceHeader from './PreferenceHeader.vue'
 import { ExtensionPreferenceMixin } from '../mixins/extensionPreferenceMixin'
 import MarkdownIt from 'markdown-it'
@@ -32,16 +32,16 @@ import MarkdownIt from 'markdown-it'
     PreferenceHeader
   }
 })
-export default class TextField extends Mixins<ExtensionPreferenceMixin<string>>(ExtensionPreferenceMixin) {
+export default class TextField extends mixins(ExtensionPreferenceMixin) {
   @Prop()
-  private title!: string
+  title!: string
 
   @Prop()
-  private tooltip!: string
+  tooltip!: string
 
   private render = ''
 
-  private emitTooltipClick() {
+  emitTooltipClick() {
     this.$emit('tooltipClick')
   }
 

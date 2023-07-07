@@ -78,11 +78,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop } from 'vue-facing-decorator'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import SingleSearchResult from '@/mainWindow/components/generic/SingleSearchResult.vue'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
@@ -181,7 +181,7 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
 
       if (!this.playlist.extension) await window.DBUtils.addToPlaylist(playlistId, ...this.songList)
 
-      this.$toasted.show(`Added ${this.playlist.playlist_name} to library`)
+      this.$toast(`Added ${this.playlist.playlist_name} to library`)
 
       this.playlist = null
       this.songList = []
@@ -193,7 +193,7 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
   }
 
   mounted() {
-    bus.$on(EventBus.SHOW_PLAYLIST_FROM_URL_MODAL, (refreshCallback: () => void) => {
+    bus.on(EventBus.SHOW_PLAYLIST_FROM_URL_MODAL, (refreshCallback: () => void) => {
       this.addButtonEnabled = false
       this.refreshCallback = refreshCallback
       this.$bvModal.show(this.id)

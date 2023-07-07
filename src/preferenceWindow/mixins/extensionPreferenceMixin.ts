@@ -7,9 +7,10 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue } from 'vue-facing-decorator'
 
 import { v1 } from 'uuid'
+import { getCurrentInstance } from 'vue'
 
 @Component
 export class ExtensionPreferenceMixin<T> extends Vue {
@@ -31,7 +32,7 @@ export class ExtensionPreferenceMixin<T> extends Vue {
   private onValueChange!: (val: unknown) => void
 
   @Prop({ default: 'text' })
-  private type!: string
+  type!: string
 
   protected shouldMergeDefaultValues = true
 
@@ -42,7 +43,7 @@ export class ExtensionPreferenceMixin<T> extends Vue {
   protected postFetch: (() => void) | undefined
 
   created() {
-    this.prefKey = this.$vnode.key?.toString()
+    this.prefKey = getCurrentInstance()?.vnode.key?.toString()
   }
 
   mounted() {

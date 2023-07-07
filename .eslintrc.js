@@ -27,7 +27,8 @@ module.exports = {
         endOfLine: 'auto'
       }
     ],
-    '@typescript-eslint/no-namespace': 'off'
+    '@typescript-eslint/no-namespace': 'off',
+    'vue/no-v-for-template-key': 'off'
   },
 
   extends: [

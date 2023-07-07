@@ -12,11 +12,10 @@
     <b-container fluid>
       <b-row no-gutters>
         <div ref="headers" class="wrapper w-100 headers">
-          <template v-for="(field, index) of extrafields">
+          <template v-for="(field, index) of extrafields" :key="`box-${field.key}`">
             <div
               :title="field.label ? field.label : field.key"
               :style="{ width: columnWidths[index] + '%' }"
-              :key="`box-${field.key}`"
               class="box text-truncate"
             >
               {{ field.label ? field.label : field.key }}
@@ -82,8 +81,8 @@
 
 <script lang="ts">
 import SongListMixin from '@/utils/ui/mixins/SongListMixin'
-import { mixins } from 'vue-class-component'
-import { Component, Prop, Ref, Vue } from 'vue-property-decorator'
+import { mixins } from 'vue-facing-decorator'
+import { Component, Prop, Ref } from 'vue-facing-decorator'
 
 @Component({})
 export default class SongList extends mixins(SongListMixin) {
@@ -206,8 +205,8 @@ export default class SongList extends mixins(SongListMixin) {
     const rightI = this.getNextField(this.activeHandlerKey)
 
     if (rightI) {
-      Vue.set(this.columnWidths, rightI - 1, prevWidthP + 1)
-      Vue.set(this.columnWidths, rightI, nextWidthP + 1)
+      this.columnWidths[rightI - 1] = prevWidthP + 1
+      this.columnWidths[rightI] = nextWidthP + 1
     }
   }
 

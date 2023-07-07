@@ -27,7 +27,13 @@
                 v-else-if="p.provider.IconComponent.endsWith('svg')"
                 :src="`media://${p.provider.IconComponent}`"
               />
-              <img v-else referrerPolicy="no-referrer" :src="a.icon" alt="provider icon" class="provider-icon" />
+              <img
+                v-else
+                referrerPolicy="no-referrer"
+                :src="p.provider.IconComponent"
+                alt="provider icon"
+                class="provider-icon"
+              />
             </template>
           </IconButton>
         </div>
@@ -47,9 +53,9 @@ import YoutubeIcon from '@/icons/YoutubeIcon.vue'
 import SpotifyIcon from '@/icons/SpotifyIcon.vue'
 import LastFMIcon from '@/icons/LastFMIcon.vue'
 import Person from '@/icons/PersonIcon.vue'
-import { Component } from 'vue-property-decorator'
+import { Component } from 'vue-facing-decorator'
 import ConfirmationModal from '@/commonComponents/ConfirmationModal.vue'
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import AccountsMixin from '@/utils/ui/mixins/AccountsMixin'
 import InvidiousIcon from '@/icons/InvidiousIcon.vue'
 import PipedIcon from '@/icons/PipedIcon.vue'
@@ -90,7 +96,7 @@ export default class TopBar extends mixins(AccountsMixin) {
       if (this.activeSignout) {
         this.activeSignout.provider.signOut()
 
-        this.$set(this.activeSignout, 'username', (await this.activeSignout.provider.getUserDetails()) ?? '')
+        this.activeSignout['username'] = (await this.activeSignout.provider.getUserDetails()) ?? ''
         this.activeSignout = null
       }
     }

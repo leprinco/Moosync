@@ -42,8 +42,8 @@ const enum ButtonEnum {
 
 const SONG_CHANGE_DEBOUNCE = 100
 
-import { Component, Prop, Ref, Watch } from 'vue-property-decorator'
-import { mixins } from 'vue-class-component'
+import { Component, Prop, Ref, Watch } from 'vue-facing-decorator'
+import { mixins } from 'vue-facing-decorator'
 import { Player } from '@/utils/ui/players/player'
 import { YoutubePlayer } from '@/utils/ui/players/youtube'
 import { LocalPlayer } from '@/utils/ui/players/local'
@@ -52,7 +52,6 @@ import CacheMixin from '@/utils/ui/mixins/CacheMixin'
 import { vxm } from '@/mainWindow/store'
 import ErrorHandler from '@/utils/ui/mixins/errorHandler'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
-import Vue from 'vue'
 import { InvidiousPlayer } from '../../../../utils/ui/players/invidious'
 import { DashPlayer } from '../../../../utils/ui/players/dash'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
@@ -65,6 +64,7 @@ import { SpotifyPlayer } from '@/utils/ui/players/spotify'
 import { isEmpty } from '@/utils/common'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
+import { nextTick } from 'vue'
 
 @Component({})
 export default class AudioStream extends mixins(
@@ -388,8 +388,8 @@ export default class AudioStream extends mixins(
   }
 
   private registerRoomListeners() {
-    // this.$root.$on('join-room', (data: string) => this.joinRoom(data))
-    // this.$root.$on('create-room', () => this.createRoom())
+    // bus.on('join-room', (data: string) => this.joinRoom(data))
+    // bus.on('create-room', () => this.createRoom())
   }
 
   private async onSongEnded() {
@@ -539,7 +539,7 @@ export default class AudioStream extends mixins(
         ) {
           // this.activePlayer.setPlaybackQuality('small')
           this?.pause()
-          Vue.nextTick(() => this.play())
+          nextTick(() => this.play())
 
           console.debug('Triggered buffer trap')
         }
@@ -591,7 +591,7 @@ export default class AudioStream extends mixins(
 
     vxm.player.$watch('playerState', this.onPlayerStateChanged, { immediate: true, deep: false })
 
-    bus.$on(EventBus.FORCE_LOAD_SONG, () => {
+    bus.on(EventBus.FORCE_LOAD_SONG, () => {
       if (this.currentSong) {
         this.loadAudio(this.currentSong, true, true)
       }
@@ -790,7 +790,7 @@ export default class AudioStream extends mixins(
       // Mutating those properties should also mutate song and vice-versa
       if (vxm.player.currentSong && song) {
         song.duration = res.duration
-        this.$set(song, 'playbackUrl', res.url)
+        song['playbackUrl'] = res.url
 
         this.setItem(`url_duration:${song._id}`, res)
 

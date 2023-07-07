@@ -47,8 +47,8 @@
 
 <script lang="ts">
 import CardView from '@/mainWindow/components/generic/CardView.vue'
-import { Component, Prop, Ref } from 'vue-property-decorator'
-import { Vue } from 'vue-property-decorator'
+import { Component, Prop, Ref } from 'vue-facing-decorator'
+import { Vue } from 'vue-facing-decorator'
 import TabCarousel from '../../components/generic/TabCarousel.vue'
 
 @Component({

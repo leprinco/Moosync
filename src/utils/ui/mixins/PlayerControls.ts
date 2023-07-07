@@ -7,7 +7,7 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue } from 'vue-facing-decorator'
 
 import { PeerMode } from '@/mainWindow/store/syncState'
 import { vxm } from '@/mainWindow/store'
@@ -37,7 +37,7 @@ export default class PlayerControls extends Vue {
   }
 
   public async showQueueSongsToast(length: number) {
-    this.$toasted.show(`Queued ${length} song${length !== 1 ? 's' : ''}`)
+    this.$toast(`Queued ${length} song${length !== 1 ? 's' : ''}`)
   }
 
   public async queueSong(songs: Song[], showToast = true) {
@@ -60,7 +60,7 @@ export default class PlayerControls extends Vue {
 
     if (!this.isSyncing) vxm.player.playAfterLoad = true
 
-    this.$toasted.show(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
+    this.$toast(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
     this.play()
   }
 
@@ -73,7 +73,7 @@ export default class PlayerControls extends Vue {
 
     if (!this.isSyncing) vxm.player.playAfterLoad = true
 
-    this.$toasted.show(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
+    this.$toast(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
   }
 
   public clearQueue() {
@@ -97,8 +97,8 @@ export default class PlayerControls extends Vue {
   public shuffle() {
     vxm.themes.queueSortBy = undefined
     vxm.player.shuffle()
-    this.$toasted.show('Shuffled', {
-      duration: 1000
+    this.$toast('Shuffled', {
+      autoClose: 1000
     })
   }
 

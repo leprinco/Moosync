@@ -21,8 +21,8 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator'
-import Vue from 'vue'
+import { Component } from 'vue-facing-decorator'
+import { Vue } from 'vue-facing-decorator'
 import HotkeyGroup from '../HotkeyGroup.vue'
 import { defaultKeybinds } from '@/utils/commonConstants'
 
