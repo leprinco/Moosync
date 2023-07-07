@@ -18,6 +18,7 @@ import UpdateIcon from '@/icons/UpdateIcon.vue'
 
 import { Component, Vue } from 'vue-facing-decorator'
 import ConfirmationModal from '@/commonComponents/ConfirmationModal.vue'
+import { toast } from 'vue3-toastify'
 
 @Component({
   components: {
@@ -32,7 +33,7 @@ export default class Update extends Vue {
 
   updateNow() {
     window.UpdateUtils.updateNow()
-    this.$toast('Update is downloading')
+    toast('Update is downloading')
   }
 }
 </script>

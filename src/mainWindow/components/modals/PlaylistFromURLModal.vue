@@ -61,7 +61,7 @@
               <SingleSearchResult
                 class="single-result"
                 :title="item.title"
-                :subtitle="item.artists ? item.artists.map((val) => val.artist_name).join(', ') : ''"
+                :subtitle="item.artists ? item.artists.map((val: Artists) => val.artist_name).join(', ') : ''"
                 :coverImg="getImgSrc(getValidImageLow(item))"
                 :divider="index != songList.length - 1"
                 :id="index"
@@ -91,6 +91,7 @@ import { v4 } from 'uuid'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
+import { toast } from 'vue3-toastify'
 
 @Component({
   components: {
@@ -181,7 +182,7 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
 
       if (!this.playlist.extension) await window.DBUtils.addToPlaylist(playlistId, ...this.songList)
 
-      this.$toast(`Added ${this.playlist.playlist_name} to library`)
+      toast(`Added ${this.playlist.playlist_name} to library`)
 
       this.playlist = null
       this.songList = []

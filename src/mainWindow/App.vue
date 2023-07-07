@@ -55,6 +55,8 @@ import PinEntryModal from './components/modals/PinEntryModal.vue'
 import { ExtensionProvider } from '@/utils/ui/providers/extensionWrapper'
 import { sortSongListFn } from '@/utils/common'
 import IncorrectPlaybackModal from './components/modals/IncorrectPlaybackModal.vue'
+import { toast } from 'vue3-toastify'
+import { toRaw } from 'vue'
 
 @Component({
   components: {
@@ -263,7 +265,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
         if (obj.id === 'completed-scan') {
           vxm.themes.refreshPage = true
         }
-        this.$toast(obj.message, {
+        toast(obj.message, {
           type: obj.id === 'completed-scan' ? 'success' : 'default'
         })
       }
@@ -401,7 +403,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       }
 
       if (data.type === 'show-toast') {
-        this.$toast(data.data.message, {
+        toast(data.data.message, {
           autoClose: Math.max(data.data.duration, 5000),
           type: data.data.type
         })
@@ -438,7 +440,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
 
         window.ExtensionUtils.sendEvent({
           type: 'songChanged',
-          data: [newVal]
+          data: [toRaw(newVal)]
         })
 
         const scrobbleableProviderList =
@@ -478,7 +480,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     vxm.player.$watch('playerState', (newVal: PlayerState) =>
       window.ExtensionUtils.sendEvent({
         type: 'playerStateChanged',
-        data: [newVal]
+        data: [toRaw(newVal)]
       })
     )
 
@@ -488,7 +490,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       volumeDebounce = setTimeout(() => {
         window.ExtensionUtils.sendEvent({
           type: 'volumeChanged',
-          data: [newVal]
+          data: [toRaw(newVal)]
         })
       }, 800)
     })
@@ -496,14 +498,14 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     vxm.player.$watch('songQueue', (newVal: SongQueue) =>
       window.ExtensionUtils.sendEvent({
         type: 'songQueueChanged',
-        data: [newVal]
+        data: [toRaw(newVal)]
       })
     )
 
     bus.on('forceSeek', (newVal: number) =>
       window.ExtensionUtils.sendEvent({
         type: 'seeked',
-        data: [newVal]
+        data: [toRaw(newVal)]
       })
     )
   }

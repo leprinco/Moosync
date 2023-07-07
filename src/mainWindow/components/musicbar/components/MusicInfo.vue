@@ -120,6 +120,7 @@ import { PeerMode } from '@/mainWindow/store/syncState'
 import CrossIcon from '@/icons/CrossIcon.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
+import { toRaw } from 'vue'
 
 @Component({
   components: {
@@ -190,9 +191,10 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   private async getLyricsFromExtension() {
     if (this.currentSong) {
       const { _id } = this.currentSong
+
       const resp = await window.ExtensionUtils.sendEvent({
         type: 'requestedLyrics',
-        data: [this.currentSong]
+        data: [toRaw(this.currentSong)]
       })
 
       const lyrics = resp && Object.values(resp).find((val) => !!val)
@@ -246,7 +248,8 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
         this.lyrics = 'Searching Lyrics...'
 
         const { _id } = this.currentSong
-        const resp = (await this.getLyricsFromExtension()) ?? (await window.SearchUtils.searchLyrics(this.currentSong))
+        const resp =
+          (await this.getLyricsFromExtension()) ?? (await window.SearchUtils.searchLyrics(toRaw(this.currentSong)))
 
         // Don't update lyrics if song has changed while fetching lyrics
         if (this.currentSong._id === _id) {
@@ -265,8 +268,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   }
 
   @Watch('currentIndex')
-  async onIndexChange(old: number, newVal: number) {
-    console.log(old, newVal)
+  async onIndexChange() {
     await this.$nextTick()
     this.scrollToActive()
   }

@@ -1,3 +1,4 @@
+import { toRaw } from 'vue'
 import { VuexModule } from './module'
 import Vuex from 'vuex'
 import { createProxy } from 'vuex-class-component'
@@ -37,7 +38,7 @@ export function getProxy<T extends typeof VuexModule>(
     for (const p of filteredPersist) {
       proxy.$watch(
         p.substring(p.indexOf('.') + 1),
-        (val) => window.PreferenceUtils.saveSelective(`persisted.${p}`, val),
+        (val) => window.PreferenceUtils.saveSelective(`persisted.${p}`, toRaw(val)),
         { deep: true, immediate: false }
       )
     }

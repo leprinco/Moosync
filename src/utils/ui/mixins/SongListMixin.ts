@@ -76,7 +76,7 @@ export default class SongListMixin extends Vue {
     this.setupKeyEvents()
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     this.destroyKeyEvents()
   }
 }

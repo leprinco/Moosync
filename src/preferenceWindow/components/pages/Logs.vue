@@ -241,7 +241,7 @@ export default class Logs extends Vue {
     })
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     window.LoggerUtils.unwatchLogs()
   }
 

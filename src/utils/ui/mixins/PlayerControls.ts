@@ -13,6 +13,7 @@ import { PeerMode } from '@/mainWindow/store/syncState'
 import { vxm } from '@/mainWindow/store'
 import { Player } from '../players/player'
 import { VolumePersistMode } from '@/utils/commonConstants'
+import { toast } from 'vue3-toastify'
 
 const maxp = 100
 
@@ -37,7 +38,7 @@ export default class PlayerControls extends Vue {
   }
 
   public async showQueueSongsToast(length: number) {
-    this.$toast(`Queued ${length} song${length !== 1 ? 's' : ''}`)
+    toast(`Queued ${length} song${length !== 1 ? 's' : ''}`)
   }
 
   public async queueSong(songs: Song[], showToast = true) {
@@ -51,7 +52,6 @@ export default class PlayerControls extends Vue {
   }
 
   public async playTop(songs: Song[]) {
-    console.log(songs.map((val) => val.title))
     if (this.isSyncing) {
       await vxm.sync.pushInQueue({ item: songs.slice(), top: true, skipImmediate: vxm.sync.queueOrder.length > 0 })
     } else {
@@ -60,7 +60,8 @@ export default class PlayerControls extends Vue {
 
     if (!this.isSyncing) vxm.player.playAfterLoad = true
 
-    this.$toast(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
+    console.log(this)
+    toast(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
     this.play()
   }
 
@@ -73,7 +74,7 @@ export default class PlayerControls extends Vue {
 
     if (!this.isSyncing) vxm.player.playAfterLoad = true
 
-    this.$toast(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
+    toast(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
   }
 
   public clearQueue() {
@@ -97,7 +98,7 @@ export default class PlayerControls extends Vue {
   public shuffle() {
     vxm.themes.queueSortBy = undefined
     vxm.player.shuffle()
-    this.$toast('Shuffled', {
+    toast('Shuffled', {
       autoClose: 1000
     })
   }

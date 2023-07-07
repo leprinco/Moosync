@@ -10,13 +10,14 @@
 import { Component, Vue } from 'vue-facing-decorator'
 import { vxm } from '@/mainWindow/store'
 import { mergeDeep } from '@/utils/common'
+import { toast } from 'vue3-toastify'
 
 @Component
 export default class RemoteSong extends Vue {
   public async addSongsToLibrary(...songs: Song[]) {
     const storedSongs = await window.DBUtils.storeSongs(songs)
     this.fetchCoverDetails(...storedSongs)
-    this.$toast(`Added ${songs.length} songs to library`)
+    toast(`Added ${songs.length} songs to library`)
   }
 
   private async fetchCoverDetails(...songs: (Song | undefined)[]) {

@@ -9,9 +9,9 @@
  *  See LICENSE in the project root for license information.
  */
 
-import VueRouter from 'vue-router'
+import { createRouter, RouteRecordRaw, createWebHashHistory, createWebHistory } from 'vue-router'
 
-const routes: VueRouter.RouteRecordRaw[] = [
+const routes: RouteRecordRaw[] = [
   {
     name: 'index',
     path: '',
@@ -78,10 +78,10 @@ const routes: VueRouter.RouteRecordRaw[] = [
   }
 ]
 
-export const router = VueRouter.createRouter({
+export const router = createRouter({
   history: process.env.IS_ELECTRON
-    ? VueRouter.createWebHashHistory(process.env.BASE_URL)
-    : VueRouter.createWebHistory(process.env.BASE_URL),
+    ? createWebHashHistory(process.env.BASE_URL)
+    : createWebHistory(process.env.BASE_URL),
   routes: [
     {
       path: '/',

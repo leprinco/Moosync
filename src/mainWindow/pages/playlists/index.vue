@@ -287,7 +287,6 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   }
 
   sortMenuHandler(event: MouseEvent) {
-    console.log('clicked on sort')
     this.getContextMenu(event, {
       type: 'PLAYLIST_SORT',
       args: {

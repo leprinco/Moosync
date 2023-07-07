@@ -41,10 +41,9 @@
 </template>
 
 <script lang="ts">
-import { Vue } from 'vue-facing-decorator'
-import { Component, Prop } from 'vue-facing-decorator'
+import { Component, Prop, Vue } from 'vue-facing-decorator'
 
-@Component({})
+@Component
 export default class YoutubeIcon extends Vue {
   @Prop({ default: 'white' })
   color!: string

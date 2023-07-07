@@ -64,7 +64,7 @@ import { SpotifyPlayer } from '@/utils/ui/players/spotify'
 import { isEmpty } from '@/utils/common'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import { nextTick } from 'vue'
+import { nextTick, toRaw } from 'vue'
 
 @Component({})
 export default class AudioStream extends mixins(
@@ -644,17 +644,18 @@ export default class AudioStream extends mixins(
    * Set media info which is recognised by different applications and OS specific API
    */
   private async setMediaInfo(song: Song) {
+    const raw = toRaw(song)
     await window.MprisUtils.updateSongInfo({
-      title: song.title,
-      albumName: song.album?.album_name,
-      albumArtist: song.album?.album_artist,
-      artistName: song.artists && song.artists.map((val) => val.artist_name).join(', '),
-      genres: song.genre,
+      title: raw.title,
+      albumName: raw.album?.album_name,
+      albumArtist: raw.album?.album_artist,
+      artistName: raw.artists && raw.artists.map((val) => val.artist_name).join(', '),
+      genres: raw.genre,
       thumbnail:
-        song.song_coverPath_high ??
-        song.album?.album_coverPath_high ??
-        song.song_coverPath_low ??
-        song.album?.album_coverPath_low
+        raw.song_coverPath_high ??
+        raw.album?.album_coverPath_high ??
+        raw.song_coverPath_low ??
+        raw.album?.album_coverPath_low
     })
   }
 
@@ -752,13 +753,13 @@ export default class AudioStream extends mixins(
     const songExists = (
       await window.SearchUtils.searchSongsByOptions({
         song: {
-          _id: song._id
+          _id: toRaw(song._id)
         }
       })
     )[0]
 
     if (songExists) {
-      await window.DBUtils.updateSongs([song])
+      await window.DBUtils.updateSongs([toRaw(song)])
     }
   }
 
@@ -790,7 +791,7 @@ export default class AudioStream extends mixins(
       // Mutating those properties should also mutate song and vice-versa
       if (vxm.player.currentSong && song) {
         song.duration = res.duration
-        song['playbackUrl'] = res.url
+        song.playbackUrl = res.url
 
         this.setItem(`url_duration:${song._id}`, res)
 

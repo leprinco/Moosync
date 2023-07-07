@@ -9,7 +9,6 @@
 
 import { Component } from 'vue-facing-decorator'
 import { EventBus } from '@/utils/main/ipc/constants'
-import { MenuItem } from 'vue-context-menu-popup'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import { bus } from '@/mainWindow/main'
@@ -17,6 +16,13 @@ import { mixins } from 'vue-facing-decorator'
 import { vxm } from '@/mainWindow/store'
 import JukeboxMixin from './JukeboxMixin'
 import ProviderMixin from './ProviderMixin'
+import { toast } from 'vue3-toastify'
+
+type MenuItem = {
+  label?: string
+  handler?: () => void
+  children?: MenuItem[]
+}
 
 @Component
 export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong, JukeboxMixin, ProviderMixin) {
@@ -193,7 +199,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
 
     const url = await provider?.getRemoteURL(song)
     if (url) window.WindowUtils.openExternal(url)
-    else this.$toast(`No URL found for ${song.title}`, { type: 'error' })
+    else toast(`No URL found for ${song.title}`, { type: 'error' })
   }
 
   private async getSongContextMenu(
@@ -312,7 +318,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
         label: this.$tc('contextMenu.playlist.save'),
         handler: async () => {
           await window.DBUtils.createPlaylist(playlist)
-          this.$toast(`Added ${playlist.playlist_name} to library`)
+          toast(`Added ${playlist.playlist_name} to library`)
         }
       })
     }
@@ -430,7 +436,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
   }
 
   public async getContextMenu(event: Event, options: ContextMenuArgs) {
-    let items: { label: string; handler?: () => void }[] = []
+    let items: MenuItem[] = []
     switch (options.type) {
       case 'SONGS':
         items = await this.getSongContextMenu(
@@ -538,7 +544,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     return []
   }
 
-  private emitMenu(event: Event, items: { label: string; handler?: () => void }[]) {
+  private emitMenu(event: Event, items: MenuItem[]) {
     if (!this.isJukeboxModeActive) {
       bus.emit(EventBus.SHOW_CONTEXT, event, items)
     }

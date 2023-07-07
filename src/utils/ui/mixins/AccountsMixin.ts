@@ -11,12 +11,11 @@ import { Component } from 'vue-facing-decorator'
 import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import { mixins } from 'vue-facing-decorator'
 import ProviderMixin from './ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
 
 @Component
-export default class AccountsMixin extends mixins(ProviderMixin) {
+export default class AccountsMixin extends ProviderMixin {
   private _signoutProvider?: (provider: Provider) => void
 
   set signoutMethod(signout: ((provider: Provider) => void) | undefined) {

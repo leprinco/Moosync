@@ -12,31 +12,27 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-facing-decorator'
-import Vue from 'vue'
+import { Component, Vue } from 'vue-facing-decorator'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import 'vue-context-menu-popup/dist/vue-context-menu-popup.css'
-import ContextMenu from 'vue-context-menu-popup'
-import { ContextMenuComponent, MenuItem } from 'vue-context-menu-popup'
 
 @Component({
   components: {
-    ContextMenu
+    // ContextMenu
   }
 })
 export default class Context extends Vue {
-  menu: MenuItem[] = []
   mounted() {
-    bus.on(EventBus.SHOW_CONTEXT, (event: Event, items: MenuItem[]) => {
-      this.menu = items
-      ;(this.$refs.contextMenu as ContextMenuComponent).open(event)
+    bus.on(EventBus.SHOW_CONTEXT, (event: Event, items: unknown[]) => {
+      console.log('showing context menu', event, items)
+      // this.menu = items
+      // ;(this.$refs.contextMenu as ContextMenuComponent).open(event)
     })
   }
 
   hideContextMenu() {
-    null
-    ;(this.$refs.contextMenu as ContextMenuComponent).close()
+    console.log('hiding context menu')
+    // ;(this.$refs.contextMenu as ContextMenuComponent).close()
   }
 }
 </script>

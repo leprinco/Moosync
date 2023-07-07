@@ -40,9 +40,11 @@ import { mixins } from 'vue-facing-decorator'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import { ProviderScopes } from '@/utils/commonConstants'
 import { arrayDiff, emptyGen, getRandomFromArray } from '@/utils/common'
 import ProviderFetchMixin from '@/utils/ui/mixins/ProviderFetchMixin'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
+import { ProviderScopes } from '@/utils/commonConstants'
+import { toast } from 'vue3-toastify'
 
 @Component({
   components: {
@@ -57,7 +59,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
 
   private invalidateCache = false
 
-  private providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_SONGS)
+  private providers: GenericProvider[] = []
 
   private getPlaylistOwnerProvider() {
     if (this.playlist?.playlist_id) {
@@ -109,6 +111,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   }
 
   async created() {
+    this.providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_SONGS)
     this.localSongFetch = async (sortBy) =>
       window.SearchUtils.searchSongsByOptions({
         playlist: {
@@ -183,7 +186,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
 
   addPlaylistToLibrary() {
     window.DBUtils.createPlaylist(this.playlist)
-    this.$toast(`Added ${this.playlist.playlist_name} to library`)
+    toast(`Added ${this.playlist.playlist_name} to library`)
   }
 
   onSearchChange() {

@@ -1,11 +1,11 @@
 import { Component } from 'vue-facing-decorator'
 import { GenericProvider } from '../providers/generics/genericProvider'
-import { mixins } from 'vue-facing-decorator'
 import { vxm } from '@/mainWindow/store'
 import ProviderMixin from './ProviderMixin'
+import { toRaw } from 'vue'
 
 @Component
-export default class ProviderFetchMixin extends mixins(ProviderMixin) {
+export default class ProviderFetchMixin extends ProviderMixin {
   private loadingMap: Record<string, boolean> = {}
   public songList: Song[] = []
   generator:
@@ -70,7 +70,7 @@ export default class ProviderFetchMixin extends mixins(ProviderMixin) {
 
   async fetchSongList() {
     this.loadingMap['local'] = true
-    this.songList = (await this.localSongFetch?.(vxm.themes.songSortBy)) ?? []
+    this.songList = (await this.localSongFetch?.(toRaw(vxm.themes.songSortBy))) ?? []
     this.optionalSongList['local'] = this.songList.map((val) => val._id)
     this.loadingMap['local'] = false
   }

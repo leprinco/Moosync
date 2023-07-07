@@ -126,7 +126,7 @@ export default class SongList extends mixins(SongListMixin) {
     this.setupMouseEvents()
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     this.destroyMouseEvents()
   }
 
@@ -247,7 +247,6 @@ export default class SongList extends mixins(SongListMixin) {
   }
 
   async onTextClick(key: TableFields, item: Song | Artists) {
-    console.log(key, item)
     if (key === 'artist_name') {
       const data = await window.SearchUtils.searchEntityByOptions({
         artist: { artist_id: (item as Artists).artist_id }

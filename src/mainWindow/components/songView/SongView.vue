@@ -14,8 +14,8 @@
       enter-active-class="animate__animated animate__slideInLeft animate__delay-1s animate__slideInLeft_delay"
       leave-active-class="animate__animated animate__slideOutRight animate__slideOutRight_faster"
     >
-      <component
-        v-bind:is="songView"
+      <SongViewCompact
+        v-if="songView === 'SongViewCompact'"
         :songList="filteredSongList"
         :currentSong="currentSong"
         :defaultDetails="defaultDetails"
@@ -23,11 +23,11 @@
         :optionalProviders="optionalProviders"
         :isLoading="isLoading"
         @onItemsChanged="onOptionalProviderChanged"
-        @onRowDoubleClicked="queueSong([arguments[0]])"
+        @onRowDoubleClicked="(song: Song) => queueSong([song])"
         @onRowContext="onSongContextMenu"
         @onRowSelected="updateCoverDetails"
         @onRowSelectionClear="clearSelection"
-        @onRowPlayNowClicked="playTop([arguments[0]])"
+        @onRowPlayNowClicked="(song: Song) => playTop([song])"
         @onArtistClicked="gotoArtist"
         @onAlbumClicked="gotoAlbum"
         @playAll="playAll"
@@ -38,7 +38,33 @@
         @playRandom="playRandom"
         @fetchAll="fetchAll"
         @scroll="onScroll"
-      ></component>
+      ></SongViewCompact>
+
+      <SongViewClassic
+        v-else
+        :songList="filteredSongList"
+        :currentSong="currentSong"
+        :defaultDetails="defaultDetails"
+        :detailsButtonGroup="detailsButtonGroup"
+        :optionalProviders="optionalProviders"
+        :isLoading="isLoading"
+        @onItemsChanged="onOptionalProviderChanged"
+        @onRowDoubleClicked="(song: Song) => queueSong([song])"
+        @onRowContext="onSongContextMenu"
+        @onRowSelected="updateCoverDetails"
+        @onRowSelectionClear="clearSelection"
+        @onRowPlayNowClicked="(song: Song) => playTop([song])"
+        @onArtistClicked="gotoArtist"
+        @onAlbumClicked="gotoAlbum"
+        @playAll="playAll"
+        @addToQueue="addToQueue"
+        @addToLibrary="addToLibrary"
+        @onSortClicked="showSortMenu"
+        @onSearchChange="onSearchChange"
+        @playRandom="playRandom"
+        @fetchAll="fetchAll"
+        @scroll="onScroll"
+      ></SongViewClassic>
     </transition>
   </b-container>
 </template>

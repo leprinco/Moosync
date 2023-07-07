@@ -27,7 +27,6 @@
 <script lang="ts">
 import { Component, Prop } from 'vue-facing-decorator'
 import { mixins } from 'vue-facing-decorator'
-import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import SongListCompact from './SongListCompact.vue'
@@ -39,7 +38,7 @@ import SongDetailsCompact from './SongDetailsCompact.vue'
     SongDetailsCompact
   }
 })
-export default class SongViewCompact extends mixins(PlayerControls, RemoteSong, ImgLoader) {
+export default class SongViewCompact extends mixins(RemoteSong, ImgLoader) {
   @Prop({ default: () => [] })
   songList!: Song[]
 
@@ -69,5 +68,9 @@ export default class SongViewCompact extends mixins(PlayerControls, RemoteSong, 
     }
   })
   detailsButtonGroup!: SongDetailButtons
+
+  playTop(item: Song) {
+    console.log('play now', item)
+  }
 }
 </script>

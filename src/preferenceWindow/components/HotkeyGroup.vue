@@ -54,7 +54,6 @@ import PreferenceHeader from './PreferenceHeader.vue'
 import { ExtensionPreferenceMixin } from '../mixins/extensionPreferenceMixin'
 import { HotkeyEvents, HotKeyEventsExtras } from '@/utils/commonConstants'
 import CrossIcon from '@/icons/CrossIcon.vue'
-import { OptionBuilder } from 'vue-facing-decorator/dist/optionBuilder'
 
 @Component({
   components: {
@@ -65,10 +64,7 @@ import { OptionBuilder } from 'vue-facing-decorator/dist/optionBuilder'
 export default class HotkeyGroup extends mixins(ExtensionPreferenceMixin) {
   declare value: HotkeyPair[]
 
-  constructor(optionBuilder: OptionBuilder, vueInstance: any) {
-    super(optionBuilder, vueInstance)
-    this.shouldMergeDefaultValues = false
-  }
+  shouldMergeDefaultValues = false
 
   get definedActions() {
     return this.value

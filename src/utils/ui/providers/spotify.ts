@@ -619,7 +619,6 @@ export class SpotifyProvider extends GenericProvider {
         libraryTracks = libraryTracks.sort(() => 0.5 - Math.random()).slice(0, 5)
       }
 
-      console.log(libraryTracks)
       seedTracks.push(...libraryTracks.map((val) => val._id.replace('spotify:', '')))
 
       if (seedTracks.length < 5) {

@@ -12,7 +12,8 @@ import merge from 'deepmerge'
 
 export function createPersist() {
   return (store: Store<{ state: unknown }>) => {
-    setInitialState(store)
+    store
+    // setInitialState(store)
   }
 }
 
