@@ -180,7 +180,7 @@ module.exports = {
             releaseType: 'draft'
           }
         ],
-        files: ['**/*', '!node_modules/librespot-node/native/target/*'],
+        files: ['**/*', '!node_modules/librespot-node/native/target/*', '!node_modules/scanner-native/target/*'],
         asarUnpack: [
           '*.worker.js',
           'sandbox.js',
