@@ -119,7 +119,9 @@ module.exports = {
             'libicu-dev',
             'libasound2-dev',
             'libvips-dev'
-          ]
+          ],
+          // https://github.com/electron-userland/electron-builder/issues/4982#issuecomment-641598670
+          publish: ['github']
         },
         deb: {
           depends: ['libnotify4', 'libxtst6', 'libnss3', 'libatomic1', 'libicu-dev', 'libasound2-dev']
@@ -176,10 +178,6 @@ module.exports = {
             repo: 'Moosync',
             vPrefixedTagName: true,
             releaseType: 'draft'
-          },
-          {
-            provider: 'snapStore',
-            repo: 'moosync'
           }
         ],
         files: ['**/*', '!node_modules/librespot-node/native/target/*'],
