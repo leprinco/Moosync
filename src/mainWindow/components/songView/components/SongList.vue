@@ -25,7 +25,7 @@
               :key="`handler-${field.key}`"
               :id="field.key"
               class="handler"
-              @mousedown="mouseDown(arguments[0], field.key)"
+              @mousedown="mouseDown($event, field.key)"
             ></div>
           </template>
         </div>
@@ -38,7 +38,7 @@
           key-field="_id"
           :direction="'vertical'"
           v-click-outside="clearSelection"
-          @scroll.native="onScroll"
+          @scroll="onScroll"
         >
           <template v-slot="{ item, index }">
             <div class="wrapper w-100 field-content" :class="{ selectedItem: selected.includes(index) }">
@@ -50,7 +50,7 @@
                 :title="getFieldTitle(field.key, item, index)"
                 @dblclick="onRowDoubleClicked(item)"
                 @click="onRowSelected(index)"
-                @contextmenu="onRowContext(arguments[0], item)"
+                @contextmenu="onRowContext($event, item)"
               >
                 <div
                   :class="field.key === 'album_name' ? 'col-content' : ''"

@@ -17,7 +17,7 @@
           :buttonGroup="detailsButtonGroup"
           :currentSong="currentSong"
           :optionalProviders="optionalProviders"
-          v-on="$listeners"
+          v-bind="$attrs"
         />
       </b-row>
       <b-row no-gutters class="list-container">
@@ -30,7 +30,7 @@
             { key: 'artist_name', label: 'Artists' }
           ]"
           :isLoading="isLoading"
-          v-on="$listeners"
+          v-bind="$attrs"
         />
       </b-row>
     </b-col>

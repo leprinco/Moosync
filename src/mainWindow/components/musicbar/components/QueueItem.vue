@@ -12,7 +12,7 @@
     <b-row class="item-row">
       <b-col cols="auto" class="img-container h-100 d-flex justify-content-start">
         <LowImageCol
-          @click.native="playSong"
+          @click="playSong"
           height="56px"
           width="56px"
           :src="getValidImageLow(song)"

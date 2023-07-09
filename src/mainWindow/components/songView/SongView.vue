@@ -27,7 +27,7 @@
         @onRowContext="onSongContextMenu"
         @onRowSelected="updateCoverDetails"
         @onRowSelectionClear="clearSelection"
-        @onRowPlayNowClicked="(song: Song) => playTop([song])"
+        @onRowPlayNowClicked="(song: Song) => console.log('playing top')"
         @onArtistClicked="gotoArtist"
         @onAlbumClicked="gotoAlbum"
         @playAll="playAll"

@@ -15,11 +15,11 @@
         :buttonGroup="detailsButtonGroup"
         :currentSong="currentSong"
         :isLoading="isLoading"
-        v-on="$listeners"
+        v-bind="$attrs"
       />
     </b-col>
     <b-col cols="8" xl="9" class="h-100 song-list-compact">
-      <SongListCompact :optionalProviders="optionalProviders" :songList="songList" v-on="$listeners" />
+      <SongListCompact :optionalProviders="optionalProviders" :songList="songList" v-bind="$attrs" />
     </b-col>
   </b-row>
 </template>
@@ -68,6 +68,10 @@ export default class SongViewCompact extends mixins(RemoteSong, ImgLoader) {
     }
   })
   detailsButtonGroup!: SongDetailButtons
+
+  mounted() {
+    console.log(this.$attrs)
+  }
 
   playTop(item: Song) {
     console.log('play now', item)

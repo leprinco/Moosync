@@ -39,11 +39,7 @@
               </div>
 
               <div v-if="cardHoverText" :class="`hoverText ${pinHoverText ? 'visible-always' : ''}`">
-                <PinIcon
-                  :filled="pinHoverText"
-                  @click.native="pinHoverText = !pinHoverText"
-                  class="pin-icon button-grow"
-                />
+                <PinIcon :filled="pinHoverText" @click="pinHoverText = !pinHoverText" class="pin-icon button-grow" />
                 <div class="black-overlay"></div>
                 <div v-html="parsedCardHoverText"></div>
               </div>
@@ -77,15 +73,15 @@
     <b-row no-gutters class="flex-fill mt-2">
       <b-col>
         <div v-if="buttonGroup.enableContainer" class="button-group d-flex">
-          <PlainPlay v-if="!isJukeboxModeActive" :title="$t('buttons.playSingle', { title })" @click.native="playAll" />
-          <AddToQueue :title="$t('buttons.addToQueue', { title })" @click.native="addToQueue" />
+          <PlainPlay v-if="!isJukeboxModeActive" :title="$t('buttons.playSingle', { title })" @click="playAll" />
+          <AddToQueue :title="$t('buttons.addToQueue', { title })" @click="addToQueue" />
           <AddToLibrary
             :title="$t('buttons.addToLibrary', { title })"
-            @click.native="addToLibrary"
+            @click="addToLibrary"
             v-if="buttonGroup.enableLibraryStore"
           />
-          <RandomIcon v-if="buttonGroup.playRandom" :title="$t('buttons.playRandom')" @click.native="playRandom" />
-          <FetchAllIcon v-if="buttonGroup.fetchAll" :title="$t('buttons.fetchAll')" @click.native="fetchAll" />
+          <RandomIcon v-if="buttonGroup.playRandom" :title="$t('buttons.playRandom')" @click="playRandom" />
+          <FetchAllIcon v-if="buttonGroup.fetchAll" :title="$t('buttons.fetchAll')" @click="fetchAll" />
         </div>
       </b-col>
     </b-row>

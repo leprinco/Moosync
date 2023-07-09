@@ -42,7 +42,7 @@
                       :is="isEditable(key) ? 'b-input' : 'div'"
                       :value="getValue(key)"
                       placeholder="Enter value"
-                      @input="changeEntityField(key, arguments[0])"
+                      @input="changeEntityField(key, $event)"
                     >
                       <span class="text-truncate" v-if="!isEditable(key)">{{ getValue(key) }}</span>
                     </component>

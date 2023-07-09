@@ -9,7 +9,7 @@
 
 <template>
   <div>
-    <UpdateIcon @click.native="confirmUpdate" />
+    <UpdateIcon @click="confirmUpdate" />
     <ConfirmationModal keyword="update Moosync" id="updateConfirmationModal" @confirm="updateNow" />
   </div>
 </template>

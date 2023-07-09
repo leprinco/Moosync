@@ -31,8 +31,8 @@
             :imgSrc="playlist.playlist_coverPath"
             :id="playlist.playlist_id"
             :iconBgColor="getIconBgColor(playlist)"
-            @click.native="gotoPlaylist(playlist)"
-            @CardContextMenu="getPlaylistMenu(arguments[0], playlist)"
+            @click="gotoPlaylist(playlist)"
+            @CardContextMenu="getPlaylistMenu($event, playlist)"
           >
             <template #icon>
               <IconHandler class="h-100" :item="playlist" />

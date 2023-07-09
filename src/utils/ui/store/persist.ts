@@ -9,22 +9,22 @@
 
 import { Store } from 'vuex'
 import merge from 'deepmerge'
+import { toRaw } from 'vue'
 
 export function createPersist() {
   return (store: Store<{ state: unknown }>) => {
-    store
-    // setInitialState(store)
+    setInitialState(store)
   }
 }
 
 async function setInitialState(store: Store<{ state: unknown }>) {
   const savedState = await window.PreferenceUtils.loadSelective<boolean>('persisted', false)
   if (savedState) {
-    store.replaceState(
-      merge(store.state, savedState, {
-        arrayMerge: (_, saved) => saved,
-        clone: false
-      })
-    )
+    const merged = merge(toRaw(store.state), savedState, {
+      arrayMerge: (_, saved) => saved,
+      clone: false
+    })
+
+    store.replaceState(merged)
   }
 }

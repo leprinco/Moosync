@@ -20,7 +20,7 @@ export abstract class GenericProvider {
   protected authInitialized: Promise<void>
   protected authInitializedResolver!: () => void
 
-  public loggedIn = false
+  public abstract readonly loggedIn: boolean
 
   constructor() {
     this.updateConfig()

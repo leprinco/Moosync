@@ -13,7 +13,6 @@ import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 import { AuthorizationServiceConfiguration } from '@openid/appauth'
 import { once } from 'events'
 import qs from 'qs'
-import { vxm } from '../../../mainWindow/store/index'
 import { parseISO8601Duration } from '@/utils/common'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
@@ -33,6 +32,8 @@ enum ApiResources {
 export class YoutubeProvider extends GenericProvider {
   private auth!: AuthFlow
   private _config!: ReturnType<YoutubeProvider['getConfig']>
+
+  loggedIn = false
 
   public get key() {
     return 'youtube'
@@ -99,12 +100,12 @@ export class YoutubeProvider extends GenericProvider {
     if (this.auth) {
       const validRefreshToken = await this.auth.hasValidRefreshToken()
       if ((await this.auth.loggedIn()) || validRefreshToken) {
-        vxm.providers.loggedInYoutube = true
+        this.loggedIn = true
       } else {
-        vxm.providers.loggedInYoutube = false
+        this.loggedIn = false
       }
 
-      return vxm.providers.loggedInYoutube
+      return this.loggedIn
     }
     return false
   }

@@ -73,7 +73,7 @@
         </b-row>
       </div>
     </b-container>
-    <CrossIcon @click.native="close" class="close-icon button-grow" />
+    <CrossIcon @click="close" class="close-icon button-grow" />
   </b-modal>
 </template>
 

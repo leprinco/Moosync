@@ -49,6 +49,8 @@ export class SpotifyProvider extends GenericProvider {
   private auth?: AuthFlow
   private _config!: ReturnType<SpotifyProvider['getConfig']>
 
+  public loggedIn = false
+
   public canPlayPremium = false
   public async shouldPlayPremium() {
     return (
@@ -173,12 +175,12 @@ export class SpotifyProvider extends GenericProvider {
     if (this.auth) {
       const validRefreshToken = await this.auth.hasValidRefreshToken()
       if ((await this.auth.loggedIn()) || validRefreshToken) {
-        vxm.providers.loggedInSpotify = true
+        this.loggedIn = true
       } else {
-        vxm.providers.loggedInSpotify = false
+        this.loggedIn = false
       }
 
-      return vxm.providers.loggedInSpotify
+      return this.loggedIn
     }
 
     return false

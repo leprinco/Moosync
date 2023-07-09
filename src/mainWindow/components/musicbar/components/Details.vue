@@ -17,7 +17,7 @@
         v-if="imgSrc && !forceEmptyImg"
         :src="imgSrc"
         alt="cover art"
-        @error="handlerImageError(arguments[0], handleError)"
+        @error="handlerImageError($event, handleError)"
         @dragstart="dragFile"
         referrerPolicy="no-referrer"
       />

@@ -75,8 +75,8 @@ export default class LowImageCol extends mixins(ImgLoader) {
     this.forceEmptyImg = true
   }
 
-  emitClick() {
-    this.$emit('imgClicked')
+  emitClick(event: MouseEvent) {
+    this.$emit('imgClicked', event)
   }
 }
 </script>

@@ -23,8 +23,10 @@ export class PipedProvider extends GenericProvider {
   private api = new FetchWrapper()
   private _token: string | undefined
 
+  public loggedIn = false
+
   public async getLoggedIn(): Promise<boolean> {
-    vxm.providers.loggedInYoutube = !!this._token
+    this.loggedIn = !!this._token
     return !!this._token
   }
 

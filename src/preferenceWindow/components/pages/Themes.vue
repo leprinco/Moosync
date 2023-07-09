@@ -23,7 +23,7 @@
         <b-col cols="5" xl="3" class="p-2">
           <div class="theme-component-container">
             <ThemeComponentClassic
-              @click.native="setSongView('classic')"
+              @click="setSongView('classic')"
               :selected="isSongView('classic')"
               :id="getRandomID()"
               :colors="currentTheme"
@@ -34,7 +34,7 @@
         <b-col cols="5" xl="3" class="p-2">
           <div class="theme-component-container">
             <ThemeComponentCompact
-              @click.native="setSongView('compact')"
+              @click="setSongView('compact')"
               :selected="isSongView('compact')"
               :id="getRandomID()"
               :colors="currentTheme"
@@ -56,8 +56,8 @@
           <div class="theme-component-container">
             <component
               :is="themesComponent"
-              @click.native="setTheme('default')"
-              @contextmenu.native="themeMenu(arguments[0], defaultTheme)"
+              @click="setTheme('default')"
+              @contextmenu="themeMenu($event, defaultTheme)"
               :selected="isThemeActive('default')"
               :id="getRandomID()"
               :colors="defaultTheme.theme"
@@ -70,10 +70,10 @@
           <div class="theme-component-container">
             <component
               :is="themesComponent"
-              @click.native="setTheme(value.id)"
+              @click="setTheme(value.id)"
               :selected="isThemeActive(value.id)"
               :id="value.id"
-              @contextmenu.native="themeMenu(arguments[0], value)"
+              @contextmenu="themeMenu($event, value)"
               :colors="value.theme"
             />
             <div class="title">{{ value.name }}</div>
@@ -84,7 +84,7 @@
         </b-col>
         <b-col cols="5" xl="3" class="p-2">
           <div class="theme-component-container">
-            <Add @click.native="openNewThemeModal" />
+            <Add @click="openNewThemeModal" />
             {{ $t('settings.themes.createTheme') }}
           </div>
         </b-col>
@@ -116,7 +116,7 @@ import DeleteModal from '@/commonComponents/ConfirmationModal.vue'
 import MultiButtonModal from '../../../commonComponents/MultiButtonModal.vue'
 import CreatePlaylistIcon from '@/icons/CreatePlaylistIcon.vue'
 import ImportThemeIcon from '@/icons/ImportThemeIcon.vue'
-import { bus } from '@/mainWindow/main'
+import { bus } from '@/preferenceWindow/main'
 
 @Component({
   components: {

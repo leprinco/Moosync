@@ -79,7 +79,7 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
   get defaultDetails(): SongDetailDefaults {
     return {
       defaultTitle: this.artist?.artist_name,
-      defaultSubSubtitle: this.$tc('songView.details.songCount', this.filteredSongList.length),
+      defaultSubSubtitle: this.$t('songView.details.songCount', this.filteredSongList.length),
       defaultCover: this.artist?.artist_coverPath
     }
   }

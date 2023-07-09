@@ -22,7 +22,7 @@
             alt="Album Art"
             :class="[isOverlayExists ? 'overlay-base' : '']"
             class="img-fluid w-100 h-100"
-            @error="handlerImageError(arguments[0], handleError)"
+            @error="handlerImageError($event, handleError)"
           />
           <div class="overlay me-auto justify-content-center d-flex align-items-center h-100 w-100">
             <slot name="overlay" />

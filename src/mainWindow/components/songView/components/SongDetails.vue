@@ -17,7 +17,7 @@
             v-if="computedImg"
             class="image h-100"
             :src="computedImg"
-            @error="handlerImageError(arguments[0], handleError)"
+            @error="handlerImageError($event, handleError)"
             referrerPolicy="no-referrer"
           />
           <SongDefault v-else class="h-100 image" />
@@ -58,25 +58,21 @@
           <b-row no-gutters align-v="end" align-h="between" class="flex-fill mt-2 button-row">
             <b-col cols="auto">
               <div v-if="buttonGroup.enableContainer" class="button-group d-flex">
-                <PlainPlay :title="$t('buttons.playSingle', { title })" @click.native="playAll" />
-                <AddToQueue :title="$t('buttons.addToQueue', { title })" @click.native="addToQueue" />
+                <PlainPlay :title="$t('buttons.playSingle', { title })" @click="playAll" />
+                <AddToQueue :title="$t('buttons.addToQueue', { title })" @click="addToQueue" />
                 <AddToLibrary
                   :title="$t('buttons.addToLibrary', { title })"
-                  @click.native="addToLibrary"
+                  @click="addToLibrary"
                   v-if="buttonGroup.enableLibraryStore"
                 />
-                <RandomIcon
-                  v-if="buttonGroup.playRandom"
-                  :title="$t('buttons.playRandom')"
-                  @click.native="playRandom"
-                />
-                <FetchAllIcon v-if="buttonGroup.fetchAll" :title="$t('buttons.fetchAll')" @click.native="fetchAll" />
+                <RandomIcon v-if="buttonGroup.playRandom" :title="$t('buttons.playRandom')" @click="playRandom" />
+                <FetchAllIcon v-if="buttonGroup.fetchAll" :title="$t('buttons.fetchAll')" @click="fetchAll" />
               </div>
             </b-col>
             <b-col cols="auto">
               <TabCarousel
                 class="tab-carousel"
-                v-on="$listeners"
+                v-bind="$attrs"
                 :items="optionalProviders"
                 defaultBackgroundColor="var(--tertiary)"
                 :isSortAsc="isSortAsc"

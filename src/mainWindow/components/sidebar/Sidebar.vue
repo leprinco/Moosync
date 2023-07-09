@@ -20,7 +20,7 @@
     >
       <template #header>
         <div class="d-flex w-100 mt-3 justify-content-between">
-          <Toggle class="toggle" @click.native="toggleOpen()" />
+          <Toggle class="toggle" @click="toggleOpen()" />
           <!-- <Rooms class="rooms-button" id="rooms" v-if="showRoomsButton" />
           <b-popover
             v-if="showRoomsButton"

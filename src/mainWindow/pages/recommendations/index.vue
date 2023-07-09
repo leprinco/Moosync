@@ -67,13 +67,10 @@
               <PlainPlay
                 v-if="!isJukeboxModeActive"
                 :title="$t('buttons.playSingle', { title: p.Title })"
-                @click.native="playAll(p.key)"
+                @click="playAll(p.key)"
               />
-              <AddToQueue :title="$t('buttons.addToQueue', { title: p.Title })" @click.native="addToQueue(p.key)" />
-              <AddToLibrary
-                :title="$t('buttons.addToLibrary', { title: p.Title })"
-                @click.native="addToLibrary(p.key)"
-              />
+              <AddToQueue :title="$t('buttons.addToQueue', { title: p.Title })" @click="addToQueue(p.key)" />
+              <AddToLibrary :title="$t('buttons.addToLibrary', { title: p.Title })" @click="addToLibrary(p.key)" />
             </b-col>
             <b-col cols="auto" v-if="loadingMap[p.key]">
               <div class="loading-spinner d-flex justify-content-center">

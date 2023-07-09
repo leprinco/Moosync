@@ -16,21 +16,21 @@
         <b-col cols="auto" class="pr-5 ml-auto my-auto icons-bar d-flex">
           <b-row class="flex-grow-1">
             <b-col cols="auto" v-if="showRefreshIcon">
-              <Refresh @click.native="refreshPage" class="refresh-icon button-grow" />
+              <Refresh @click="refreshPage" class="refresh-icon button-grow" />
             </b-col>
             <!-- <b-col cols="auto"> <Notifications /> </b-col> -->
             <b-col v-if="!isJukeboxModeActive" cols="auto">
               <Accounts />
             </b-col>
             <b-col v-if="!isJukeboxModeActive" cols="auto">
-              <Gear id="settings" class="gear-icon" @click.native="openSettings" />
+              <Gear id="settings" class="gear-icon" @click="openSettings" />
             </b-col>
             <b-col cols="auto">
               <JukeboxIcon
                 v-if="showJukeboxIcon"
                 :isActive="isJukeboxModeActive"
                 class="jukebox-icon button-grow"
-                @click.native="toggleJukeboxMode"
+                @click="toggleJukeboxMode"
               />
             </b-col>
             <b-col cols="auto" v-if="showUpdateIcon"> <Update class="update-icon button-grow" /></b-col>
@@ -81,6 +81,7 @@ export default class TopBar extends mixins(JukeboxMixin) {
   }
 
   openSettings() {
+    console.log('opening settings')
     window.WindowUtils.openWindow(false)
   }
 

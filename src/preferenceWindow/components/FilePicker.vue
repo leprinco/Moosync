@@ -13,7 +13,7 @@
     <b-row no-gutters class="background w-100 mt-2 d-flex">
       <b-row no-gutters class="mt-3 item w-100">
         <b-col cols="auto" align-self="center" class="ml-4 folder-icon">
-          <FolderIcon @click.native="openFileBrowser" />
+          <FolderIcon @click="openFileBrowser" />
         </b-col>
         <b-col
           :id="popoverTarget"

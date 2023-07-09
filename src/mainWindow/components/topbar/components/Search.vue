@@ -23,7 +23,7 @@
         @focus="handleInputFocus"
         @keyup.enter="openSearchPage"
       />
-      <AltArrowIcon @click.native="openSearchPage" v-if="inputText !== ''" class="go-arrow button-grow" />
+      <AltArrowIcon @click="openSearchPage" v-if="inputText !== ''" class="go-arrow button-grow" />
     </div>
     <div class="search-results d-flex" :class="showSearchResults ? 'search-visible' : 'search-invisible'">
       <div v-if="results && results.length !== 0" class="w-100">

@@ -13,7 +13,7 @@
       <b-col class="song-header-options w-100">
         <b-row no-gutters align-v="center" class="h-100">
           <b-col cols="auto" class="mr-3 h-100 d-flex align-items-center" v-if="items.length > 0 && showPrevIcon">
-            <PrevIcon @click.native="onPrevClick" />
+            <PrevIcon @click="onPrevClick" />
           </b-col>
           <b-col class="provider-outer-container" v-if="items.length > 0">
             <div ref="gradientContainer" class="gradient-overlay" :style="{ background: computedGradient }"></div>
@@ -35,7 +35,7 @@
             </div>
           </b-col>
           <b-col cols="auto" class="ml-3 mr-3 h-100 d-flex align-items-center" v-if="items.length > 0">
-            <NextIcon @click.native="onNextClick" v-if="showNextIcon" />
+            <NextIcon @click="onNextClick" v-if="showNextIcon" />
           </b-col>
 
           <b-col cols="auto" class="ml-auto d-flex" ref="buttonGroupContainer" v-if="showExtraSongListActions">
@@ -49,9 +49,9 @@
                 @update="onSearchChange"
               />
             </div>
-            <SearchIcon @click.native="toggleSearch" :accent="false" class="mr-3 align-self-center" />
-            <SortIcon v-if="isSortAsc" @click.native="showSortMenu" class="align-self-center" />
-            <SortIconAlt v-else @click.native="showSortMenu" class="align-self-center" />
+            <SearchIcon @click="toggleSearch" :accent="false" class="mr-3 align-self-center" />
+            <SortIcon v-if="isSortAsc" @click="showSortMenu" class="align-self-center" />
+            <SortIconAlt v-else @click="showSortMenu" class="align-self-center" />
           </b-col>
         </b-row>
       </b-col>

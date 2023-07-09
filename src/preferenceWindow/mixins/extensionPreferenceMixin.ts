@@ -10,7 +10,7 @@
 import { Component, Prop, Vue } from 'vue-facing-decorator'
 
 import { v1 } from 'uuid'
-import { getCurrentInstance } from 'vue'
+import { getCurrentInstance, toRaw } from 'vue'
 
 @Component
 export class ExtensionPreferenceMixin<T> extends Vue {
@@ -67,8 +67,8 @@ export class ExtensionPreferenceMixin<T> extends Vue {
     if (this.prefKey) {
       this.loading = true
       ;(this.type === 'password'
-        ? window.Store.getSecure(this.prefKey)
-        : window.PreferenceUtils.loadSelective<T>(this.prefKey, this.isExtension)
+        ? window.Store.getSecure(toRaw(this.prefKey))
+        : window.PreferenceUtils.loadSelective<T>(toRaw(this.prefKey), toRaw(this.isExtension))
       )
         .then((val) => (this.value = (this.isValueEmpty(val) ? this.defaultValue : val) as T))
         .then(() => (this.loading = false))
@@ -79,7 +79,7 @@ export class ExtensionPreferenceMixin<T> extends Vue {
 
   private registerPreferenceListener() {
     if (this.prefKey) {
-      window.PreferenceUtils.listenPreferenceChanged(this.prefKey, false, (key) => {
+      window.PreferenceUtils.listenPreferenceChanged(toRaw(this.prefKey), false, (key) => {
         if (typeof key === 'string') {
           if (this.prefKey === key) {
             this.fetch()
@@ -92,9 +92,9 @@ export class ExtensionPreferenceMixin<T> extends Vue {
   public onInputChange() {
     if (this.prefKey) {
       if (this.type === 'password') {
-        window.Store.setSecure(this.prefKey, (this.value as string) ?? '')
+        window.Store.setSecure(toRaw(this.prefKey), toRaw(this.value as string) ?? '')
       } else {
-        window.PreferenceUtils.saveSelective(this.prefKey, this.value, this.isExtension)
+        window.PreferenceUtils.saveSelective(toRaw(this.prefKey), toRaw(this.value), toRaw(this.isExtension))
       }
 
       if (this.isExtension)
@@ -103,7 +103,7 @@ export class ExtensionPreferenceMixin<T> extends Vue {
           type: 'preferenceChanged',
           packageName: this.packageName
         })
-      else window.PreferenceUtils.notifyPreferenceChanged(this.prefKey, this.value)
+      else window.PreferenceUtils.notifyPreferenceChanged(toRaw(this.prefKey), toRaw(this.value))
 
       this.onValueChange && this.onValueChange(this.value)
     }

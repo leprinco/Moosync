@@ -58,7 +58,7 @@ export default class AllSongs extends mixins(ContextMenuMixin) {
 
   get defaultDetails(): SongDetailDefaults {
     return {
-      defaultTitle: this.$tc('songView.details.songCount', this.songList.length)
+      defaultTitle: this.$t('songView.details.songCount', this.songList.length)
     }
   }
 

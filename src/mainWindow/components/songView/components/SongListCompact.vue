@@ -10,7 +10,7 @@
 <template>
   <div class="d-flex h-100 w-100">
     <b-container fluid>
-      <TabCarousel class="tab-carousel" v-on="$listeners" :items="optionalProviders" :isSortAsc="isSortAsc" />
+      <TabCarousel class="tab-carousel" v-bind="$attrs" :items="optionalProviders" :isSortAsc="isSortAsc" />
       <b-row v-if="isLoading">
         <b-col class="mb-2">
           <b-spinner>{{ $t('loading') }}</b-spinner>
@@ -23,7 +23,7 @@
           :item-size="94"
           key-field="_id"
           :direction="'vertical'"
-          @scroll.native="onScroll"
+          @scroll="onScroll"
           v-click-outside="clearSelection"
         >
           <template v-slot="{ item, index }">
@@ -53,12 +53,19 @@ import SongListCompactItem from './SongListCompactItem.vue'
 import EllipsisIcon from '@/icons/EllipsisIcon.vue'
 import TabCarousel from '../../generic/TabCarousel.vue'
 import { vxm } from '@/mainWindow/store'
+import { useAttrs } from 'vue'
 
 @Component({
   components: {
     SongListCompactItem,
     EllipsisIcon,
     TabCarousel
+  },
+  setup: () => {
+    const { attrs } = useAttrs()
+    console.log('attrs', attrs)
+
+    return { attrs }
   }
 })
 export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
@@ -81,6 +88,7 @@ export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
   }
 
   onPlayNowClicked(item: Song) {
+    console.log('on row play now clicked')
     this.$emit('onRowPlayNowClicked', item)
   }
 

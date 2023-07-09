@@ -210,7 +210,7 @@ export default class SongFromUrlModal extends mixins(ImgLoader, RemoteSong, Prov
       this.refreshCallback = refreshCallback
       this.forceEmptyImg = false
       this.addButtonEnabled = false
-      this.isLoggedIn = vxm.providers.loggedInYoutube && vxm.providers.loggedInSpotify
+      this.isLoggedIn = vxm.providers.youtubeProvider.loggedIn && vxm.providers.spotifyProvider.loggedIn
       this.$bvModal.show(this.id)
     })
   }

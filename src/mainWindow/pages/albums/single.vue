@@ -89,7 +89,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     return {
       defaultTitle: this.album?.album_name,
       defaultSubtitle: this.album?.album_artist,
-      defaultSubSubtitle: this.$tc('songView.details.songCount', this.filteredSongList.length),
+      defaultSubSubtitle: this.$t('songView.details.songCount', this.filteredSongList.length),
       defaultCover: this.album?.album_coverPath_high
     }
   }

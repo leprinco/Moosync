@@ -13,7 +13,7 @@
       {{ title }}
     </b-col>
     <b-col cols="auto" class="ml-2">
-      <Tooltip v-if="tooltip" :text="tooltip" @click.native="emitTooltipClick" />
+      <Tooltip v-if="tooltip" :text="tooltip" @click="emitTooltipClick" />
     </b-col>
   </b-row>
 </template>

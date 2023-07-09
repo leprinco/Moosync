@@ -66,7 +66,7 @@
         <b-row no-gutters class="background w-100 mt-2 d-flex">
           <b-row no-gutters class="mt-3 item w-100">
             <b-col cols="auto" align-self="center" class="ml-4 folder-icon">
-              <FolderIcon @click.native="openFileBrowser" />
+              <FolderIcon @click="openFileBrowser" />
             </b-col>
             <b-col
               :id="popoverTarget"
@@ -108,7 +108,7 @@ import ThemeComponentCompact from '../ThemeComponentCompact.vue'
 import ColorPicker from '../ColorPicker.vue'
 import NavBack from '@/icons/NavBackIcon.vue'
 import FolderIcon from '@/icons/FolderIcon.vue'
-import { bus } from '@/mainWindow/main'
+import { bus } from '@/preferenceWindow/main'
 
 @Component({
   components: {
@@ -157,7 +157,7 @@ export default class NewTheme extends Vue {
   }
 
   getThemeTitle(key: string) {
-    return this.$tc(`settings.themes.${key}`)
+    return this.$t(`settings.themes.${key}`)
   }
 
   toggleColorPicker(type: ThemeKey) {

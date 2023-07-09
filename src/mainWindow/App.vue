@@ -57,6 +57,7 @@ import { sortSongListFn } from '@/utils/common'
 import IncorrectPlaybackModal from './components/modals/IncorrectPlaybackModal.vue'
 import { toast } from 'vue3-toastify'
 import { toRaw } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 @Component({
   components: {
@@ -72,6 +73,10 @@ import { toRaw } from 'vue'
     EntityInfoModal,
     PinEntryModal,
     IncorrectPlaybackModal
+  },
+  setup: () => {
+    const { t, locale } = useI18n()
+    return { t, locale }
   }
 })
 export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandlerMixin, JukeboxMixin, ProviderMixin) {

@@ -53,10 +53,10 @@
                     :item="item"
                     :index="index"
                     :selected="selected"
-                    @onRowDoubleClicked="queueSong([arguments[0]])"
+                    @onRowDoubleClicked="queueSong([$event])"
                     @onRowSelected="onRowSelected"
                     @onRowContext="onRowContext"
-                    @onPlayNowClicked="playTop([arguments[0]])"
+                    @onPlayNowClicked="playTop([$event])"
                     @onArtistClicked="gotoArtist"
                   />
                 </template>
@@ -67,10 +67,10 @@
           <b-row class="scroller-row w-100" v-else :key="`${activeProvider}-${activeSubcategory}-else`">
             <b-col col xl="2" md="3" v-for="entity in currentEntityList" :key="entity[entityKeyField]">
               <CardView
-                @click.native="onCardClick(entity)"
+                @click="onCardClick(entity)"
                 :title="entity[entityTitleField]"
                 :imgSrc="entity[entityImageField]"
-                @CardContextMenu="onCardContextMenu(arguments[0], entity)"
+                @CardContextMenu="onCardContextMenu($event, entity)"
               >
                 <template #defaultCover> <component :is="defaultCoverComponent" /></template>
               </CardView>
@@ -159,7 +159,7 @@ export default class SearchPage extends mixins(
           return 'Searching albums is currently not supported for Youtube'
         }
       }
-    } else if (this.activeProvider === vxm.providers.spotifyProvider.key && !vxm.providers.loggedInSpotify) {
+    } else if (this.activeProvider === vxm.providers.spotifyProvider.key && !vxm.providers.spotifyProvider.loggedIn) {
       return 'Login to Spotify to use this feature'
     } else if (this.activeProvider !== 'local') {
       return 'Nothing found'

@@ -9,13 +9,7 @@
 
 <template>
   <b-row no-gutters class="single-song-item">
-    <LowImageCol
-      class="img-col"
-      height="56px"
-      width="56px"
-      :src="getValidImageLow(item)"
-      @click.native="playTop([item])"
-    />
+    <LowImageCol class="img-col" height="56px" width="56px" :src="getValidImageLow(item)" @click="playTop([item])" />
     <b-col cols="5" class="ml-2 mr-2" align-self="center">
       <b-row no-gutters align-v="center">
         <b-col cols="auto" class="d-flex">

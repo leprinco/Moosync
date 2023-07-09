@@ -32,7 +32,7 @@
             :title="item[titleKey]"
             :imgSrc="item[imageKey]"
             :maxWidth="`${itemWidth - 50}px`"
-            @click.native="emitClick(item)"
+            @click="emitClick(item)"
             @CardContextMenu="emitContextMenu(item, ...arguments)"
           >
             <template #defaultCover>

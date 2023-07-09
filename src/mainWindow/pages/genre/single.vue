@@ -18,7 +18,7 @@
       :defaultDetails="defaultDetails"
       :songList="songList"
       :detailsButtonGroup="buttonGroups"
-      @onRowContext="getSongMenu(arguments[0], arguments[1], undefined)"
+      @onRowContext="getSongMenu($event, arguments[1], undefined)"
       @playAll="playGenre"
       @addToQueue="addGenreToQueue"
     />
@@ -55,7 +55,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin) {
   get defaultDetails(): SongDetailDefaults {
     return {
       defaultTitle: this.genre?.genre_name,
-      defaultSubSubtitle: this.$tc('songView.details.songCount', this.songList.length)
+      defaultSubSubtitle: this.$t('songView.details.songCount', this.songList.length)
     }
   }
 

@@ -17,11 +17,7 @@
         class="new-directories ml-auto justify-content-center"
         v-if="showRefreshIcon"
       >
-        <RefreshIcon
-          title="Rescan directories for music"
-          @click.native="emitRefresh"
-          class="refresh-icon button-grow"
-        />
+        <RefreshIcon title="Rescan directories for music" @click="emitRefresh" class="refresh-icon button-grow" />
       </b-col>
       <b-col cols="auto" :class="`new-directories ${showRefreshIcon ? 'ml-4' : 'ml-auto'}`">
         <div class="add-directories-button" v-if="!bottomButton" @click="openFileBrowser">

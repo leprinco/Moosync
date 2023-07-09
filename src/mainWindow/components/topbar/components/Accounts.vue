@@ -18,9 +18,9 @@
             :bgColor="p.provider.BgColor"
             :hoverText="p.provider.loggedIn ? 'Sign out' : p.provider.Title"
             :title="p.username ? p.username : 'Connect'"
-            @click.native="handleClick(p)"
+            @click="handleClick(p)"
           >
-            <template slot="icon">
+            <template #icon>
               <component v-if="isIconComponent(p.provider.IconComponent)" :is="p.provider.IconComponent" />
               <inline-svg
                 class="provider-icon"
@@ -89,6 +89,7 @@ export default class TopBar extends mixins(AccountsMixin) {
 
   async mounted() {
     this.signoutMethod = this.showSignoutModal
+    console.log(this.providers)
   }
 
   async signout() {

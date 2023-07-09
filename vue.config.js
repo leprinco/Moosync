@@ -51,7 +51,7 @@ module.exports = {
           ...options,
           compilerOptions: {
             compatConfig: {
-              MODE: 2
+              MODE: 3
             }
           }
         }
@@ -62,6 +62,9 @@ module.exports = {
       new webpack.DefinePlugin({
         'process.browser': 'true',
         'process.env.MOOSYNC_VERSION': JSON.stringify(manifest.version),
+        __VUE_I18N_FULL_INSTALL__: JSON.stringify(true),
+        __INTLIFY_PROD_DEVTOOLS__: JSON.stringify(false),
+        __VUE_I18N_LEGACY_API__: JSON.stringify(false),
         ...RendererSecrets
       }),
 

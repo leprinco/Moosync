@@ -20,6 +20,8 @@ export class InvidiousProvider extends GenericProvider {
   private _token: string | undefined
   private oAuthChannel: string | undefined
 
+  public loggedIn = false
+
   public get key() {
     return 'youtube'
   }
@@ -58,7 +60,7 @@ export class InvidiousProvider extends GenericProvider {
 
   public async getLoggedIn() {
     await this.authInitialized
-    vxm.providers.loggedInYoutube = !!this._token
+    this.loggedIn = !!this._token
     return !!this._token
   }
 

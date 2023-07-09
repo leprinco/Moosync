@@ -34,11 +34,11 @@
     <b-col cols="auto" v-if="!isJukeboxModeActive">
       <VolumeIcon
         class="volume-icon align-self-center"
-        @click.native="muteToggle"
+        @click="muteToggle"
         :cut="volume == 0"
-        @mouseenter.native="handleVolumeIconMouseEnter"
-        @mouseleave.native="handleVolumeIconMouseLeave"
-        @mousewheel.native="handleScrollEvent"
+        @mouseenter="handleVolumeIconMouseEnter"
+        @mouseleave="handleVolumeIconMouseLeave"
+        @mousewheel="handleScrollEvent"
       />
     </b-col>
     <b-col cols="auto" class="expand-icon ml-3" :class="{ open: sliderOpen }" @click="emitToggleSlider">

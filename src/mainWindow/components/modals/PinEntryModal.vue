@@ -15,8 +15,8 @@
           <input
             class="pin-input"
             :ref="`pin-input-${i}`"
-            @input="validateInputAndPush(i, arguments[0])"
-            @click="onInputClick(i, arguments[0])"
+            @input="validateInputAndPush(i, $event)"
+            @click="onInputClick(i, $event)"
           />
         </b-col>
       </b-row>

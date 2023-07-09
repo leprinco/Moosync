@@ -30,10 +30,6 @@ export class ProviderStore extends VuexModule.With({ namespaced: 'providers' }) 
   public _pipedProvider = new PipedProvider()
   public _extensionProviders: ExtensionProvider[] = []
 
-  private _loggedInYoutube = false
-  private _loggedInSpotify = false
-  private _loggedInLastFM = false
-
   private _youtubeAlt = YoutubeAlts.YOUTUBE
 
   get youtubeProvider() {
@@ -53,30 +49,6 @@ export class ProviderStore extends VuexModule.With({ namespaced: 'providers' }) 
 
   set youtubeAlt(val: YoutubeAlts) {
     this._youtubeAlt = val
-  }
-
-  get loggedInYoutube() {
-    return this._loggedInYoutube
-  }
-
-  set loggedInYoutube(val: boolean) {
-    this._loggedInYoutube = val
-  }
-
-  get loggedInSpotify() {
-    return this._loggedInSpotify
-  }
-
-  set loggedInSpotify(val: boolean) {
-    this._loggedInSpotify = val
-  }
-
-  get loggedInLastFM() {
-    return this._loggedInLastFM
-  }
-
-  set loggedInLastFM(val: boolean) {
-    this._loggedInLastFM = val
   }
 
   get extensionProviders() {

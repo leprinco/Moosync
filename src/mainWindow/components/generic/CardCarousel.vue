@@ -22,7 +22,7 @@
             :title="item.title"
             :subtitle="item.artists ? item.artists.map((val) => val.artist_name).join(', ') : ''"
             :imgSrc="getValidImageHigh(item)"
-            @CardContextMenu="showContextMenu(arguments[0], item)"
+            @CardContextMenu="showContextMenu($event, item)"
           >
             <template #defaultCover> <SongDefault /></template>
             <template #overlay>

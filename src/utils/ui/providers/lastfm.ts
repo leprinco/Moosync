@@ -7,7 +7,6 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import { md5 } from 'hash-wasm'
 import { EventBus } from '@/utils/main/ipc/constants'
@@ -44,6 +43,8 @@ export class LastFMProvider extends GenericProvider {
 
   private username = ''
 
+  public loggedIn = false
+
   private _config: { key: string; secret: string } | undefined
 
   public get key() {
@@ -55,7 +56,7 @@ export class LastFMProvider extends GenericProvider {
   }
 
   private setLoggedInStatus() {
-    vxm.providers.loggedInLastFM = !!this._session
+    this.loggedIn = !!this._session
   }
 
   public async getLoggedIn() {
@@ -64,7 +65,7 @@ export class LastFMProvider extends GenericProvider {
       this._session = (await this.fetchStoredToken()) ?? undefined
     }
     this.setLoggedInStatus()
-    return !!this._session
+    return this.loggedIn
   }
 
   public async updateConfig(): Promise<boolean> {

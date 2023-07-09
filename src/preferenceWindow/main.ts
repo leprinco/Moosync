@@ -14,55 +14,10 @@ import 'animate.css'
 
 import App from './Preferences.vue'
 import { router } from '@/preferenceWindow/plugins/router'
-import { getErrorMessage } from '@/utils/common'
 import { createApp } from 'vue'
-import { i18n } from '@/mainWindow/plugins/i18n'
+import { i18n } from '@/preferenceWindow/plugins/i18n'
 import EventEmitter from 'events'
-
-function registerLogger(app: ReturnType<typeof createApp>) {
-  const preservedConsoleInfo = console.info
-  const preservedConsoleError = console.error
-  const preservedConsoleWarn = console.warn
-  const preservedConsoleDebug = console.debug
-  const preservedConsoleTrace = console.trace
-
-  if (window.LoggerUtils && window.LoggerUtils.info && window.LoggerUtils.error) {
-    console.info = (...args: unknown[]) => {
-      preservedConsoleInfo.apply(console, args)
-      window.LoggerUtils.info(...args)
-    }
-
-    console.error = (...args: unknown[]) => {
-      const error = getErrorMessage(...args)
-      preservedConsoleError.apply(console, args)
-      window.LoggerUtils.error(...error)
-    }
-
-    console.warn = (...args: unknown[]) => {
-      preservedConsoleWarn.apply(console, args)
-      window.LoggerUtils.warn(...args)
-    }
-
-    console.debug = (...args: unknown[]) => {
-      preservedConsoleDebug.apply(console, args)
-      window.LoggerUtils.debug(...args)
-    }
-
-    console.trace = (...args: unknown[]) => {
-      preservedConsoleTrace.apply(console, args)
-      window.LoggerUtils.trace(...args)
-    }
-
-    window.onerror = (err) => {
-      const error = getErrorMessage(err)
-      console.error(...error)
-    }
-
-    app.config.errorHandler = (err) => {
-      console.error(err)
-    }
-  }
-}
+import { registerLogger } from '@/utils/ui/common'
 
 export const bus = new EventEmitter()
 

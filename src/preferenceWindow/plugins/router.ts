@@ -14,9 +14,9 @@ import System from '../components/pages/System.vue'
 import Keybinds from '../components/pages/Keybinds.vue'
 import Themes from '../components/pages/Themes.vue'
 import Logs from '../components/pages/Logs.vue'
-import VueRouter from 'vue-router'
+import { createRouter, RouteRecordRaw, createWebHashHistory, createWebHistory } from 'vue-router'
 
-const routes: VueRouter.RouteRecordRaw[] = [
+const routes: RouteRecordRaw[] = [
   {
     path: '/',
     redirect: { name: 'paths' }
@@ -58,9 +58,9 @@ const routes: VueRouter.RouteRecordRaw[] = [
   }
 ]
 
-export const router = VueRouter.createRouter({
+export const router = createRouter({
   history: process.env.IS_ELECTRON
-    ? VueRouter.createWebHashHistory(process.env.BASE_URL)
-    : VueRouter.createWebHistory(process.env.BASE_URL),
+    ? createWebHashHistory(process.env.BASE_URL)
+    : createWebHistory(process.env.BASE_URL),
   routes
 })

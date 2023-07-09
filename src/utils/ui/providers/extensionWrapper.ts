@@ -23,7 +23,8 @@ function dummyDecorator(_target: unknown, _member: string) {
 export class ExtensionProvider extends GenericProvider {
   public key: string
 
-  private loggedInStatus = false
+  loggedIn = false
+
   private _title = ''
   private _icon = ''
   private _bgColor = 'var(--secondary)'
@@ -47,7 +48,7 @@ export class ExtensionProvider extends GenericProvider {
 
   public setAccountDetails(details: StrippedAccountDetails) {
     this._title = details.name
-    this.loggedInStatus = details.loggedIn
+    this.loggedIn = details.loggedIn
     this._icon = details.icon
     this._bgColor = details.bgColor
     this._username = details.username
@@ -61,7 +62,7 @@ export class ExtensionProvider extends GenericProvider {
   }
 
   public async getLoggedIn(): Promise<boolean> {
-    return this.loggedInStatus
+    return this.loggedIn
   }
 
   public async login(): Promise<boolean> {

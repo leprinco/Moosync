@@ -12,17 +12,18 @@
     <div class="background w-100">
       <div class="musicbar h-100">
         <VueSlider
+          class="timeline pl-2 pr-2"
           :min="0"
           :max="maxInterval"
-          class="timeline pl-2 pr-2"
           :interval="1"
           :dotSize="10"
-          :value="currentTimestamp"
+          :modelValue="currentTimestamp"
           :duration="0.1"
           :tooltip="'none'"
           :disabled="disableSeekbar"
           @change="updateTimestmp"
         />
+
         <b-container fluid class="d-flex bar-container h-100 pb-2">
           <b-row
             no-gutters

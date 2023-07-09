@@ -83,7 +83,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   get defaultDetails(): SongDetailDefaults {
     return {
       defaultTitle: this.playlist?.playlist_name ?? '',
-      defaultSubSubtitle: this.$tc('songView.details.songCount', this.filteredSongList.length),
+      defaultSubSubtitle: this.$t('songView.details.songCount', this.filteredSongList.length),
       defaultCover: this.playlist?.playlist_coverPath ?? ''
     }
   }

@@ -23,7 +23,7 @@
               ref="inputfield"
               @keyup.enter="fetchSearchResults"
             />
-            <AltArrowIcon @click.native="fetchSearchResults" v-if="inputText !== ''" class="go-arrow button-grow" />
+            <AltArrowIcon @click="fetchSearchResults" v-if="inputText !== ''" class="go-arrow button-grow" />
           </div>
         </b-row>
         <b-row v-if="!isLoading">

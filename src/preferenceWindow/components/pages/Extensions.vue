@@ -30,9 +30,9 @@
           </ul>
         </b-col>
         <b-col cols="auto" align-self="center" class="d-flex ml-4" v-if="maxPage > 1">
-          <PrevIcon class="mr-3" @click.native="prevPage"></PrevIcon>
+          <PrevIcon class="mr-3" @click="prevPage"></PrevIcon>
           <div class="page-no">{{ page + 1 }} of {{ maxPage }}</div>
-          <NextIcon class="ml-3" @click.native="nextPage"></NextIcon>
+          <NextIcon class="ml-3" @click="nextPage"></NextIcon>
         </b-col>
       </b-row>
       <b-row no-gutters class="mt-4 content-row flex-grow-1">

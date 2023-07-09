@@ -33,11 +33,16 @@ import { mixins } from 'vue-facing-decorator'
 import ThemeHandler from '@/utils/ui/mixins/ThemeHandler'
 import Sidebar from '@/preferenceWindow/components/Sidebar.vue'
 import { bus } from './main'
+import { useI18n } from 'vue-i18n'
 
 @Component({
   components: {
     Titlebar,
     Sidebar
+  },
+  setup: () => {
+    const { t, locale } = useI18n()
+    return { t, locale }
   }
 })
 export default class App extends mixins(ThemeHandler) {
