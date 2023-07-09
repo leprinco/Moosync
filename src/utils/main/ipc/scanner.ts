@@ -125,11 +125,25 @@ export class ScannerChannel implements IpcChannelInterface {
     } as Song
   }
 
+  private async saveToDb(songs: Song[]) {
+    await getSongDB().store(...songs)
+  }
+
+  private songList: Song[] = new Proxy<Song[]>([], {
+    set: (target, property, value) => {
+      target[property as unknown as number] = value
+      if (target.length >= 50) {
+        this.saveToDb(target.splice(0, target.length))
+      }
+      return true
+    }
+  })
+
   private async storeSong(data: SongWithLen) {
     this.totalScanFiles = data.size
     this.reportProgress(data.current)
 
-    await getSongDB().store(this.parseScannedSong(data.song))
+    this.songList.push(this.parseScannedSong(data.song))
   }
 
   private parseScannedPlaylist(data: ScanPlaylist): Playlist {
@@ -181,7 +195,12 @@ export class ScannerChannel implements IpcChannelInterface {
               }
             }
           },
-          () => Promise.allSettled(promises).then(() => resolve(lastValue))
+          () =>
+            Promise.allSettled(promises).then(() => {
+              if (store) this.saveToDb(this.songList)
+              this.songList = []
+              return resolve(lastValue)
+            })
         )
       })
     }
