@@ -83,7 +83,7 @@ export class MetadataFetcher extends CacheHandler {
         true
       )
 
-      return resp.artistthumb.sort((a, b) => parseInt(b.likes) - parseInt(a.likes))?.[0].url
+      return resp.artistthumb?.sort((a, b) => parseInt(b.likes) - parseInt(a.likes))?.[0].url
     }
   }
 
