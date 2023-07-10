@@ -41,7 +41,8 @@
     "playSingle": "Přehrát {title}",
     "addToQueue": "Přidat {title} do fronty",
     "addToLibrary": "Přidat {title} do knihovny",
-    "playRandom": "Přehrát skladby náhodně"
+    "playRandom": "Přehrát skladby náhodně",
+    "fetchAll": "Fetch all songs"
   },
   "loading": "Načítám...",
   "contextMenu": {
@@ -107,7 +108,9 @@
       "splitter": "Vzor rozdělení jména interpreta",
       "splitter_tooltip": "Regex pro rozdělení jmen umělců. Ponechte prázdné pro vypnutí rozdělení.",
       "scan_interval": "Scan interval",
-      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning",
+      "scan_threads": "Scan CPU threads",
+      "scan_threads_tooltip": "Number of threads to use when scanning for local music"
     },
     "themes": {
       "songView": "Zobrazení skladeb",
