@@ -41,7 +41,8 @@
     "playSingle": "Play {title}",
     "addToQueue": "Add {title} to queue",
     "addToLibrary": "Add {title} to library",
-    "playRandom": "Play 100 random songs"
+    "playRandom": "Play 100 random songs",
+    "fetchAll": "Fetch all songs"
   },
   "loading": "Loading...",
   "contextMenu": {
@@ -107,7 +108,9 @@
       "splitter": "Artist name split pattern",
       "splitter_tooltip": "Regex to split artist names. Leave empty to disable splitting.",
       "scan_interval": "Scan interval",
-      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning",
+      "scan_threads": "Scan CPU threads",
+      "scan_threads_tooltip": "Number of threads to use when scanning for local music"
     },
     "themes": {
       "songView": "Songs View",
