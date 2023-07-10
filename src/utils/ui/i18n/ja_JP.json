@@ -41,7 +41,8 @@
     "playSingle": "{title} を再生",
     "addToQueue": "キューに {title} を追加",
     "addToLibrary": "ライブラリに {title} を追加",
-    "playRandom": "ランダムに100曲再生"
+    "playRandom": "ランダムに100曲再生",
+    "fetchAll": "Fetch all songs"
   },
   "loading": "読み込み中...",
   "contextMenu": {
@@ -107,7 +108,9 @@
       "splitter": "アーティスト名の分割パターン",
       "splitter_tooltip": "アーティスト名を分割するには正規表現を使用します。空白の場合は分割を無効にします。",
       "scan_interval": "スキャン間隔",
-      "scan_interval_tooltip": "スキャンのタスクを実行する間隔を秒単位で設定します。自動スキャンを無効にするには -1 にします。"
+      "scan_interval_tooltip": "スキャンのタスクを実行する間隔を秒単位で設定します。自動スキャンを無効にするには -1 にします。",
+      "scan_threads": "Scan CPU threads",
+      "scan_threads_tooltip": "Number of threads to use when scanning for local music"
     },
     "themes": {
       "songView": "曲表示",
@@ -155,8 +158,8 @@
       "systemSettings_tooltip": "システムに関連する設定",
       "audioSettings": {
         "title": "音声設定",
-        "gaplessPlayback": "可能な限り間をなくして再生",
-        "sponsorBlock": "SponsorBlockを使いYouTubeの曲の主な部分に自動でスキップ"
+        "gaplessPlayback": "可能な限り間隔なく再生",
+        "sponsorBlock": "SponsorBlockをしYouTubeの曲の主な部分に自動でスキップ"
       },
       "audioSettings_tooltip": "音声再生の設定",
       "invidiousUrlUnsupported": "このURLはInvidious APIに対応していません",
@@ -192,7 +195,7 @@
         "client_id": "YouTube クライアントID",
         "client_secret": "YouTube クライアントシークレット",
         "client_id_tooltip": "YouTube クライアント ID は、YouTube にログインする必要があります。クリックで詳細",
-        "client_secret_tooltip": "YouTube クライアントシークレットは、YouTube にログインするために必要です。クリックで詳細"
+        "client_secret_tooltip": "Youtube クライアントシークレットは、Youtube にログインするために必要です。クリックで詳細"
       },
       "lastfm": {
         "client_id": "LastFM API キー",
@@ -271,7 +274,7 @@
       "logSettings": "ログの設定",
       "level": "対象",
       "process": "処理",
-      "filterMessage": "メッセージを絞り込み"
+      "filterMessage": "メッセージの絞り込み"
     }
   }
 }
