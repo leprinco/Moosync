@@ -25,6 +25,10 @@ export class FetchWrapper {
   private cacheHandler = new FetchCacheHandler()
   private allowedMethods = ['GET']
 
+  async isCached(url: string) {
+    return this.cacheHandler.hasItem(url.toString())
+  }
+
   async request(input: string, init?: RequestOptions): Promise<Response> {
     const url = new URL(`${init?.baseURL ?? ''}${input}`)
 

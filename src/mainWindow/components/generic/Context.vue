@@ -13,7 +13,7 @@
 
 <script lang="ts">
 import { Component } from 'vue-property-decorator'
-import Vue from 'vue'
+import Vue, { DirectiveBinding } from 'vue'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
 import 'vue-context-menu-popup/dist/vue-context-menu-popup.css'
@@ -28,7 +28,7 @@ function isImage(e: HTMLElement) {
 
 Vue.directive('click-outside', {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  bind: function (el: HTMLElement, binding) {
+  bind: function (el: HTMLElement, binding: DirectiveBinding<(e: Event) => void>) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handler = (e: any) => {
       if (el !== e.target && !el.contains(e.target) && !isImage(e.target)) {

@@ -33,7 +33,8 @@ export const extensionUIRequestsKeys = [
   'open-login-modal',
   'close-login-modal',
   'show-toast',
-  'update-preferences'
+  'update-preferences',
+  'extension-updated'
 ] as const
 export const playerControlRequests = ['play', 'pause', 'stop', 'next', 'prev'] as const
 export const mainRequestsKeys = [
@@ -54,7 +55,7 @@ export const mainRequestsKeys = [
 
 export const providerExtensionKeys = ['get-extension-provider-scopes'] as const
 
-export type extensionUIRequests = typeof extensionUIRequestsKeys[number] | typeof playerControlRequests[number]
-export type extensionRequests = typeof extensionRequestsKeys[number] | extensionUIRequests
-export type mainRequests = typeof mainRequestsKeys[number]
-export type providerFetchRequests = typeof providerExtensionKeys[number]
+export type extensionUIRequests = (typeof extensionUIRequestsKeys)[number] | (typeof playerControlRequests)[number]
+export type extensionRequests = (typeof extensionRequestsKeys)[number] | extensionUIRequests
+export type mainRequests = (typeof mainRequestsKeys)[number]
+export type providerFetchRequests = (typeof providerExtensionKeys)[number]

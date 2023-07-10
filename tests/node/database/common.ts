@@ -63,9 +63,9 @@ function generateSong(options: options): Song {
   }
 }
 
-export function insertPlaylist(SongDB: SongDBInstance) {
+export async function insertPlaylist(SongDB: SongDBInstance) {
   const playlist = generatePlaylist()
-  const id = SongDB.createPlaylist({ ...playlist })
+  const id = await SongDB.createPlaylist({ ...playlist })
   return {
     playlist_id: id,
     playlist_name: playlist.playlist_name,

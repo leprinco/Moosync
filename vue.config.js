@@ -1,11 +1,9 @@
 const webpack = require('webpack')
-const ThreadsPlugin = require('threads-plugin')
 const dotenv = require('dotenv').config({ path: __dirname + '/config.env' })
 const fs = require('fs')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
-const { resolve, join } = require('path')
+const { resolve } = require('path')
 const manifest = require('./package.json')
-const ExternalsPlugin = require('webpack5-externals-plugin')
 
 // const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
@@ -59,7 +57,8 @@ module.exports = {
       'better-sqlite3': 'commonjs better-sqlite3',
       vm2: "require('vm2')",
       sharp: "require('sharp')",
-      'librespot-node': 'commonjs librespot-node'
+      'librespot-node': 'commonjs librespot-node',
+      'scanner-native': 'commonjs scanner-native'
     },
     devtool: 'source-map',
     resolve: {
@@ -120,7 +119,9 @@ module.exports = {
             'libicu-dev',
             'libasound2-dev',
             'libvips-dev'
-          ]
+          ],
+          // https://github.com/electron-userland/electron-builder/issues/4982#issuecomment-641598670
+          publish: ['github']
         },
         deb: {
           depends: ['libnotify4', 'libxtst6', 'libnss3', 'libatomic1', 'libicu-dev', 'libasound2-dev']
@@ -177,27 +178,31 @@ module.exports = {
             repo: 'Moosync',
             vPrefixedTagName: true,
             releaseType: 'draft'
-          },
-          {
-            provider: 'snapStore',
-            repo: 'moosync'
           }
         ],
-        files: ['**/*', '!node_modules/librespot-node/native/target/*'],
-        asarUnpack: ['*.worker.js', 'sandbox.js', 'spotify.js', '**/node_modules/**/*.node'],
+        files: ['**/*', '!node_modules/librespot-node/native/target/*', '!node_modules/scanner-native/target/*'],
+        asarUnpack: [
+          '*.worker.js',
+          'sandbox.js',
+          'spotify.js',
+          '**/node_modules/**/*.node',
+          'node_modules/bindings',
+          'node_modules/file-uri-to-path'
+        ],
         protocols: [
           {
             name: 'Default protocol',
             schemes: ['moosync']
           }
         ],
-        beforeBuild: 'scripts/fontFix.js'
+        beforeBuild: 'scripts/fontFix.js',
+        afterPack: 'scripts/beforePack.js'
       },
       nodeIntegration: false,
       disableMainProcessTypescript: false,
       mainProcessTypeChecking: true,
       preload: 'src/utils/preload/preload.ts',
-      externals: ['better-sqlite3', 'vm2', 'sharp'],
+      externals: ['better-sqlite3', 'vm2', 'sharp', 'librespot-node', 'scanner-native'],
       chainWebpackMainProcess: (config) => {
         config.devtool('source-map').end()
         config.module
@@ -236,12 +241,12 @@ module.exports = {
           .add(__dirname + '/src/utils/spotify/index.ts')
           .end()
 
-        config.plugin('copy').use(CopyWebpackPlugin, [{ patterns: [{ from: resolve('dev-app-update.yml') }] }])
-
         config
-          .plugin('ExternalsPlugin')
-          .use(ExternalsPlugin, [{ type: 'commonjs', include: join(__dirname, 'node_modules', 'sharp') }])
-        config.plugin('thread').use(ThreadsPlugin, [{ target: 'electron-node-worker', plugins: ['ExternalsPlugin'] }])
+          .entry('sqlite3.worker')
+          .add(__dirname + '/src/utils/main/db/workers/sqlite3.ts')
+          .end()
+
+        config.plugin('copy').use(CopyWebpackPlugin, [{ patterns: [{ from: resolve('dev-app-update.yml') }] }])
 
         // config.plugin('copy').use(BundleAnalyzerPlugin)
       }

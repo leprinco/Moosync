@@ -1,5 +1,4 @@
 import { app } from 'electron'
-import https from 'https'
 import path from 'path'
 import { loadSelectiveArrayPreference } from '../db/preferences'
 import { getSpotifyPlayerChannel } from '../ipc'
@@ -23,11 +22,13 @@ export class LyricsFetcher extends CacheHandler {
   }
 
   public async getLyrics(song: Song) {
-    const dbLyrics = getSongDB().getSongByOptions({
-      song: {
-        _id: song._id
-      }
-    })[0]?.lyrics
+    const dbLyrics = (
+      await getSongDB().getSongByOptions({
+        song: {
+          _id: song._id
+        }
+      })
+    )[0]?.lyrics
 
     if (dbLyrics) return dbLyrics
 
@@ -100,7 +101,7 @@ export class LyricsFetcher extends CacheHandler {
 
       let resp: AZSuggestions = {}
       try {
-        resp = (await this.get(url, undefined, true)) as AZSuggestions
+        resp = (await this.get(url, undefined, undefined, true)) as AZSuggestions
       } catch (e) {
         console.warn('AZ Lyrics probably blocked this IP. Not using AZ lyrics for this session')
         this.blocked = true
@@ -120,62 +121,6 @@ export class LyricsFetcher extends CacheHandler {
           .replaceAll('<br>', '\n')
       }
     }
-  }
-
-  private randomUserAgent() {
-    const agents = [
-      'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11',
-      'Mozilla/5.0 (iPad; CPU OS 8_4_1 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12H321 Safari/600.1.4',
-      'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; SV1; .NET CLR 1.1.4322; .NET CLR 2.0.50727)',
-      'Mozilla/5.0 (compatible; Konqueror/3.5; Linux) KHTML/3.5.5 (like Gecko) (Kubuntu)',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/51.0.2704.79 Safari/537.36 Edge/14.14393',
-      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:11.0) Gecko/20100101 Firefox/11.0',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:53.0) Gecko/20100101 Firefox/53.0',
-      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'
-    ]
-
-    return agents[Math.floor(Math.random() * agents.length)]
-  }
-
-  private async get<T = string>(url: string, referrer?: string, tryJson = false): Promise<T> {
-    const cached = this.getCache(url)
-    if (cached) {
-      return tryJson ? JSON.parse(cached) : cached
-    }
-
-    return new Promise((resolve, reject) => {
-      const parsed = new URL(url)
-      const options: https.RequestOptions = {
-        path: parsed.pathname + parsed.search,
-        hostname: parsed.hostname,
-        headers: { 'User-Agent': this.randomUserAgent(), referer: referrer ?? '' }
-      }
-      const request = https.get(options, (res) => {
-        let data = ''
-        res.on('data', (chunk) => {
-          data += chunk
-        })
-        res.on('end', () => {
-          try {
-            if (tryJson) {
-              resolve(JSON.parse(data))
-              this.addToCache(parsed.toString(), data)
-              return
-            }
-            resolve(data as T)
-          } catch (e) {
-            console.warn('Failed to parse result from', parsed, 'to JSON')
-            reject(e)
-          }
-        })
-      })
-
-      request.on('error', function (e) {
-        reject(e.message)
-      })
-
-      request.end()
-    })
   }
 
   private formulateUrl(baseURL: string, artists: string[], title: string, appendLyrics = false) {
@@ -212,7 +157,7 @@ export class LyricsFetcher extends CacheHandler {
 
     console.debug('Searching for lyrics at', url)
 
-    const resp = await this.get(url, 'https://www.google.com/')
+    const resp = await this.get(url, undefined, 'https://www.google.com/')
 
     const final = resp
       ?.split('<div class="BNeawe tAd8D AP7Wnd"><div><div class="BNeawe tAd8D AP7Wnd">')
@@ -265,7 +210,7 @@ export class LyricsFetcher extends CacheHandler {
     console.debug('Searching for lyrics at', url)
 
     try {
-      const resp = await this.get<GeniusLyrics.Root>(url, undefined, true)
+      const resp = await this.get<GeniusLyrics.Root>(url, undefined, undefined, true)
       const lyricsUrl = resp?.response?.sections?.[0]?.hits?.[0]?.result?.url
 
       if (lyricsUrl) {

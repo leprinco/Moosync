@@ -397,6 +397,10 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
         window.ExtensionUtils.replyToRequest({ ...data, data: true })
       }
 
+      if (data.type === 'extension-updated') {
+        this.handleExtensionUpdate(data.extensionName)
+      }
+
       if (data.type === 'show-toast') {
         this.$toasted.show(data.data.message, {
           duration: Math.max(data.data.duration, 5000),
@@ -405,6 +409,22 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
         window.ExtensionUtils.replyToRequest({ ...data, data: true })
       }
     })
+  }
+
+  private lastUpdateRequest: Record<string, ReturnType<typeof setTimeout> | undefined> = {}
+  private handleExtensionUpdate(packageName: string) {
+    const lastUpdated = this.lastUpdateRequest[packageName]
+    if (lastUpdated) {
+      clearTimeout(lastUpdated)
+      this.lastUpdateRequest[packageName] = undefined
+    }
+
+    console.log('updating', packageName, 'in 500ms')
+    const timeout = setTimeout(() => {
+      this.lastUpdateRequest[packageName] = undefined
+      vxm.providers.updateExtensionProvider(packageName)
+    }, 250)
+    this.lastUpdateRequest[packageName] = timeout
   }
 
   private listenExtensionEvents() {

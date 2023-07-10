@@ -134,7 +134,8 @@ export class PipedProvider extends GenericProvider {
       ProviderScopes.ARTIST_SONGS,
       ProviderScopes.ALBUM_SONGS,
       ProviderScopes.SEARCH_ALBUM,
-      ProviderScopes.PLAYLISTS
+      ProviderScopes.PLAYLISTS,
+      ProviderScopes.RECOMMENDATIONS
     ]
   }
 
@@ -223,6 +224,24 @@ export class PipedProvider extends GenericProvider {
 
   private getPlaylistIdFromUrl(url: string) {
     return this.getParam(this.completeUrl(url), 'list')
+  }
+
+  public async *getRecommendations(): AsyncGenerator<Song[]> {
+    const resp = await window.SearchUtils.searchSongsByOptions({
+      song: {
+        type: 'YOUTUBE'
+      }
+    })
+
+    for (const s of resp) {
+      const videoResp = await this.populateRequest(PipedResources.STREAM_DETAILS, {
+        videoId: this.sanitizeId(s._id, 'SONG')
+      })
+
+      if (videoResp?.relatedStreams) {
+        yield this.parseSongs(...videoResp.relatedStreams)
+      }
+    }
   }
 
   private parseChannelDetails(artist: PipedResponses.ChannelDetailsExtended.Root): Artists {

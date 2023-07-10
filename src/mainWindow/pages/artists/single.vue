@@ -71,7 +71,8 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     return {
       enableContainer: true,
       enableLibraryStore: true,
-      playRandom: !!(this.filteredSongList.length >= 150)
+      playRandom: !!(this.filteredSongList.length >= 150),
+      fetchAll: this.hasNextPage()
     }
   }
 
@@ -171,12 +172,12 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
 
   playArtist() {
     this.playTop(this.filteredSongList)
-    this.fetchAll(this.queueSong)
+    this.fetchAll((songs) => this.queueSong(songs, false), this.showQueueSongsToast)
   }
 
   addArtistToQueue() {
     this.queueSong(this.filteredSongList)
-    this.fetchAll(this.queueSong)
+    this.fetchAll((songs) => this.queueSong(songs, false), this.showQueueSongsToast)
   }
 
   addArtistToLibrary() {

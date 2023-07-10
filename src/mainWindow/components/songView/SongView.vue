@@ -36,6 +36,7 @@
         @onSortClicked="showSortMenu"
         @onSearchChange="onSearchChange"
         @playRandom="playRandom"
+        @fetchAll="fetchAll"
         @scroll="onScroll"
       ></component>
     </transition>
@@ -226,6 +227,10 @@ export default class AllSongs extends mixins(
 
   playRandom() {
     this.$emit('playRandom')
+  }
+
+  fetchAll() {
+    this.$emit('fetchAll')
   }
 
   onOptionalProviderChanged(...args: unknown[]) {

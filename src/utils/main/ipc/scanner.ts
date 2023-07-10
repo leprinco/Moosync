@@ -8,30 +8,20 @@
  */
 
 import { IpcEvents, ScannerEvents } from './constants'
-import { spawn, Worker, Pool, ModuleThread, Thread } from 'threads'
 
 import { IpcMainEvent, app } from 'electron'
 import { getSongDB } from '@/utils/main/db/index'
 import fs from 'fs'
-import { getCombinedMusicPaths, loadPreferences } from '@/utils/main/db/preferences'
-
-import path from 'path'
-import { loadSelectivePreference } from '../db/preferences'
-import { ObservablePromise } from 'threads/dist/observable-promise'
-
-// @ts-expect-error it don't want .ts
-import scannerWorker from 'threads-plugin/dist/loader?name=0!/src/utils/main/workers/scanner.ts'
-import { EventEmitter } from 'events'
-import { SongDBInstance } from '@/utils/main/db/database'
-import { v4 } from 'uuid'
 import os from 'os'
-import { ipcMain } from 'electron'
+
 import { WindowHandler } from '../windowManager'
 import { setupScanTask } from '../scheduler'
+import { getCombinedMusicPaths, loadPreferences, loadSelectivePreference } from '../db/preferences'
+import path from 'path'
 
-const loggerPath = app.getPath('logs')
-const audioPatterns = new RegExp('.flac|.mp3|.ogg|.m4a|.webm|.wav|.wv|.aac|.opus', 'i')
-const playlistPatterns = new RegExp('.m3u|.m3u8|.wpl')
+import type { SongWithLen, Song as ScanSong, Playlist as ScanPlaylist } from 'scanner-native'
+import { v4 } from 'uuid'
+import { MetadataFetcher } from '../fetchers/metadata'
 
 enum ScanStatus {
   UNDEFINED,
@@ -42,6 +32,7 @@ enum ScanStatus {
 export class ScannerChannel implements IpcChannelInterface {
   name = IpcEvents.SCANNER
   private scanStatus: ScanStatus = ScanStatus.UNDEFINED
+  private scrapeStatus: ScanStatus = ScanStatus.UNDEFINED
 
   private totalScanFiles = 0
   private currentScanFile = 0
@@ -77,7 +68,7 @@ export class ScannerChannel implements IpcChannelInterface {
       ret = os.cpus().length
     }
 
-    event?.reply(request?.responseChannel, ret)
+    request && event?.reply(request.responseChannel, ret)
     return ret
   }
 
@@ -90,7 +81,7 @@ export class ScannerChannel implements IpcChannelInterface {
   }
 
   private async destructiveScan(paths: togglePaths) {
-    const allSongs = getSongDB().getSongByOptions()
+    const allSongs = await getSongDB().getSongByOptions()
     const excludePaths = paths.filter((val) => !val.enabled).map((val) => val.path)
     const excludeRegex = new RegExp(excludePaths.length > 0 ? excludePaths.join('|').replaceAll('\\', '\\\\') : /(?!)/)
 
@@ -116,185 +107,6 @@ export class ScannerChannel implements IpcChannelInterface {
     }
   }
 
-  private async populateFile(file: string, p: string, excludeRegex: RegExp) {
-    const filePath = path.resolve(path.join(p, file))
-    if (!filePath.match(excludeRegex)) {
-      try {
-        if ((await fs.promises.stat(filePath)).isDirectory()) {
-          return this.getAllFiles(filePath, excludeRegex)
-        } else {
-          let type: 'PLAYLIST' | 'SONG' | undefined = undefined
-
-          if (audioPatterns.exec(path.extname(file).toLowerCase())) {
-            type = 'SONG'
-          }
-
-          if (playlistPatterns.exec(path.extname(file).toLowerCase())) {
-            type = 'PLAYLIST'
-          }
-
-          if (type) {
-            return [{ path: filePath, type }]
-          }
-        }
-      } catch (e) {
-        console.error(e)
-      }
-    }
-    return []
-  }
-
-  private async getAllFiles(p: string, excludeRegex: RegExp) {
-    const allFiles: { path: string; type: 'PLAYLIST' | 'SONG' }[] = []
-    const promises: Promise<{ path: string; type: 'PLAYLIST' | 'SONG' }[]>[] = []
-
-    try {
-      await fs.promises.access(p)
-    } catch {
-      return allFiles
-    }
-
-    const files = await fs.promises.readdir(p)
-    for (const file of files) {
-      promises.push(this.populateFile(file, p, excludeRegex))
-    }
-
-    allFiles.push(
-      ...(await Promise.allSettled(promises)).flatMap((val) => (val.status === 'fulfilled' ? val.value : []))
-    )
-
-    return allFiles
-  }
-
-  private promisifyWorker<T>(obs: ObservablePromise<T>): Promise<T> {
-    return new Promise<T>((resolve, reject) => {
-      let ret: T | undefined = undefined
-      obs.subscribe(
-        (data) => (ret = data as T),
-        reject,
-        () => resolve(ret as T)
-      )
-    })
-  }
-
-  private async isDuplicate(scanned: Song, scanner: ModuleThread<ScanWorkerWorkerType>) {
-    if (scanned.path) {
-      const songDb = getSongDB()
-      const existingByPath = songDb.getSongByOptions({
-        song: {
-          path: scanned.path
-        }
-      })
-
-      if (existingByPath.length > 0) {
-        return true
-      }
-
-      const existingByINode = songDb.getSongByOptions({
-        song: {
-          inode: scanned.inode,
-          deviceno: scanned.deviceno
-        },
-        inclusive: true
-      })
-
-      if (existingByINode.length > 0) {
-        return true
-      }
-
-      const existingBySize = songDb.getSongByOptions({
-        song: {
-          size: scanned.size
-        }
-      })
-
-      if (existingBySize.length > 0) {
-        const scannedHash = await this.promisifyWorker(scanner.getHash(scanned.path, loggerPath))
-        scanned.hash = scannedHash
-
-        for (const e of existingBySize) {
-          if (e.path) {
-            const existingHash = e.hash || (await this.promisifyWorker(scanner.getHash(e.path, loggerPath)))
-
-            songDb.updateSong({
-              ...e,
-              hash: existingHash
-            })
-
-            if (scannedHash === existingHash) {
-              return true
-            }
-          }
-        }
-      }
-    }
-
-    return false
-  }
-
-  private async checkDuplicateAndStore(
-    scanWorker: ModuleThread<ScanWorkerWorkerType>,
-    song: Song,
-    songDb: SongDBInstance,
-    scanEmitter: EventEmitter
-  ) {
-    const isDuplicate = await this.isDuplicate(song, scanWorker)
-    if (isDuplicate) {
-      return
-    }
-    console.debug('storing', song)
-    songDb.store(song)
-
-    scanEmitter.emit('song', song)
-  }
-
-  private async scanSong(
-    scanWorker: ModuleThread<ScanWorkerWorkerType>,
-    songDb: SongDBInstance,
-    path: string,
-    splitPattern: string,
-    scanEmitter: EventEmitter
-  ) {
-    try {
-      const scanned = await this.promisifyWorker(scanWorker.scanSingleSong(path, splitPattern, loggerPath))
-      await this.checkDuplicateAndStore(scanWorker, scanned.song, songDb, scanEmitter)
-    } catch (e) {
-      console.error('Scanner error:', e)
-    }
-  }
-
-  private async storeCover(
-    coverWorker: ModuleThread<ScanWorkerWorkerType>,
-    song: Song,
-    basePath: string,
-    songDb: SongDBInstance
-  ) {
-    try {
-      console.debug('storing cover', song.path)
-      const cover = await this.promisifyWorker(
-        coverWorker.getCover(song.path ?? '', basePath, song._id, false, loggerPath)
-      )
-
-      console.debug('Saved cover for', song.title, 'at', cover)
-
-      await songDb.updateSong(
-        {
-          ...song,
-          song_coverPath_high: cover?.high,
-          song_coverPath_low: cover?.low,
-          album: {
-            ...song.album,
-            album_coverPath_high: cover?.high,
-            album_coverPath_low: cover?.low
-          }
-        },
-        true
-      )
-    } catch (e) {
-      console.error('Failed to store cover for', song.path, e)
-    }
-  }
-
   private reportProgress(currentScanIndex: number) {
     this.currentScanFile = currentScanIndex
 
@@ -305,191 +117,159 @@ export class ScannerChannel implements IpcChannelInterface {
     } as Progress)
   }
 
-  private setScanStatus(status: ScanStatus) {
-    this.scanStatus = status
+  private parseScannedSong(data: ScanSong): Song {
+    return {
+      ...data,
+      _id: v4(),
+      date_added: Date.now()
+    } as Song
   }
 
-  private scanIsQueued() {
-    return this.scanStatus === ScanStatus.QUEUED
+  private async saveToDb(songs: Song[]) {
+    await getSongDB().store(...songs)
   }
 
-  public async scanAll(event?: IpcMainEvent, request?: IpcRequest<ScannerRequests.ScanSongs>) {
-    if (this.scanStatus !== ScanStatus.UNDEFINED) {
-      console.debug('Another scan already in progress, setting status to queued')
-      this.setScanStatus(ScanStatus.QUEUED)
+  private songList: Song[] = new Proxy<Song[]>([], {
+    set: (target, property, value) => {
+      target[property as unknown as number] = value
+      if (target.length >= 50) {
+        this.saveToDb(target.splice(0, target.length))
+      }
+      return true
+    }
+  })
+
+  private async storeSong(data: SongWithLen) {
+    this.totalScanFiles = data.size
+    this.reportProgress(data.current)
+
+    this.songList.push(this.parseScannedSong(data.song))
+  }
+
+  private parseScannedPlaylist(data: ScanPlaylist): Playlist {
+    return {
+      playlist_name: data.title,
+      playlist_path: data.path,
+      playlist_id: data.id
+    }
+  }
+
+  private async storePlaylist(data: ScanPlaylist) {
+    await getSongDB().createPlaylist(this.parseScannedPlaylist(data))
+  }
+
+  private async scanFilePromisified(paths: string[], forceScan = false, store = false) {
+    const splitPattern = loadSelectivePreference<string>('scan_splitter') ?? ';'
+    const maxThreads = os.cpus().length
+    const thumbPath = loadPreferences().thumbnailPath
+
+    const { scanFiles } = await import('scanner-native')
+
+    const lastValue: { songs: Song[]; playlists: Playlist[] } = { songs: [], playlists: [] }
+
+    for (const p of paths) {
+      const promises: Promise<void>[] = []
+      await new Promise<typeof lastValue>((resolve) => {
+        scanFiles(
+          p,
+          thumbPath,
+          path.join(app.getPath('appData'), app.getName(), 'databases', 'songs.db'),
+          splitPattern,
+          maxThreads,
+          forceScan,
+          (err, res) => {
+            if (!err) {
+              if (store) {
+                promises.push(this.storeSong(res))
+              } else {
+                lastValue.songs.push(this.parseScannedSong(res.song))
+              }
+            }
+          },
+          (err, res) => {
+            if (!err) {
+              if (store) {
+                promises.push(this.storePlaylist(res))
+              } else {
+                lastValue.playlists.push(this.parseScannedPlaylist(res))
+              }
+            }
+          },
+          () =>
+            Promise.allSettled(promises).then(() => {
+              if (store) this.saveToDb(this.songList)
+              this.songList = []
+              return resolve(lastValue)
+            })
+        )
+      })
+    }
+
+    return lastValue
+  }
+
+  public async runScraper() {
+    if (this.scrapeStatus !== ScanStatus.UNDEFINED) {
+      console.debug('Another scrape job already in progress, setting status to queued')
+      this.scrapeStatus = ScanStatus.QUEUED
       return
     }
 
-    this.setScanStatus(ScanStatus.SCANNING)
+    this.scrapeStatus = ScanStatus.SCANNING as ScanStatus
+
+    const artists = await getSongDB().getEntityByOptions<Artists>({
+      artist: true
+    })
+    const fetcher = new MetadataFetcher()
+    await fetcher.fetchMBID(artists)
+
+    if (this.scrapeStatus === ScanStatus.QUEUED) {
+      await this.runScraper()
+    }
+
+    this.scanStatus = ScanStatus.UNDEFINED
+  }
+
+  public async scanAll(event?: IpcMainEvent, request?: IpcRequest<ScannerRequests.ScanSongs>): Promise<void> {
+    if (this.scanStatus !== ScanStatus.UNDEFINED) {
+      console.debug('Another scan already in progress, setting status to queued')
+      this.scanStatus = ScanStatus.QUEUED
+      return
+    }
 
     const paths = getCombinedMusicPaths() ?? []
     await this.destructiveScan(paths)
 
-    const splitPattern = loadSelectivePreference<string>('scan_splitter') ?? ';'
+    this.scanStatus = ScanStatus.SCANNING as ScanStatus
 
-    const excludePaths = paths.filter((val) => !val.enabled)
-    const excludeRegex = new RegExp(
-      excludePaths.length > 0
-        ? excludePaths
-            .map((val) => val.path)
-            .join('|')
-            .replaceAll('\\', '\\\\')
-        : /(?!)/
+    await this.scanFilePromisified(
+      paths.filter((val) => val.enabled).map((val) => val.path),
+      request?.params.forceScan,
+      true
     )
 
-    console.time(`File populate`)
+    this.reportProgress(this.totalScanFiles)
 
-    const allFiles: { path: string; type: 'PLAYLIST' | 'SONG' }[] = []
-    for (const p of paths) {
-      allFiles.push(...(await this.getAllFiles(p.path, excludeRegex)))
+    if (this.scanStatus === ScanStatus.QUEUED) {
+      return this.scanAll(event, request)
     }
 
-    console.timeEnd(`File populate`)
+    this.scanStatus = ScanStatus.UNDEFINED
+    this.runScraper()
 
-    const existingFiles = getSongDB().getAllPaths()
-    const newFiles = allFiles.filter((x) => !existingFiles.includes(x.path))
-
-    const customThreadCount = loadSelectivePreference<number>('scan_threads') ?? this.getRecommendedCpus()
-
-    const songDb = getSongDB()
-    const scannerPool = Pool(() => spawn<ScanWorkerWorkerType>(new Worker(scannerWorker)), {
-      size: customThreadCount
-    })
-
-    const coverPool = Pool(() => spawn<ScanWorkerWorkerType>(new Worker(scannerWorker)), {
-      size: customThreadCount
-    })
-
-    const thumbPath = loadPreferences().thumbnailPath
-    await this.createDirIfNotExists(thumbPath)
-
-    const scanEmitter = new EventEmitter()
-
-    scanEmitter.on('song', async (song: Song) => {
-      if (song.path) {
-        coverPool.queue(async (worker) => this.storeCover(worker, song, thumbPath, songDb))
-      }
-    })
-
-    this.totalScanFiles = newFiles.length
-
-    let index = 0
-    for (const f of newFiles.filter((val) => val.type === 'SONG')) {
-      scannerPool.queue((worker) => {
-        index++
-        this.reportProgress(index)
-        return this.scanSong(worker, songDb, f.path, splitPattern, scanEmitter)
-      })
-    }
-
-    for (const f of newFiles.filter((val) => val.type === 'PLAYLIST')) {
-      scannerPool.queue(async (worker) => {
-        const scanned = await this.promisifyWorker(worker.scanSinglePlaylist(f.path, splitPattern, loggerPath))
-
-        if (scanned.songs.length > 0) {
-          const existing = getSongDB().getPlaylistByPath(scanned.filePath)[0]
-
-          let id = existing?.playlist_id
-          if (!id) {
-            id = songDb.createPlaylist({
-              playlist_name: scanned.title,
-              playlist_path: scanned.filePath
-            })
-          }
-
-          for (const song of scanned.songs) {
-            await this.checkDuplicateAndStore(worker, song, songDb, scanEmitter)
-            songDb.addToPlaylist(id, song)
-          }
-        }
-      })
-    }
-
-    await scannerPool.settled(true)
-    await scannerPool.terminate()
-
-    await coverPool.settled(true)
-    await coverPool.terminate()
-
-    this.reportProgress(newFiles.length)
-
-    event?.reply(request?.responseChannel)
-
-    if (this.scanIsQueued()) {
-      ipcMain.emit(IpcEvents.SCANNER, request)
-    }
-
-    this.setScanStatus(ScanStatus.UNDEFINED)
-  }
-
-  private async createDirIfNotExists(thumbPath: string) {
-    try {
-      await fs.promises.access(thumbPath)
-    } catch (e) {
-      await fs.promises.mkdir(thumbPath, { recursive: true })
-    }
+    request && event?.reply(request.responseChannel)
   }
 
   private async scanSingleSong(event: IpcMainEvent, request: IpcRequest<ScannerRequests.ScanSingleSong>) {
     if (request.params.songPath) {
-      const splitPattern = loadSelectivePreference<string>('scan_splitter') ?? ';'
-      const scanner = await spawn<ScanWorkerWorkerType>(new Worker(scannerWorker))
-      const scanned = await this.promisifyWorker(
-        scanner.scanSingleSong(request.params.songPath, splitPattern, loggerPath)
-      )
-
-      if (scanned.song?.path) {
-        const thumbPath = loadPreferences().thumbnailPath
-        await this.createDirIfNotExists(thumbPath)
-
-        const cover = await this.promisifyWorker(
-          scanner.getCover(scanned.song.path, thumbPath, scanned.song._id, false, loggerPath)
-        )
-        scanned.song.song_coverPath_high = cover?.high
-        scanned.song.song_coverPath_low = cover?.low
-      }
-      event?.reply(request?.responseChannel, scanned)
-      await Thread.terminate(scanner)
+      const result = await this.scanFilePromisified([request.params.songPath], true, false)
+      event.reply(request.responseChannel, { song: result.songs[0] })
     }
   }
 
   private async scanSinglePlaylist(event: IpcMainEvent, request: IpcRequest<ScannerRequests.ScanSinglePlaylist>) {
     if (request.params.playlistPath) {
-      const splitPattern = loadSelectivePreference<string>('scan_splitter') ?? ';'
-      const scanner = await spawn<ScanWorkerWorkerType>(new Worker(scannerWorker))
-      const scanned = await this.promisifyWorker(
-        scanner.scanSinglePlaylist(request.params.playlistPath, splitPattern, loggerPath)
-      )
-
-      const thumbPath = loadPreferences().thumbnailPath
-      await this.createDirIfNotExists(thumbPath)
-
-      let playlist = getSongDB().getPlaylistByPath(scanned.filePath)[0]
-      if (!playlist) {
-        playlist = {
-          playlist_id: v4(),
-          playlist_name: scanned.title,
-          playlist_path: scanned.filePath
-        }
-      }
-
-      const scannerPool = Pool(() => spawn<ScanWorkerWorkerType>(new Worker(scannerWorker)), {
-        concurrency: 2
-      })
-      for (const song of scanned.songs) {
-        if (song.path) {
-          scannerPool.queue(async (worker) => {
-            const cover = await worker.getCover(song.path ?? '', thumbPath, song._id, false, loggerPath)
-            song.song_coverPath_high = cover?.high
-            song.song_coverPath_low = cover?.low
-          })
-        }
-      }
-
-      await scannerPool.completed(true)
-      await scannerPool.terminate()
-
-      event.reply(request.responseChannel, scanned)
+      event.reply(request.responseChannel, await this.scanFilePromisified([request.params.playlistPath], true, false))
     }
   }
 

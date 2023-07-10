@@ -168,9 +168,15 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
     return await sendAsync<void>(this.packageName, 'close-login-modal')
   }
 
+  private async extensionUpdated() {
+    return sendAsync<void>(this.packageName, 'extension-updated')
+  }
+
   public on(eventName: ExtraExtensionEventTypes, callback: unknown) {
     console.debug('Registering listener for', eventName, 'in package', this.packageName)
     this.eventCallbackMap[eventName] = callback
+
+    this.extensionUpdated()
 
     if (eventName === 'requestedPlaylists') {
       this.registerPlaylistProvider()

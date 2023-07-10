@@ -36,14 +36,18 @@ export default class PlayerControls extends Vue {
     else vxm.player.prevSong()
   }
 
-  public async queueSong(songs: Song[]) {
+  public async showQueueSongsToast(length: number) {
+    this.$toasted.show(`Queued ${length} song${length !== 1 ? 's' : ''}`)
+  }
+
+  public async queueSong(songs: Song[], showToast = true) {
     if (this.isSyncing) {
       await vxm.sync.pushInQueue({ item: songs, top: false, skipImmediate: false })
     } else {
       await vxm.player.pushInQueue({ item: songs, top: false, skipImmediate: false })
     }
 
-    this.$toasted.show(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
+    showToast && this.showQueueSongsToast(songs.length)
   }
 
   public async playTop(songs: Song[]) {

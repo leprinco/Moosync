@@ -24,7 +24,7 @@ test('Remove a song from DB', async () => {
     await SongDB.removeSong(i)
 
     const oldCount = count
-    count = SongDB.getSongByOptions().length
+    count = (await SongDB.getSongByOptions()).length
 
     expect(count).toBe(oldCount - 1)
   }

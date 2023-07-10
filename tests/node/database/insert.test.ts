@@ -21,7 +21,7 @@ test('Insert a song in DB', async () => {
   })
 
   for (const i of inserted) {
-    const songResult = SongDB.getSongByOptions({
+    const songResult = await SongDB.getSongByOptions({
       song: {
         title: i.title
       }
@@ -36,7 +36,7 @@ test('Insert a song in DB', async () => {
 
 test('Album was inserted', async () => {
   for (const i of inserted) {
-    const albumResult = SongDB.getEntityByOptions<Album>({
+    const albumResult = await SongDB.getEntityByOptions<Album>({
       album: {
         album_name: i.album?.album_name
       }
@@ -49,7 +49,7 @@ test('Album was inserted', async () => {
 })
 
 test('Album count', async () => {
-  const albumResult = SongDB.getEntityByOptions<Album>({
+  const albumResult = await SongDB.getEntityByOptions<Album>({
     album: true
   })
 
@@ -63,7 +63,7 @@ test('Album count', async () => {
 
 test('Artist was inserted', async () => {
   for (const i of inserted) {
-    const artistResult = SongDB.getEntityByOptions<Artists>({
+    const artistResult = await SongDB.getEntityByOptions<Artists>({
       artist: i.artists![0]
     })
 
@@ -74,7 +74,7 @@ test('Artist was inserted', async () => {
 })
 
 test('Artist count', async () => {
-  const artistResult = SongDB.getEntityByOptions<Artists>({
+  const artistResult = await SongDB.getEntityByOptions<Artists>({
     artist: true
   })
 
@@ -86,9 +86,9 @@ test('Artist count', async () => {
 })
 
 test('Create playlist', async () => {
-  const playlist = insertPlaylist(SongDB)
+  const playlist = await insertPlaylist(SongDB)
 
-  const data = SongDB.getEntityByOptions<Playlist>({
+  const data = await SongDB.getEntityByOptions<Playlist>({
     playlist: true
   })
 
@@ -97,11 +97,11 @@ test('Create playlist', async () => {
 })
 
 test('Insert into playlist', async () => {
-  const playlist = insertPlaylist(SongDB)
+  const playlist = await insertPlaylist(SongDB)
   const song = await insertSong(SongDB, { size: 1 })
-  SongDB.addToPlaylist(playlist.playlist_id, ...song)
+  await SongDB.addToPlaylist(playlist.playlist_id, ...song)
 
-  const data = SongDB.getSongByOptions({
+  const data = await SongDB.getSongByOptions({
     playlist: {
       playlist_id: playlist.playlist_id
     }

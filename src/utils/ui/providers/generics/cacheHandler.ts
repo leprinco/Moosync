@@ -29,4 +29,8 @@ export class FetchCacheHandler {
       }
     }
   }
+
+  async hasItem(url: string): Promise<boolean> {
+    return (await this.localForage.keys()).includes(url)
+  }
 }

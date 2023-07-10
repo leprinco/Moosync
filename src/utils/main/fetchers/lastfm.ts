@@ -7,7 +7,6 @@
  *  See LICENSE in the project root for license information.
  */
 
-import https from 'https'
 import path from 'path'
 import { CacheHandler } from './cacheFile'
 import { app } from 'electron'
@@ -18,31 +17,6 @@ export class LastFMScraper extends CacheHandler {
   }
 
   public async scrapeURL(url: string): Promise<string> {
-    const cached = this.getCache(url)
-    if (cached) {
-      return cached
-    }
-    return new Promise<string>((resolve, reject) => {
-      if (url.startsWith('https')) {
-        const request = https.request(new URL(url), (res) => {
-          let data = ''
-          res.on('data', (chunk) => {
-            data += chunk
-          })
-          res.on('end', () => {
-            resolve(data)
-            this.addToCache(url, data)
-          })
-        })
-
-        request.on('error', function (e) {
-          reject(e.message)
-        })
-
-        request.end()
-      } else {
-        reject('URL must start with https: ' + url)
-      }
-    })
+    return this.get(url)
   }
 }

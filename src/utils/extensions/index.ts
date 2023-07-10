@@ -258,7 +258,7 @@ class ExtensionRequestHandler {
   }
 
   private requestToRenderer(message: extensionRequestMessage) {
-    const fireAndForgetRequests: typeof message['type'][] = ['update-preferences']
+    const fireAndForgetRequests: (typeof message)['type'][] = ['update-preferences', 'extension-updated']
     return new Promise((resolve) => {
       if (!fireAndForgetRequests.includes(message.type)) {
         let listener: (event: Electron.IpcMainEvent, data: extensionReplyMessage) => void
@@ -302,12 +302,12 @@ class ExtensionRequestHandler {
     message.type && console.debug('Received message from extension', message.extensionName, message.type)
     const resp: extensionReplyMessage = { ...message, data: undefined }
     if (message.type === 'get-songs') {
-      const songs = getSongDB().getSongByOptions(message.data)
+      const songs = await getSongDB().getSongByOptions(message.data)
       resp.data = songs
     }
 
     if (message.type === 'get-entity') {
-      const entity = getSongDB().getEntityByOptions(message.data)
+      const entity = await getSongDB().getEntityByOptions(message.data)
       resp.data = entity
     }
 
@@ -315,18 +315,21 @@ class ExtensionRequestHandler {
       resp.data = []
       for (const s of message.data) {
         if (s) {
-          resp.data.push(getSongDB().store(...sanitizeSong(message.extensionName, s)))
+          resp.data.push(await getSongDB().store(...sanitizeSong(message.extensionName, s)))
         }
       }
     }
 
     if (message.type === 'add-playlist') {
       const playlist = message.data as Playlist
-      resp.data = getSongDB().createPlaylist(sanitizePlaylist(message.extensionName, false, playlist)[0])
+      resp.data = await getSongDB().createPlaylist(sanitizePlaylist(message.extensionName, false, playlist)[0])
     }
 
     if (message.type === 'add-song-to-playlist') {
-      getSongDB().addToPlaylist(message.data.playlistID, ...sanitizeSong(message.extensionName, ...message.data.songs))
+      await getSongDB().addToPlaylist(
+        message.data.playlistID,
+        ...sanitizeSong(message.extensionName, ...message.data.songs)
+      )
     }
 
     if (message.type === 'remove-song') {
@@ -395,8 +398,8 @@ class ExtensionRequestHandler {
     }
 
     if (
-      extensionUIRequestsKeys.includes(message.type as typeof extensionUIRequestsKeys[number]) ||
-      playerControlRequests.includes(message.type as typeof playerControlRequests[number])
+      extensionUIRequestsKeys.includes(message.type as (typeof extensionUIRequestsKeys)[number]) ||
+      playerControlRequests.includes(message.type as (typeof playerControlRequests)[number])
     ) {
       const data = await this.requestToRenderer(message)
       resp.data = data

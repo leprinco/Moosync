@@ -55,7 +55,7 @@
 
           <EditText
             :title="$t('settings.paths.scan_threads')"
-            :tooltip="$t('settings.paths.scan_threadsr_tooltip')"
+            :tooltip="$t('settings.paths.scan_threads_tooltip')"
             class="mt-2"
             key="scan_threads"
             type="number"

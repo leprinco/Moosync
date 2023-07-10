@@ -80,18 +80,24 @@ export default class ProviderFetchMixin extends mixins(ProviderMixin) {
     Vue.set(this.loadingMap, 'local', false)
   }
 
-  public async fetchAll(afterFetch?: (songs: Song[]) => void) {
+  public async fetchAll(afterFetch?: (songs: Song[]) => void, onFetchEnded?: (songCount: number) => void) {
     if (!this.isFetching) {
       this.isFetching = true
       let songListLastSong = this.songList.length - 1
 
+      let count = 0
+
       for (const key of Object.keys(this.nextPageToken)) {
         while (this.nextPageToken[key]) {
           await this.loadNextPage()
-          afterFetch && afterFetch(this.songList.slice(songListLastSong))
+          const newList = this.songList.slice(songListLastSong)
+          count += newList.length
+          afterFetch && afterFetch(newList)
           songListLastSong = this.songList.length
         }
       }
+
+      onFetchEnded && onFetchEnded(count)
       this.isFetching = false
     }
   }
@@ -129,5 +135,9 @@ export default class ProviderFetchMixin extends mixins(ProviderMixin) {
 
   clearNextPageTokens() {
     this.nextPageToken = {}
+  }
+
+  hasNextPage() {
+    return Object.keys(this.nextPageToken).length > 0
   }
 }

@@ -8,6 +8,12 @@
  */
 interface IpcRequest<T = unknown> {
   type: string
+  responseChannel: string
+  params: T
+}
+
+interface IpcRequestOptionalChannel<T = unknown> {
+  type: string
   responseChannel?: string
   params: T
 }
