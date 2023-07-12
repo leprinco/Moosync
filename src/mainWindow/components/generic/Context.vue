@@ -76,4 +76,5 @@ export default class Context extends Vue {
   ul li
     &:hover
       background: var(--accent)
+      color: var(--textInverse)
 </style>
