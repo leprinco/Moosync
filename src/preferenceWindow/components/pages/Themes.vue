@@ -298,6 +298,7 @@ export default class Themes extends Vue {
   ul li
     &:hover
       background: var(--accent)
+      color: var(--textInverse) !important
 </style>
 
 <style lang="sass" scoped>
