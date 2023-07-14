@@ -42,7 +42,7 @@
     "addToQueue": "キューに {title} を追加",
     "addToLibrary": "ライブラリに {title} を追加",
     "playRandom": "ランダムに100曲再生",
-    "fetchAll": "Fetch all songs"
+    "fetchAll": "すべての曲を取得"
   },
   "loading": "読み込み中...",
   "contextMenu": {
@@ -72,7 +72,7 @@
       "moveToTop": "先頭に移動",
       "moveToBottom": "末端に移動",
       "moveManually": "指定し移動",
-      "manualIndex": "曲のインデックスを設定",
+      "manualIndex": "曲の順番を設定",
       "remove": "ライブラリから削除",
       "add": "ライブラリに曲を追加 | ライブラリに曲を追加",
       "removeFromPlaylist": "再生リストから削除",
@@ -83,7 +83,7 @@
       "openInBrowser": "ブラウザで開く"
     },
     "moreInfo": "詳細情報",
-    "incorrectPlayback": "再生がおかしいですか？"
+    "incorrectPlayback": "不正確な曲ですか？"
   },
   "providers": {
     "youtube": "YouTube",
