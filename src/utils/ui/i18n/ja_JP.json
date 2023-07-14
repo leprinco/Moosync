@@ -71,7 +71,7 @@
       "addToQueue": "キューに追加",
       "moveToTop": "先頭に移動",
       "moveToBottom": "末端に移動",
-      "moveManually": "手動で移動",
+      "moveManually": "指定し移動",
       "manualIndex": "曲のインデックスを設定",
       "remove": "ライブラリから削除",
       "add": "ライブラリに曲を追加 | ライブラリに曲を追加",
@@ -109,8 +109,8 @@
       "splitter_tooltip": "アーティスト名を分割するには正規表現を使用します。空白の場合は分割を無効にします。",
       "scan_interval": "スキャン間隔",
       "scan_interval_tooltip": "スキャンのタスクを実行する間隔を秒単位で設定します。自動スキャンを無効にするには -1 にします。",
-      "scan_threads": "Scan CPU threads",
-      "scan_threads_tooltip": "Number of threads to use when scanning for local music"
+      "scan_threads": "スキャン時のCPU スレッド数",
+      "scan_threads_tooltip": "端末内の音楽をスキャンする際に使うスレッド数"
     },
     "themes": {
       "songView": "曲表示",
