@@ -41,7 +41,8 @@
     "playSingle": "Zagraj {title}",
     "addToQueue": "Dodaj {title} do kolejki",
     "addToLibrary": "Dodaj {title} do biblioteki",
-    "playRandom": "Odtwórz 100 losowych utworów"
+    "playRandom": "Odtwórz 100 losowych utworów",
+    "fetchAll": "Fetch all songs"
   },
   "loading": "Ładowanie...",
   "contextMenu": {
@@ -107,7 +108,9 @@
       "splitter": "Wzór podziału nazwy artysty",
       "splitter_tooltip": "Regex, aby podzielić nazwy artysty. Pozostaw puste, aby wyłączyć dzielenie.",
       "scan_interval": "Scan interval",
-      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning",
+      "scan_threads": "Scan CPU threads",
+      "scan_threads_tooltip": "Number of threads to use when scanning for local music"
     },
     "themes": {
       "songView": "Widok utworów",
