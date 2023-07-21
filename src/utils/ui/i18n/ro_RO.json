@@ -41,7 +41,8 @@
     "playSingle": "Joacă {title}",
     "addToQueue": "Adaugă {title} la coadă",
     "addToLibrary": "Adaugă {title} la bibliotecă",
-    "playRandom": "Joacă 100 melodii aleatoare"
+    "playRandom": "Joacă 100 melodii aleatoare",
+    "fetchAll": "Fetch all songs"
   },
   "loading": "Încărcare...",
   "contextMenu": {
@@ -107,7 +108,9 @@
       "splitter": "Sablon divizat pentru numele artistului",
       "splitter_tooltip": "Regex pentru împărțirea numelor artiștilor. Lăsați gol pentru a dezactiva divizarea.",
       "scan_interval": "Scan interval",
-      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning",
+      "scan_threads": "Scan CPU threads",
+      "scan_threads_tooltip": "Number of threads to use when scanning for local music"
     },
     "themes": {
       "songView": "Vizualizare melodii",
