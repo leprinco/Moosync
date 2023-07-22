@@ -122,8 +122,13 @@ export class MprisChannel implements IpcChannelInterface {
 
   @checkStarted()
   private handlePlayPauseButtonState(isPlaying: boolean) {
-    this.buttonState['play'] = !isPlaying
-    this.buttonState['pause'] = isPlaying
+    if (process.platform !== 'linux') {
+      this.buttonState['play'] = !isPlaying
+      this.buttonState['pause'] = isPlaying
+    } else {
+      this.buttonState['play'] = true
+      this.buttonState['pause'] = true
+    }
 
     this.controller.setButtonStatus(this.buttonState)
   }

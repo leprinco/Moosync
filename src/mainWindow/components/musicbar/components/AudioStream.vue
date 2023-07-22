@@ -185,6 +185,7 @@ export default class AudioStream extends mixins(
       if (!player) {
         console.error('No player found to play', song.playbackUrl)
         if (vxm.player.queueOrder.length > 1) {
+          this.playerBlacklist = []
           this.nextSong()
         }
         return

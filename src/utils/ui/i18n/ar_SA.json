@@ -41,7 +41,8 @@
     "playSingle": "تشغيل {title}",
     "addToQueue": "إضافة {title} إلى قائمة الانتظار",
     "addToLibrary": "إضافة {title} إلى المكتبة",
-    "playRandom": "تشغيل 100 أغنية عشوائية"
+    "playRandom": "تشغيل 100 أغنية عشوائية",
+    "fetchAll": "Fetch all songs"
   },
   "loading": "تحميل...",
   "contextMenu": {
@@ -107,7 +108,9 @@
       "splitter": "نمط تقسيم اسم الفنان",
       "splitter_tooltip": "ريجكس لتقسيم أسماء الفنانين. اتركه فارغاً لتعطيل التقسيم.",
       "scan_interval": "Scan interval",
-      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning",
+      "scan_threads": "Scan CPU threads",
+      "scan_threads_tooltip": "Number of threads to use when scanning for local music"
     },
     "themes": {
       "songView": "عرض الأغاني",

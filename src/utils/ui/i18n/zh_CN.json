@@ -41,7 +41,8 @@
     "playSingle": "播放 {title}",
     "addToQueue": "将 {title} 添加到队列",
     "addToLibrary": "添加 {title} 到库",
-    "playRandom": "随机播放100首歌曲"
+    "playRandom": "随机播放100首歌曲",
+    "fetchAll": "Fetch all songs"
   },
   "loading": "加载中...",
   "contextMenu": {
@@ -107,7 +108,9 @@
       "splitter": "小艺术家名称分割图案",
       "splitter_tooltip": "正则表示分割艺术家的名字。留空则禁用分割。",
       "scan_interval": "Scan interval",
-      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
+      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning",
+      "scan_threads": "Scan CPU threads",
+      "scan_threads_tooltip": "Number of threads to use when scanning for local music"
     },
     "themes": {
       "songView": "歌曲视图",

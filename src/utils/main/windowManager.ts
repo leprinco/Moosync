@@ -305,10 +305,10 @@ export class WindowHandler {
 
     if (isMainWindow) {
       if (!AppExitHandler._isQuitting && AppExitHandler._minimizeToTray) {
-        await this.trayHandler.createTray()
         event.preventDefault()
         window.hide()
       } else {
+        console.log('stopping all')
         this.stopAll()
         app.quit()
       }
