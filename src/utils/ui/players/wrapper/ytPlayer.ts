@@ -21,7 +21,7 @@ export class YTPlayerWrapper implements CustomAudioInstance {
       keyboard: false,
       controls: false
     })
-    this.elementIdentifier = element instanceof HTMLElement ? element.id : element
+    this.elementIdentifier = element instanceof HTMLElement ? element?.id : element
     this.supposedVolume = this.volume
     this.instance.on('playing', () => {
       this.volume = this.supposedVolume
@@ -180,7 +180,7 @@ export class YTPlayerWrapper implements CustomAudioInstance {
   }
 
   removeEventListener(ev: string) {
-    console.log('Youtube Player: Removing listener', ev)
+    console.debug('Youtube Player: Removing listener', ev)
     this.instance.removeAllListeners(ev)
   }
 

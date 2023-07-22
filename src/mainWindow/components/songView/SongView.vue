@@ -27,7 +27,7 @@
         @onRowContext="onSongContextMenu"
         @onRowSelected="updateCoverDetails"
         @onRowSelectionClear="clearSelection"
-        @onRowPlayNowClicked="(song: Song) => console.log('playing top')"
+        @onRowPlayNowClicked="(song: Song) => playTop([song])"
         @onArtistClicked="gotoArtist"
         @onAlbumClicked="gotoAlbum"
         @playAll="playAll"
@@ -37,7 +37,7 @@
         @onSearchChange="onSearchChange"
         @playRandom="playRandom"
         @fetchAll="fetchAll"
-        @scroll="onScroll"
+        @onScrollEnd="onScrollEnd"
       ></SongViewCompact>
 
       <SongViewClassic
@@ -63,7 +63,7 @@
         @onSearchChange="onSearchChange"
         @playRandom="playRandom"
         @fetchAll="fetchAll"
-        @scroll="onScroll"
+        @onScrollEnd="onScrollEnd"
       ></SongViewClassic>
     </transition>
   </b-container>
@@ -268,11 +268,8 @@ export default class AllSongs extends mixins(
     this.$emit('onSearchChange', text)
   }
 
-  onScroll(e: MouseEvent) {
-    const { scrollTop, clientHeight, scrollHeight } = e.target as HTMLDivElement
-    if (scrollTop + clientHeight >= scrollHeight - 1) {
-      this.$emit('onScrollEnd')
-    }
+  onScrollEnd() {
+    this.$emit('onScrollEnd')
   }
 }
 </script>

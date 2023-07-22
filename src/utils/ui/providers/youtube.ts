@@ -441,6 +441,7 @@ export class YoutubeProvider extends GenericProvider {
   }
 
   public matchSongUrl(url: string): boolean {
+    console.log(url)
     return !!url.match(
       /^((?:https?:)?\/\/)?((?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/
     )

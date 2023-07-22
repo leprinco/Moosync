@@ -10,7 +10,13 @@
 <template>
   <div class="d-flex h-100 w-100">
     <b-container fluid>
-      <TabCarousel class="tab-carousel" v-bind="$attrs" :items="optionalProviders" :isSortAsc="isSortAsc" />
+      <TabCarousel
+        class="tab-carousel"
+        v-bind="$attrs"
+        v-on="$listeners"
+        :items="optionalProviders"
+        :isSortAsc="isSortAsc"
+      />
       <b-row v-if="isLoading">
         <b-col class="mb-2">
           <b-spinner>{{ $t('loading') }}</b-spinner>
@@ -23,7 +29,7 @@
           :item-size="94"
           key-field="_id"
           :direction="'vertical'"
-          @scroll="onScroll"
+          @scroll-end="onScrollEnd"
           v-click-outside="clearSelection"
         >
           <template v-slot="{ item, index }">
@@ -96,8 +102,8 @@ export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
     this.$emit('onArtistClicked', item)
   }
 
-  onScroll(e: Event) {
-    this.$emit('scroll', e)
+  onScrollEnd(e: Event) {
+    this.$emit('onScrollEnd', e)
   }
 
   get isSortAsc() {

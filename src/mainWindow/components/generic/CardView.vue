@@ -8,7 +8,12 @@
 -->
 
 <template>
-  <div class="card mb-2 card-grow" @contextmenu="emitContext" :style="{ 'max-width': maxWidth }">
+  <div
+    class="card mb-2 card-grow"
+    @contextmenu="emitContext"
+    :style="{ 'max-width': maxWidth }"
+    @click="$emit('click', $event)"
+  >
     <div class="card-img-top">
       <div class="icon-container" v-if="iconBgColor" :style="{ background: iconBgColor }">
         <slot name="icon" />

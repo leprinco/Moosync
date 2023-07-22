@@ -18,6 +18,7 @@
           :currentSong="currentSong"
           :optionalProviders="optionalProviders"
           v-bind="$attrs"
+          v-on="$listeners"
         />
       </b-row>
       <b-row no-gutters class="list-container">
@@ -31,6 +32,7 @@
           ]"
           :isLoading="isLoading"
           v-bind="$attrs"
+          v-on="$listeners"
         />
       </b-row>
     </b-col>

@@ -53,8 +53,6 @@ import { ProviderScopes } from '@/utils/commonConstants'
 export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSong, ProviderFetchMixin) {
   private artist: Artists | null = null
 
-  private fetchArtistPromise: Promise<void> | undefined
-
   get artistSongProviders(): TabCarouselItem[] {
     return this.fetchProviders()
   }
@@ -106,31 +104,31 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
       })
 
     this.generator = (provider, nextPageToken) => {
+      console.trace('got artist', this.artist)
       if (this.artist) {
         return provider.getArtistSongs(this.artist, nextPageToken)
       } else {
         return emptyGen()
       }
     }
-
-    this.onArtistChange()
   }
 
   @Watch('$route.query.id')
   private async onArtistChange() {
-    const promises: Promise<void>[] = []
     if (typeof this.$route.query.id === 'string') {
       this.artist = null
       this.clearNextPageTokens()
       this.clearSongList()
-      promises.push(this.fetchArtists())
-      promises.push(this.fetchSongList())
+      await this.fetchArtists()
+
+      console.log(this.artist)
+
+      await this.fetchSongList()
     }
-    await Promise.all(promises)
   }
 
   async mounted() {
-    await this.fetchArtistPromise
+    await this.onArtistChange()
     if (this.$route.query.defaultProviders) {
       for (const p of this.$route.query.defaultProviders) {
         if (p) {

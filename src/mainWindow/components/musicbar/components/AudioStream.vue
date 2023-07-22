@@ -11,13 +11,13 @@
   <div class="h-100 w-100">
     <div ref="audioHolder" class="h-100 w-100">
       <div class="w-100 h-100 position-relative">
-        <div class="yt-player" ref="yt-player" id="yt-player"></div>
+        <div class="yt-player" ref="ytAudioElement" id="yt-player"></div>
         <div class="yt-player-overlay h-100 w-100" v-if="isJukeboxModeActive"></div>
       </div>
       <audio id="dummy-yt-player" />
-      <audio ref="audio" preload="auto" crossorigin="anonymous" />
-      <video ref="dash-player" class="dash-player" crossorigin="anonymous"></video>
-      <video ref="hls-player" class="hls-player" crossorigin="anonymous"></video>
+      <audio ref="audioElement" preload="auto" crossorigin="anonymous" />
+      <video ref="dashPlayerDiv" class="dash-player" crossorigin="anonymous"></video>
+      <video ref="hlsPlayerDiv" class="hls-player" crossorigin="anonymous"></video>
     </div>
   </div>
 </template>
@@ -75,16 +75,16 @@ export default class AudioStream extends mixins(
   JukeboxMixin,
   ProviderMixin
 ) {
-  @Ref('audio')
+  @Ref
   private audioElement!: HTMLAudioElement
 
-  @Ref('yt-player')
+  @Ref
   private ytAudioElement!: HTMLDivElement
 
-  @Ref('dash-player')
+  @Ref
   private dashPlayerDiv!: HTMLVideoElement
 
-  @Ref('hls-player')
+  @Ref
   private hlsPlayerDiv!: HTMLVideoElement
 
   @Prop({ default: '' })

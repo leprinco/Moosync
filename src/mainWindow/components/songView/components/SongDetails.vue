@@ -73,6 +73,7 @@
               <TabCarousel
                 class="tab-carousel"
                 v-bind="$attrs"
+                v-on="$listeners"
                 :items="optionalProviders"
                 defaultBackgroundColor="var(--tertiary)"
                 :isSortAsc="isSortAsc"

@@ -38,7 +38,7 @@
           key-field="_id"
           :direction="'vertical'"
           v-click-outside="clearSelection"
-          @scroll="onScroll"
+          @scroll-end="onScrollEnd"
         >
           <template v-slot="{ item, index }">
             <div class="wrapper w-100 field-content" :class="{ selectedItem: selected.includes(index) }">
@@ -266,8 +266,8 @@ export default class SongList extends mixins(SongListMixin) {
     this.refreshKey = !this.refreshKey
   }
 
-  onScroll(e: Event) {
-    this.$emit('scroll', e)
+  onScrollEnd(e: Event) {
+    this.$emit('onScrollEnd', e)
   }
 }
 </script>

@@ -114,7 +114,6 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
         return emptyGen()
       }
     }
-    this.onAlbumChange()
   }
 
   @Watch('$route.query.id')
@@ -130,7 +129,9 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     await Promise.all(promises)
   }
 
-  mounted() {
+  async mounted() {
+    await this.onAlbumChange()
+
     if (this.$route.query.defaultProviders) {
       for (const p of this.$route.query.defaultProviders) {
         if (p) {

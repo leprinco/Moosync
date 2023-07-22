@@ -15,6 +15,7 @@
     viewBox="0 0 12 14"
     shape-rendering="geometricPrecision"
     text-rendering="geometricPrecision"
+    @click="$emit('click', $event)"
   >
     <g
       id="eF20KXoiB5d2_ts"

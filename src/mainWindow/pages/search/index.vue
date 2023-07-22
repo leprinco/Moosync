@@ -319,13 +319,15 @@ export default class SearchPage extends mixins(
   }
 
   @Watch('searchTerm', { immediate: true })
-  private onSearchTermChanged() {
-    this.fetchLocalSongList()
+  private onSearchTermChanged(val: string) {
+    if (val) {
+      this.fetchLocalSongList()
 
-    for (const p of this.providers) {
-      const provider = this.getProviderByKey(p.key)
-      if (provider) {
-        this.fetchProviderSongList(provider)
+      for (const p of this.providers) {
+        const provider = this.getProviderByKey(p.key)
+        if (provider) {
+          this.fetchProviderSongList(provider)
+        }
       }
     }
   }
