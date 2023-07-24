@@ -117,6 +117,7 @@ import MultiButtonModal from '../../../commonComponents/MultiButtonModal.vue'
 import CreatePlaylistIcon from '@/icons/CreatePlaylistIcon.vue'
 import ImportThemeIcon from '@/icons/ImportThemeIcon.vue'
 import { bus } from '@/preferenceWindow/main'
+import { MenuItem } from '../../../utils/ui/mixins/ContextMenuMixin'
 
 @Component({
   components: {
@@ -141,6 +142,8 @@ export default class Themes extends Vue {
 
   private activeTheme = 'default'
   private activeView: songMenu = 'compact'
+
+  menu: MenuItem[] = []
 
   get themesComponent() {
     return this.activeView === 'compact' ? 'ThemeComponentCompact' : 'ThemeComponentClassic'
@@ -170,37 +173,37 @@ export default class Themes extends Vue {
   themeToRemove: ThemeDetails | null = null
 
   themeMenu(event: Event, theme: ThemeDetails) {
-    // this.menu = []
-    // if (theme.id !== 'system_default' && theme.id !== 'default') {
-    //   this.themeToRemove = theme
-    //   this.menu.push({
-    //     label: 'Delete',
-    //     handler: () => {
-    //       this.$bvModal.show('themeDeleteModal')
-    //     }
-    //   })
-    //   this.menu.push({
-    //     label: 'Edit',
-    //     handler: () => {
-    //       this.editTheme(theme)
-    //     }
-    //   })
-    // }
-    // this.menu.push({
-    //   label: 'Copy to clipboard',
-    //   handler: () => {
-    //     navigator.clipboard.writeText(JSON.stringify(theme))
-    //   }
-    // })
-    // if (theme.id !== 'default') {
-    //   this.menu.push({
-    //     label: 'Export theme',
-    //     handler: () => {
-    //       window.ThemeUtils.packTheme(theme.id)
-    //     }
-    //   })
-    // }
-    // ;(this.$refs['contextMenu'] as ContextMenuComponent).open(event)
+    this.menu = []
+    if (theme.id !== 'system_default' && theme.id !== 'default') {
+      this.themeToRemove = theme
+      this.menu.push({
+        label: 'Delete',
+        handler: () => {
+          this.$bvModal.show('themeDeleteModal')
+        }
+      })
+      this.menu.push({
+        label: 'Edit',
+        handler: () => {
+          this.editTheme(theme)
+        }
+      })
+    }
+    this.menu.push({
+      label: 'Copy to clipboard',
+      handler: () => {
+        navigator.clipboard.writeText(JSON.stringify(theme))
+      }
+    })
+    if (theme.id !== 'default') {
+      this.menu.push({
+        label: 'Export theme',
+        handler: () => {
+          window.ThemeUtils.packTheme(theme.id)
+        }
+      })
+    }
+    // ;(this.$refs['contextMenu']).open(event)
   }
 
   hideContextMenu() {

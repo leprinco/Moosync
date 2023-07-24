@@ -222,8 +222,7 @@ export default class NewTheme extends Vue {
 
   async created() {
     this.parseClipboard()
-
-    this.currentThemeID = this.$route.params['currentTheme'].toString()
+    this.currentThemeID = this.$route.params['currentTheme']?.toString()
     if (this.currentThemeID) {
       const theme = await window.ThemeUtils.getTheme(this.currentThemeID)
       if (theme) {

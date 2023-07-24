@@ -18,7 +18,7 @@ import JukeboxMixin from './JukeboxMixin'
 import ProviderMixin from './ProviderMixin'
 import { toast } from 'vue3-toastify'
 
-type MenuItem = {
+export type MenuItem = {
   label?: string
   handler?: () => void
   children?: MenuItem[]

@@ -23,7 +23,7 @@
         :itemSecondarySize="itemWidth"
         :key-field="keyField"
         :grid-items="itemsInRow"
-        :buffer="400"
+        :buffer="100"
         :direction="'vertical'"
         @resize="onScrollerResize"
       >
