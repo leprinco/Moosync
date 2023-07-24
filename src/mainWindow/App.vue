@@ -9,7 +9,6 @@
 
 <template>
   <div id="app">
-    <ContextMenu />
     <Titlebar :isJukeboxModeActive="isJukeboxModeActive" />
     <div class="appContainer">
       <router-view></router-view>
@@ -32,7 +31,6 @@ import { Component, Watch } from 'vue-facing-decorator'
 import Titlebar from '@/commonComponents/Titlebar.vue'
 import { mixins } from 'vue-facing-decorator'
 import ThemeHandler from '@/utils/ui/mixins/ThemeHandler'
-import ContextMenu from './components/generic/Context.vue'
 import NewPlaylistModal from '@/mainWindow/components/modals/NewPlaylistModal.vue'
 import SongFromUrlModal from './components/modals/SongFromURLModal.vue'
 import PlaylistFromUrlModal from './components/modals/PlaylistFromURLModal.vue'
@@ -62,7 +60,6 @@ import { useI18n } from 'vue-i18n'
 @Component({
   components: {
     Titlebar,
-    ContextMenu,
     NewPlaylistModal,
     SongFromUrlModal,
     PlaylistFromUrlModal,

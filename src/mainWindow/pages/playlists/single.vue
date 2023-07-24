@@ -89,15 +89,15 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   }
 
   private get isYoutube() {
-    return (this.$route.query.id as string)?.startsWith('youtube')
+    return (this.$route?.query?.id as string)?.startsWith('youtube')
   }
 
   private get isSpotify() {
-    return (this.$route.query.id as string)?.startsWith('spotify')
+    return (this.$route?.query?.id as string)?.startsWith('spotify')
   }
 
   private get isExtension() {
-    return this.$route.query.extension
+    return this.$route?.query?.extension
   }
 
   isRemote() {
@@ -107,15 +107,19 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   private async refresh() {
     this.clearSongList()
     this.clearNextPageTokens()
+
+    console.log('route', this.$route)
+
     await this.fetchSongList()
   }
 
   async created() {
     this.providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_SONGS)
-    this.localSongFetch = async (sortBy) =>
+
+    this.localSongFetch = async (sortBy: SongSortOptions[]) =>
       window.SearchUtils.searchSongsByOptions({
         playlist: {
-          playlist_id: this.$route.query.playlist_id as string
+          playlist_id: this.$route?.query?.playlist_id as string
         },
         sortBy
       })
@@ -137,7 +141,6 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
         playlist: { playlist_id: this.playlist.playlist_id }
       })
     )[0]
-    this.refresh()
 
     const owner = this.getPlaylistOwnerProvider()
     if (owner) {
@@ -148,6 +151,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   mounted() {
     this.enableRefresh()
     this.listenGlobalRefresh()
+    this.refresh()
   }
 
   private listenGlobalRefresh() {
@@ -159,12 +163,12 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
 
   private get playlist() {
     return {
-      playlist_id: this.$route.query.playlist_id as string,
-      playlist_name: this.$route.query.playlist_name as string,
-      playlist_coverPath: this.$route.query.playlist_coverPath as string,
-      playlist_song_count: parseInt(this.$route.query.playlist_song_count as string) ?? 0,
-      playlist_path: this.$route.query.playlist_path as string | undefined,
-      extension: this.$route.query.extension as string | undefined
+      playlist_id: this.$route?.query?.playlist_id as string,
+      playlist_name: this.$route?.query?.playlist_name as string,
+      playlist_coverPath: this.$route?.query?.playlist_coverPath as string,
+      playlist_song_count: parseInt(this.$route?.query?.playlist_song_count as string) ?? 0,
+      playlist_path: this.$route?.query?.playlist_path as string | undefined,
+      extension: this.$route?.query?.extension as string | undefined
     }
   }
 

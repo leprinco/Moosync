@@ -59,19 +59,12 @@ import SongListCompactItem from './SongListCompactItem.vue'
 import EllipsisIcon from '@/icons/EllipsisIcon.vue'
 import TabCarousel from '../../generic/TabCarousel.vue'
 import { vxm } from '@/mainWindow/store'
-import { useAttrs } from 'vue'
 
 @Component({
   components: {
     SongListCompactItem,
     EllipsisIcon,
     TabCarousel
-  },
-  setup: () => {
-    const { attrs } = useAttrs()
-    console.log('attrs', attrs)
-
-    return { attrs }
   }
 })
 export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
@@ -94,7 +87,6 @@ export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
   }
 
   onPlayNowClicked(item: Song) {
-    console.log('on row play now clicked')
     this.$emit('onRowPlayNowClicked', item)
   }
 

@@ -308,7 +308,6 @@ export class WindowHandler {
         event.preventDefault()
         window.hide()
       } else {
-        console.log('stopping all')
         this.stopAll()
         app.quit()
       }

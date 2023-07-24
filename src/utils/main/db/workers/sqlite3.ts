@@ -75,7 +75,10 @@ class DBWrapper extends DBUtils {
           )
 
           // If no song is inserted then ignore
-          if (resp.changes === 0) continue
+          if (resp.changes === 0) {
+            newList.push(newDoc)
+            continue
+          }
 
           this.storeArtistBridge(artistID, marshaledSong._id)
           this.storeGenreBridge(genreID, marshaledSong._id)
@@ -438,9 +441,9 @@ class DBWrapper extends DBUtils {
       ${this.addLeftJoinClause(undefined, 'allsongs')}
         ${where}
         ${this.addExcludeWhereClause(args.length === 0, exclude)} GROUP BY allsongs._id ${this.addOrderClause(
-        this.normalizeSortBy(options?.sortBy),
-        args.length > 0
-      )}`,
+          this.normalizeSortBy(options?.sortBy),
+          args.length > 0
+        )}`,
       ...args
     )
 

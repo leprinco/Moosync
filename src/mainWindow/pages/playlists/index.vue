@@ -333,7 +333,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
     })
   }
 
-  getPlaylistMenu(event: Event, playlist: ExtendedPlaylist) {
+  getPlaylistMenu(event: MouseEvent, playlist: ExtendedPlaylist) {
     this.playlistInAction = playlist
     this.getContextMenu(event, {
       type: 'PLAYLIST',

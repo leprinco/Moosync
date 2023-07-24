@@ -81,7 +81,6 @@ export default class TopBar extends mixins(JukeboxMixin) {
   }
 
   openSettings() {
-    console.log('opening settings')
     window.WindowUtils.openWindow(false)
   }
 

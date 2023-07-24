@@ -120,9 +120,6 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
       this.clearNextPageTokens()
       this.clearSongList()
       await this.fetchArtists()
-
-      console.log(this.artist)
-
       await this.fetchSongList()
     }
   }

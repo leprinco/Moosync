@@ -89,7 +89,6 @@ export default class TopBar extends mixins(AccountsMixin) {
 
   async mounted() {
     this.signoutMethod = this.showSignoutModal
-    console.log(this.providers)
   }
 
   async signout() {

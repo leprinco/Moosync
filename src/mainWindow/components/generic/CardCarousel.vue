@@ -61,7 +61,7 @@ export default class CardCarousel extends mixins(ImgLoader, PlayerControls, Cont
     this.playTop([song])
   }
 
-  showContextMenu(event: Event, song: Song) {
+  showContextMenu(event: MouseEvent, song: Song) {
     this.getContextMenu(event, {
       type: 'SONGS',
       args: {

@@ -12,6 +12,7 @@ import '@/mainWindow/plugins/vueBootstrap'
 import '@/mainWindow/plugins/tags-typeahead'
 import '@/mainWindow/plugins/vueSliderBar'
 import '@/mainWindow/plugins/inlineSVG'
+import '@/mainWindow/plugins/contextMenu'
 import { i18n } from '@/mainWindow/plugins/i18n'
 import '@/sass/global.sass'
 import 'animate.css'
@@ -24,6 +25,7 @@ import { store } from '@/mainWindow/store'
 import EventEmitter from 'events'
 import { createApp } from 'vue'
 import { registerLogger } from '@/utils/ui/common'
+import ContextMenu from '@imengyu/vue3-context-menu'
 
 export const bus = new EventEmitter()
 
@@ -31,6 +33,7 @@ const app = createApp(App)
 app.use(i18n)
 app.use(router)
 app.use(store)
+app.use(ContextMenu)
 app.use<ToastContainerOptions>(Vue3Toastify, {
   autoClose: 3000
 })

@@ -83,7 +83,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin) {
     })
   }
 
-  getSongMenu(event: Event, songs: Song[], exclude: string | undefined) {
+  getSongMenu(event: MouseEvent, songs: Song[], exclude: string | undefined) {
     this.getContextMenu(event, {
       type: 'SONGS',
       args: {

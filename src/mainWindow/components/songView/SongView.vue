@@ -198,7 +198,7 @@ export default class AllSongs extends mixins(
     }
   }
 
-  showSortMenu(event: Event) {
+  showSortMenu(event: MouseEvent) {
     this.getContextMenu(event, {
       type: 'SONG_SORT',
       args: {

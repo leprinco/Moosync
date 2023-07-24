@@ -70,6 +70,7 @@ export default class ProviderFetchMixin extends ProviderMixin {
 
   async fetchSongList() {
     this.loadingMap['local'] = true
+    console.log('fetching local songs', this.localSongFetch)
     this.songList = (await this.localSongFetch?.(toRaw(vxm.themes.songSortBy))) ?? []
     this.optionalSongList['local'] = this.songList.map((val) => val._id)
     this.loadingMap['local'] = false

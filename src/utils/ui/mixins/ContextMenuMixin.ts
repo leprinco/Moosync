@@ -17,10 +17,11 @@ import { vxm } from '@/mainWindow/store'
 import JukeboxMixin from './JukeboxMixin'
 import ProviderMixin from './ProviderMixin'
 import { toast } from 'vue3-toastify'
+import { toRaw } from 'vue'
 
 export type MenuItem = {
   label?: string
-  handler?: () => void
+  onClick?: () => void
   children?: MenuItem[]
 }
 
@@ -31,7 +32,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
   }
 
   private async addToPlaylist(playlist_id: string, songs: Song[]) {
-    await window.DBUtils.addToPlaylist(playlist_id, ...songs)
+    await window.DBUtils.addToPlaylist(playlist_id, ...songs.map((val) => toRaw(val)))
   }
 
   private getSortIcon(currentType: SongSortOptions['type'], requiredType: SongSortOptions['type'], isAsc = true) {
@@ -41,7 +42,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     return ''
   }
 
-  private getSortHandler(type: SongSortOptions['type'], currentSort?: SongSortOptions): SongSortOptions[] {
+  private getSortonClick(type: SongSortOptions['type'], currentSort?: SongSortOptions): SongSortOptions[] {
     const ret: SongSortOptions[] = [
       {
         type,
@@ -73,7 +74,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       menu[0].children?.push({
         label:
           this.$t(`contextMenu.sort.${p}`) + ' ' + this.getSortIcon(currentSort?.type ?? 'title', p, currentSort?.asc),
-        handler: () => sort.callback(this.getSortHandler(p, currentSort))
+        onClick: () => sort.callback(this.getSortonClick(p, currentSort))
       })
     }
     return menu
@@ -88,13 +89,13 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
             label: `${this.$t('contextMenu.sort.title')} ${
               sort.current.type === 'name' ? (sort.current.asc ? '▲' : '▼') : ''
             }`,
-            handler: () => sort.callback({ type: 'name', asc: sort.current.type === 'name' && !sort.current.asc })
+            onClick: () => sort.callback({ type: 'name', asc: sort.current.type === 'name' && !sort.current.asc })
           },
           {
             label: `${this.$t('contextMenu.sort.provider')} ${
               sort.current.type === 'provider' ? (sort.current.asc ? '▲' : '▼') : ''
             }`,
-            handler: () =>
+            onClick: () =>
               sort.callback({ type: 'provider', asc: sort.current.type === 'provider' && !sort.current.asc })
           }
         ]
@@ -112,7 +113,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
             label: `${this.$t('contextMenu.sort.title')} ${
               sort.current.type === 'name' ? (sort.current.asc ? '▲' : '▼') : ''
             }`,
-            handler: () => sort.callback({ type: 'name', asc: sort.current.type === 'name' && !sort.current.asc })
+            onClick: () => sort.callback({ type: 'name', asc: sort.current.type === 'name' && !sort.current.asc })
           }
         ]
       }
@@ -124,7 +125,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     const menu: MenuItem[] = [
       {
         label: this.$t('contextMenu.playlist.new'),
-        handler: () => {
+        onClick: () => {
           bus.emit(EventBus.SHOW_NEW_PLAYLIST_MODAL, item)
         }
       }
@@ -135,7 +136,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       }
       menu.push({
         label: val,
-        handler: () => {
+        onClick: () => {
           this.addToPlaylist(key, item)
         }
       })
@@ -158,13 +159,13 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     if (refreshCallback) {
       items.push({
         label: this.$t('contextMenu.song.addFromURL'),
-        handler: () => bus.emit(EventBus.SHOW_SONG_FROM_URL_MODAL, refreshCallback)
+        onClick: () => bus.emit(EventBus.SHOW_SONG_FROM_URL_MODAL, refreshCallback)
       })
 
       if (showHiddenToggle) {
         items.push({
           label: isShowingHidden ? this.$t('contextMenu.song.hideHidden') : this.$t('contextMenu.song.showHidden'),
-          handler: () => refreshCallback(!isShowingHidden)
+          onClick: () => refreshCallback(!isShowingHidden)
         })
       }
     }
@@ -184,7 +185,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     if (!isRemote) {
       items.splice(4, 0, {
         label: this.$t('contextMenu.song.removeFromPlaylist'),
-        handler: async () => {
+        onClick: async () => {
           await window.DBUtils.removeFromPlaylist(playlistId, ...item)
           refreshCallback && refreshCallback()
         }
@@ -211,26 +212,26 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     const items: MenuItem[] = [
       {
         label: this.$t('contextMenu.song.playNow'),
-        handler: () => {
+        onClick: () => {
           this.playTop(item)
         }
       },
       {
         label: this.$t('contextMenu.song.playNext'),
-        handler: () => {
+        onClick: () => {
           this.playNext(item)
         }
       },
       {
         label: this.$t('contextMenu.song.clearAndPlay'),
-        handler: () => {
+        onClick: () => {
           this.clearQueue()
           this.playTop(item)
         }
       },
       {
         label: this.$t('contextMenu.song.addToQueue'),
-        handler: () => {
+        onClick: () => {
           this.queueSong(item)
         }
       },
@@ -245,7 +246,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
         ...[
           {
             label: this.$t('contextMenu.song.remove'),
-            handler: async () => {
+            onClick: async () => {
               try {
                 await window.DBUtils.removeSongs(item)
               } catch (e) {
@@ -256,19 +257,19 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
           },
           {
             label: this.$t('contextMenu.song.addFromURL'),
-            handler: () => bus.emit(EventBus.SHOW_SONG_FROM_URL_MODAL, refreshCallback)
+            onClick: () => bus.emit(EventBus.SHOW_SONG_FROM_URL_MODAL, refreshCallback)
           }
         ]
       )
     } else {
       items.push({
         label: this.$t('contextMenu.song.add', item.length),
-        handler: () => this.addSongsToLibrary(...item)
+        onClick: () => this.addSongsToLibrary(...item)
       })
 
       items.push({
         label: this.$t('contextMenu.song.openInBrowser'),
-        handler: () => this.openInBrowser(item[0])
+        onClick: () => this.openInBrowser(item[0])
       })
     }
 
@@ -277,7 +278,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       const shownInLibrary = songInLibrary.showInLibrary
       items.push({
         label: shownInLibrary ? this.$t('contextMenu.song.hideFromLibrary') : this.$t('contextMenu.song.showInLibrary'),
-        handler: async () => {
+        onClick: async () => {
           await window.DBUtils.updateSongs(item.map((val) => ({ ...val, showInLibrary: !shownInLibrary })))
           refreshCallback && refreshCallback()
         }
@@ -286,7 +287,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
 
     items.push({
       label: this.$t('contextMenu.moreInfo'),
-      handler: () => {
+      onClick: () => {
         bus.emit(EventBus.SHOW_SONG_INFO_MODAL, item[0])
       }
     })
@@ -298,14 +299,14 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     if (!isRemote) {
       items.push({
         label: this.$t('contextMenu.playlist.remove'),
-        handler: () => {
+        onClick: () => {
           deleteCallback && deleteCallback()
         }
       })
 
       items.push({
         label: this.$t('contextMenu.playlist.export'),
-        handler: () => {
+        onClick: () => {
           window.DBUtils.exportPlaylist(playlist)
         }
       })
@@ -314,7 +315,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     } else {
       items.push({
         label: this.$t('contextMenu.playlist.save'),
-        handler: async () => {
+        onClick: async () => {
           await window.DBUtils.createPlaylist(playlist)
           toast(`Added ${playlist.playlist_name} to library`)
         }
@@ -328,7 +329,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     const items = [
       {
         label: this.$t('contextMenu.playlist.addFromURL'),
-        handler: () => {
+        onClick: () => {
           bus.emit(EventBus.SHOW_PLAYLIST_FROM_URL_MODAL, refreshCallback)
         }
       },
@@ -351,19 +352,19 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       },
       {
         label: this.$t('contextMenu.song.moveToTop'),
-        handler: () => {
+        onClick: () => {
           this.setSongIndex(itemIndex, 0)
         }
       },
       {
         label: this.$t('contextMenu.song.moveToBottom'),
-        handler: () => {
+        onClick: () => {
           this.setSongIndex(itemIndex, -1)
         }
       },
       {
         label: this.$t('contextMenu.song.moveManually'),
-        handler: () => {
+        onClick: () => {
           bus.emit(EventBus.SHOW_FORM_MODAL, this.$t('contextMenu.song.manualIndex'), (value: number) => {
             this.setSongIndex(itemIndex, value)
           })
@@ -374,7 +375,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
 
     items.push({
       label: this.$t('contextMenu.moreInfo'),
-      handler: () => {
+      onClick: () => {
         bus.emit(EventBus.SHOW_SONG_INFO_MODAL, item)
       }
     })
@@ -382,17 +383,17 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     if (isRemote) {
       items.push({
         label: this.$t('contextMenu.song.add'),
-        handler: () => this.addSongsToLibrary(item)
+        onClick: () => this.addSongsToLibrary(item)
       })
 
       items.push({
         label: this.$t('contextMenu.song.openInBrowser'),
-        handler: () => this.openInBrowser(item)
+        onClick: () => this.openInBrowser(item)
       })
     } else {
       items.push({
         label: this.$t('contextMenu.song.remove'),
-        handler: async () => {
+        onClick: async () => {
           try {
             await window.DBUtils.removeSongs([item])
           } catch (e) {
@@ -406,7 +407,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     if (item.type === 'YOUTUBE' || item.type === 'SPOTIFY') {
       items.push({
         label: this.$t('contextMenu.incorrectPlayback'),
-        handler: () => {
+        onClick: () => {
           bus.emit(EventBus.SHOW_INCORRECT_PLAYBACK_MODAL, item)
         }
       })
@@ -417,7 +418,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
   private getEntityInfoMenu(entity: Album | Artists | Playlist) {
     return {
       label: this.$t('contextMenu.moreInfo'),
-      handler: () => {
+      onClick: () => {
         bus.emit(EventBus.SHOW_ENTITY_INFO_MODAL, entity)
       }
     }
@@ -433,7 +434,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     return items
   }
 
-  public async getContextMenu(event: Event, options: ContextMenuArgs) {
+  public async getContextMenu(event: MouseEvent, options: ContextMenuArgs) {
     let items: MenuItem[] = []
     switch (options.type) {
       case 'SONGS':
@@ -531,9 +532,10 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     arg: ExtensionContextMenuHandlerArgs<ContextMenuTypes>
   ): Promise<MenuItem[]> {
     if (this.extensionContextMenuItems.includes(type as ContextMenuTypes)) {
-      const items = await window.ExtensionUtils.getContextMenuItems(type as ContextMenuTypes)
+      const items: (ExtendedExtensionContextMenuItems<ContextMenuTypes> & MenuItem)[] =
+        await window.ExtensionUtils.getContextMenuItems(type as ContextMenuTypes)
       for (const i of items) {
-        i.handler = () => window.ExtensionUtils.fireContextMenuHandler(i.id, i.packageName, arg)
+        i.onClick = () => window.ExtensionUtils.fireContextMenuHandler(i.id, i.packageName, arg)
       }
 
       return items as MenuItem[]
@@ -542,9 +544,14 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     return []
   }
 
-  private emitMenu(event: Event, items: MenuItem[]) {
+  private emitMenu(event: MouseEvent, items: MenuItem[]) {
     if (!this.isJukeboxModeActive) {
-      bus.emit(EventBus.SHOW_CONTEXT, event, items)
+      // bus.emit(EventBus.SHOW_CONTEXT, event, items)
+      this.$contextmenu({
+        x: event.x,
+        y: event.y,
+        items
+      })
     }
   }
 }

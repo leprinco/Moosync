@@ -97,7 +97,6 @@ export default class CardRecycleScroller extends Vue {
   public itemsInRow = 1
 
   public emitClick(item: unknown) {
-    console.log('got card click')
     this.$emit('click', item)
   }
 

@@ -178,27 +178,27 @@ export default class Themes extends Vue {
       this.themeToRemove = theme
       this.menu.push({
         label: 'Delete',
-        handler: () => {
+        onClick: () => {
           this.$bvModal.show('themeDeleteModal')
         }
       })
       this.menu.push({
         label: 'Edit',
-        handler: () => {
+        onClick: () => {
           this.editTheme(theme)
         }
       })
     }
     this.menu.push({
       label: 'Copy to clipboard',
-      handler: () => {
+      onClick: () => {
         navigator.clipboard.writeText(JSON.stringify(theme))
       }
     })
     if (theme.id !== 'default') {
       this.menu.push({
         label: 'Export theme',
-        handler: () => {
+        onClick: () => {
           window.ThemeUtils.packTheme(theme.id)
         }
       })

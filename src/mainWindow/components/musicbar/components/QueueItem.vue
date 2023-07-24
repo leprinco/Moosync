@@ -95,7 +95,7 @@ export default class QueueItem extends mixins(ImgLoader, PlayerControls, Context
     vxm.themes.queueSortBy = options
   }
 
-  getItemContextMenu(event: Event) {
+  getItemContextMenu(event: MouseEvent) {
     this.getContextMenu(event, {
       type: 'QUEUE_ITEM',
       args: {

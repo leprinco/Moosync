@@ -69,9 +69,5 @@ export default class SongViewCompact extends mixins(RemoteSong, ImgLoader) {
     }
   })
   detailsButtonGroup!: SongDetailButtons
-
-  playTop(item: Song) {
-    console.log('play now', item)
-  }
 }
 </script>

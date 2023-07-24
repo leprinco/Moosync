@@ -45,7 +45,6 @@ export class YoutubePlayer extends LocalPlayer {
     useEmbed: boolean
   }): Promise<void> {
     if (useEmbed) {
-      console.log(playerInstance)
       super._initialize(new YTPlayerWrapper(playerInstance))
     } else {
       const audio = document.createElement('audio')
