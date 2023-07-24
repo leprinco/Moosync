@@ -546,10 +546,10 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
 
   private emitMenu(event: MouseEvent, items: MenuItem[]) {
     if (!this.isJukeboxModeActive) {
-      // bus.emit(EventBus.SHOW_CONTEXT, event, items)
       this.$contextmenu({
         x: event.x,
         y: event.y,
+        customClass: 'context-menu',
         items
       })
     }

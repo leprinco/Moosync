@@ -238,7 +238,6 @@ export enum EventBus {
   UPDATE_AUDIO_TIME = 'timestamp-update',
   SONG_SELECTED = 'song-select',
   COVER_SELECTED = 'cover-select',
-  SHOW_CONTEXT = 'show-context',
   SHOW_NEW_PLAYLIST_MODAL = 'show-new-playlist-modal',
   SHOW_DELETE_MODAL = 'show-delete-modal',
   SHOW_SONG_FROM_URL_MODAL = 'show-song-from-url',
