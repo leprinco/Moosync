@@ -368,10 +368,24 @@ img
   div
     color: var(--textPrimary) !important
 
+.mx-context-menu-item.open
+  background-color: var(--accent) !important
+  div
+    color: var(--textInverse) !important
+
 .mx-context-menu-item
   &:hover
     background: var(--accent)
     background-color: var(--accent)
+    div
+      color: var(--textInverse) !important
+
+.mx-context-menu-updown
+  background-color: var(--secondary) !important
+
+.mx-right-arrow
+  path
+    fill: var(--textPrimary)
 
 @import "./transitions"
 @import "./scrollbar"
