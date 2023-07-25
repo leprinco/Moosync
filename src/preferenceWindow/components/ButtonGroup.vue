@@ -57,6 +57,7 @@ export default class ButtonGroup extends mixins(ExtensionPreferenceMixin) {
   }
 
   onClick(index: number) {
+    // eslint-disable-next-line @typescript-eslint/no-extra-semi
     ;(this.value as ButtonValue)[index].lastClicked = Date.now()
     this.onInputChange()
   }

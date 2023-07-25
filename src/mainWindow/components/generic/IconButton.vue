@@ -11,6 +11,7 @@
   <div
     @mouseover="hover = true"
     @mouseleave="hover = false"
+    @click="$emit('click', $event)"
     class="button-bg d-flex ripple w-100"
     :style="{ backgroundColor: bgColor }"
   >

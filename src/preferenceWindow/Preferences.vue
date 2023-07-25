@@ -14,14 +14,16 @@
     <div class="logo-title version">v{{ version }}</div>
 
     <div class="main-content">
-      <transition
-        appear
-        name="custom-slide-fade"
-        enter-active-class="animate__animated animate__slideInLeft animate__fast"
-        leave-active-class="animate__animated animate__slideOutRight animate__fast"
-      >
-        <router-view class="animate_absolute"></router-view>
-      </transition>
+      <router-view v-slot="{ Component }" class="animate_absolute">
+        <transition
+          appear
+          name="custom-slide-fade"
+          enter-active-class="animate__animated animate__slideInLeft animate__fast"
+          leave-active-class="animate__animated animate__slideOutRight animate__fast"
+        >
+          <component :is="Component" />
+        </transition>
+      </router-view>
     </div>
   </div>
 </template>

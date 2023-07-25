@@ -57,7 +57,7 @@
                 :ref="item"
                 :defColor="customTheme[item]"
                 :title="getThemeTitle(item)"
-                @colorChange="onColorChange(item, ...arguments)"
+                @colorChange="(color: string) => onColorChange(item, color)"
               />
             </table>
           </b-col>
@@ -161,6 +161,7 @@ export default class NewTheme extends Vue {
   }
 
   toggleColorPicker(type: ThemeKey) {
+    // eslint-disable-next-line @typescript-eslint/no-extra-semi
     ;(this.$refs[type] as ColorPicker[])[0]?.toggleColorPicker()
   }
 

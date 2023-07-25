@@ -32,7 +32,7 @@ import { defaultKeybinds } from '@/utils/commonConstants'
   }
 })
 export default class Keybinds extends Vue {
-  private defaultKeybinds = defaultKeybinds
+  defaultKeybinds = defaultKeybinds
 }
 </script>
 

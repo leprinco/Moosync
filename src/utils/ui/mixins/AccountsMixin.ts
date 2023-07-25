@@ -29,19 +29,17 @@ export default class AccountsMixin extends ProviderMixin {
   fetchProviders(): Provider[] {
     const p = this.getProvidersByScope()
     return p.map((val) => ({
-      username: '',
+      username: undefined,
       provider: val,
+      key: val.key,
     }))
   }
 
-  providers: Provider[] = this.fetchProviders()
+  providers: Provider[] = []
 
   async getUserDetails(provider: Provider) {
     const username = (await provider?.provider.getUserDetails()) ?? ''
     provider['username'] = username
-    // if (!provider.username) {
-    //   provider.provider.signOut()
-    // }
   }
 
   async handleClick(provider: Provider) {
@@ -77,6 +75,10 @@ export default class AccountsMixin extends ProviderMixin {
     }
   }
 
+  created() {
+    this.providers = this.fetchProviders()
+  }
+
   async mounted() {
     vxm.providers.$watch(
       'youtubeAlt',
@@ -89,6 +91,8 @@ export default class AccountsMixin extends ProviderMixin {
     )
 
     bus.on(EventBus.REFRESH_ACCOUNTS, (providerKey?: string) => {
+      console.log('getting user details', providerKey)
+
       if (providerKey) {
         const provider = this.providers.find((val) => val?.provider.key === providerKey)
         if (provider) {

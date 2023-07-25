@@ -15,7 +15,23 @@
     <MiniPlayer class="mini-player" />
 
     <div class="main-content" :class="{ 'is-open': isSidebarOpen }">
-      <transition
+      <router-view
+        v-slot="{ Component }"
+        :enableRefresh="enableRefreshIcon"
+        :key="refreshPage.toString()"
+        class="animate_absolute"
+      >
+        <transition
+          appear
+          name="custom-slide-fade"
+          enter-active-class="animate__animated animate__slideInLeft animate__fast"
+          leave-active-class="animate__animated animate__slideOutRight animate__fast"
+        >
+          <component :is="Component" />
+        </transition>
+      </router-view>
+
+      <!-- <transition
         appear
         name="custom-slide-fade"
         enter-active-class="animate__animated animate__slideInLeft animate__fast"
@@ -26,7 +42,7 @@
           :key="refreshPage.toString()"
           class="animate_absolute"
         ></router-view>
-      </transition>
+      </transition> -->
     </div>
   </div>
 </template>

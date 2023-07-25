@@ -65,12 +65,12 @@ import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
   }
 })
 export default class ExtraControls extends mixins(PlayerControls, JukeboxMixin) {
-  private sliderOpen = false
+  sliderOpen = false
 
-  private volumeIconHover = false
-  private showVolume = false
+  volumeIconHover = false
+  showVolume = false
 
-  private emitToggleSlider() {
+  emitToggleSlider() {
     bus.emit('onToggleSlider')
   }
 
@@ -90,14 +90,14 @@ export default class ExtraControls extends mixins(PlayerControls, JukeboxMixin) 
     return `linear-gradient(90deg, var(--accent) 0%, var(--accent) ${this.volume}%, var(--textSecondary) 0%)`
   }
 
-  private handleVolumeIconMouseEnter() {
+  handleVolumeIconMouseEnter() {
     this.volumeIconHover = true
     this.showVolume = true
   }
 
   private leaveTimeout: ReturnType<typeof setTimeout> | undefined
 
-  private handleVolumeIconMouseLeave() {
+  handleVolumeIconMouseLeave() {
     this.volumeIconHover = false
 
     this.leaveTimeout = setTimeout(() => {
@@ -105,19 +105,19 @@ export default class ExtraControls extends mixins(PlayerControls, JukeboxMixin) 
     }, 150)
   }
 
-  private handleSliderMouseEnter() {
+  handleSliderMouseEnter() {
     if (this.volumeIconHover) {
       this.showVolume = true
     }
     this.leaveTimeout && clearTimeout(this.leaveTimeout)
   }
 
-  private handleSliderMouseLeave() {
+  handleSliderMouseLeave() {
     this.showVolume = false
     this.leaveTimeout && clearTimeout(this.leaveTimeout)
   }
 
-  private handleScrollEvent(e: WheelEvent) {
+  handleScrollEvent(e: WheelEvent) {
     if (e.deltaY < 0) {
       this.volume += 3
     } else {

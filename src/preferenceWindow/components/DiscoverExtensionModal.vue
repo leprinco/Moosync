@@ -62,7 +62,7 @@ import semver from 'semver'
 })
 export default class DiscoverExtensionsModal extends Vue {
   @Prop({ default: 'discoverExtensions' })
-  private id!: string
+  id!: string
 
   @Prop({ default: () => [] })
   private installedExtensions!: ExtensionDetails[]
@@ -71,13 +71,13 @@ export default class DiscoverExtensionsModal extends Vue {
   @Prop()
   private updateExtensionsCallback!: (() => void) | undefined
 
-  private fetchedExtensions: (FetchedExtensionManifest & { progress?: ExtInstallStatus })[] = []
+  fetchedExtensions: (FetchedExtensionManifest & { progress?: ExtInstallStatus })[] = []
 
   private close() {
     this.$bvModal.hide(this.id)
   }
 
-  private getDownloadButtonText(ext: FetchedExtensionManifest) {
+  getDownloadButtonText(ext: FetchedExtensionManifest) {
     const installedExt = this.installedExtensions.find((val) => val.packageName === ext.packageName)
     if (installedExt) {
       if (semver.gt(ext.release.version, installedExt.version)) {
@@ -119,7 +119,7 @@ export default class DiscoverExtensionsModal extends Vue {
     }
   }
 
-  private async downloadExt(ext: FetchedExtensionManifest) {
+  async downloadExt(ext: FetchedExtensionManifest) {
     const status = await window.ExtensionUtils.downloadExtension(ext)
     console.debug('Extension download and install status', status)
     this.updateExtensionsCallback && this.updateExtensionsCallback()
@@ -138,7 +138,7 @@ export default class DiscoverExtensionsModal extends Vue {
     })
   }
 
-  private titleClick(ext: FetchedExtensionManifest) {
+  titleClick(ext: FetchedExtensionManifest) {
     window.WindowUtils.openExternal(ext.url)
   }
 

@@ -385,7 +385,23 @@ img
 
 .mx-right-arrow
   path
-    fill: var(--textPrimary)
+    fill: var(--textInverse) !important
+
+:root
+  --toastify-toast-width: 220px !important
+
+.Toastify__toast
+  border-radius: 12px !important
+
+.Toastify__close-button
+  color: var(--textPrimary) !important
+
+.Toastify__toast--default
+  background: var(--tertiary) !important
+  color: var(--textPrimary) !important
+
+.Toastify__progress-bar-theme--light
+  background: var(--accent) !important
 
 @import "./transitions"
 @import "./scrollbar"
