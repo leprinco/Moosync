@@ -32,7 +32,7 @@ export default class ImgLoader extends Vue {
   getImgSrc(imgSrc: string | null | undefined) {
     if (imgSrc) {
       if (imgSrc.startsWith('http') || imgSrc.startsWith('media')) return imgSrc
-      else return 'media://' + imgSrc
+      else return `media://${imgSrc}`
     }
     return ''
   }

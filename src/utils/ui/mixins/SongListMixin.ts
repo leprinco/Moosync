@@ -68,7 +68,7 @@ export default class SongListMixin extends Vue {
     } else this.selected = [index]
     this.$emit(
       'onRowSelected',
-      this.selected.map((val) => this.songList[val])
+      this.selected.map((val) => this.songList[val]),
     )
   }
 

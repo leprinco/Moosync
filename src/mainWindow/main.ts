@@ -7,13 +7,13 @@
  *  See LICENSE in the project root for license information.
  */
 
-import '@/mainWindow/plugins/recycleScroller'
-import '@/mainWindow/plugins/vueBootstrap'
-import '@/mainWindow/plugins/tags-typeahead'
-import '@/mainWindow/plugins/vueSliderBar'
-import '@/mainWindow/plugins/inlineSVG'
 import '@/mainWindow/plugins/contextMenu'
 import { i18n } from '@/mainWindow/plugins/i18n'
+import '@/mainWindow/plugins/inlineSVG'
+import '@/mainWindow/plugins/recycleScroller'
+import '@/mainWindow/plugins/tags-typeahead'
+import '@/mainWindow/plugins/vueBootstrap'
+import '@/mainWindow/plugins/vueSliderBar'
 import '@/sass/global.sass'
 import 'animate.css'
 import Vue3Toastify, { type ToastContainerOptions } from 'vue3-toastify'
@@ -22,10 +22,10 @@ import 'vue3-toastify/dist/index.css'
 import App from '@/mainWindow/App.vue'
 import { router } from '@/mainWindow/plugins/router'
 import { store } from '@/mainWindow/store'
-import EventEmitter from 'events'
-import { createApp } from 'vue'
 import { registerLogger } from '@/utils/ui/common'
 import ContextMenu from '@imengyu/vue3-context-menu'
+import EventEmitter from 'events'
+import { createApp } from 'vue'
 
 export const bus = new EventEmitter()
 
@@ -35,7 +35,7 @@ app.use(router)
 app.use(store)
 app.use(ContextMenu)
 app.use<ToastContainerOptions>(Vue3Toastify, {
-  autoClose: 3000
+  autoClose: 3000,
 })
 
 function isImage(e: HTMLElement) {
@@ -46,8 +46,8 @@ function isImage(e: HTMLElement) {
 
 app.directive('click-outside', {
   mounted(el, binding) {
-    el.clickOutsideEvent = function (e: any) {
-      if (el !== e.target && !el.contains(e.target) && !isImage(e.target)) {
+    el.clickOutsideEvent = function (e: Event) {
+      if (el !== e.target && !el.contains(e.target) && !isImage(e.target as HTMLElement)) {
         binding.value(e, el)
       }
     }
@@ -55,7 +55,7 @@ app.directive('click-outside', {
   },
   unmounted(el) {
     document.body.removeEventListener('click', el.clickOutsideEvent)
-  }
+  },
 })
 
 registerLogger(app)

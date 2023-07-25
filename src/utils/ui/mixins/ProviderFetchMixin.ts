@@ -1,8 +1,8 @@
-import { Component } from 'vue-facing-decorator'
 import { GenericProvider } from '../providers/generics/genericProvider'
-import { vxm } from '@/mainWindow/store'
 import ProviderMixin from './ProviderMixin'
+import { vxm } from '@/mainWindow/store'
 import { toRaw } from 'vue'
+import { Component } from 'vue-facing-decorator'
 
 @Component
 export default class ProviderFetchMixin extends ProviderMixin {
@@ -11,7 +11,7 @@ export default class ProviderFetchMixin extends ProviderMixin {
   generator:
     | ((
         provider: GenericProvider,
-        nextPageToken: unknown
+        nextPageToken: unknown,
       ) => AsyncGenerator<{
         songs: Song[]
         nextPageToken?: unknown
@@ -23,7 +23,7 @@ export default class ProviderFetchMixin extends ProviderMixin {
   optionalSongList: Record<string, string[]> = {}
 
   activeProviders: Record<string, boolean> = {
-    local: true
+    local: true,
   }
 
   private nextPageToken: Record<string, unknown> = {}
@@ -88,12 +88,12 @@ export default class ProviderFetchMixin extends ProviderMixin {
           await this.loadNextPage()
           const newList = this.songList.slice(songListLastSong)
           count += newList.length
-          afterFetch && afterFetch(newList)
+          afterFetch?.(newList)
           songListLastSong = this.songList.length
         }
       }
 
-      onFetchEnded && onFetchEnded(count)
+      onFetchEnded?.(count)
       this.isFetching = false
     }
   }

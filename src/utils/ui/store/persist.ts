@@ -7,9 +7,9 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Store } from 'vuex'
 import merge from 'deepmerge'
 import { toRaw } from 'vue'
+import { Store } from 'vuex'
 
 export function createPersist() {
   return (store: Store<{ state: unknown }>) => {
@@ -22,7 +22,7 @@ async function setInitialState(store: Store<{ state: unknown }>) {
   if (savedState) {
     const merged = merge(toRaw(store.state), savedState, {
       arrayMerge: (_, saved) => saved,
-      clone: false
+      clone: false,
     })
 
     store.replaceState(merged)

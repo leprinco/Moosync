@@ -12,6 +12,6 @@ import { Component, Vue } from 'vue-facing-decorator'
 @Component
 export default class ErrorHandler extends Vue {
   handlerImageError(err: ErrorEvent, callback?: (err: ErrorEvent) => void) {
-    callback && callback(err)
+    callback?.(err)
   }
 }

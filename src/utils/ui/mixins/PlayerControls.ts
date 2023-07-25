@@ -9,9 +9,9 @@
 
 import { Component, Vue } from 'vue-facing-decorator'
 
-import { PeerMode } from '@/mainWindow/store/syncState'
-import { vxm } from '@/mainWindow/store'
 import { Player } from '../players/player'
+import { vxm } from '@/mainWindow/store'
+import { PeerMode } from '@/mainWindow/store/syncState'
 import { VolumePersistMode } from '@/utils/commonConstants'
 import { toast } from 'vue3-toastify'
 
@@ -98,12 +98,12 @@ export default class PlayerControls extends Vue {
     vxm.themes.queueSortBy = undefined
     vxm.player.shuffle()
     toast('Shuffled', {
-      autoClose: 1000
+      autoClose: 1000,
     })
   }
 
   public togglePlayerState() {
-    if (this.playerState == 'PAUSED' || this.playerState == 'STOPPED') {
+    if (this.playerState === 'PAUSED' || this.playerState === 'STOPPED') {
       vxm.player.playerState = 'PLAYING'
     } else {
       vxm.player.playerState = 'PAUSED'
@@ -158,16 +158,18 @@ export default class PlayerControls extends Vue {
   }
 
   set volume(value: number) {
+    let parsedVolume = value
+
     const maxv = Math.log(this.clamp)
     const scale = maxv / maxp
 
     if (value > 0) {
-      value = Math.exp(scale * value)
+      parsedVolume = Math.exp(scale * value)
     }
 
-    vxm.player.volume = value
-    if (value != 0) {
-      this.oldVolume = value
+    vxm.player.volume = parsedVolume
+    if (parsedVolume !== 0) {
+      this.oldVolume = parsedVolume
     }
   }
 

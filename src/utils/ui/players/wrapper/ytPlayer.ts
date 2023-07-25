@@ -19,7 +19,7 @@ export class YTPlayerWrapper implements CustomAudioInstance {
       related: false,
       annotations: false,
       keyboard: false,
-      controls: false
+      controls: false,
     })
     this.elementIdentifier = element instanceof HTMLElement ? element?.id : element
     this.supposedVolume = this.volume

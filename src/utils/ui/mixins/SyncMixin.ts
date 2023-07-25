@@ -7,13 +7,13 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component, mixins } from 'vue-facing-decorator'
-import ImgLoader from '@/utils/ui/mixins/ImageLoader'
-import ModelHelper from '@/utils/ui/mixins/ModelHelper'
-import { PeerMode } from '@/mainWindow/store/syncState'
 import { SyncHolder } from '../sync/syncHandler'
 import { bus } from '@/mainWindow/main'
 import { vxm } from '@/mainWindow/store'
+import { PeerMode } from '@/mainWindow/store/syncState'
+import ImgLoader from '@/utils/ui/mixins/ImageLoader'
+import ModelHelper from '@/utils/ui/mixins/ModelHelper'
+import { Component, mixins } from 'vue-facing-decorator'
 
 @Component
 export default class SyncMixin extends mixins(ModelHelper, ImgLoader) {
@@ -51,11 +51,11 @@ export default class SyncMixin extends mixins(ModelHelper, ImgLoader) {
   }
 
   get isWatching() {
-    return vxm.sync.mode == PeerMode.WATCHER
+    return vxm.sync.mode === PeerMode.WATCHER
   }
 
   get isSyncing() {
-    return vxm.sync.mode != PeerMode.UNDEFINED
+    return vxm.sync.mode !== PeerMode.UNDEFINED
   }
 
   private isYoutube(song: RemoteSong): boolean {
@@ -69,15 +69,15 @@ export default class SyncMixin extends mixins(ModelHelper, ImgLoader) {
       cover = (
         await window.SearchUtils.searchSongsByOptions({
           song: {
-            _id: event._id
-          }
+            _id: event._id,
+          },
         })
       )[0].song_coverPath_high
     } else {
       cover = await window.FileUtils.isImageExists(event._id)
     }
 
-    if (cover) vxm.sync.setCover('media://' + cover)
+    if (cover) vxm.sync.setCover(`media://${cover}`)
     else {
       vxm.sync.setCover(undefined)
       this.peerHolder.requestCover(from, event._id)
@@ -85,11 +85,11 @@ export default class SyncMixin extends mixins(ModelHelper, ImgLoader) {
   }
 
   private async checkLocalAudio(event: RemoteSong) {
-    if (event.senderSocket != this.peerHolder.socketID) {
+    if (event.senderSocket !== this.peerHolder.socketID) {
       const isAudioExists = await window.FileUtils.isAudioExists(event._id)
       if (isAudioExists) {
         if (this.isReadyRequested) this.peerHolder.emitReady()
-        this.setSongSrcCallback('media://' + isAudioExists)
+        this.setSongSrcCallback(`media://${isAudioExists}`)
       }
     }
   }
@@ -138,10 +138,10 @@ export default class SyncMixin extends mixins(ModelHelper, ImgLoader) {
       const reader = new FileReader()
       const songID = vxm.sync.currentSong._id
       reader.onload = async () => {
-        if (reader.readyState == 2) {
+        if (reader.readyState === 2) {
           const buffer = Buffer.from(reader.result as ArrayBuffer)
           const filePath = await window.FileUtils.saveImageToFile(songID, buffer)
-          vxm.sync.setCover('media://' + filePath)
+          vxm.sync.setCover(`media://${filePath}`)
         }
       }
       reader.readAsArrayBuffer(event)
@@ -151,8 +151,8 @@ export default class SyncMixin extends mixins(ModelHelper, ImgLoader) {
   private async getLocalCover(songID: string) {
     const songs = await window.SearchUtils.searchSongsByOptions({
       song: {
-        _id: songID
-      }
+        _id: songID,
+      },
     })
 
     if (songs.length > 0 && songs[0]) {
@@ -172,13 +172,13 @@ export default class SyncMixin extends mixins(ModelHelper, ImgLoader) {
   private saveRemoteStream(event: Blob) {
     const reader = new FileReader()
     reader.onload = async () => {
-      if (reader.readyState == 2) {
+      if (reader.readyState === 2) {
         const buffer = Buffer.from(reader.result as ArrayBuffer)
         const filePath = await window.FileUtils.saveAudioToFile(vxm.sync.currentFetchSong, buffer)
         this.isFetching = false
-        if (vxm.sync.currentSong?._id == vxm.sync.currentFetchSong) {
+        if (vxm.sync.currentSong?._id === vxm.sync.currentFetchSong) {
           if (this.isReadyRequested) this.peerHolder.emitReady()
-          if (this.setSongSrcCallback) this.setSongSrcCallback('media://' + filePath)
+          if (this.setSongSrcCallback) this.setSongSrcCallback(`media://${filePath}`)
         }
       }
     }
@@ -188,14 +188,14 @@ export default class SyncMixin extends mixins(ModelHelper, ImgLoader) {
   private async onLocalSongRequested(songID: string) {
     const songs = await window.SearchUtils.searchSongsByOptions({
       song: {
-        _id: songID
-      }
+        _id: songID,
+      },
     })
 
     if (songs.length > 0 && songs[0]) {
       const song = songs[0]
       if (song) {
-        const resp = await fetch('media://' + song.path)
+        const resp = await fetch(`media://${song.path}`)
         const buf = await resp.arrayBuffer()
         return buf
       }
@@ -236,7 +236,7 @@ export default class SyncMixin extends mixins(ModelHelper, ImgLoader) {
            * If it does, then let it fetch and emitReady will be handled by saveRemoteStream
            * Otherwise check if audio exists and emitReady if it does
            */
-          if (vxm.sync.currentFetchSong != vxm.sync.currentSong._id) {
+          if (vxm.sync.currentFetchSong !== vxm.sync.currentSong._id) {
             if (isAudioExists) this.peerHolder.emitReady()
           }
         }

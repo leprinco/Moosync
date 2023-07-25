@@ -53,7 +53,7 @@ import PinEntryModal from './components/modals/PinEntryModal.vue'
 import { ExtensionProvider } from '@/utils/ui/providers/extensionWrapper'
 import { sortSongListFn } from '@/utils/common'
 import IncorrectPlaybackModal from './components/modals/IncorrectPlaybackModal.vue'
-import { toast } from 'vue3-toastify'
+import { ToastType, toast } from 'vue3-toastify'
 import { toRaw } from 'vue'
 import { useI18n } from 'vue-i18n'
 
@@ -405,9 +405,10 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       }
 
       if (data.type === 'show-toast') {
-        toast(data.data.message, {
-          autoClose: Math.max(data.data.duration, 5000),
-          type: data.data.type
+        const parsedData = data.data as { message: string; duration: number; type: ToastType }
+        toast(parsedData.message, {
+          autoClose: Math.max(parsedData.duration, 5000),
+          type: parsedData.type
         })
         window.ExtensionUtils.replyToRequest({ ...data, data: true })
       }

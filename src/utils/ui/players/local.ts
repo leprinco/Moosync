@@ -45,7 +45,7 @@ export class LocalPlayer extends Player {
       console.debug('Loading src', src)
       this.playerInstance.setSrc(src, autoplay)
     }
-    volume && (this.volume = volume)
+    volume && this.volume === volume
   }
 
   protected async _play(): Promise<void> {

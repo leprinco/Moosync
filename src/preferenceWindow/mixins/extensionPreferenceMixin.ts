@@ -70,10 +70,14 @@ export class ExtensionPreferenceMixin<T> extends Vue {
         ? window.Store.getSecure(toRaw(this.prefKey))
         : window.PreferenceUtils.loadSelective<T>(toRaw(this.prefKey), toRaw(this.isExtension))
       )
-        .then((val) => (this.value = (this.isValueEmpty(val) ? this.defaultValue : val) as T))
-        .then(() => (this.loading = false))
-        .then(() => this.postFetch && this.postFetch())
-        .then(() => this.onValueFetch && this.onValueFetch(this.value))
+        .then((val) => {
+          this.value = (this.isValueEmpty(val) ? this.defaultValue : val) as T
+        })
+        .then(() => {
+          this.loading = false
+        })
+        .then(() => this.postFetch?.())
+        .then(() => this.onValueFetch?.(this.value))
     }
   }
 
@@ -101,11 +105,11 @@ export class ExtensionPreferenceMixin<T> extends Vue {
         window.ExtensionUtils.sendEvent({
           data: [{ key: this.prefKey.replace(`${this.packageName}.`, ''), value: this.value }],
           type: 'preferenceChanged',
-          packageName: this.packageName
+          packageName: this.packageName,
         })
       else window.PreferenceUtils.notifyPreferenceChanged(toRaw(this.prefKey), toRaw(this.value))
 
-      this.onValueChange && this.onValueChange(this.value)
+      this.onValueChange?.(this.value)
     }
   }
 }

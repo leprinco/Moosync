@@ -7,12 +7,12 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component } from 'vue-facing-decorator'
-import { vxm } from '@/mainWindow/store'
-import { bus } from '@/mainWindow/main'
-import { EventBus } from '@/utils/main/ipc/constants'
 import ProviderMixin from './ProviderMixin'
+import { bus } from '@/mainWindow/main'
+import { vxm } from '@/mainWindow/store'
 import { ProviderScopes } from '@/utils/commonConstants'
+import { EventBus } from '@/utils/main/ipc/constants'
+import { Component } from 'vue-facing-decorator'
 
 @Component
 export default class AccountsMixin extends ProviderMixin {
@@ -30,7 +30,7 @@ export default class AccountsMixin extends ProviderMixin {
     const p = this.getProvidersByScope()
     return p.map((val) => ({
       username: '',
-      provider: val
+      provider: val,
     }))
   }
 
@@ -53,7 +53,7 @@ export default class AccountsMixin extends ProviderMixin {
       }
       return this.login(provider)
     }
-    this._signoutProvider && this._signoutProvider(provider)
+    this._signoutProvider?.(provider)
   }
 
   async login(provider: Provider) {
@@ -85,7 +85,7 @@ export default class AccountsMixin extends ProviderMixin {
           this.getUserDetails(val)
         })
       },
-      { immediate: true, deep: false }
+      { immediate: true, deep: false },
     )
 
     bus.on(EventBus.REFRESH_ACCOUNTS, (providerKey?: string) => {

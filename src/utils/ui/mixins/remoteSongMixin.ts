@@ -7,9 +7,9 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component, Vue } from 'vue-facing-decorator'
 import { vxm } from '@/mainWindow/store'
 import { mergeDeep } from '@/utils/common'
+import { Component, Vue } from 'vue-facing-decorator'
 import { toast } from 'vue3-toastify'
 
 @Component
@@ -22,14 +22,14 @@ export default class RemoteSong extends Vue {
 
   private async fetchCoverDetails(...songs: (Song | undefined)[]) {
     for (const s of songs) {
-      if (s && s.artists) {
+      if (s?.artists) {
         for (const a of s.artists) {
           if (!a.artist_coverPath) {
             const fetchedArtist = await this.fetchRemoteArtistDetails(a)
             await window.DBUtils.updateArtist({
               ...a,
               artist_coverPath: fetchedArtist?.artist_coverPath,
-              artist_extra_info: mergeDeep(fetchedArtist?.artist_extra_info ?? {}, a.artist_extra_info)
+              artist_extra_info: mergeDeep(fetchedArtist?.artist_extra_info ?? {}, a.artist_extra_info),
             })
           }
         }

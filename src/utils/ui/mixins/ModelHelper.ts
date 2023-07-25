@@ -12,11 +12,11 @@ import { Component, Vue } from 'vue-facing-decorator'
 @Component
 export default class ModelHelper extends Vue {
   public isAlbumExists(song: Song | null | undefined) {
-    return song && song.album
+    return song?.album
   }
 
   public isArtistExists(song: Song | null | undefined) {
-    return song && song.artists
+    return song?.artists
   }
 
   public getAlbumName(song: Song | null | undefined): string {

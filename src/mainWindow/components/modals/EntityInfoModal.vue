@@ -103,7 +103,7 @@ export default class EntityInfoModal extends Vue {
 
   getValue(key: string) {
     if (this.entity) {
-      return dotIndex(this.entity, key)
+      return dotIndex(this.entity as Record<string, unknown>, key)
     }
   }
 
@@ -227,7 +227,7 @@ export default class EntityInfoModal extends Vue {
 
   changeEntityField(field: string, value: never) {
     if (this.tmpEntity) {
-      dotIndex(this.tmpEntity, field, value)
+      dotIndex(this.tmpEntity as Record<string, unknown>, field, value)
     }
   }
 

@@ -14,7 +14,7 @@ import VueSlider from 'vue-slider-component'
 
 VueSlider.compatConfig = {
   ...VueSlider.compatConfig,
-  MODE: 3
+  MODE: 3,
 }
 
 Vue.component('VueSlider', VueSlider)

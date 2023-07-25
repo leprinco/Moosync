@@ -1,5 +1,5 @@
 const webpack = require('webpack')
-const dotenv = require('dotenv').config({ path: __dirname + '/config.env' })
+const dotenv = require('dotenv').config({ path: `${__dirname}/config.env` })
 const fs = require('fs')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const { resolve } = require('path')
@@ -254,17 +254,17 @@ module.exports = {
 
         config
           .entry('sandbox')
-          .add(__dirname + '/src/utils/extensions/sandbox/index.ts')
+          .add(`${__dirname}/src/utils/extensions/sandbox/index.ts`)
           .end()
 
         config
           .entry('spotify')
-          .add(__dirname + '/src/utils/spotify/index.ts')
+          .add(`${__dirname}/src/utils/spotify/index.ts`)
           .end()
 
         config
           .entry('sqlite3.worker')
-          .add(__dirname + '/src/utils/main/db/workers/sqlite3.ts')
+          .add(`${__dirname}/src/utils/main/db/workers/sqlite3.ts`)
           .end()
 
         config.plugin('copy').use(CopyWebpackPlugin, [{ patterns: [{ from: resolve('dev-app-update.yml') }] }])

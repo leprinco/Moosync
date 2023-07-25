@@ -11,22 +11,22 @@
 
 import 'threads/register'
 
+import { WindowHandler, _windowHandler, setIsQuitting } from './utils/main/windowManager'
 import { BrowserWindow, app, protocol, session } from 'electron'
-import { WindowHandler, setIsQuitting, _windowHandler } from './utils/main/windowManager'
 import { resolve } from 'path'
 
-import { oauthHandler } from '@/utils/main/oauth/handler'
-import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
-import { getExtensionHostChannel, registerIpcChannels } from '@/utils/main/ipc'
-import { setInitialPreferences, loadPreferences, shouldWatchFileChanges } from './utils/main/db/preferences'
-import { setupScanTask, setupScrapeTask } from '@/utils/main/scheduler/index'
-import { migrateThemes, setupDefaultThemes, setupSystemThemes } from './utils/main/themes/preferences'
-import { logger } from './utils/main/logger/index'
-import { setupUpdateCheckTask } from '@/utils/main/scheduler/index'
-import pie from 'puppeteer-in-electron'
-import { loadSelectiveArrayPreference } from './utils/main/db/preferences'
-import { exit } from 'process'
 import { createFavoritesPlaylist } from './utils/main/db'
+import { loadPreferences, setInitialPreferences, shouldWatchFileChanges } from './utils/main/db/preferences'
+import { loadSelectiveArrayPreference } from './utils/main/db/preferences'
+import { logger } from './utils/main/logger/index'
+import { migrateThemes, setupDefaultThemes, setupSystemThemes } from './utils/main/themes/preferences'
+import { getExtensionHostChannel, registerIpcChannels } from '@/utils/main/ipc'
+import { oauthHandler } from '@/utils/main/oauth/handler'
+import { setupScanTask, setupScrapeTask } from '@/utils/main/scheduler/index'
+import { setupUpdateCheckTask } from '@/utils/main/scheduler/index'
+import { exit } from 'process'
+import pie from 'puppeteer-in-electron'
+import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 
 if (process.defaultApp) {
   if (process.argv.length >= 2) {
@@ -82,15 +82,12 @@ if (!app.requestSingleInstanceLock() && !isDevelopment) {
   app.on('second-instance', handleSecondInstance)
 }
 
-function forceAllowCors(headers: Record<string, string[]>) {
-  delete headers['Access-Control-Allow-Origin']
-  delete headers['access-control-allow-origin']
-  headers = {
+function forceAllowCors(headers: Record<string, string[] | undefined>) {
+  return {
     ...headers,
-    'Access-Control-Allow-Origin': ['*']
+    'access-control-allow-origin': ['*'],
+    'Access-Control-Allow-Origin': ['*'],
   }
-
-  return headers
 }
 
 function interceptHttp() {
@@ -113,7 +110,7 @@ function interceptHttp() {
     }
 
     callback({
-      responseHeaders: headers
+      responseHeaders: headers,
     })
   })
 
@@ -192,9 +189,9 @@ function registerProtocols() {
       scheme: 'extension',
       privileges: {
         supportFetchAPI: true,
-        stream: true
-      }
-    }
+        stream: true,
+      },
+    },
   ])
 }
 

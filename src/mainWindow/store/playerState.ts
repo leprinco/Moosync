@@ -9,9 +9,9 @@
 
 import { action, mutation } from 'vuex-class-component'
 
+import { VolumePersistMode } from '../../utils/commonConstants'
 import { VuexModule } from './module'
 import { v4 } from 'uuid'
-import { VolumePersistMode } from '../../utils/commonConstants'
 
 class Queue implements GenericQueue<Song> {
   data: QueueData<Song> = {}
@@ -187,7 +187,7 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
     this.songQueue.order.push(
       ...item.map((obj) => {
         return { id: v4(), songID: obj._id }
-      })
+      }),
     )
   }
 
@@ -216,7 +216,7 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
       0,
       ...item.map((obj) => {
         return { id: v4(), songID: obj._id }
-      })
+      }),
     )
   }
 

@@ -11,15 +11,15 @@ import { extractVuexModule } from 'vuex-class-component'
 
 import { NotifierStore } from './notifications'
 import { PlayerStore } from './playerState'
+import { PlayerRepositoryStore } from './playersRepo'
+import { ThemeStore } from './themes'
+import { getProxy } from './vuexProvider'
 import { PlaylistStore } from '@/mainWindow/store/playlists'
 import { ProviderStore } from '@/mainWindow/store/providers'
 import { SyncStore } from '@/mainWindow/store/syncState'
-import { ThemeStore } from './themes'
-import { createStore } from 'vuex'
 import { createPersist } from '@/utils/ui/store/persist'
-import { getProxy } from './vuexProvider'
+import { createStore } from 'vuex'
 import { ProxyWatchers } from 'vuex-class-component/dist/interfaces'
-import { PlayerRepositoryStore } from './playersRepo'
 
 export const store = createStore({
   modules: {
@@ -29,9 +29,9 @@ export const store = createStore({
     ...extractVuexModule(ProviderStore),
     ...extractVuexModule(NotifierStore),
     ...extractVuexModule(ThemeStore),
-    ...extractVuexModule(PlayerRepositoryStore)
+    ...extractVuexModule(PlayerRepositoryStore),
   },
-  plugins: [createPersist()]
+  plugins: [createPersist()],
 })
 
 // Vetur for  some reason does not infer the type from context unless explicitly defined
@@ -50,5 +50,5 @@ export const vxm: {
   providers: getProxy(store, ProviderStore),
   notifier: getProxy(store, NotifierStore),
   themes: getProxy(store, ThemeStore),
-  playerRepo: getProxy(store, PlayerRepositoryStore)
+  playerRepo: getProxy(store, PlayerRepositoryStore),
 }

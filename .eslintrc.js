@@ -21,12 +21,6 @@ module.exports = {
     'no-undef': 0,
     'unused-imports/no-unused-imports': 'error',
     'no-debugger': process.env.NODE_ENV === 'production' ? 'warn' : 'off',
-    'prettier/prettier': [
-      'error',
-      {
-        endOfLine: 'auto'
-      }
-    ],
     '@typescript-eslint/no-namespace': 'off',
     'vue/no-v-for-template-key': 'off'
   },
@@ -36,6 +30,5 @@ module.exports = {
     'eslint:recommended',
     '@vue/typescript',
     '@vue/typescript/recommended',
-    'plugin:prettier/recommended'
   ]
 }

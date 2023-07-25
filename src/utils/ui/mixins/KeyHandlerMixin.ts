@@ -7,11 +7,11 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component } from 'vue-facing-decorator'
-import PlayerControls from '@/utils/ui/mixins/PlayerControls'
-import { mixins } from 'vue-facing-decorator'
 import { bus } from '@/mainWindow/main'
-import { defaultKeybinds, HotkeyEvents } from '@/utils/commonConstants'
+import { HotkeyEvents, defaultKeybinds } from '@/utils/commonConstants'
+import PlayerControls from '@/utils/ui/mixins/PlayerControls'
+import { Component } from 'vue-facing-decorator'
+import { mixins } from 'vue-facing-decorator'
 
 @Component
 export default class KeyHandlerMixin extends mixins(PlayerControls) {
@@ -21,7 +21,7 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
 
   async created() {
     this.keyboardHotKeyMap = Object.freeze(
-      (await window.PreferenceUtils.loadSelective('hotkeys', false, defaultKeybinds)) as HotkeyPair[]
+      (await window.PreferenceUtils.loadSelective('hotkeys', false, defaultKeybinds)) as HotkeyPair[],
     )
 
     window.PreferenceUtils.listenPreferenceChanged('hotkeys', true, (_, val: HotkeyPair[]) => {

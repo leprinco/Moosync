@@ -7,17 +7,17 @@
  *  See LICENSE in the project root for license information.
  */
 
+import '@/preferenceWindow/plugins/recycleScroller'
 import '@/preferenceWindow/plugins/vueBootstrap'
 import '@/sass/global.sass'
-import '@/preferenceWindow/plugins/recycleScroller'
 import 'animate.css'
 
 import App from './Preferences.vue'
-import { router } from '@/preferenceWindow/plugins/router'
-import { createApp } from 'vue'
 import { i18n } from '@/preferenceWindow/plugins/i18n'
-import EventEmitter from 'events'
+import { router } from '@/preferenceWindow/plugins/router'
 import { registerLogger } from '@/utils/ui/common'
+import EventEmitter from 'events'
+import { createApp } from 'vue'
 
 export const bus = new EventEmitter()
 
@@ -27,7 +27,7 @@ app.use(router)
 
 app.directive('click-outside', {
   mounted(el, binding) {
-    el.clickOutsideEvent = function (e: any) {
+    el.clickOutsideEvent = function (e: Event) {
       if (el !== e.target && !el.contains(e.target)) {
         binding.value(e, el)
       }
@@ -36,7 +36,7 @@ app.directive('click-outside', {
   },
   unmounted(el) {
     document.body.removeEventListener('click', el.clickOutsideEvent)
-  }
+  },
 })
 
 registerLogger(app)
