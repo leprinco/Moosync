@@ -1,8 +1,8 @@
 import { GenericProvider } from '../providers/generics/genericProvider'
 import ProviderMixin from './ProviderMixin'
 import { vxm } from '@/mainWindow/store'
-import { toRaw } from 'vue'
 import { Component } from 'vue-facing-decorator'
+import { convertProxy } from '../common'
 
 @Component
 export default class ProviderFetchMixin extends ProviderMixin {
@@ -70,8 +70,7 @@ export default class ProviderFetchMixin extends ProviderMixin {
 
   async fetchSongList() {
     this.loadingMap['local'] = true
-    console.log('fetching local songs', this.localSongFetch)
-    this.songList = (await this.localSongFetch?.(toRaw(vxm.themes.songSortBy))) ?? []
+    this.songList = (await this.localSongFetch?.(convertProxy(vxm.themes.songSortBy))) ?? []
     this.optionalSongList['local'] = this.songList.map((val) => val._id)
     this.loadingMap['local'] = false
   }

@@ -83,6 +83,8 @@
 import SongListMixin from '@/utils/ui/mixins/SongListMixin'
 import { mixins } from 'vue-facing-decorator'
 import { Component, Prop, Ref } from 'vue-facing-decorator'
+import { toRaw } from 'vue'
+import { convertProxy } from '@/utils/ui/common'
 
 @Component({})
 export default class SongList extends mixins(SongListMixin) {
@@ -226,7 +228,7 @@ export default class SongList extends mixins(SongListMixin) {
   }
 
   private saveWidths() {
-    return window.PreferenceUtils.saveSelective('UI.columnHeaders.widths', this.columnWidths, false)
+    return window.PreferenceUtils.saveSelective('UI.columnHeaders.widths', convertProxy(this.columnWidths), false)
   }
 
   private async loadWidths() {
@@ -248,10 +250,7 @@ export default class SongList extends mixins(SongListMixin) {
 
   async onTextClick(key: TableFields, item: Song | Artists) {
     if (key === 'artist_name') {
-      const data = await window.SearchUtils.searchEntityByOptions({
-        artist: { artist_id: (item as Artists).artist_id }
-      })
-      this.$emit('onArtistClicked', data[0])
+      this.$emit('onArtistClicked', item)
     } else if (key === 'album_name' && typeof item !== 'string') {
       this.$emit('onAlbumClicked', (item as Song).album)
     }

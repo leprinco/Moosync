@@ -92,7 +92,7 @@ import IconHandler from '../../components/generic/IconHandler.vue'
 import TabCarousel from '../../components/generic/TabCarousel.vue'
 import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 import MultiButtonModal from '@/commonComponents/MultiButtonModal.vue'
-import { toRaw } from 'vue'
+import { convertProxy } from '@/utils/ui/common'
 
 @Component({
   components: {
@@ -300,7 +300,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   }
 
   deletePlaylist() {
-    if (this.playlistInAction) window.DBUtils.removePlaylist(toRaw(this.playlistInAction))
+    if (this.playlistInAction) window.DBUtils.removePlaylist(convertProxy(this.playlistInAction))
     this.refresh()
   }
 

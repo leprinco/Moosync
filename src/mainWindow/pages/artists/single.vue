@@ -44,6 +44,7 @@ import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
 import ProviderFetchMixin from '../../../utils/ui/mixins/ProviderFetchMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
+import { convertProxy } from '@/utils/ui/common'
 
 @Component({
   components: {
@@ -104,7 +105,6 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
       })
 
     this.generator = (provider, nextPageToken) => {
-      console.trace('got artist', this.artist)
       if (this.artist) {
         return provider.getArtistSongs(this.artist, nextPageToken)
       } else {
@@ -140,7 +140,7 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
     this.artist = (
       await window.SearchUtils.searchEntityByOptions<Artists>({
         artist: {
-          artist_id: this.$route.query.id as string
+          artist_id: convertProxy(this.$route.query.id as string)
         }
       })
     )[0]
@@ -161,7 +161,7 @@ export default class SingleArtistView extends mixins(ContextMenuMixin, RemoteSon
         artist_coverPath: fetchedArtist?.artist_coverPath
       }
 
-      await window.DBUtils.updateArtist(this.artist)
+      await window.DBUtils.updateArtist(convertProxy(this.artist, true))
     }
   }
 

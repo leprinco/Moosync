@@ -31,7 +31,7 @@ import { mixins } from 'vue-facing-decorator'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import { vxm } from '@/mainWindow/store'
 import { getRandomFromArray } from '@/utils/common'
-import { toRaw } from 'vue'
+import { convertProxy } from '@/utils/ui/common'
 
 @Component({
   components: {
@@ -68,7 +68,7 @@ export default class AllSongs extends mixins(ContextMenuMixin) {
 
   async requestSongs(showHidden = false) {
     this.songList = await window.SearchUtils.searchSongsByOptions({
-      sortBy: toRaw(vxm.themes.songSortBy),
+      sortBy: convertProxy(vxm.themes.songSortBy),
       song: {
         showInLibrary: !showHidden
       }

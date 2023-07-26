@@ -54,8 +54,8 @@ import { ExtensionProvider } from '@/utils/ui/providers/extensionWrapper'
 import { sortSongListFn } from '@/utils/common'
 import IncorrectPlaybackModal from './components/modals/IncorrectPlaybackModal.vue'
 import { ToastType, toast } from 'vue3-toastify'
-import { toRaw } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { convertProxy } from '@/utils/ui/common'
 
 @Component({
   components: {
@@ -443,7 +443,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
 
         window.ExtensionUtils.sendEvent({
           type: 'songChanged',
-          data: [toRaw(newVal)]
+          data: [convertProxy(newVal)]
         })
 
         const scrobbleableProviderList =
@@ -483,7 +483,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     vxm.player.$watch('playerState', (newVal: PlayerState) =>
       window.ExtensionUtils.sendEvent({
         type: 'playerStateChanged',
-        data: [toRaw(newVal)]
+        data: [convertProxy(newVal)]
       })
     )
 
@@ -493,7 +493,7 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       volumeDebounce = setTimeout(() => {
         window.ExtensionUtils.sendEvent({
           type: 'volumeChanged',
-          data: [toRaw(newVal)]
+          data: [convertProxy(newVal)]
         })
       }, 800)
     })
@@ -501,14 +501,14 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     vxm.player.$watch('songQueue', (newVal: SongQueue) =>
       window.ExtensionUtils.sendEvent({
         type: 'songQueueChanged',
-        data: [toRaw(newVal)]
+        data: [convertProxy(newVal)]
       })
     )
 
     bus.on('forceSeek', (newVal: number) =>
       window.ExtensionUtils.sendEvent({
         type: 'seeked',
-        data: [toRaw(newVal)]
+        data: [convertProxy(newVal)]
       })
     )
   }

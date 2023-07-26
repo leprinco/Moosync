@@ -89,7 +89,7 @@ import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
     SongViewCompact
   }
 })
-export default class AllSongs extends mixins(
+export default class SongView extends mixins(
   PlayerControls,
   ModelHelper,
   RemoteSong,

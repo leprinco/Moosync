@@ -45,6 +45,7 @@ import ProviderFetchMixin from '@/utils/ui/mixins/ProviderFetchMixin'
 import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
 import { ProviderScopes } from '@/utils/commonConstants'
 import { toast } from 'vue3-toastify'
+import { FAVORITES_PLAYLIST_ID } from '../../../utils/commonConstants'
 
 @Component({
   components: {
@@ -84,7 +85,10 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
     return {
       defaultTitle: this.playlist?.playlist_name ?? '',
       defaultSubSubtitle: this.$t('songView.details.songCount', this.filteredSongList.length),
-      defaultCover: this.playlist?.playlist_coverPath ?? ''
+      defaultCover:
+        this.playlist.playlist_id === FAVORITES_PLAYLIST_ID
+          ? FAVORITES_PLAYLIST_ID
+          : this.playlist?.playlist_coverPath ?? ''
     }
   }
 
@@ -107,8 +111,6 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   private async refresh() {
     this.clearSongList()
     this.clearNextPageTokens()
-
-    console.log('route', this.$route)
 
     await this.fetchSongList()
   }

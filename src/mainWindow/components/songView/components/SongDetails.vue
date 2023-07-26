@@ -20,7 +20,8 @@
             @error="handlerImageError($event, handleError)"
             referrerPolicy="no-referrer"
           />
-          <SongDefault v-else class="h-100 image" />
+          <SongDefault v-else-if="defaultDetails?.defaultCover !== FAVORITES_PLAYLIST_ID" class="h-100 image" />
+          <FavPlaylistIcon class="h-100 image" v-else />
         </div>
       </b-col>
       <b-col class="text-container text-truncate">
@@ -103,6 +104,8 @@ import TabCarousel from '../../generic/TabCarousel.vue'
 import FetchAllIcon from '@/icons/FetchAllIcon.vue'
 import RandomIcon from '@/icons/RandomIcon.vue'
 import { vxm } from '@/mainWindow/store'
+import { FAVORITES_PLAYLIST_ID } from '@/utils/commonConstants'
+import FavPlaylistIcon from '@/icons/FavPlaylistIcon.vue'
 
 @Component({
   components: {
@@ -114,10 +117,13 @@ import { vxm } from '@/mainWindow/store'
     SpotifyIcon,
     TabCarousel,
     RandomIcon,
-    FetchAllIcon
+    FetchAllIcon,
+    FavPlaylistIcon
   }
 })
 export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileMixin) {
+  FAVORITES_PLAYLIST_ID = FAVORITES_PLAYLIST_ID
+
   @Prop({ default: null })
   currentSong!: Song | null | undefined
 
@@ -132,6 +138,8 @@ export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileM
   @Prop({ default: () => [] })
   optionalProviders!: TabCarouselItem[]
 
+  private forceShowDefaultImage = false
+
   @Prop({
     default: () => {
       return {
@@ -143,9 +151,12 @@ export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileM
   buttonGroup!: SongDetailButtons
 
   get computedImg() {
-    return (
-      this.forceCover ?? this.getImgSrc(this.getValidImageHigh(this.currentSong) ?? this.defaultDetails?.defaultCover)
-    )
+    if (!this.forceShowDefaultImage) {
+      return (
+        this.forceCover ?? this.getImgSrc(this.getValidImageHigh(this.currentSong) ?? this.defaultDetails?.defaultCover)
+      )
+    }
+    return undefined
   }
 
   get isSortAsc() {
@@ -156,6 +167,7 @@ export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileM
   @Watch('currentSong')
   onSongchange() {
     this.subtitle = this.getConcatedSubtitle()
+    this.forceShowDefaultImage = false
   }
 
   get subSubTitle() {
@@ -211,7 +223,7 @@ export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileM
   }
 
   handleError(e: ErrorEvent) {
-    console.error(e)
+    this.forceShowDefaultImage = true
   }
 }
 </script>

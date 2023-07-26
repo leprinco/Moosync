@@ -18,6 +18,8 @@ import { EventBus } from '@/utils/main/ipc/constants'
 import { AuthorizationServiceConfiguration } from '@openid/appauth'
 import { once } from 'events'
 import qs from 'qs'
+import { toRaw } from 'vue'
+import { convertProxy } from '../common'
 
 const BASE_URL = 'https://youtube.googleapis.com/youtube/v3/'
 
@@ -441,7 +443,6 @@ export class YoutubeProvider extends GenericProvider {
   }
 
   public matchSongUrl(url: string): boolean {
-    console.log(url)
     return !!url.match(
       /^((?:https?:)?\/\/)?((?:www|m|music)\.)?((?:youtube\.com|youtu.be))(\/(?:[\w-]+\?v=|embed\/|v\/)?)([\w-]+)(\S+)?$/,
     )
@@ -578,7 +579,7 @@ export class YoutubeProvider extends GenericProvider {
       }
     } else {
       if (channelId) {
-        yield await window.SearchUtils.getYTPlaylistContent(channelId, nextPageToken as never)
+        yield await window.SearchUtils.getYTPlaylistContent(channelId, convertProxy(nextPageToken as never, true))
       } else {
         const resp = await window.SearchUtils.searchYT(`${artist.artist_name}`)
         if (resp.artists?.length > 0 && resp.artists[0].artist_extra_info?.youtube?.channel_id) {

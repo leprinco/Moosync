@@ -14,10 +14,10 @@ import { vxm } from '@/mainWindow/store'
 import { EventBus } from '@/utils/main/ipc/constants'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
-import { toRaw } from 'vue'
 import { Component } from 'vue-facing-decorator'
 import { mixins } from 'vue-facing-decorator'
 import { toast } from 'vue3-toastify'
+import { convertProxy } from '../common'
 
 export type MenuItem = {
   label?: string
@@ -32,7 +32,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
   }
 
   private async addToPlaylist(playlist_id: string, songs: Song[]) {
-    await window.DBUtils.addToPlaylist(playlist_id, ...songs.map((val) => toRaw(val)))
+    await window.DBUtils.addToPlaylist(playlist_id, ...songs.map((val) => convertProxy(val)))
   }
 
   private getSortIcon(currentType: SongSortOptions['type'], requiredType: SongSortOptions['type'], isAsc = true) {
@@ -189,7 +189,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       items.splice(4, 0, {
         label: this.$t('contextMenu.song.removeFromPlaylist'),
         onClick: async () => {
-          await window.DBUtils.removeFromPlaylist(playlistId, ...item)
+          await window.DBUtils.removeFromPlaylist(playlistId, ...convertProxy(item))
           refreshCallback?.()
         },
       })
@@ -251,7 +251,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
             label: this.$t('contextMenu.song.remove'),
             onClick: async () => {
               try {
-                await window.DBUtils.removeSongs(item)
+                await window.DBUtils.removeSongs(convertProxy(item))
               } catch (e) {
                 console.error(e)
               }
@@ -282,7 +282,9 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       items.push({
         label: shownInLibrary ? this.$t('contextMenu.song.hideFromLibrary') : this.$t('contextMenu.song.showInLibrary'),
         onClick: async () => {
-          await window.DBUtils.updateSongs(item.map((val) => ({ ...val, showInLibrary: !shownInLibrary })))
+          await window.DBUtils.updateSongs(
+            item.map((val) => ({ ...convertProxy(val), showInLibrary: !shownInLibrary })),
+          )
           refreshCallback?.()
         },
       })
@@ -310,7 +312,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       items.push({
         label: this.$t('contextMenu.playlist.export'),
         onClick: () => {
-          window.DBUtils.exportPlaylist(playlist)
+          window.DBUtils.exportPlaylist(convertProxy(playlist))
         },
       })
 
@@ -319,7 +321,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       items.push({
         label: this.$t('contextMenu.playlist.save'),
         onClick: async () => {
-          await window.DBUtils.createPlaylist(playlist)
+          await window.DBUtils.createPlaylist(convertProxy(playlist))
           toast(`Added ${playlist.playlist_name} to library`)
         },
       })
@@ -398,7 +400,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
         label: this.$t('contextMenu.song.remove'),
         onClick: async () => {
           try {
-            await window.DBUtils.removeSongs([item])
+            await window.DBUtils.removeSongs([convertProxy(item)])
           } catch (e) {
             console.error(e)
           }

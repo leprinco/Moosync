@@ -8,8 +8,8 @@
  */
 
 import merge from 'deepmerge'
-import { toRaw } from 'vue'
 import { Store } from 'vuex'
+import { convertProxy } from '../common'
 
 export function createPersist() {
   return (store: Store<{ state: unknown }>) => {
@@ -20,7 +20,7 @@ export function createPersist() {
 async function setInitialState(store: Store<{ state: unknown }>) {
   const savedState = await window.PreferenceUtils.loadSelective<boolean>('persisted', false)
   if (savedState) {
-    const merged = merge(toRaw(store.state), savedState, {
+    const merged = merge(convertProxy(store.state), savedState, {
       arrayMerge: (_, saved) => saved,
       clone: false,
     })

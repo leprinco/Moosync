@@ -28,7 +28,11 @@
                   @error="handleImageError"
                   referrerPolicy="no-referrer"
                 />
-                <SongDefault class="albumart w-100" v-else />
+                <SongDefault
+                  class="albumart w-100"
+                  v-else-if="defaultDetails?.defaultCover !== FAVORITES_PLAYLIST_ID"
+                />
+                <FavPlaylistIcon class="albumart w-100" v-else />
               </transition>
               <div class="play-button d-flex justify-content-center" v-if="showPlayHoverButton">
                 <Play2 class="align-self-center" />
@@ -104,6 +108,8 @@ import RandomIcon from '@/icons/RandomIcon.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import Play2 from '@/icons/PlayIcon2.vue'
 import FetchAllIcon from '@/icons/FetchAllIcon.vue'
+import { FAVORITES_PLAYLIST_ID } from '@/utils/commonConstants'
+import FavPlaylistIcon from '@/icons/FavPlaylistIcon.vue'
 
 @Component({
   components: {
@@ -114,7 +120,8 @@ import FetchAllIcon from '@/icons/FetchAllIcon.vue'
     PinIcon,
     RandomIcon,
     Play2,
-    FetchAllIcon
+    FetchAllIcon,
+    FavPlaylistIcon
   }
 })
 export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, JukeboxMixin) {
@@ -123,8 +130,10 @@ export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, Juk
 
   subtitle: string = this.getConcatedSubtitle()
 
+  FAVORITES_PLAYLIST_ID = FAVORITES_PLAYLIST_ID
+
   @Prop({ default: () => null })
-  private defaultDetails!: SongDetailDefaults | null
+  defaultDetails!: SongDetailDefaults | null
 
   @Prop({ default: () => undefined })
   private forceCover!: string

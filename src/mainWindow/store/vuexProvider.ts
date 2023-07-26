@@ -1,5 +1,5 @@
+import { convertProxy } from '@/utils/ui/common'
 import { VuexModule } from './module'
-import { toRaw } from 'vue'
 import Vuex from 'vuex'
 import { createProxy } from 'vuex-class-component'
 import { ProxyWatchers } from 'vuex-class-component/dist/interfaces'
@@ -38,7 +38,7 @@ export function getProxy<T extends typeof VuexModule>(
     for (const p of filteredPersist) {
       proxy.$watch(
         p.substring(p.indexOf('.') + 1),
-        (val) => window.PreferenceUtils.saveSelective(`persisted.${p}`, toRaw(val)),
+        (val) => window.PreferenceUtils.saveSelective(`persisted.${p}`, convertProxy(val)),
         { deep: true, immediate: false },
       )
     }

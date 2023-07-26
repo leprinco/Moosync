@@ -10,7 +10,8 @@
 import { Component, Prop, Vue } from 'vue-facing-decorator'
 
 import { v1 } from 'uuid'
-import { getCurrentInstance, toRaw } from 'vue'
+import { getCurrentInstance } from 'vue'
+import { convertProxy } from '@/utils/ui/common'
 
 @Component
 export class ExtensionPreferenceMixin<T> extends Vue {
@@ -67,8 +68,8 @@ export class ExtensionPreferenceMixin<T> extends Vue {
     if (this.prefKey) {
       this.loading = true
       ;(this.type === 'password'
-        ? window.Store.getSecure(toRaw(this.prefKey))
-        : window.PreferenceUtils.loadSelective<T>(toRaw(this.prefKey), toRaw(this.isExtension))
+        ? window.Store.getSecure(convertProxy(this.prefKey))
+        : window.PreferenceUtils.loadSelective<T>(convertProxy(this.prefKey), convertProxy(this.isExtension))
       )
         .then((val) => {
           this.value = (this.isValueEmpty(val) ? this.defaultValue : val) as T
@@ -83,7 +84,7 @@ export class ExtensionPreferenceMixin<T> extends Vue {
 
   private registerPreferenceListener() {
     if (this.prefKey) {
-      window.PreferenceUtils.listenPreferenceChanged(toRaw(this.prefKey), false, (key) => {
+      window.PreferenceUtils.listenPreferenceChanged(convertProxy(this.prefKey), false, (key) => {
         if (typeof key === 'string') {
           if (this.prefKey === key) {
             this.fetch()
@@ -96,9 +97,13 @@ export class ExtensionPreferenceMixin<T> extends Vue {
   public onInputChange() {
     if (this.prefKey) {
       if (this.type === 'password') {
-        window.Store.setSecure(toRaw(this.prefKey), toRaw(this.value as string) ?? '')
+        window.Store.setSecure(convertProxy(this.prefKey), convertProxy(this.value as string) ?? '')
       } else {
-        window.PreferenceUtils.saveSelective(toRaw(this.prefKey), toRaw(this.value), toRaw(this.isExtension))
+        window.PreferenceUtils.saveSelective(
+          convertProxy(this.prefKey),
+          convertProxy(this.value),
+          convertProxy(this.isExtension),
+        )
       }
 
       if (this.isExtension)
@@ -107,7 +112,7 @@ export class ExtensionPreferenceMixin<T> extends Vue {
           type: 'preferenceChanged',
           packageName: this.packageName,
         })
-      else window.PreferenceUtils.notifyPreferenceChanged(toRaw(this.prefKey), toRaw(this.value))
+      else window.PreferenceUtils.notifyPreferenceChanged(convertProxy(this.prefKey), convertProxy(this.value))
 
       this.onValueChange?.(this.value)
     }

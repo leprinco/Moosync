@@ -64,9 +64,12 @@ import { SpotifyPlayer } from '@/utils/ui/players/spotify'
 import { isEmpty } from '@/utils/common'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import { nextTick, toRaw } from 'vue'
+import { nextTick } from 'vue'
+import { convertProxy } from '@/utils/ui/common'
 
-@Component({})
+@Component({
+  emits: ['onTimeUpdate']
+})
 export default class AudioStream extends mixins(
   SyncMixin,
   PlayerControls,
@@ -645,7 +648,7 @@ export default class AudioStream extends mixins(
    * Set media info which is recognised by different applications and OS specific API
    */
   private async setMediaInfo(song: Song) {
-    const raw = toRaw(song)
+    const raw = convertProxy(song)
     await window.MprisUtils.updateSongInfo({
       title: raw.title,
       albumName: raw.album?.album_name,
@@ -754,13 +757,13 @@ export default class AudioStream extends mixins(
     const songExists = (
       await window.SearchUtils.searchSongsByOptions({
         song: {
-          _id: toRaw(song._id)
+          _id: convertProxy(song._id)
         }
       })
     )[0]
 
     if (songExists) {
-      await window.DBUtils.updateSongs([toRaw(song)])
+      await window.DBUtils.updateSongs([convertProxy(song)])
     }
   }
 

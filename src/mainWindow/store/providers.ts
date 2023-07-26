@@ -77,8 +77,6 @@ export class ProviderStore extends VuexModule.With({ namespaced: 'providers' }) 
     if (scopes.length > 0) {
       this.addExtensionProvider(new ExtensionProvider(packageName, scopes))
     }
-
-    console.log(this._extensionProviders)
   }
 
   @action
