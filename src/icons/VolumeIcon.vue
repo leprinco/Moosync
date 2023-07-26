@@ -14,6 +14,9 @@
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     @click="$emit('click', $event)"
+    @mouseover="$emit('mouseover', $event)"
+    @mouseleave="$emit('mouseleave', $event)"
+    @mousewheel="$emit('mousewheel', $event)"
   >
     <path
       d="M7.29195 1.5182L6.90933 1.84081C7.30241 2.30644 7.51195 2.89958 7.4986 3.50881C7.48525 4.11804 7.24991 4.70143 6.8368 5.14939L7.20442 5.49951C7.70049 4.96195 7.98315 4.26171 7.99927 3.53041C8.01539 2.79911 7.76386 2.0871 7.29195 1.5282V1.5182Z"
@@ -43,7 +46,9 @@
 import { Vue } from 'vue-facing-decorator'
 import { Component, Prop } from 'vue-facing-decorator'
 
-@Component({})
+@Component({
+  emits: ['mouseover', 'mouseleave', 'mousewheel']
+})
 export default class SpotifyIcon extends Vue {
   @Prop({ default: false })
   cut!: boolean

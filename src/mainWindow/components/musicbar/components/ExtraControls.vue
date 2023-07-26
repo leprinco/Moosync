@@ -36,7 +36,7 @@
         class="volume-icon align-self-center"
         @click="muteToggle"
         :cut="volume == 0"
-        @mouseenter="handleVolumeIconMouseEnter"
+        @mouseover="handleVolumeIconMouseEnter"
         @mouseleave="handleVolumeIconMouseLeave"
         @mousewheel="handleScrollEvent"
       />
