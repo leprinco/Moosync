@@ -29,7 +29,8 @@ import { ExtensionPreferenceMixin } from '../mixins/extensionPreferenceMixin'
 @Component({
   components: {
     PreferenceHeader
-  }
+  },
+  emits: ['tooltipClick']
 })
 export default class InfoField extends mixins(ExtensionPreferenceMixin) {
   @Prop()

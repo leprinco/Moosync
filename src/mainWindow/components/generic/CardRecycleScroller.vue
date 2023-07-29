@@ -55,7 +55,8 @@ import TabCarousel from '../../components/generic/TabCarousel.vue'
   components: {
     CardView,
     TabCarousel
-  }
+  },
+  emits: ['generalContextMenu', 'CardContextMenu', 'click']
 })
 export default class CardRecycleScroller extends Vue {
   @Prop({ default: () => [] })

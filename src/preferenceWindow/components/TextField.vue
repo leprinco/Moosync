@@ -30,7 +30,8 @@ import MarkdownIt from 'markdown-it'
 @Component({
   components: {
     PreferenceHeader
-  }
+  },
+  emits: ['tooltipClick']
 })
 export default class TextField extends mixins(ExtensionPreferenceMixin) {
   @Prop()

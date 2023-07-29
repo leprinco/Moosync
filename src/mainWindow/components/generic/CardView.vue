@@ -55,7 +55,8 @@ import Play2 from '@/icons/PlayIcon2.vue'
 @Component({
   components: {
     Play2
-  }
+  },
+  emits: ['click', 'CardContextMenu']
 })
 export default class CardView extends mixins(ImageLoader, ErrorHandler) {
   @Prop({ default: '' })

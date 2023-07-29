@@ -76,7 +76,8 @@ import RefreshIcon from '@/icons/RefreshIcon.vue'
     Tooltip,
     PreferenceHeader,
     RefreshIcon
-  }
+  },
+  emits: ['refresh']
 })
 export default class DirectoryGroup extends mixins(ExtensionPreferenceMixin) {
   @Prop({ default: 5 })

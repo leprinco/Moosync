@@ -39,13 +39,13 @@ import { Component, Prop, Watch } from 'vue-facing-decorator'
 @Component({})
 export default class MultiButtonModal extends Vue {
   @Prop({ default: 'multiButtonModal' })
-  private id!: string
+  id!: string
 
   @Prop({ default: false })
   private show!: boolean
 
   @Prop({ default: 0 })
-  private slots!: number
+  slots!: number
 
   @Watch('show')
   async onShowChange() {

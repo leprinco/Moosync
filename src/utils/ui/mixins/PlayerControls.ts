@@ -37,8 +37,8 @@ export default class PlayerControls extends Vue {
     else vxm.player.prevSong()
   }
 
-  public async showQueueSongsToast(length: number) {
-    toast(`Queued ${length} song${length !== 1 ? 's' : ''}`)
+  public showQueueSongsToast(length: number) {
+    if (length > 0) toast(`Queued ${length} song${length !== 1 ? 's' : ''}`)
   }
 
   public async queueSong(songs: Song[], showToast = true) {
@@ -60,7 +60,7 @@ export default class PlayerControls extends Vue {
 
     if (!this.isSyncing) vxm.player.playAfterLoad = true
 
-    toast(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
+    this.showQueueSongsToast(songs.length)
     this.play()
   }
 
@@ -73,7 +73,7 @@ export default class PlayerControls extends Vue {
 
     if (!this.isSyncing) vxm.player.playAfterLoad = true
 
-    toast(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
+    this.showQueueSongsToast(songs.length)
   }
 
   public clearQueue() {

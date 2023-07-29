@@ -43,7 +43,8 @@ import Logo from '@/icons/LogoIcon.vue'
 @Component({
   components: {
     Logo
-  }
+  },
+  emits: ['next', 'prev']
 })
 export default class Welcome extends Vue {
   beginSetup() {

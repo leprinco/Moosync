@@ -65,7 +65,8 @@ import { vxm } from '@/mainWindow/store'
     SongListCompactItem,
     EllipsisIcon,
     TabCarousel
-  }
+  },
+  emits: ['onRowContext', 'onRowDoubleClicked', 'onRowPlayNowClicked', 'onArtistClicked', 'onScrollEnd']
 })
 export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
   @Prop({ default: () => [] })

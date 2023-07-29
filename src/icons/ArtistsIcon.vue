@@ -32,7 +32,9 @@
 import { Vue } from 'vue-facing-decorator'
 import { Component, Prop } from 'vue-facing-decorator'
 
-@Component({})
+@Component({
+  emits: ['click']
+})
 export default class Artists extends Vue {
   @Prop({ default: false })
   active!: boolean

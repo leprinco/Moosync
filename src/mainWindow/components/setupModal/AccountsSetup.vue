@@ -66,7 +66,8 @@ import { vxm } from '@/mainWindow/store'
     SpotifyBig,
     LastFMBig,
     ConfirmationModal
-  }
+  },
+  emits: ['next', 'prev']
 })
 export default class AccountsSetup extends mixins(AccountsMixin) {
   activeSignout: Provider | null = null

@@ -33,7 +33,9 @@
 import { Vue } from 'vue-facing-decorator'
 import { Component, Prop } from 'vue-facing-decorator'
 
-@Component({})
+@Component({
+  emits: ['click']
+})
 export default class PlainPlay extends Vue {
   @Prop({ default: '' })
   title!: string

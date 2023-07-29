@@ -121,6 +121,7 @@ import CrossIcon from '@/icons/CrossIcon.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import { convertProxy } from '@/utils/ui/common'
+import type { RecycleScroller } from 'vue-virtual-scroller'
 
 @Component({
   components: {
@@ -171,7 +172,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
       return
     }
 
-    ;(this.$refs['recycle-scroller'] as any)?.$el.scrollTo({
+    ;(this.$refs['recycle-scroller'] as typeof RecycleScroller)?.$el.scrollTo({
       top: this.currentIndex * 94,
       behavior: 'smooth'
     })

@@ -87,7 +87,17 @@ import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
   components: {
     SongViewClassic,
     SongViewCompact
-  }
+  },
+  emits: [
+    'playAll',
+    'addToQueue',
+    'addToLibrary',
+    'playRandom',
+    'fetchAll',
+    'onOptionalProviderChanged',
+    'onSearchChange',
+    'onScrollEnd'
+  ]
 })
 export default class SongView extends mixins(
   PlayerControls,

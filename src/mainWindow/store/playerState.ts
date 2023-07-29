@@ -12,6 +12,7 @@ import { action, mutation } from 'vuex-class-component'
 import { VolumePersistMode } from '../../utils/commonConstants'
 import { VuexModule } from './module'
 import { v4 } from 'uuid'
+import { convertProxy } from '@/utils/ui/common'
 
 class Queue implements GenericQueue<Song> {
   data: QueueData<Song> = {}
@@ -111,7 +112,7 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
 
   @mutation
   private _setSongQueueOrder(order: QueueOrder) {
-    this.songQueue.order = order.filter((obj) => !!obj)
+    this.songQueue.order = convertProxy(order.filter((obj) => !!obj))
   }
 
   @action

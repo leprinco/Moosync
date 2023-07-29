@@ -43,7 +43,8 @@ import AnimatedEqualizer from '@/icons/AnimatedEqualizerIcon.vue'
     Play2,
     SongDefault,
     AnimatedEqualizer
-  }
+  },
+  emits: ['imgClicked']
 })
 export default class LowImageCol extends mixins(ImgLoader) {
   @Prop({ default: '' })

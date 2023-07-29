@@ -32,7 +32,8 @@ import { ExtensionPreferenceMixin } from '../mixins/extensionPreferenceMixin'
 @Component({
   components: {
     PreferenceHeader
-  }
+  },
+  emits: ['tooltipClick']
 })
 export default class ProgressBar extends mixins(ExtensionPreferenceMixin) {
   @Prop()

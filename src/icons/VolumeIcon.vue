@@ -47,7 +47,7 @@ import { Vue } from 'vue-facing-decorator'
 import { Component, Prop } from 'vue-facing-decorator'
 
 @Component({
-  emits: ['mouseover', 'mouseleave', 'mousewheel']
+  emits: ['mouseover', 'mouseleave', 'mousewheel', 'click']
 })
 export default class SpotifyIcon extends Vue {
   @Prop({ default: false })

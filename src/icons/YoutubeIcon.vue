@@ -43,7 +43,9 @@
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-facing-decorator'
 
-@Component
+@Component({
+  emits: ['click']
+})
 export default class YoutubeIcon extends Vue {
   @Prop({ default: 'white' })
   color!: string

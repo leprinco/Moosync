@@ -122,7 +122,8 @@ import FavPlaylistIcon from '@/icons/FavPlaylistIcon.vue'
     Play2,
     FetchAllIcon,
     FavPlaylistIcon
-  }
+  },
+  emits: ['playAll', 'addToQueue', 'addToLibrary', 'playRandom', 'fetchAll', 'toggleLyrics', 'click']
 })
 export default class SongDetailsCompact extends mixins(ImgLoader, FileMixin, JukeboxMixin) {
   @Prop({ default: null })

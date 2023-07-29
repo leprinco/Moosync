@@ -38,7 +38,8 @@ import { ExtensionPreferenceMixin } from '../mixins/extensionPreferenceMixin'
 @Component({
   components: {
     PreferenceHeader
-  }
+  },
+  emits: ['tooltipClick']
 })
 export default class AutoFillEditText extends mixins(ExtensionPreferenceMixin) {
   @Prop()

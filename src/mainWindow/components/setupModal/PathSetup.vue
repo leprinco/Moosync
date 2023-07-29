@@ -45,7 +45,8 @@ import DirectoryGroup from '@/preferenceWindow/components/DirectoryGroup.vue'
   components: {
     Logo,
     DirectoryGroup
-  }
+  },
+  emits: ['next', 'prev']
 })
 export default class PathSetup extends Vue {
   next() {

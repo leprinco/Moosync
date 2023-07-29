@@ -20,7 +20,9 @@
 <script lang="ts">
 import { Vue, Component, Prop } from 'vue-facing-decorator'
 
-@Component({})
+@Component({
+  emits: ['click']
+})
 export default class RefreshIcon extends Vue {
   @Prop({ default: '' })
   title!: string

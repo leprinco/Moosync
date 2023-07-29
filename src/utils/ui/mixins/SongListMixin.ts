@@ -9,7 +9,9 @@
 
 import { Component, Prop, Vue } from 'vue-facing-decorator'
 
-@Component
+@Component({
+  emits: ['onRowSelectionClear', 'onRowSelected'],
+})
 export default class SongListMixin extends Vue {
   private lastSelect = ''
   selected: number[] = []

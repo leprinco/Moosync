@@ -51,7 +51,8 @@ import ImgLoader from '@/utils/ui/mixins/ImageLoader'
   components: {
     Play2,
     SongDefault
-  }
+  },
+  emits: ['imgClick', 'titleClick', 'onContextMenu']
 })
 export default class SingleSearchResult extends mixins(PlayerControls, ImgLoader) {
   @Prop({ default: '' })

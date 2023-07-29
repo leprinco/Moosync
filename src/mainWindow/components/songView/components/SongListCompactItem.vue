@@ -77,7 +77,8 @@ import IconHandler from '@/mainWindow/components/generic/IconHandler.vue'
     IconHandler,
     PlainPlay,
     AddToQueue
-  }
+  },
+  emits: ['onRowDoubleClicked', 'onRowContext', 'onRowSelected', 'onPlayNowClicked', 'onArtistClicked']
 })
 export default class SongListCompactItem extends mixins(ImgLoader, JukeboxMixin) {
   formattedDuration = convertDuration

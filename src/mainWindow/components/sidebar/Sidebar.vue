@@ -76,7 +76,8 @@ import { bus } from '@/mainWindow/main'
     Toggle,
     Rooms,
     Tabs
-  }
+  },
+  emits: ['toggleOpen']
 })
 export default class Sidebar extends Vue {
   private roomInput = ''

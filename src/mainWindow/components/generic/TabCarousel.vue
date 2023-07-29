@@ -79,7 +79,8 @@ import { EventBus } from '@/utils/main/ipc/constants'
     SearchIcon,
     NextIcon,
     PrevIcon
-  }
+  },
+  emits: ['onItemsChanged', 'onSortClicked', 'onSearchChange']
 })
 export default class TabCarousel extends mixins(ContextMenuMixin) {
   @Prop({ default: () => [] })

@@ -119,7 +119,8 @@ import FavPlaylistIcon from '@/icons/FavPlaylistIcon.vue'
     RandomIcon,
     FetchAllIcon,
     FavPlaylistIcon
-  }
+  },
+  emits: ['playAll', 'addToQueue', 'addToLibrary', 'playRandom', 'fetchAll']
 })
 export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileMixin) {
   FAVORITES_PLAYLIST_ID = FAVORITES_PLAYLIST_ID

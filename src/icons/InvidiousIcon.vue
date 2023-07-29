@@ -37,7 +37,9 @@
 import { Vue } from 'vue-facing-decorator'
 import { Component, Prop } from 'vue-facing-decorator'
 
-@Component({})
+@Component({
+  emits: ['click']
+})
 export default class InvidiousIcon extends Vue {
   @Prop({ default: 'white' })
   private color!: string

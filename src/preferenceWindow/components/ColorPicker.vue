@@ -39,7 +39,8 @@ import colorPicker from '@caohenghu/vue-colorpicker'
 @Component({
   components: {
     colorPicker
-  }
+  },
+  emits: ['colorChange']
 })
 export default class ColorPicker extends Vue {
   @Prop({ default: 'Primary' })

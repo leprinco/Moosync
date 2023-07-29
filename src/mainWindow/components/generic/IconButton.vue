@@ -35,7 +35,8 @@ import Youtube from '@/icons/YoutubeIcon.vue'
 @Component({
   components: {
     Youtube
-  }
+  },
+  emits: ['click']
 })
 export default class IconButton extends mixins(ImageLoader) {
   @Prop({ default: '' })

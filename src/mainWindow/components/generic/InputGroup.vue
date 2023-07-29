@@ -35,7 +35,8 @@ import Link from '@/icons/LinkIcon.vue'
 @Component({
   components: {
     Link
-  }
+  },
+  emits: ['update']
 })
 export default class InputGroup extends Vue {
   model = ''

@@ -347,7 +347,8 @@
 import { Component, Prop, Vue } from 'vue-facing-decorator'
 
 @Component({
-  components: {}
+  components: {},
+  emits: ['colorClick']
 })
 export default class ThemeComponentClassic extends Vue {
   @Prop({ default: 'theme' })

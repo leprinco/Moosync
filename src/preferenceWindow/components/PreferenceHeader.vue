@@ -23,16 +23,17 @@ import Tooltip from '@/commonComponents/Tooltip.vue'
 import { Component, Prop, Vue } from 'vue-facing-decorator'
 
 @Component({
-  components: { Tooltip }
+  components: { Tooltip },
+  emits: ['tooltipClick']
 })
 export default class PreferenceHeader extends Vue {
   @Prop()
-  private title!: string
+  title!: string
 
   @Prop()
-  private tooltip!: string
+  tooltip!: string
 
-  private emitTooltipClick() {
+  emitTooltipClick() {
     this.$emit('tooltipClick')
   }
 }

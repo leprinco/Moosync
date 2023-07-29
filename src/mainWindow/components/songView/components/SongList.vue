@@ -83,10 +83,18 @@
 import SongListMixin from '@/utils/ui/mixins/SongListMixin'
 import { mixins } from 'vue-facing-decorator'
 import { Component, Prop, Ref } from 'vue-facing-decorator'
-import { toRaw } from 'vue'
 import { convertProxy } from '@/utils/ui/common'
 
-@Component({})
+@Component({
+  emits: [
+    'onRowContext',
+    'onRowDoubleClicked',
+    'onRowPlayNowClicked',
+    'onArtistClicked',
+    'onAlbumClicked',
+    'onScrollEnd'
+  ]
+})
 export default class SongList extends mixins(SongListMixin) {
   private refreshKey = false
 
