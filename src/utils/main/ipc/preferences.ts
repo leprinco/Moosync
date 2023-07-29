@@ -7,7 +7,6 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { IpcEvents, PreferenceEvents } from './constants'
 import {
   loadSelectiveArrayPreference,
   loadSelectivePreference,
@@ -15,26 +14,27 @@ import {
   removeSelectivePreference,
   resetPrefsToDefault,
   saveSelectivePreference,
-  setPreferenceListenKey
+  setPreferenceListenKey,
 } from '../db/preferences'
+import { IpcEvents, PreferenceEvents } from './constants'
 
-import { WindowHandler, _windowHandler } from '../windowManager'
-import { mkdir, rm } from 'fs/promises'
-import path from 'path/posix'
-import { app } from 'electron'
+import { ThemePacker } from '../themes/packer'
 import {
-  loadTheme,
-  loadAllThemes,
   getActiveTheme,
   getSongView,
+  loadAllThemes,
+  loadTheme,
+  removeTheme,
+  saveTheme,
   setActiveTheme,
   setSongView,
-  saveTheme,
-  removeTheme,
-  transformCSS
+  transformCSS,
 } from '../themes/preferences'
-import { ThemePacker } from '../themes/packer'
+import { WindowHandler, _windowHandler } from '../windowManager'
+import { app } from 'electron'
 import { promises as fsP } from 'fs'
+import { mkdir, rm } from 'fs/promises'
+import path from 'path/posix'
 
 export class PreferenceChannel implements IpcChannelInterface {
   name = IpcEvents.PREFERENCES
@@ -100,7 +100,7 @@ export class PreferenceChannel implements IpcChannelInterface {
       if (request.params.value !== undefined)
         event.reply(
           request.responseChannel,
-          saveSelectivePreference(request.params.key, request.params.value, request.params.isExtension)
+          saveSelectivePreference(request.params.key, request.params.value, request.params.isExtension),
         )
       else
         event.reply(request.responseChannel, removeSelectivePreference(request.params.key, request.params.isExtension))
@@ -112,7 +112,7 @@ export class PreferenceChannel implements IpcChannelInterface {
     if (request.params.key) {
       event.reply(
         request.responseChannel,
-        loadSelectivePreference(request.params.key, request.params.isExtension, request.params.defaultValue)
+        loadSelectivePreference(request.params.key, request.params.isExtension, request.params.defaultValue),
       )
     }
     event.reply(request.responseChannel, request.params.defaultValue)
@@ -122,7 +122,7 @@ export class PreferenceChannel implements IpcChannelInterface {
     if (request.params.key) {
       event.reply(
         request.responseChannel,
-        loadSelectiveArrayPreference(request.params.key, request.params.defaultValue)
+        loadSelectiveArrayPreference(request.params.key, request.params.defaultValue),
       )
     }
     event.reply(request.responseChannel, request.params.defaultValue)
@@ -158,7 +158,7 @@ export class PreferenceChannel implements IpcChannelInterface {
         const ret = await _windowHandler.openSaveDialog(false, {
           title: 'Export theme',
           defaultPath: path.join(app.getPath('documents'), path.basename(zipPath)),
-          properties: ['createDirectory', 'showOverwriteConfirmation']
+          properties: ['createDirectory', 'showOverwriteConfirmation'],
         })
 
         if (ret?.filePath) {
@@ -209,8 +209,7 @@ export class PreferenceChannel implements IpcChannelInterface {
     const iconPath = path.join(app.getPath('appData'), 'moosync', 'trayIcon', 'icon.png')
 
     if (theme) {
-      const buffer =
-        Buffer.from(`<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+      const buffer = Buffer.from(`<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="256" cy="256" r="256" fill="#1D1D1D"/>
         <path d="M179.041 201.58V350.777C179.041 364.584 167.848 375.777 154.041 375.777C140.234 375.777 129.041 364.584 129.041 350.777V185.777C129.041 154.849 154.113 129.777 185.041 129.777H321.041C351.969 129.777 377.041 154.849 377.041 185.777V351.771C377.041 366.134 365.397 377.777 351.034 377.777C336.676 377.777 325.035 366.142 325.027 351.784L324.948 201.551C324.941 188.419 314.294 177.777 301.163 177.777C288.026 177.777 277.377 188.427 277.377 201.563V253.292C277.377 267.301 266.02 278.658 252.011 278.658C238.002 278.658 226.645 267.301 226.645 253.292V201.58C226.645 188.434 215.989 177.777 202.843 177.777C189.697 177.777 179.041 188.434 179.041 201.58Z" fill="${theme.theme.accent}"/>
         </svg>
@@ -224,7 +223,7 @@ export class PreferenceChannel implements IpcChannelInterface {
         await sharp(buffer).png().resize(size, size).toFile(iconPath)
       } catch (e) {
         console.error(
-          'Failed to import sharp. Probably missing libvips-cpp.so or libffi.so.7. Read more at https://moosync.app/wiki/#known-bugs'
+          'Failed to import sharp. Probably missing libvips-cpp.so or libffi.so.7. Read more at https://moosync.app/wiki/#known-bugs',
         )
       }
     } else {

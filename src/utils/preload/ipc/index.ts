@@ -35,15 +35,15 @@ export class IpcRendererHolder {
     })
   }
 
-  public on(channel: string, callback: (...args: any[]) => void) {
+  public on(channel: string, callback: Function) {
     return this.ipcRenderer.on(channel, (_, ...args) => callback(...args))
   }
 
-  public off(channel: string, callback: (...args: any[]) => void) {
-    return this.ipcRenderer.off(channel, callback)
+  public off(channel: string, callback: Function) {
+    return this.ipcRenderer.off(channel, callback as (...args: unknown[]) => void)
   }
 
-  public once(channel: string, callback: (...args: any[]) => void) {
+  public once(channel: string, callback: Function) {
     return this.ipcRenderer.once(channel, (_, ...args) => callback(...args))
   }
 
