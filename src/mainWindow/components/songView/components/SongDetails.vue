@@ -74,7 +74,6 @@
               <TabCarousel
                 class="tab-carousel"
                 v-bind="$attrs"
-                v-on="$listeners"
                 :items="optionalProviders"
                 defaultBackgroundColor="var(--tertiary)"
                 :isSortAsc="isSortAsc"
@@ -120,7 +119,12 @@ import FavPlaylistIcon from '@/icons/FavPlaylistIcon.vue'
     FetchAllIcon,
     FavPlaylistIcon
   },
-  emits: ['playAll', 'addToQueue', 'addToLibrary', 'playRandom', 'fetchAll']
+  emits: ['playAll', 'addToQueue', 'addToLibrary', 'playRandom', 'fetchAll'],
+  options: {
+    compatConfig: {
+      INSTANCE_LISTENERS: false
+    }
+  }
 })
 export default class SongDetails extends mixins(ImageLoader, ErrorHandler, FileMixin) {
   FAVORITES_PLAYLIST_ID = FAVORITES_PLAYLIST_ID

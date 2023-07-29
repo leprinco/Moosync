@@ -68,6 +68,7 @@ import EditIcon from '@/icons/EditIcon.vue'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
 import { dotIndex } from '@/utils/common'
+import { convertProxy } from '../../../utils/ui/common'
 
 @Component({
   components: {
@@ -174,15 +175,15 @@ export default class EntityInfoModal extends Vue {
   async save() {
     if (this.tmpEntity) {
       if ((this.tmpEntity as Artists).artist_id) {
-        window.DBUtils.updateArtist(this.tmpEntity as Artists)
+        window.DBUtils.updateArtist(convertProxy(this.tmpEntity as Artists))
       }
 
       if ((this.tmpEntity as Album).album_id) {
-        window.DBUtils.updateAlbum(this.tmpEntity as Album)
+        window.DBUtils.updateAlbum(convertProxy(this.tmpEntity as Album))
       }
 
       if ((this.tmpEntity as Playlist).playlist_id) {
-        window.DBUtils.updatePlaylist(this.tmpEntity as Playlist)
+        window.DBUtils.updatePlaylist(convertProxy(this.tmpEntity as Playlist))
       }
 
       this.mergeIntoOriginal()
@@ -225,7 +226,7 @@ export default class EntityInfoModal extends Vue {
     }
   }
 
-  changeEntityField(field: string, value: never) {
+  changeEntityField(field: string, value: Event) {
     if (this.tmpEntity) {
       dotIndex(this.tmpEntity as Record<string, unknown>, field, value)
     }

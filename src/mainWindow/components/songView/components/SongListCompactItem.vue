@@ -33,7 +33,7 @@
             :class="index !== 0 ? 'ml-1' : ''"
             @click="onSubtitleClicked(artist)"
           >
-            <span> {{ artist.artist_name }}{{ index !== item.artists.length - 1 ? ',' : '' }}</span>
+            <span> {{ artist.artist_name }}{{ index !== (item.artists?.length ?? 0) - 1 ? ',' : '' }}</span>
           </div>
         </b-row>
       </b-col>

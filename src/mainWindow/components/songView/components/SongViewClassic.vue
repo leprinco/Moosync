@@ -18,7 +18,6 @@
           :currentSong="currentSong"
           :optionalProviders="optionalProviders"
           v-bind="$attrs"
-          v-on="$listeners"
         />
       </b-row>
       <b-row no-gutters class="list-container">
@@ -32,7 +31,6 @@
           ]"
           :isLoading="isLoading"
           v-bind="$attrs"
-          v-on="$listeners"
         />
       </b-row>
     </b-col>
@@ -51,6 +49,11 @@ import ModelHelper from '@/utils/ui/mixins/ModelHelper'
   components: {
     SongList,
     SongDetails
+  },
+  options: {
+    compatConfig: {
+      INSTANCE_LISTENERS: false
+    }
   }
 })
 export default class SongViewClassic extends mixins(ImgLoader, ModelHelper) {

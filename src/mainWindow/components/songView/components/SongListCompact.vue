@@ -10,13 +10,7 @@
 <template>
   <div class="d-flex h-100 w-100">
     <b-container fluid>
-      <TabCarousel
-        class="tab-carousel"
-        v-bind="$attrs"
-        v-on="$listeners"
-        :items="optionalProviders"
-        :isSortAsc="isSortAsc"
-      />
+      <TabCarousel class="tab-carousel" v-bind="$attrs" :items="optionalProviders" :isSortAsc="isSortAsc" />
       <b-row v-if="isLoading">
         <b-col class="mb-2">
           <b-spinner>{{ $t('loading') }}</b-spinner>
@@ -66,7 +60,12 @@ import { vxm } from '@/mainWindow/store'
     EllipsisIcon,
     TabCarousel
   },
-  emits: ['onRowContext', 'onRowDoubleClicked', 'onRowPlayNowClicked', 'onArtistClicked', 'onScrollEnd']
+  emits: ['onRowContext', 'onRowDoubleClicked', 'onRowPlayNowClicked', 'onArtistClicked', 'onScrollEnd'],
+  options: {
+    compatConfig: {
+      INSTANCE_LISTENERS: false
+    }
+  }
 })
 export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
   @Prop({ default: () => [] })

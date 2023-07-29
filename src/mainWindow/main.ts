@@ -25,7 +25,7 @@ import { store } from '@/mainWindow/store'
 import { registerLogger } from '@/utils/ui/common'
 import ContextMenu from '@imengyu/vue3-context-menu'
 import EventEmitter from 'events'
-import { createApp } from 'vue'
+import { configureCompat, createApp } from 'vue'
 
 export const bus = new EventEmitter()
 
@@ -59,5 +59,7 @@ app.directive('click-outside', {
 })
 
 registerLogger(app)
+
+configureCompat({})
 
 app.mount('#app')

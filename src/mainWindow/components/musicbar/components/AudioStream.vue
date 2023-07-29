@@ -173,7 +173,7 @@ export default class AudioStream extends mixins(
     let player: Player | undefined = undefined
 
     let tries = 0
-    while (!(player && song.playbackUrl) && tries < vxm.playerRepo.allPlayers.length) {
+    while (!(player && (song.playbackUrl || song.path)) && tries < vxm.playerRepo.allPlayers.length) {
       player = this.findPlayer(newType, this.playerBlacklist)
       console.debug('Found player', player?.key)
 

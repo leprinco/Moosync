@@ -16,11 +16,10 @@
         :currentSong="currentSong"
         :isLoading="isLoading"
         v-bind="$attrs"
-        v-on="$listeners"
       />
     </b-col>
     <b-col cols="8" xl="9" class="h-100 song-list-compact">
-      <SongListCompact :optionalProviders="optionalProviders" :songList="songList" v-bind="$attrs" v-on="$listeners" />
+      <SongListCompact :optionalProviders="optionalProviders" :songList="songList" v-bind="$attrs" />
     </b-col>
   </b-row>
 </template>
@@ -37,6 +36,12 @@ import SongDetailsCompact from './SongDetailsCompact.vue'
   components: {
     SongListCompact,
     SongDetailsCompact
+  },
+  inheritAttrs: false,
+  options: {
+    compatConfig: {
+      INSTANCE_LISTENERS: false
+    }
   }
 })
 export default class SongViewCompact extends mixins(RemoteSong, ImgLoader) {
