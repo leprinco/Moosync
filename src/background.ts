@@ -85,7 +85,6 @@ if (!app.requestSingleInstanceLock() && !isDevelopment) {
 function forceAllowCors(headers: Record<string, string[] | undefined>) {
   return {
     ...headers,
-    'access-control-allow-origin': ['*'],
     'Access-Control-Allow-Origin': ['*'],
   }
 }
@@ -118,9 +117,7 @@ function interceptHttp() {
   // We'll load the app on http://localhost
   // Which will then be intercepted here and normal files will be delivered
   // Essentially spoofing window.location.origin to become http://localhost
-  if (!process.env.WEBPACK_DEV_SERVER_URL) {
-    WindowHandler.interceptHttp()
-  }
+  WindowHandler.interceptHttp()
 }
 
 function windowsClosed() {

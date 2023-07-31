@@ -109,6 +109,7 @@ import ColorPicker from '../ColorPicker.vue'
 import NavBack from '@/icons/NavBackIcon.vue'
 import FolderIcon from '@/icons/FolderIcon.vue'
 import { bus } from '@/preferenceWindow/main'
+import { convertProxy } from '../../../utils/ui/common'
 
 @Component({
   components: {
@@ -189,7 +190,7 @@ export default class NewTheme extends Vue {
   }
 
   async saveTheme() {
-    await window.ThemeUtils.saveTheme(this.generateThemeMetadata())
+    await window.ThemeUtils.saveTheme(convertProxy(this.generateThemeMetadata()))
     const currentTheme = await window.ThemeUtils.getActiveTheme()
     if (currentTheme.id === this.currentThemeID) {
       await window.ThemeUtils.setActiveTheme(this.currentThemeID)

@@ -558,6 +558,14 @@ class DBWrapper extends DBUtils {
 
   private storeAlbum(album: Album): string | undefined {
     if (album.album_name) {
+      let artistId = undefined
+      if (album.album_artist) {
+        artistId = this.storeArtists({
+          artist_id: '',
+          artist_name: album.album_artist,
+        })[0]
+      }
+
       const resp = this.db.query(
         `INSERT INTO albums (album_id, album_name, album_coverPath_low, album_coverPath_high, album_artist) VALUES (?, ?, ?, ?, ?) 
           ON CONFLICT (album_name) 
@@ -567,7 +575,7 @@ class DBWrapper extends DBUtils {
         album.album_name,
         album.album_coverPath_low,
         album.album_coverPath_high,
-        album.album_artist,
+        artistId,
       )
 
       return resp?.[0].album_id

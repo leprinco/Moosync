@@ -56,6 +56,7 @@
 import { Component, Prop, Vue } from 'vue-facing-decorator'
 import yaml from 'js-yaml'
 import semver from 'semver'
+import { convertProxy } from '../../utils/ui/common'
 
 @Component({
   components: {}
@@ -120,7 +121,7 @@ export default class DiscoverExtensionsModal extends Vue {
   }
 
   async downloadExt(ext: FetchedExtensionManifest) {
-    const status = await window.ExtensionUtils.downloadExtension(ext)
+    const status = await window.ExtensionUtils.downloadExtension(convertProxy(ext))
     console.debug('Extension download and install status', status)
     this.updateExtensionsCallback && this.updateExtensionsCallback()
   }
