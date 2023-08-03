@@ -82,7 +82,12 @@ if (!app.requestSingleInstanceLock() && !isDevelopment) {
   app.on('second-instance', handleSecondInstance)
 }
 
-function forceAllowCors(headers: Record<string, string[] | undefined>) {
+function forceAllowCors(headers: Record<string, string[] | undefined | null>) {
+  // rome-ignore lint/performance/noDelete: Electron fucks up undefined or null values for some reason
+  delete headers['Access-Control-Allow-Origin']
+  // rome-ignore lint/performance/noDelete:
+  delete headers['access-control-allow-origin']
+
   return {
     ...headers,
     'Access-Control-Allow-Origin': ['*'],

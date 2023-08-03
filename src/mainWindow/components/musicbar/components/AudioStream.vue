@@ -256,6 +256,7 @@ export default class AudioStream extends mixins(
   @Watch('currentSong', { immediate: true })
   onSongChanged(newSong: Song | null | undefined) {
     if (newSong) {
+      this.playerBlacklist = []
       this.clearSongChangeTimer()
       this.songChangeTimer = setTimeout(() => this.loadAudio(newSong, false), SONG_CHANGE_DEBOUNCE)
     } else {
@@ -834,7 +835,10 @@ export default class AudioStream extends mixins(
 
     vxm.player.loading = true
 
-    await this.onPlayerTypesChanged(PlayerTypes, song)
+    const changedPlayer = await this.onPlayerTypesChanged(PlayerTypes, song)
+    if (!changedPlayer) {
+      return this.nextSong()
+    }
 
     // Don't proceed if song has changed while we were fetching playback url and duration
     if (song._id !== this.currentSong?._id) {

@@ -94,7 +94,9 @@ export class ExtensionPreferenceMixin<T> extends Vue {
     }
   }
 
-  public onInputChange() {
+  public onInputChange(value: typeof this.value) {
+    this.value = value
+
     if (this.prefKey) {
       if (this.type === 'password') {
         window.Store.setSecure(convertProxy(this.prefKey), convertProxy(this.value as string) ?? '')

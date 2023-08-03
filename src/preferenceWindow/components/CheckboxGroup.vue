@@ -66,7 +66,7 @@ export default class CheckboxGroup extends mixins(ExtensionPreferenceMixin) {
         value.enabled = isChecked
       }
 
-      this.onInputChange()
+      this.onInputChange(this.value)
     }
 
     // ;(this.value as Checkbox[])[index].enabled = (
