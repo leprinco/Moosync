@@ -83,6 +83,9 @@ if (!app.requestSingleInstanceLock() && !isDevelopment) {
 }
 
 function forceAllowCors(headers: Record<string, string[] | undefined>) {
+  headers['Access-Control-Allow-Origin'] = undefined
+  headers['access-control-allow-origin'] = undefined
+
   return {
     ...headers,
     'Access-Control-Allow-Origin': ['*'],
