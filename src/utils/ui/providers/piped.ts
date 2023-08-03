@@ -86,7 +86,7 @@ export class PipedProvider extends GenericProvider {
         playlist_id: `youtube-playlist:${p.id}`,
         playlist_name: p.name,
         playlist_desc: p.shortDescription,
-        playlist_coverPath: p.thumbnail?.replace('hqdefault', 'maxresdefault'),
+        playlist_coverPath: this.highResImage(p.thumbnail),
         playlist_song_count: p.videos,
       })
     }
@@ -250,7 +250,7 @@ export class PipedProvider extends GenericProvider {
     return {
       artist_id: `youtube-author:${artist.id}`,
       artist_name: artist.name,
-      artist_coverPath: artist.avatarUrl.replace('hqdefault', 'maxresdefault'),
+      artist_coverPath: this.highResImage(artist.avatarUrl),
       artist_extra_info: {
         youtube: {
           channel_id: artist.id,
@@ -272,6 +272,10 @@ export class PipedProvider extends GenericProvider {
     return
   }
 
+  private highResImage(url?: string) {
+    return url?.replaceAll(/w\d{3}/g, 'w800')?.replaceAll(/h\d{3}/g, 'h800')?.replaceAll('hqdefault', 'maxresdefault')
+  }
+
   private parseSongs(...videos: PipedResponses.VideoDetails[]): Song[] {
     const songList: Song[] = []
 
@@ -285,7 +289,7 @@ export class PipedProvider extends GenericProvider {
                 {
                   artist_id: `youtube-author:${this.getChannelIdFromUploaderUrl(v.uploaderUrl)}`,
                   artist_name: v.uploaderName,
-                  artist_coverPath: v.uploaderAvatar?.replace('hqdefault', 'maxresdefault'),
+                  artist_coverPath: this.highResImage(v.uploaderAvatar),
                   artist_extra_info: {
                     youtube: {
                       channel_id: this.getChannelIdFromUploaderUrl(v.uploaderUrl),
@@ -295,7 +299,7 @@ export class PipedProvider extends GenericProvider {
               ]
             : [],
           song_coverPath_low: v.thumbnail,
-          song_coverPath_high: v.thumbnail?.replace('hqdefault', 'maxresdefault'),
+          song_coverPath_high: this.highResImage(v.thumbnail),
           duration: v.duration,
           url: this.getIdFromURL(v.url),
           playbackUrl: this.getIdFromURL(v.url),
@@ -327,7 +331,7 @@ export class PipedProvider extends GenericProvider {
       artistList.push({
         artist_id: `youtube-author:${this.getChannelIdFromUploaderUrl(a.url)}`,
         artist_name: a.name,
-        artist_coverPath: a.thumbnail?.replace('hqdefault', 'maxresdefault'),
+        artist_coverPath: this.highResImage(a.thumbnail),
         artist_extra_info: {
           youtube: {
             channel_id: this.getChannelIdFromUploaderUrl(a.url),
@@ -358,7 +362,7 @@ export class PipedProvider extends GenericProvider {
       playlistList.push({
         playlist_id: `youtube-playlist:${this.getPlaylistIdFromUrl(p.url)}`,
         playlist_name: p.name,
-        playlist_coverPath: p.thumbnail?.replace('hqdefault', 'maxresdefault'),
+        playlist_coverPath: this.highResImage(p.thumbnail),
       })
     }
 
@@ -385,7 +389,7 @@ export class PipedProvider extends GenericProvider {
         album_id: `youtube-album:${this.getPlaylistIdFromUrl(a.url)}`,
         album_name: a.name,
         album_coverPath_low: a.thumbnail,
-        album_coverPath_high: a.thumbnail?.replace('hqdefault', 'maxresdefault'),
+        album_coverPath_high: this.highResImage(a.thumbnail),
         album_artist: a.uploaderName,
         album_extra_info: {
           youtube: {
@@ -422,7 +426,7 @@ export class PipedProvider extends GenericProvider {
     return {
       playlist_id: `youtube-playlist:${playlistId}`,
       playlist_name: playlist.name,
-      playlist_coverPath: playlist.thumbnailUrl?.replace('hqdefault', 'maxresdefault'),
+      playlist_coverPath: this.highResImage(playlist.thumbnailUrl),
     }
   }
 
