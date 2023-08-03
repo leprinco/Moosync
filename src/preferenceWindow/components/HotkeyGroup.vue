@@ -101,7 +101,7 @@ export default class HotkeyGroup extends mixins(ExtensionPreferenceMixin) {
       key: this.value[index].key,
       value: item
     })
-    this.onInputChange()
+    this.onInputChange(this.value)
   }
 
   setSelectedKeybind(index: number, combo: HotkeyPair['key']) {
@@ -109,7 +109,7 @@ export default class HotkeyGroup extends mixins(ExtensionPreferenceMixin) {
       key: combo,
       value: this.value[index].value
     })
-    this.onInputChange()
+    this.onInputChange(this.value)
   }
 
   private abortController: AbortController | null = null
@@ -194,7 +194,7 @@ export default class HotkeyGroup extends mixins(ExtensionPreferenceMixin) {
 
   removeKeybind(index: number) {
     this.value?.splice(index, 1)
-    this.onInputChange()
+    this.onInputChange(this.value)
   }
 
   addKeybind() {

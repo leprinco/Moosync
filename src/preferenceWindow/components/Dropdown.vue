@@ -66,7 +66,7 @@ export default class Dropdown extends mixins(ExtensionPreferenceMixin) {
           i.enabled = false
         }
       }
-      this.onInputChange()
+      this.onInputChange(this.value)
     }
   }
 }

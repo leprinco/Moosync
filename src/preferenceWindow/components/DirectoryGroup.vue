@@ -109,7 +109,7 @@ export default class DirectoryGroup extends mixins(ExtensionPreferenceMixin) {
       this.value[index].enabled = (
         document.getElementById(`path-${this.packageName}-${path.path}`) as HTMLInputElement
       ).checked
-      this.onInputChange()
+      this.onInputChange(this.value)
     }
   }
 
@@ -120,7 +120,7 @@ export default class DirectoryGroup extends mixins(ExtensionPreferenceMixin) {
   removePath(index: number) {
     if (this.value && index >= 0) {
       this.value.splice(index, 1)
-      this.onInputChange()
+      this.onInputChange(this.value)
     }
   }
 
@@ -130,7 +130,7 @@ export default class DirectoryGroup extends mixins(ExtensionPreferenceMixin) {
         for (const path of data.filePaths) {
           this.value.push({ path, enabled: true })
         }
-        this.onInputChange()
+        this.onInputChange(this.value)
       }
     })
   }

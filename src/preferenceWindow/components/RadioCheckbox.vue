@@ -69,7 +69,7 @@ export default class RadioCheckbox extends mixins(ExtensionPreferenceMixin) {
     }
 
     this.activeKey = [key]
-    this.onInputChange()
+    this.onInputChange(this.value)
   }
 
   private getCheckboxEnabled(key: string) {

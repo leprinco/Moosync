@@ -83,7 +83,7 @@ export default class EditText extends mixins(ExtensionPreferenceMixin) {
     this.value = formatted
 
     clearTimeout(this.debounceTimer)
-    this.debounceTimer = setTimeout(() => this.onInputChange(), this.maxValue ? 0 : this.debounce)
+    this.debounceTimer = setTimeout(() => this.onInputChange(this.value), this.maxValue ? 0 : this.debounce)
   }
 
   private formatVal(input: string) {
