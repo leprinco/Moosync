@@ -35,6 +35,8 @@ export default class ThemeHandler extends Vue {
     this.setCheckboxValues()
     if (theme?.theme.customCSS) {
       this.loadCss(theme?.theme.customCSS)
+    } else {
+      this.unloadCss()
     }
   }
 
@@ -45,6 +47,13 @@ export default class ThemeHandler extends Vue {
     customStylesheet.innerHTML = css
 
     document.head.append(customStylesheet)
+  }
+
+  private async unloadCss() {
+    const customStylesheet = document.getElementById('custom-css') as HTMLStyleElement
+    if (customStylesheet) {
+      document.head.removeChild(customStylesheet)
+    }
   }
 
   private transformCSS(cssPath: string) {
