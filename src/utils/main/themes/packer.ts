@@ -45,6 +45,7 @@ export class ThemePacker {
     const themeDetails = await this.validateTheme(extractDir)
     if (themeDetails) {
       const themeDir = path.join(app.getPath('appData'), app.getName(), 'themes', themeDetails.id)
+      await fsP.rm(themeDir, { recursive: true })
       await fsP.mkdir(themeDir, { recursive: true })
       await fsP.cp(extractDir, themeDir, {
         recursive: true,

@@ -35,16 +35,30 @@ export default class ThemeHandler extends Vue {
     this.setCheckboxValues()
     if (theme?.theme.customCSS) {
       this.loadCss(theme?.theme.customCSS)
+    } else {
+      this.unloadCss()
     }
   }
 
   private async loadCss(cssPath: string) {
-    const css = await this.transformCSS(cssPath)
+    let css = await this.transformCSS(cssPath)
+
+    // now substitute %themeDir% within css definition
+    let themeDir = cssPath.replaceAll('\\', '/')
+    themeDir = themeDir.substring(0, themeDir.lastIndexOf('/'))
+    css = css.replaceAll('%themeDir%', themeDir)
 
     const customStylesheet = (document.getElementById('custom-css') as HTMLStyleElement) ?? this.createStyleNode()
     customStylesheet.innerHTML = css
 
     document.head.append(customStylesheet)
+  }
+
+  private async unloadCss() {
+    const customStylesheet = document.getElementById('custom-css') as HTMLStyleElement
+    if (customStylesheet) {
+      document.head.removeChild(customStylesheet)
+    }
   }
 
   private transformCSS(cssPath: string) {
