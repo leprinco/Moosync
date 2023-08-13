@@ -500,6 +500,15 @@ export default class ContextMenuMixin extends mixins(
       })
     }
 
+    if (song.type === 'YOUTUBE' || song.type === 'SPOTIFY') {
+      items.push({
+        label: this.$t('contextMenu.incorrectPlayback'),
+        onClick: () => {
+          bus.emit(EventBus.SHOW_INCORRECT_PLAYBACK_MODAL, song)
+        },
+      })
+    }
+
     items.push({
       label: this.$t('contextMenu.moreInfo'),
       onClick: () => {
