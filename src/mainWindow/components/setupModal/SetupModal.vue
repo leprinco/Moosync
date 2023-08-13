@@ -74,6 +74,7 @@ export default class SetupModal extends Vue {
 
   nextState() {
     if (this.state < SetupModalStates.ACCOUNTS) this.state += 1
+    else this.close()
   }
 
   prevState() {
