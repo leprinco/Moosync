@@ -90,7 +90,10 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
             resolveTimeout && clearTimeout(resolveTimeout)
 
             if (m.error) {
-              if (message.type === 'COMMAND' && ['GET_CANVAS', 'GET_LYRICS'].includes(message.args?.command)) {
+              if (
+                (message.type === 'COMMAND' && ['GET_CANVAS', 'GET_LYRICS'].includes(message.args?.command)) ||
+                message.type === 'CONNECT'
+              ) {
                 resolve(new Error(m.error))
                 return
               }
@@ -132,7 +135,7 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
           const logObject = JSON.parse(JSON.stringify({ data: message, channel: id }))
           if (logObject?.data?.args?.['auth']?.['password']) logObject.data.args['auth']['password'] = '***'
 
-          console.debug('sending message to spotify process', { data: message, channel: id })
+          console.debug('sending message to spotify process', { data: JSON.stringify(message), channel: id })
           this.playerProcess?.send({ data: message, channel: id })
         } catch (e) {
           console.error('Failed to send message to librespot process', e)
