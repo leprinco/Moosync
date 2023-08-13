@@ -135,7 +135,7 @@ export class SpotifyPlayerChannel implements IpcChannelInterface {
           const logObject = JSON.parse(JSON.stringify({ data: message, channel: id }))
           if (logObject?.data?.args?.['auth']?.['password']) logObject.data.args['auth']['password'] = '***'
 
-          console.debug('sending message to spotify process', { data: JSON.stringify(message), channel: id })
+          console.debug('sending message to spotify process', JSON.stringify(logObject))
           this.playerProcess?.send({ data: message, channel: id })
         } catch (e) {
           console.error('Failed to send message to librespot process', e)
