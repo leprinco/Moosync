@@ -122,7 +122,7 @@
     "editor.formatOnPaste": true,
     "typescript.tsdk": "node_modules/typescript/lib",
     "[vue]": {
-      "editor.defaultFormatter": "Vue.volar"
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
     "[typescript]": {
       "editor.defaultFormatter": "rome.rome"

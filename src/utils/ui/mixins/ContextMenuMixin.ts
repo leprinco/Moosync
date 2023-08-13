@@ -219,7 +219,7 @@ export default class ContextMenuMixin extends mixins(
     if (album) {
       console.log(album)
       items.push({
-        label: this.$t('contextMenu.song.gotoAlbum'),
+        label: this.$t('contextMenu.song.gotoAlbum', { title: album.album_name ?? '' }),
         onClick: () => this.gotoAlbum(album),
       })
     }

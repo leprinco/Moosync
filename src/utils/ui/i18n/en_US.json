@@ -81,7 +81,7 @@
       "showHidden": "Show hidden songs",
       "hideHidden": "Hide hidden songs",
       "openInBrowser": "Open in browser",
-      "gotoAlbum": "Goto album",
+      "gotoAlbum": "Goto album ({title})",
       "gotoArtists": "Goto artists"
     },
     "moreInfo": "More Info",
