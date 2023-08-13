@@ -439,6 +439,34 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     return items
   }
 
+  private getCurrentSongContextMenu(song: Song, isRemote?: boolean) {
+    const items: MenuItem[] = [
+      {
+        label: this.$t('contextMenu.playlist.add'),
+        children: this.populatePlaylistMenu([song]),
+      },
+      {
+        label: this.$t('contextMenu.song.openInBrowser'),
+        onClick: () => this.openInBrowser(song),
+      },
+      {
+        label: this.$t('contextMenu.moreInfo'),
+        onClick: () => {
+          bus.emit(EventBus.SHOW_SONG_INFO_MODAL, song)
+        },
+      },
+    ]
+
+    if (isRemote) {
+      items.push({
+        label: this.$t('contextMenu.song.add', 1),
+        onClick: () => this.addSongsToLibrary(song),
+      })
+    }
+
+    return items
+  }
+
   public async getContextMenu(event: MouseEvent, options: ContextMenuArgs) {
     let items: MenuItem[] = []
     switch (options.type) {
@@ -496,6 +524,10 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
           options.args.isRemote,
           ...options.args.songs,
         )
+        break
+      case 'CURRENT_SONG':
+        items = this.getCurrentSongContextMenu(options.args.song, options.args.isRemote)
+        break
     }
 
     items.push(...(await this.getExtensionItems(options.type, this.getExtensionArgs(options))))
@@ -511,6 +543,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     'PLAYLIST',
     'PLAYLIST_CONTENT',
     'QUEUE_ITEM',
+    'CURRENT_SONG',
   ]
 
   private getExtensionArgs(args: ContextMenuArgs): ExtensionContextMenuHandlerArgs<ContextMenuTypes> {
@@ -522,6 +555,7 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       case 'PLAYLIST':
         return args.args.playlist
       case 'QUEUE_ITEM':
+      case 'CURRENT_SONG':
         return args.args.song
       case 'SONGS':
         return args.args.songs

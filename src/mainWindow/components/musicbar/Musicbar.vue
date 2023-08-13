@@ -39,6 +39,7 @@
                 :imgSrc="cover"
                 :iconType="iconType"
                 :iconURL="iconURL"
+                @contextmenu="showContextMenu"
               />
             </b-col>
             <b-col align-self="center" class="no-gutters controls-col">
@@ -76,6 +77,7 @@ import { bus } from '@/mainWindow/main'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
+import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 
 @Component({
   components: {
@@ -87,7 +89,7 @@ import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
     Timestamp
   }
 })
-export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
+export default class MusicBar extends mixins(ImgLoader, JukeboxMixin, ContextMenuMixin) {
   forceSeek = 0
   PlayerState: PlayerState = 'PAUSED'
   sliderPosition = false
@@ -175,6 +177,18 @@ export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
 
   updateTimestamp(timestamp: number) {
     vxm.player.currentTime = timestamp
+  }
+
+  showContextMenu(event: MouseEvent) {
+    if (this.currentSong) {
+      this.getContextMenu(event, {
+        type: 'CURRENT_SONG',
+        args: {
+          song: this.currentSong,
+          isRemote: this.currentSong.type === 'YOUTUBE' || this.currentSong.type === 'SPOTIFY'
+        }
+      })
+    }
   }
 
   async mounted() {
