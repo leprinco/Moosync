@@ -105,6 +105,12 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
       case HotkeyEvents.FULLSCREEN:
         window.WindowUtils.toggleFullscreen(true)
         break
+      case HotkeyEvents.NEXT_SONG:
+        this.nextSong()
+        break
+      case HotkeyEvents.PREV_SONG:
+        this.prevSong()
+        break
     }
   }
 

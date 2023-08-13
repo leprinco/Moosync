@@ -28,6 +28,8 @@ export enum HotkeyEvents {
   DEVTOOLS_TOGGLE = 15,
   HELP = 16,
   FULLSCREEN = 17,
+  NEXT_SONG = 18,
+  PREV_SONG = 19,
 }
 
 export const HotKeyEventsExtras: Record<HotkeyEvents, { title: string }> = {
@@ -84,6 +86,12 @@ export const HotKeyEventsExtras: Record<HotkeyEvents, { title: string }> = {
   },
   [HotkeyEvents.FULLSCREEN]: {
     title: 'Fullscreen',
+  },
+  [HotkeyEvents.NEXT_SONG]: {
+    title: 'Skip song',
+  },
+  [HotkeyEvents.PREV_SONG]: {
+    title: 'Prev song',
   },
 }
 
