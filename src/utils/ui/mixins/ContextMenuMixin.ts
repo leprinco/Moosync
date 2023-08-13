@@ -18,6 +18,7 @@ import { Component } from 'vue-facing-decorator'
 import { mixins } from 'vue-facing-decorator'
 import { toast } from 'vue3-toastify'
 import { convertProxy } from '../common'
+import RouterPushes from './RouterPushes'
 
 export type MenuItem = {
   label?: string
@@ -26,7 +27,13 @@ export type MenuItem = {
 }
 
 @Component
-export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong, JukeboxMixin, ProviderMixin) {
+export default class ContextMenuMixin extends mixins(
+  PlayerControls,
+  RemoteSong,
+  JukeboxMixin,
+  ProviderMixin,
+  RouterPushes,
+) {
   get playlists() {
     return vxm.playlist.playlists
   }
@@ -206,6 +213,33 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
     else toast(`No URL found for ${song.title}`, { type: 'error' })
   }
 
+  private addGotoAlbumArtist(item: Song) {
+    const items: MenuItem[] = []
+    const album = item?.album
+    if (album) {
+      console.log(album)
+      items.push({
+        label: this.$t('contextMenu.song.gotoAlbum'),
+        onClick: () => this.gotoAlbum(album),
+      })
+    }
+
+    const artists = item?.artists
+    if (artists?.length) {
+      const artistItems: MenuItem[] = artists.map((val) => ({
+        label: val.artist_name,
+        onClick: () => this.gotoArtist(val),
+      }))
+
+      items.push({
+        label: this.$t('contextMenu.song.gotoArtists'),
+        children: artistItems,
+      })
+    }
+
+    return items
+  }
+
   private async getSongContextMenu(
     exclude: string | undefined,
     refreshCallback?: () => void,
@@ -290,12 +324,15 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       })
     }
 
+    item[0] && items.push(...this.addGotoAlbumArtist(item[0]))
+
     items.push({
       label: this.$t('contextMenu.moreInfo'),
       onClick: () => {
         bus.emit(EventBus.SHOW_SONG_INFO_MODAL, item[0])
       },
     })
+
     return items
   }
 
@@ -378,13 +415,6 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       ...this.getSongSortByMenu(sort),
     ]
 
-    items.push({
-      label: this.$t('contextMenu.moreInfo'),
-      onClick: () => {
-        bus.emit(EventBus.SHOW_SONG_INFO_MODAL, item)
-      },
-    })
-
     if (isRemote) {
       items.push({
         label: this.$t('contextMenu.song.add'),
@@ -409,6 +439,8 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
       })
     }
 
+    items.push(...this.addGotoAlbumArtist(item))
+
     if (item.type === 'YOUTUBE' || item.type === 'SPOTIFY') {
       items.push({
         label: this.$t('contextMenu.incorrectPlayback'),
@@ -417,6 +449,14 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
         },
       })
     }
+
+    items.push({
+      label: this.$t('contextMenu.moreInfo'),
+      onClick: () => {
+        bus.emit(EventBus.SHOW_SONG_INFO_MODAL, item)
+      },
+    })
+
     return items
   }
 
@@ -449,13 +489,9 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
         label: this.$t('contextMenu.song.openInBrowser'),
         onClick: () => this.openInBrowser(song),
       },
-      {
-        label: this.$t('contextMenu.moreInfo'),
-        onClick: () => {
-          bus.emit(EventBus.SHOW_SONG_INFO_MODAL, song)
-        },
-      },
     ]
+
+    items.push(...this.addGotoAlbumArtist(song))
 
     if (isRemote) {
       items.push({
@@ -463,6 +499,13 @@ export default class ContextMenuMixin extends mixins(PlayerControls, RemoteSong,
         onClick: () => this.addSongsToLibrary(song),
       })
     }
+
+    items.push({
+      label: this.$t('contextMenu.moreInfo'),
+      onClick: () => {
+        bus.emit(EventBus.SHOW_SONG_INFO_MODAL, song)
+      },
+    })
 
     return items
   }

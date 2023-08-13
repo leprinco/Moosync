@@ -7,16 +7,17 @@
  *  See LICENSE in the project root for license information.
  */
 
+import { v4 } from 'uuid'
 import { Component, Vue } from 'vue-facing-decorator'
 
 @Component
-export default class PlayerControls extends Vue {
+export default class RouterPushes extends Vue {
   public gotoAlbum(album: Album, defaultProviders?: string[]) {
     try {
       this.$router.push({
         name: 'albums-single',
         query: {
-          id: album.album_id as string,
+          id: (album.album_id as string) ?? v4(),
           name: album.album_name,
           cover_high: album.album_coverPath_high,
           cover_low: album.album_coverPath_low,

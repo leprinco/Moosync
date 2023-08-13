@@ -14,19 +14,10 @@
 </route>
 <template>
   <div class="w-100 h-100">
-    <SongView
-      :defaultDetails="defaultDetails"
-      :songList="filteredSongList"
-      :detailsButtonGroup="buttonGroups"
-      :isRemote="isRemote"
-      :isLoading="isLoading"
-      @playAll="playAlbum"
-      @addToQueue="addAlbumToQueue"
-      @addToLibrary="addToLibrary"
-      @onOptionalProviderChanged="onProviderChanged"
-      :optionalProviders="albumSongProviders"
-      @playRandom="playRandom"
-    />
+    <SongView :defaultDetails="defaultDetails" :songList="filteredSongList" :detailsButtonGroup="buttonGroups"
+      :isRemote="isRemote" :isLoading="isLoading" @playAll="playAlbum" @addToQueue="addAlbumToQueue"
+      @addToLibrary="addToLibrary" @onOptionalProviderChanged="onProviderChanged" :optionalProviders="albumSongProviders"
+      @playRandom="playRandom" />
   </div>
 </template>
 
@@ -130,6 +121,8 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
   }
 
   async mounted() {
+
+    console.log('here', this.album, this.$route)
     await this.onAlbumChange()
 
     if (this.$route.query.defaultProviders) {

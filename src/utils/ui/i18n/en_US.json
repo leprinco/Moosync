@@ -80,7 +80,9 @@
       "showInLibrary": "Show in library",
       "showHidden": "Show hidden songs",
       "hideHidden": "Hide hidden songs",
-      "openInBrowser": "Open in browser"
+      "openInBrowser": "Open in browser",
+      "gotoAlbum": "Goto album",
+      "gotoArtists": "Goto artists"
     },
     "moreInfo": "More Info",
     "incorrectPlayback": "Incorrect playback?"
