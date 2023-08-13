@@ -421,6 +421,12 @@ contextBridge.exposeInMainWorld('ThemeUtils', {
       type: PreferenceEvents.SET_LANGUAGE,
       params: { key },
     }),
+
+  listenGenerateIconRequest: (callback: (params: IpcRequest<PreferenceRequests.GenerateIcon>) => void) =>
+    ipcRendererHolder.on(PreferenceEvents.GENERATE_ICON, callback),
+
+  replyToGenerateIconRequest: (buffer: string, channel: string) =>
+    ipcRenderer.send(PreferenceEvents.GENERATE_ICON, { channel, buffer }),
 })
 
 contextBridge.exposeInMainWorld('WindowUtils', {
@@ -593,9 +599,6 @@ contextBridge.exposeInMainWorld('LoggerUtils', {
 contextBridge.exposeInMainWorld('NotifierUtils', {
   registerMainProcessNotifier: (callback: (obj: NotificationObject) => void) =>
     ipcRendererHolder.on(IpcEvents.NOTIFIER, callback),
-
-  isLibvipsAvailable: () =>
-    ipcRendererHolder.send(IpcEvents.NOTIFIER, { type: NotifierEvents.LIBVIPS_INSTALLED, params: undefined }),
 })
 
 contextBridge.exposeInMainWorld('ExtensionUtils', {

@@ -73,6 +73,7 @@ export enum PreferenceEvents {
   TRANSFORM_CSS = 'transformCSS',
   PACK_THEME = 'packTheme',
   IMPORT_THEME = 'importTheme',
+  GENERATE_ICON = 'generateIcon',
 }
 
 export enum WindowEvents {

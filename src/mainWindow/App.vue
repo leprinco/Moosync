@@ -100,6 +100,29 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     this.checkUpdate()
     this.watchLibrespotUserChange()
     this.registerPlayTimeListeners()
+
+    window.ThemeUtils.listenGenerateIconRequest((val) => {
+      const canvas = document.createElement('canvas');
+      canvas.height = val.params.size
+      canvas.width = val.params.size
+
+      const ctx = canvas.getContext("2d");
+
+      if (ctx) {
+
+        ctx.fillStyle = "#1D1D1D"
+        ctx.arc(256, 256, 256, 0, 2 * Math.PI)
+        ctx.fill()
+
+        const path = new Path2D("M179.041 201.58V350.777C179.041 364.584 167.848 375.777 154.041 375.777C140.234 375.777 129.041 364.584 129.041 350.777V185.777C129.041 154.849 154.113 129.777 185.041 129.777H321.041C351.969 129.777 377.041 154.849 377.041 185.777V351.771C377.041 366.134 365.397 377.777 351.034 377.777C336.676 377.777 325.035 366.142 325.027 351.784L324.948 201.551C324.941 188.419 314.294 177.777 301.163 177.777C288.026 177.777 277.377 188.427 277.377 201.563V253.292C277.377 267.301 266.02 278.658 252.011 278.658C238.002 278.658 226.645 267.301 226.645 253.292V201.58C226.645 188.434 215.989 177.777 202.843 177.777C189.697 177.777 179.041 188.434 179.041 201.58Z")
+        ctx.fillStyle = val.params.colors.theme.accent
+        ctx.fill(path)
+      }
+
+      const buffer = canvas.toDataURL('image/png')
+
+      window.ThemeUtils.replyToGenerateIconRequest(buffer.substring(22), val.responseChannel)
+    })
   }
 
   private registerPlayTimeListeners() {

@@ -188,6 +188,11 @@ declare namespace PreferenceRequests {
     key: string
     isMainWindow: boolean
   }
+
+  interface GenerateIcon {
+    colors: ThemeDetails
+    size: number
+  }
 }
 
 declare namespace SearchRequests {

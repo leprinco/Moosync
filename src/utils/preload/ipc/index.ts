@@ -36,7 +36,13 @@ export class IpcRendererHolder {
   }
 
   public on(channel: string, callback: Function) {
-    return this.ipcRenderer.on(channel, (_, ...args) => callback(...args))
+    return this.ipcRenderer.on(channel, (_, ...args) => {
+      try {
+        callback(...args)
+      } catch (e) {
+        console.log(e)
+      }
+    })
   }
 
   public off(channel: string, callback: Function) {

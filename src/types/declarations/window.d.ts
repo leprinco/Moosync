@@ -275,7 +275,6 @@ interface loggerUtils {
  */
 interface notifierUtils {
   registerMainProcessNotifier: (callback: (obj: NotificationObject) => void) => void
-  isLibvipsAvailable: () => Promise<boolean>
 }
 
 /**
@@ -329,6 +328,8 @@ interface themeUtils {
   setLanguage: (key: string) => Promise<void>
   packTheme: (id: string) => Promise<void>
   importTheme: (themeZipPath: string) => Promise<void>
+  listenGenerateIconRequest: (callback: (params: IpcRequest<PreferenceRequests.GenerateIcon>) => void) => void
+  replyToGenerateIconRequest: (buffer: string, channel: string) => Promise<void>
 }
 
 interface updateUtils {
