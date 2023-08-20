@@ -7,8 +7,9 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { v4 } from 'uuid'
 import { Component, Vue } from 'vue-facing-decorator'
+
+import { v4 } from 'uuid'
 
 @Component
 export default class RouterPushes extends Vue {
@@ -17,7 +18,7 @@ export default class RouterPushes extends Vue {
       this.$router.push({
         name: 'albums-single',
         query: {
-          id: (album.album_id as string) ?? v4(),
+          id: album.album_id as string,
           name: album.album_name,
           cover_high: album.album_coverPath_high,
           cover_low: album.album_coverPath_low,
