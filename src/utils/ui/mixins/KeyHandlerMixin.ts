@@ -7,10 +7,11 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { bus } from '@/mainWindow/main'
-import { HotkeyEvents, defaultKeybinds } from '@/utils/commonConstants'
-import PlayerControls from '@/utils/ui/mixins/PlayerControls'
+import { HotkeyEvents, RepeatState, defaultKeybinds } from '@/utils/commonConstants'
+
 import { Component } from 'vue-facing-decorator'
+import PlayerControls from '@/utils/ui/mixins/PlayerControls'
+import { bus } from '@/mainWindow/main'
 import { mixins } from 'vue-facing-decorator'
 
 @Component
@@ -74,10 +75,10 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
         this.unmute()
         break
       case HotkeyEvents.REPEAT_ACTIVE:
-        this.repeat = true
+        this.repeat = RepeatState.ALWAYS
         break
       case HotkeyEvents.REPEAT_INACTIVE:
-        this.repeat = false
+        this.repeat = RepeatState.DISABLED
         break
       case HotkeyEvents.REPEAT_TOGGLE:
         this.toggleRepeat()

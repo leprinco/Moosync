@@ -66,6 +66,7 @@ import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
 import { nextTick } from 'vue'
 import { convertProxy } from '@/utils/ui/common'
+import { RepeatState } from '../../../../utils/commonConstants';
 
 @Component({
   emits: ['onTimeUpdate']
@@ -400,9 +401,14 @@ export default class AudioStream extends mixins(
   private async onSongEnded() {
     vxm.player.playAfterLoad = true
     this.lastLoadedSong = undefined
-    if (this.repeat && this.currentSong) {
+    if (this.repeat !== RepeatState.DISABLED && this.currentSong) {
       // Re load entire audio instead of setting current time to 0
       this.loadAudio(this.currentSong, false)
+
+      if (this.repeat === RepeatState.ONCE) {
+        this.repeat = RepeatState.DISABLED
+      }
+
     } else {
       vxm.player.currentSong = undefined
       await this.nextSong()
@@ -924,14 +930,17 @@ export default class AudioStream extends mixins(
 h3 {
   margin: 40px 0 0;
 }
+
 ul {
   list-style-type: none;
   padding: 0;
 }
+
 li {
   display: inline-block;
   margin: 0 10px;
 }
+
 a {
   color: #42b983;
 }

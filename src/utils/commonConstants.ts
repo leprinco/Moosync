@@ -165,3 +165,9 @@ export enum ScanStatus {
   SCANNING = 1,
   QUEUED = 2,
 }
+
+export enum RepeatState {
+  DISABLED = 0,
+  ONCE = 1,
+  ALWAYS = 2,
+}
