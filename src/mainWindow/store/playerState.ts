@@ -97,6 +97,8 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
     this.songQueue.index = value
   }
 
+  forceSeek: number | undefined = undefined
+
   @mutation
   setQueueDataSong(song: Song) {
     this.songQueue.data[song._id] = song

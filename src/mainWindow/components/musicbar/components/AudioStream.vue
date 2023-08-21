@@ -94,9 +94,6 @@ export default class AudioStream extends mixins(
   @Prop({ default: '' })
   roomID!: string
 
-  @Prop({ default: 0 })
-  forceSeek!: number
-
   get currentSong(): Song | null | undefined {
     return vxm.player.currentSong
   }
@@ -280,10 +277,13 @@ export default class AudioStream extends mixins(
   /**
    * Method triggered when user seeks on timeline and forceSeek prop changes
    */
-  @Watch('forceSeek') onSeek(newValue: number) {
-    if (this.activePlayer) {
-      this.activePlayer.currentTime = newValue
-      if (this.isSyncing) this.remoteSeek(newValue)
+  onSeek(newValue?: number) {
+    if (typeof newValue === 'number') {
+      if (this.activePlayer) {
+        this.activePlayer.currentTime = newValue
+        if (this.isSyncing) this.remoteSeek(newValue)
+        vxm.player.forceSeek = undefined
+      }
     }
   }
 
@@ -601,6 +601,7 @@ export default class AudioStream extends mixins(
     this.registerMediaControlListener()
 
     vxm.player.$watch('playerState', this.onPlayerStateChanged, { immediate: true, deep: false })
+    vxm.player.$watch('forceSeek', this.onSeek)
 
     bus.on(EventBus.FORCE_LOAD_SONG, () => {
       if (this.currentSong) {

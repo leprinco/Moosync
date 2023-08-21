@@ -13,6 +13,7 @@ import { Component } from 'vue-facing-decorator'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import { bus } from '@/mainWindow/main'
 import { mixins } from 'vue-facing-decorator'
+import { vxm } from '@/mainWindow/store'
 
 @Component
 export default class KeyHandlerMixin extends mixins(PlayerControls) {
@@ -32,6 +33,7 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
 
   private onlyRequiredKeysPressed(requiredKeys: string[]) {
     const pressedKeys = Object.keys(this.pressedKeys)
+    console.log(pressedKeys)
 
     for (const val of requiredKeys) {
       if (!pressedKeys.includes(val)) {
@@ -112,6 +114,20 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
       case HotkeyEvents.PREV_SONG:
         this.prevSong()
         break
+      case HotkeyEvents.SEEK_BACKWARDS:
+        vxm.player.forceSeek = vxm.player.currentTime - 5
+        break
+      case HotkeyEvents.SEEK_FORWARD:
+        vxm.player.forceSeek = vxm.player.currentTime + 5
+        break
+      default: {
+        const duration = vxm.player.currentSong?.duration
+        if (duration && (action >= 22 || action <= 31)) {
+          const seekPercent = action % 22
+          const seekTime = ((seekPercent * 10) / 100) * duration
+          vxm.player.forceSeek = seekTime
+        }
+      }
     }
   }
 
