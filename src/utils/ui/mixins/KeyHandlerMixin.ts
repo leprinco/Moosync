@@ -33,8 +33,6 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
 
   private onlyRequiredKeysPressed(requiredKeys: string[]) {
     const pressedKeys = Object.keys(this.pressedKeys)
-    console.log(pressedKeys)
-
     for (const val of requiredKeys) {
       if (!pressedKeys.includes(val)) {
         return false
