@@ -906,9 +906,12 @@ export default class AudioStream extends mixins(
   private unloadAudio() {
     console.debug('Unloading audio')
     this.activePlayer?.stop()
+    window.MprisUtils.updateSongInfo({})
   }
 
   private async handleActivePlayerState(newState: PlayerState) {
+    if (!this.currentSong) return
+
     try {
       switch (newState) {
         case 'PLAYING':
