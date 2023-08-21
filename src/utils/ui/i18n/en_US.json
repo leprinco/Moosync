@@ -48,7 +48,7 @@
   "contextMenu": {
     "sort": {
       "title": "Title",
-      "album": "Album",
+      "album": "Album (Track No.)",
       "artist": "Artist",
       "genre": "Genre",
       "date_added": "Date added",

@@ -7,18 +7,18 @@
  *  See LICENSE in the project root for license information.
  */
 
-import JukeboxMixin from './JukeboxMixin'
-import ProviderMixin from './ProviderMixin'
-import { bus } from '@/mainWindow/main'
-import { vxm } from '@/mainWindow/store'
-import { EventBus } from '@/utils/main/ipc/constants'
-import PlayerControls from '@/utils/ui/mixins/PlayerControls'
-import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import { Component } from 'vue-facing-decorator'
+import { EventBus } from '@/utils/main/ipc/constants'
+import JukeboxMixin from './JukeboxMixin'
+import PlayerControls from '@/utils/ui/mixins/PlayerControls'
+import ProviderMixin from './ProviderMixin'
+import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
+import RouterPushes from './RouterPushes'
+import { bus } from '@/mainWindow/main'
+import { convertProxy } from '../common'
 import { mixins } from 'vue-facing-decorator'
 import { toast } from 'vue3-toastify'
-import { convertProxy } from '../common'
-import RouterPushes from './RouterPushes'
+import { vxm } from '@/mainWindow/store'
 
 export type MenuItem = {
   label?: string
@@ -60,7 +60,7 @@ export default class ContextMenuMixin extends mixins(
     if (type === 'album') {
       ret.push({
         type: 'track_no',
-        asc: true,
+        asc: currentSort?.type === type && !currentSort.asc,
       })
     }
 

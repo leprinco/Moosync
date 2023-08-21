@@ -133,8 +133,6 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
   }
 
   async mounted() {
-
-    console.log('here', this.album, this.$route)
     await this.onAlbumChange()
 
     if (this.$route.query.defaultProviders) {

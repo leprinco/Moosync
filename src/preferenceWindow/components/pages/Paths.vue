@@ -79,7 +79,6 @@ export default class Paths extends Vue {
   }
 
   setProgress(progress: Progress) {
-    console.log('setting progress', progress)
     this.currentValue = progress.current
     this.totalValue = progress.total
     this.scanStatus = progress.status
