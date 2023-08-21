@@ -27,7 +27,14 @@ export enum HotkeyEvents {
   RELOAD_PAGE,
   DEVTOOLS_TOGGLE,
   HELP,
-  FULLSCREEN
+  FULLSCREEN,
+  SELECT_ALL,
+  TOP,
+  BOTTOM,
+  LEFT,
+  RIGHT,
+  PLAYNOW_SELECTION,
+  QUEUE_SELECTION
 }
 
 export const HotKeyEventsExtras: Record<HotkeyEvents, { title: string }> = {
@@ -84,6 +91,27 @@ export const HotKeyEventsExtras: Record<HotkeyEvents, { title: string }> = {
   },
   [HotkeyEvents.FULLSCREEN]: {
     title: 'Fullscreen'
+  },
+  [HotkeyEvents.SELECT_ALL]: {
+    title: 'Select All'
+  },
+  [HotkeyEvents.TOP]: {
+    title: 'Move Top'
+  },
+  [HotkeyEvents.BOTTOM]: {
+    title: 'Move Bottom'
+  },
+  [HotkeyEvents.LEFT]: {
+    title: 'Move Left'
+  },
+  [HotkeyEvents.RIGHT]: {
+    title: 'Move Right'
+  },
+  [HotkeyEvents.PLAYNOW_SELECTION]: {
+    title: 'Play Now Selection'
+  },
+  [HotkeyEvents.QUEUE_SELECTION]: {
+    title: 'Queue Selection'
   }
 }
 
@@ -121,12 +149,32 @@ export const defaultKeybinds: HotkeyPair[] = [
     value: HotkeyEvents.FULLSCREEN
   },
   {
+    key: [['ControlLeft', 'A']],
+    value: HotkeyEvents.SELECT_ALL
+  },
+  {
     key: [['F1']],
     value: HotkeyEvents.HELP
   },
   {
     key: [['Escape']],
     value: HotkeyEvents.QUEUE_CLOSE
+  },
+  {
+    key: [['Arrow Top']],
+    value: HotkeyEvents.TOP
+  },
+  {
+    key: [['Arrow Bottom']],
+    value: HotkeyEvents.BOTTOM
+  },
+  {
+    key: [['Arrow']],
+    value: HotkeyEvents.LEFT
+  },
+  {
+    key: [['Arrow Right']],
+    value: HotkeyEvents.RIGHT
   }
 ]
 

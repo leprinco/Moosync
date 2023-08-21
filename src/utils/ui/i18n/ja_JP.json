@@ -114,6 +114,7 @@
       "songView_tooltip": "曲リストの外観を編集する",
       "songView_classic": "クラシック",
       "songView_compact": "コンパクト",
+      "songView_grid": "Grid",
       "themes": "テーマ",
       "themes_tooltip": "色を指定",
       "themes_default": "標準",

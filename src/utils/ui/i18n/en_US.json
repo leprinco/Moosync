@@ -117,6 +117,7 @@
       "songView_tooltip": "Customize song list appearance",
       "songView_classic": "Classic",
       "songView_compact": "Compact",
+      "songView_grid": "Grid",
       "themes": "Themes",
       "themes_tooltip": "Customize colors",
       "themes_default": "Default",

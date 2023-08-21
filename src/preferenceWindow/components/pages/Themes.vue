@@ -42,6 +42,17 @@
             {{ $t('settings.themes.songView_compact') }}
           </div>
         </b-col>
+        <b-col cols="5" xl="3" class="p-2">
+          <div class="theme-component-container">
+            <ThemeComponentGrid
+              @click.native="setSongView('grid')"
+              :selected="isSongView('grid')"
+              :id="getRandomID()"
+              :colors="currentTheme"
+            />
+            {{ $t('settings.themes.songView_grid') }}
+          </div>
+        </b-col>
       </b-row>
       <b-row>
         <PreferenceHeader
@@ -111,6 +122,7 @@ import ThemeComponentClassic from '../ThemeComponentClassic.vue'
 import { v1 } from 'uuid'
 import PreferenceHeader from '../PreferenceHeader.vue'
 import ThemeComponentCompact from '../ThemeComponentCompact.vue'
+import ThemeComponentGrid from '../ThemeComponentGrid.vue'
 import Add from '@/icons/AddThemeIcon.vue'
 import { ContextMenuComponent, MenuItem } from 'vue-context-menu-popup'
 import DeleteModal from '@/commonComponents/ConfirmationModal.vue'
@@ -124,6 +136,7 @@ import ImportThemeIcon from '@/icons/ImportThemeIcon.vue'
   components: {
     ThemeComponentClassic,
     ThemeComponentCompact,
+    ThemeComponentGrid,
     PreferenceHeader,
     DeleteModal,
     ContextMenu,
@@ -146,7 +159,11 @@ export default class Themes extends Vue {
   private activeView: songMenu = 'compact'
 
   private get themesComponent() {
-    return this.activeView === 'compact' ? 'ThemeComponentCompact' : 'ThemeComponentClassic'
+    return this.activeView === 'compact'
+      ? 'ThemeComponentCompact'
+      : this.activeView === 'grid'
+      ? 'ThemeComponentGrid'
+      : 'ThemeComponentClassic'
   }
 
   private get currentTheme() {

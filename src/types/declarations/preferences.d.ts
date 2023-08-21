@@ -9,7 +9,7 @@
 
 type togglePaths = { path: string; enabled: boolean }[]
 
-type songMenu = 'compact' | 'classic'
+type songMenu = 'compact' | 'classic' | 'grid'
 
 type SystemSettings = Checkbox
 

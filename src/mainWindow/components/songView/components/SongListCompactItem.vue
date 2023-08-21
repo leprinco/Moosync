@@ -2,7 +2,9 @@
   <b-container
     fluid
     @dblclick="onRowDoubleClicked(item)"
-    @click="onRowSelected(index)"
+    @click.exact="onRowSelected(index, undefined)"
+    @click.shift="onRowSelected(index, 'Shift')"
+    @click.ctrl="onRowSelected(index, 'Control')"
     @contextmenu="onRowContext(arguments[0], item)"
     class="wrapper w-100"
     :class="{ selectedItem: selected.includes(index) }"
@@ -37,7 +39,7 @@
           </div>
         </b-row>
       </b-col>
-      <b-col cols="auto" align-self="center" offset="1" class="ml-auto timestamp">
+      <b-col cols="auto" align-self="center" offset="1" class="ml-auto timestamp" v-if="showDuration">
         {{ item._id === currentSong?._id && currentSong._id ? 'Now Playing' : formattedDuration(item.duration) }}
       </b-col>
       <b-col cols="auto" align-self="center" class="button-icon ml-5" v-if="showAddToQueueButton">
@@ -120,6 +122,9 @@ export default class SongListCompactItem extends mixins(ImgLoader, JukeboxMixin)
   showEllipsis!: boolean
 
   @Prop({ default: true })
+  showDuration!: boolean
+
+  @Prop({ default: true })
   showAddToQueueButton!: boolean
 
   get currentSong() {
@@ -135,8 +140,8 @@ export default class SongListCompactItem extends mixins(ImgLoader, JukeboxMixin)
     this.$emit('onRowContext', event, item)
   }
 
-  onRowSelected(index: number) {
-    this.$emit('onRowSelected', index)
+  onRowSelected(index: number, keyPressed: 'Control' | 'Shift' | undefined) {
+    this.$emit('onRowSelected', index, keyPressed)
   }
 
   onPlayNowClicked(item: Song) {

@@ -114,6 +114,7 @@
       "songView_tooltip": "Muokkaa kappalelistan ulkoasua",
       "songView_classic": "Klassinen",
       "songView_compact": "Kompakti",
+      "songView_grid": "Grid",
       "themes": "Teemat",
       "themes_tooltip": "Muokkaa värejä",
       "themes_default": "Oletus",

@@ -114,6 +114,7 @@
       "songView_tooltip": "Настроить внешний вид списка треков",
       "songView_classic": "Классический",
       "songView_compact": "Компактный",
+      "songView_grid": "Grid",
       "themes": "Темы",
       "themes_tooltip": "Настройка цвета",
       "themes_default": "По умолчанию",

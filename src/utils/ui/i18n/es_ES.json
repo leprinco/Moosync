@@ -114,6 +114,7 @@
       "songView_tooltip": "Personalizar apariencia de lista de canciones",
       "songView_classic": "Clásico",
       "songView_compact": "Compacto",
+      "songView_grid": "Grid",
       "themes": "Temas",
       "themes_tooltip": "Personalizar colores",
       "themes_default": "Por defecto",

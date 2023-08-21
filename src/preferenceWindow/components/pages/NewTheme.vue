@@ -44,6 +44,14 @@
                 @colorClick="toggleColorPicker"
               />
             </b-row>
+            <b-row no-gutters class="preview">
+              <ThemeComponentGrid
+                class="h-100"
+                :colors="customTheme"
+                :id="getRandomID()"
+                @colorClick="toggleColorPicker"
+              />
+            </b-row>
           </b-col>
           <b-col cols="auto" class="color-col ml-5">
             <PreferenceHeader
@@ -105,6 +113,7 @@ import ThemeComponentClassic from '../ThemeComponentClassic.vue'
 import { v1, v4 } from 'uuid'
 import PreferenceHeader from '../PreferenceHeader.vue'
 import ThemeComponentCompact from '../ThemeComponentCompact.vue'
+import ThemeComponentGrid from '../ThemeComponentGrid.vue'
 import ColorPicker from '../ColorPicker.vue'
 import NavBack from '@/icons/NavBackIcon.vue'
 import FolderIcon from '@/icons/FolderIcon.vue'
@@ -113,6 +122,7 @@ import FolderIcon from '@/icons/FolderIcon.vue'
   components: {
     ThemeComponentClassic,
     ThemeComponentCompact,
+    ThemeComponentGrid,
     PreferenceHeader,
     ColorPicker,
     NavBack,

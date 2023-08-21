@@ -53,6 +53,7 @@ import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import { vxm } from '@/mainWindow/store'
 import SongViewClassic from '@/mainWindow/components/songView/components/SongViewClassic.vue'
 import SongViewCompact from '@/mainWindow/components/songView/components/SongViewCompact.vue'
+import SongViewGrid from '@/mainWindow/components/songView/components/SongViewGrid.vue'
 import { arrayDiff, sortSongList } from '@/utils/common'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
@@ -60,7 +61,8 @@ import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 @Component({
   components: {
     SongViewClassic,
-    SongViewCompact
+    SongViewCompact,
+    SongViewGrid
   }
 })
 export default class AllSongs extends mixins(
@@ -109,7 +111,11 @@ export default class AllSongs extends mixins(
   }
 
   get songView() {
-    return vxm.themes.songView === 'compact' ? 'SongViewCompact' : 'SongViewClassic'
+    return vxm.themes.songView === 'compact'
+      ? 'SongViewCompact'
+      : vxm.themes.songView === 'grid'
+      ? 'SongViewGrid'
+      : 'SongViewClassic'
   }
 
   private selected: Song[] | null = null

@@ -105,6 +105,21 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
       case HotkeyEvents.FULLSCREEN:
         window.WindowUtils.toggleFullscreen(true)
         break
+      case HotkeyEvents.SELECT_ALL:
+        bus.$emit('onSelectAll')
+        break
+      case HotkeyEvents.PLAYNOW_SELECTION:
+        bus.$emit('onPlayNowSelection')
+        break
+      case HotkeyEvents.QUEUE_SELECTION:
+        bus.$emit('onQueueSelection')
+        break
+      case HotkeyEvents.TOP:
+      case HotkeyEvents.BOTTOM:
+      case HotkeyEvents.LEFT:
+      case HotkeyEvents.RIGHT:
+        bus.$emit('onMove', action)
+        break
     }
   }
 
@@ -121,7 +136,7 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
 
   protected registerKeyboardHotkeys() {
     document.addEventListener('keydown', (e) => {
-      if ((e.target as HTMLElement).tagName !== 'INPUT') {
+      if ((e.target as HTMLElement)?.tagName?.toLocaleLowerCase() !== 'input') {
         this.pressedKeys[e.code] = true
         this.isHotkeyActive()
       }

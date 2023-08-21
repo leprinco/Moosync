@@ -114,6 +114,7 @@
       "songView_tooltip": "自定义歌曲列表外观",
       "songView_classic": "经典",
       "songView_compact": "简洁",
+      "songView_grid": "Grid",
       "themes": "主题",
       "themes_tooltip": "自定义颜色",
       "themes_default": "默认",

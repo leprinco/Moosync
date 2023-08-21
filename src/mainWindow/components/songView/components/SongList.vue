@@ -33,6 +33,7 @@
       </b-row>
       <b-row no-gutters class="recycler-row">
         <RecycleScroller
+          ref="scroller"
           class="scroller w-100 h-100"
           :items="songList"
           :item-size="64"
@@ -50,7 +51,9 @@
                 :style="{ width: columnWidths[i1] + '%' }"
                 :title="getFieldTitle(field.key, item, index)"
                 @dblclick="onRowDoubleClicked(item)"
-                @click="onRowSelected(index)"
+                @click.exact="onRowSelected(index, undefined)"
+                @click.shift="onRowSelected(index, 'Shift')"
+                @click.ctrl="onRowSelected(index, 'Control')"
                 @contextmenu="onRowContext(arguments[0], item)"
               >
                 <div

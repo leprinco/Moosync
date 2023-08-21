@@ -18,6 +18,7 @@
       </b-row>
       <b-row no-gutters class="h-100">
         <RecycleScroller
+          ref="scroller"
           :class="`scroller w-100  ${isLoading ? 'low-height' : 'full-height'}`"
           :items="songList"
           :item-size="94"

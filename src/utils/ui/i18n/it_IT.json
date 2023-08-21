@@ -114,6 +114,7 @@
       "songView_tooltip": "Personalizzazione dell'aspetto dell'elenco dei brani",
       "songView_classic": "Classico",
       "songView_compact": "Compatto",
+      "songView_grid": "Grid",
       "themes": "Temi",
       "themes_tooltip": "Personalizza i colori",
       "themes_default": "Default",
