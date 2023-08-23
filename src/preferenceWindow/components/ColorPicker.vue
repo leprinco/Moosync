@@ -28,7 +28,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from 'vue-facing-decorator'
+import { Component, Prop, Watch } from 'vue-facing-decorator'
 import { Vue } from 'vue-facing-decorator'
 import { ColorPicker } from 'vue-accessible-color-picker'
 import { v1 } from 'uuid';
@@ -65,6 +65,10 @@ export default class ColorPickerr extends Vue {
     if ((event.target as HTMLDivElement)?.id !== this.id) {
       this.showColorPicker = false
     }
+  }
+
+  @Watch('defColor') onDefaultChange() {
+    this.color = this.defColor
   }
 
   public toggleColorPicker(mouseEvent?: MouseEvent) {

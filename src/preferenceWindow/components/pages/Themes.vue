@@ -139,7 +139,7 @@ export default class Themes extends Vue {
   private editTheme(theme: ThemeDetails) {
     this.$router.push({
       name: 'new_theme',
-      params: {
+      query: {
         currentTheme: theme.id
       }
     })
