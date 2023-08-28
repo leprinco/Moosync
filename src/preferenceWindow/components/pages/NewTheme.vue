@@ -282,4 +282,20 @@ export default class NewTheme extends Vue {
 .folder-icon
   &:hover
     cursor: pointer
+
+.vacp-color-picker
+  background-color: var(--secondary)
+  color: var(--textPrimary)
+
+.vacp-copy-button, .vacp-format-switch-button
+    background-color: var(--primary)
+
+.vacp-icon
+  path
+    fill: var(--textPrimary)
+
+.vacp-color-input
+  background-color: var(--primary)
+  border: var(--vacp-border-width) solid var(--textSecondary)
+
 </style>
