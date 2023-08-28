@@ -42,7 +42,7 @@
     "addToQueue": "Добавить {title} в очередь",
     "addToLibrary": "Добавить {title} в фонотеку",
     "playRandom": "Воспроизвести 100 случайных песен",
-    "fetchAll": "Fetch all songs"
+    "fetchAll": "Получить все песни"
   },
   "loading": "Загрузка...",
   "contextMenu": {
@@ -108,9 +108,9 @@
       "splitter": "Шаблон разделения имени исполнителя",
       "splitter_tooltip": "Регулярное выражение для разделения имён исполнителей. Оставьте пустым, чтобы отключить разделение.",
       "scan_interval": "Интервал сканирования",
-      "scan_interval_tooltip": "Интервал в секундах для запуска задачи сканирования. Установите равным «-1» для отключения автоматического сканирования",
-      "scan_threads": "Scan CPU threads",
-      "scan_threads_tooltip": "Number of threads to use when scanning for local music"
+      "scan_interval_tooltip": "Интервал сканирования. Введите -1 для отключения автоматического сканирования",
+      "scan_threads": "Потоки сканирования",
+      "scan_threads_tooltip": "Количество потоков процессора, используемых для сканирования локального хранилища"
     },
     "themes": {
       "songView": "Вид треков",
