@@ -33,8 +33,6 @@ import { nativeTheme } from 'electron'
 import { access, readFile } from 'fs/promises'
 import { ButtonEnum, PlayerButtons } from 'media-controller'
 import path from 'path'
-import puppeteer from 'puppeteer-core'
-import pie from 'puppeteer-in-electron'
 import { Readable } from 'stream'
 
 export class WindowHandler {
