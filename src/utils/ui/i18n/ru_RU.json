@@ -80,7 +80,9 @@
       "showInLibrary": "Показать в фонотеке",
       "showHidden": "Показать скрытые треки",
       "hideHidden": "Скрыть скрытые треки",
-      "openInBrowser": "Открыть в браузере"
+      "openInBrowser": "Открыть в браузере",
+      "gotoAlbum": "Goto album ({title})",
+      "gotoArtists": "Goto artists"
     },
     "moreInfo": "Доп. сведения",
     "incorrectPlayback": "Неправильное воспроизведение?"
