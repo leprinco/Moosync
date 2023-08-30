@@ -48,7 +48,7 @@
   "contextMenu": {
     "sort": {
       "title": "العنوان",
-      "album": "ألبوم",
+      "album": "Album (Track No.)",
       "artist": "الفنان",
       "genre": "النوع",
       "date_added": "تاريخ الإضافة",
@@ -80,7 +80,9 @@
       "showInLibrary": "إظهار في المكتبة",
       "showHidden": "إظهار الأغاني المخفية",
       "hideHidden": "إخفاء الأغاني المخفية",
-      "openInBrowser": "Open in browser"
+      "openInBrowser": "Open in browser",
+      "gotoAlbum": "Goto album ({title})",
+      "gotoArtists": "Goto artists"
     },
     "moreInfo": "المزيد من المعلومات",
     "incorrectPlayback": "Incorrect playback?"
