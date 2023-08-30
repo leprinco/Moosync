@@ -48,7 +48,7 @@
   "contextMenu": {
     "sort": {
       "title": "Τίτλος",
-      "album": "Άλμπουμ",
+      "album": "Album (Track No.)",
       "artist": "Καλλιτέχνης",
       "genre": "Είδος",
       "date_added": "Ημερομηνία προσθήκης",
@@ -80,7 +80,9 @@
       "showInLibrary": "Εμφάνιση στη βιβλιοθήκη",
       "showHidden": "Εμφάνιση κρυφών τραγουδιών",
       "hideHidden": "Απόκρυψη κρυφών τραγουδιών",
-      "openInBrowser": "Άνοιγμα σε πρόγραμμα περιήγησης"
+      "openInBrowser": "Άνοιγμα σε πρόγραμμα περιήγησης",
+      "gotoAlbum": "Goto album ({title})",
+      "gotoArtists": "Goto artists"
     },
     "moreInfo": "Περισσότερες Πληροφορίες",
     "incorrectPlayback": "Λανθασμένη αναπαραγωγή;"
