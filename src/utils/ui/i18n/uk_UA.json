@@ -48,7 +48,7 @@
   "contextMenu": {
     "sort": {
       "title": "Найменування",
-      "album": "Альбом",
+      "album": "Album (Track No.)",
       "artist": "Художник",
       "genre": "Жанр",
       "date_added": "Дата додавання",
@@ -80,7 +80,9 @@
       "showInLibrary": "Показувати в бібліотеці",
       "showHidden": "Показувати приховані пісні",
       "hideHidden": "Сховати приховані пісні",
-      "openInBrowser": "Open in browser"
+      "openInBrowser": "Open in browser",
+      "gotoAlbum": "Goto album ({title})",
+      "gotoArtists": "Goto artists"
     },
     "moreInfo": "Більше інформації",
     "incorrectPlayback": "Incorrect playback?"
