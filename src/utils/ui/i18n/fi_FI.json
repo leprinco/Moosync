@@ -48,7 +48,7 @@
   "contextMenu": {
     "sort": {
       "title": "Otsikko",
-      "album": "Albumi",
+      "album": "Album (Track No.)",
       "artist": "Esittäjä",
       "genre": "Lajityyppi",
       "date_added": "Päivämäärä lisätty",
@@ -80,7 +80,9 @@
       "showInLibrary": "Näytä kirjastossa",
       "showHidden": "Näytä piilotetut kappaleet",
       "hideHidden": "Piilota piilotetut kappaleet",
-      "openInBrowser": "Open in browser"
+      "openInBrowser": "Open in browser",
+      "gotoAlbum": "Goto album ({title})",
+      "gotoArtists": "Goto artists"
     },
     "moreInfo": "Lisää Tietoja",
     "incorrectPlayback": "Incorrect playback?"
