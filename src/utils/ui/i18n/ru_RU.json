@@ -81,8 +81,8 @@
       "showHidden": "Показать скрытые треки",
       "hideHidden": "Скрыть скрытые треки",
       "openInBrowser": "Открыть в браузере",
-      "gotoAlbum": "Goto album ({title})",
-      "gotoArtists": "Goto artists"
+      "gotoAlbum": "Перейти к альбому ({title})",
+      "gotoArtists": "Перейти к исполнителям"
     },
     "moreInfo": "Доп. сведения",
     "incorrectPlayback": "Неправильное воспроизведение?"
