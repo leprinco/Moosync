@@ -48,7 +48,7 @@
   "contextMenu": {
     "sort": {
       "title": "Titel",
-      "album": "Album",
+      "album": "Album (Track No.)",
       "artist": "Konstnären",
       "genre": "Genre",
       "date_added": "Datum tillagd",
@@ -80,7 +80,9 @@
       "showInLibrary": "Visa i bibliotek",
       "showHidden": "Visa dolda låtar",
       "hideHidden": "Dölj dolda låtar",
-      "openInBrowser": "Open in browser"
+      "openInBrowser": "Open in browser",
+      "gotoAlbum": "Goto album ({title})",
+      "gotoArtists": "Goto artists"
     },
     "moreInfo": "Mer information",
     "incorrectPlayback": "Incorrect playback?"

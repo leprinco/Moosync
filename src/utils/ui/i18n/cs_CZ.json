@@ -80,7 +80,9 @@
       "showInLibrary": "Zobrazit v knihovně",
       "showHidden": "Zobrazit skryté skladby",
       "hideHidden": "Skrýt skryté skladby",
-      "openInBrowser": "Otevřít v prohlížeči"
+      "openInBrowser": "Otevřít v prohlížeči",
+      "gotoAlbum": "Goto album ({title})",
+      "gotoArtists": "Goto artists"
     },
     "moreInfo": "Další informace",
     "incorrectPlayback": "Incorrect playback?"

@@ -80,7 +80,9 @@
       "showInLibrary": "Vis i bibliotek",
       "showHidden": "Vis skjulte sanger",
       "hideHidden": "Skjul skjulte sanger",
-      "openInBrowser": "Åpne i nettleser"
+      "openInBrowser": "Åpne i nettleser",
+      "gotoAlbum": "Goto album ({title})",
+      "gotoArtists": "Goto artists"
     },
     "moreInfo": "Mer informasjon",
     "incorrectPlayback": "Feil avspilling?"
