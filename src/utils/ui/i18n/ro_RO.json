@@ -48,7 +48,7 @@
   "contextMenu": {
     "sort": {
       "title": "Titlu",
-      "album": "Album",
+      "album": "Album (Track No.)",
       "artist": "Artist",
       "genre": "Gen",
       "date_added": "Data adăugării",
@@ -80,7 +80,9 @@
       "showInLibrary": "Arată în bibliotecă",
       "showHidden": "Arată melodiile ascunse",
       "hideHidden": "Ascunde melodiile ascunse",
-      "openInBrowser": "Open in browser"
+      "openInBrowser": "Open in browser",
+      "gotoAlbum": "Goto album ({title})",
+      "gotoArtists": "Goto artists"
     },
     "moreInfo": "Mai multe informații",
     "incorrectPlayback": "Incorrect playback?"

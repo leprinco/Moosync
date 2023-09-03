@@ -48,7 +48,7 @@
   "contextMenu": {
     "sort": {
       "title": "Aanspreektitel",
-      "album": "Album",
+      "album": "Album (Track No.)",
       "artist": "Kunstenaar",
       "genre": "genre",
       "date_added": "Datum toegevoegd",
@@ -80,7 +80,9 @@
       "showInLibrary": "In bibliotheek weergeven",
       "showHidden": "Verborgen nummers weergeven",
       "hideHidden": "Verborgen nummers verbergen",
-      "openInBrowser": "Open in browser"
+      "openInBrowser": "Open in browser",
+      "gotoAlbum": "Goto album ({title})",
+      "gotoArtists": "Goto artists"
     },
     "moreInfo": "Meer informatie",
     "incorrectPlayback": "Incorrect playback?"

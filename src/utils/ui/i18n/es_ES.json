@@ -48,7 +48,7 @@
   "contextMenu": {
     "sort": {
       "title": "Título",
-      "album": "Álbum",
+      "album": "Album (Track No.)",
       "artist": "Artista",
       "genre": "Género",
       "date_added": "Fecha añadida",
@@ -80,7 +80,9 @@
       "showInLibrary": "Mostrar en la biblioteca",
       "showHidden": "Mostrar canciones ocultas",
       "hideHidden": "Ocultar canciones ocultas",
-      "openInBrowser": "Open in browser"
+      "openInBrowser": "Open in browser",
+      "gotoAlbum": "Goto album ({title})",
+      "gotoArtists": "Goto artists"
     },
     "moreInfo": "Más información",
     "incorrectPlayback": "Incorrect playback?"

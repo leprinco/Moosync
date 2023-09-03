@@ -48,7 +48,7 @@
   "contextMenu": {
     "sort": {
       "title": "Titel",
-      "album": "Album",
+      "album": "Album (Track No.)",
       "artist": "Kunstner",
       "genre": "Genre",
       "date_added": "Dato tilføjet",
@@ -80,7 +80,9 @@
       "showInLibrary": "Vis i bibliotek",
       "showHidden": "Vis skjulte sange",
       "hideHidden": "Skjul skjulte sange",
-      "openInBrowser": "Open in browser"
+      "openInBrowser": "Open in browser",
+      "gotoAlbum": "Goto album ({title})",
+      "gotoArtists": "Goto artists"
     },
     "moreInfo": "Mere Info",
     "incorrectPlayback": "Incorrect playback?"
