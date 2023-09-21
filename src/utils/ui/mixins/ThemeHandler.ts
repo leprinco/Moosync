@@ -93,8 +93,8 @@ export default class ThemeHandler extends Vue {
       sheet.deleteRule(0)
     }
     sheet.insertRule(
-      `.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after { background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%278%27 height=%278%27 viewBox=%270 0 8 8%27%3e%3cpath fill=%27${docStyle
-        .getPropertyValue('--textPrimary')
+      `.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after { background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%278%27 height=%278%27 viewBox=%270 0 8 8%27%3e%3cpath fill=%27%23${docStyle
+        .getPropertyValue('--textPrimary').replace('#', '')
         .trim()
         .toLowerCase()}%27 d=%27M6.564.75l-3.59 3.612-1.538-1.55L0 4.26l2.974 2.99L8 2.193z%27/%3e%3c/svg%3e") !important; }`,
     )
