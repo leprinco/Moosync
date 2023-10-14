@@ -7,8 +7,8 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { SongDBInstance } from './database'
 import { FAVORITES_PLAYLIST_ID } from '@/utils/commonConstants'
+import { SongDBInstance } from './database'
 
 let _songDB: SongDBInstance | undefined
 

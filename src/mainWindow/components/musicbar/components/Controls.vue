@@ -52,6 +52,7 @@ import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import { FAVORITES_PLAYLIST_ID } from '@/utils/commonConstants'
 import RepeatOnceIcon from '../../../../icons/RepeatOnceIcon.vue';
+import { convertProxy } from '@/utils/ui/common'
 
 @Component({
   components: {
@@ -115,9 +116,9 @@ export default class MusicBar extends mixins(PlayerControls, JukeboxMixin) {
   async favoriteSong() {
     if (vxm.player.currentSong) {
       if (!this.isFavorite) {
-        await window.DBUtils.addToPlaylist(FAVORITES_PLAYLIST_ID, vxm.player.currentSong)
+        await window.DBUtils.addToPlaylist(FAVORITES_PLAYLIST_ID, convertProxy(vxm.player.currentSong))
       } else {
-        await window.DBUtils.removeFromPlaylist(FAVORITES_PLAYLIST_ID, vxm.player.currentSong)
+        await window.DBUtils.removeFromPlaylist(FAVORITES_PLAYLIST_ID, convertProxy(vxm.player.currentSong))
       }
       this.isFavorite = !this.isFavorite
     }
