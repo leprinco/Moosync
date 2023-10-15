@@ -18,19 +18,22 @@
 
     <b-row no-gutters class="w-100 mt-2 d-flex keybind-row">
       <b-row no-gutters class="w-100 mb-2">
-        <b-col><div>Actions</div></b-col>
-        <b-col class="keybind-title"><div>Keybinds</div></b-col>
-        <b-col><div></div></b-col>
+        <b-col>
+          <div>Actions</div>
+        </b-col>
+        <b-col class="keybind-title">
+          <div>Keybinds</div>
+        </b-col>
+        <b-col>
+          <div></div>
+        </b-col>
       </b-row>
       <b-row no-gutters class="w-100 actions-row mt-2" v-for="(defined, index) of definedActions" :key="defined.value">
         <b-col>
           <b-row no-gutters>
             <b-dropdown block :text="getActiveTitle(index)" toggle-class="dropdown-button h-100" class="w-100">
-              <b-dropdown-item
-                v-for="action in getFilteredDropdownList()"
-                :key="action.val"
-                @click="setSelectedAction(index, action.key)"
-                >{{ action.title }}
+              <b-dropdown-item v-for="action in getFilteredDropdownList()" :key="action.key"
+                @click="setSelectedAction(index, action.key)">{{ action.title }}
               </b-dropdown-item>
             </b-dropdown>
           </b-row>
@@ -39,7 +42,9 @@
           <div class="key-input" :style="{ color: getKeybindColor(index) }">{{ getKeybind(index) }}</div>
         </b-col>
         <b-col align-self="center" class="d-flex justify-content-end">
-          <div class="cross-icon" @click="removeKeybind(index)"><CrossIcon color="#E62017" /></div>
+          <div class="cross-icon" @click="removeKeybind(index)">
+            <CrossIcon color="#E62017" />
+          </div>
         </b-col>
         <div class="divider"></div>
       </b-row>
@@ -52,9 +57,8 @@ import { Component, Prop } from 'vue-facing-decorator'
 import { mixins } from 'vue-facing-decorator'
 import PreferenceHeader from './PreferenceHeader.vue'
 import { ExtensionPreferenceMixin } from '../mixins/extensionPreferenceMixin'
-import { HotkeyEvents, HotKeyEventsExtras } from '@/utils/commonConstants'
+import { HotkeyEvents } from '@/utils/commonConstants'
 import CrossIcon from '@/icons/CrossIcon.vue'
-
 @Component({
   components: {
     PreferenceHeader,
@@ -70,10 +74,112 @@ export default class HotkeyGroup extends mixins(ExtensionPreferenceMixin) {
     return this.value
   }
 
+  private get HotKeyEventsExtras(): Record<HotkeyEvents, { title: string }> {
+    return {
+      [HotkeyEvents.PLAY]: {
+        title: this.$t('hotkeys.play'),
+      },
+      [HotkeyEvents.PAUSE]: {
+        title: this.$t('hotkeys.pause'),
+      },
+      [HotkeyEvents.PLAY_TOGGLE]: {
+        title: this.$t('hotkeys.play_toggle'),
+      },
+      [HotkeyEvents.MUTE_ACTIVE]: {
+        title: this.$t('hotkeys.mute_active'),
+      },
+      [HotkeyEvents.MUTE_INACTIVE]: {
+        title: this.$t('hotkeys.mute_inactive'),
+      },
+      [HotkeyEvents.MUTE_TOGGLE]: {
+        title: this.$t('hotkeys.mute_toggle'),
+      },
+      [HotkeyEvents.VOLUME_INC]: {
+        title: this.$t('hotkeys.volume_inc'),
+      },
+      [HotkeyEvents.VOLUME_DEC]: {
+        title: this.$t('hotkeys.volume_dec'),
+      },
+      [HotkeyEvents.REPEAT_ACTIVE]: {
+        title: this.$t('hotkeys.repeat_active'),
+      },
+      [HotkeyEvents.REPEAT_INACTIVE]: {
+        title: this.$t('hotkeys.repeat_inactive'),
+      },
+      [HotkeyEvents.REPEAT_TOGGLE]: {
+        title: this.$t('hotkeys.repeat_toggle'),
+      },
+      [HotkeyEvents.QUEUE_OPEN]: {
+        title: this.$t('hotkeys.queue_open'),
+      },
+      [HotkeyEvents.QUEUE_CLOSE]: {
+        title: this.$t('hotkeys.queue_close'),
+      },
+      [HotkeyEvents.QUEUE_TOGGLE]: {
+        title: this.$t('hotkeys.queue_toggle'),
+      },
+      [HotkeyEvents.RELOAD_PAGE]: {
+        title: this.$t('hotkeys.reload_page'),
+      },
+      [HotkeyEvents.DEVTOOLS_TOGGLE]: {
+        title: this.$t('hotkeys.devtools'),
+      },
+      [HotkeyEvents.HELP]: {
+        title: this.$t('hotkeys.help'),
+      },
+      [HotkeyEvents.FULLSCREEN]: {
+        title: this.$t('hotkeys.fullscreen'),
+      },
+      [HotkeyEvents.NEXT_SONG]: {
+        title: this.$t('hotkeys.next_song'),
+      },
+      [HotkeyEvents.PREV_SONG]: {
+        title: this.$t('hotkeys.prev_song'),
+      },
+      [HotkeyEvents.SEEK_FORWARD]: {
+        title: this.$t('hotkeys.seek_forward'),
+      },
+      [HotkeyEvents.SEEK_BACKWARDS]: {
+        title: this.$t('hotkeys.seek_backwards'),
+      },
+      [HotkeyEvents.SEEK_0]: {
+        title: this.$t('hotkeys.seek_0'),
+      },
+      [HotkeyEvents.SEEK_1]: {
+        title: this.$t('hotkeys.seek_1'),
+      },
+      [HotkeyEvents.SEEK_2]: {
+        title: this.$t('hotkeys.seek_2'),
+      },
+      [HotkeyEvents.SEEK_3]: {
+        title: this.$t('hotkeys.seek_3'),
+      },
+      [HotkeyEvents.SEEK_4]: {
+        title: this.$t('hotkeys.seek_4'),
+      },
+      [HotkeyEvents.SEEK_5]: {
+        title: this.$t('hotkeys.seek_5'),
+      },
+      [HotkeyEvents.SEEK_6]: {
+        title: this.$t('hotkeys.seek_6'),
+      },
+      [HotkeyEvents.SEEK_7]: {
+        title: this.$t('hotkeys.seek_7'),
+      },
+      [HotkeyEvents.SEEK_8]: {
+        title: this.$t('hotkeys.seek_8'),
+      },
+      [HotkeyEvents.SEEK_9]: {
+        title: this.$t('hotkeys.seek_9'),
+      },
+    }
+  }
+
+
   getActiveTitle(index: number) {
     if (this.value) {
       this.value[index]?.value
-      return HotKeyEventsExtras[this.value[index]?.value ?? 0]?.title
+      return this.HotKeyEventsExtras[this.value[index]?.value ?? 0]?.title
     }
   }
 
@@ -85,7 +191,7 @@ export default class HotkeyGroup extends mixins(ExtensionPreferenceMixin) {
 
   getFilteredDropdownList() {
     return this.getHotkeyValue().map((val: HotkeyEvents) => {
-      return { title: HotKeyEventsExtras[val].title, key: val }
+      return { title: this.HotKeyEventsExtras[val].title, key: val }
     })
   }
 

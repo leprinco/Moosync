@@ -12,28 +12,19 @@
     <b-container fluid class="album-container">
       <b-row no-gutters class="page-title">
         <b-col cols="auto">{{ $t('pages.playlists') }}</b-col>
-        <b-col class="button-grow" @click="newPlaylist" cols="auto"><PlusIcon class="add-icon mb-2" /></b-col>
+        <b-col class="button-grow" @click="newPlaylist" cols="auto">
+          <PlusIcon class="add-icon mb-2" />
+        </b-col>
         <b-col class="align-self-center">
-          <TabCarousel
-            :items="tabCarouselItems"
-            :alignProvidersToEnd="true"
-            @onItemsChanged="onTabProvidersChanged"
-            @onSortClicked="sortMenuHandler"
-            @onSearchChange="onSearchChange"
-            :isSortAsc="isSortAsc"
-          />
+          <TabCarousel :items="tabCarouselItems" :alignProvidersToEnd="true" @onItemsChanged="onTabProvidersChanged"
+            @onSortClicked="sortMenuHandler" @onSearchChange="onSearchChange" :isSortAsc="isSortAsc" />
         </b-col>
       </b-row>
       <b-row class="d-flex">
         <b-col col xl="2" md="3" v-for="playlist in filteredPlaylists" :key="playlist.playlist_id" class="card-col">
-          <CardView
-            :title="playlist.playlist_name"
-            :imgSrc="playlist.playlist_coverPath"
-            :id="playlist.playlist_id"
-            :iconBgColor="getIconBgColor(playlist)"
-            @click="gotoPlaylist(playlist)"
-            @CardContextMenu="getPlaylistMenu($event, playlist)"
-          >
+          <CardView :title="playlist.playlist_name" :imgSrc="playlist.playlist_coverPath" :id="playlist.playlist_id"
+            :iconBgColor="getIconBgColor(playlist)" @click="gotoPlaylist(playlist)"
+            @CardContextMenu="getPlaylistMenu($event, playlist)">
             <template #icon>
               <IconHandler class="h-100" :item="playlist" />
             </template>
@@ -45,17 +36,10 @@
           </CardView>
         </b-col>
       </b-row>
-      <DeleteModal
-        id="playlistDeleteModal"
-        @confirm="deletePlaylist"
-        :itemName="playlistInAction && playlistInAction.playlist_name"
-      />
-      <MultiButtonModal
-        :show="showMultiButtonModal"
-        :slots="2"
-        @click-1="showNewPlaylistModal"
-        @click-2="showPlaylistFromURLModal"
-      >
+      <DeleteModal id="playlistDeleteModal" @confirm="deletePlaylist"
+        :itemName="playlistInAction && playlistInAction.playlist_name" />
+      <MultiButtonModal :show="showMultiButtonModal" :slots="2" @click-1="showNewPlaylistModal"
+        @click-2="showPlaylistFromURLModal">
         <template #1>
           <CreatePlaylistIcon />
         </template>
@@ -159,7 +143,7 @@ export default class Playlists extends mixins(RouterPushes, ContextMenuMixin, Pr
   get tabCarouselItems(): TabCarouselItem[] {
     return [
       {
-        title: 'Local',
+        title: this.$t('playlists.local'),
         key: 'local',
         defaultChecked: true
       },

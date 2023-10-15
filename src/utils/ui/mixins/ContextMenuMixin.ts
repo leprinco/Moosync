@@ -72,7 +72,7 @@ export default class ContextMenuMixin extends mixins(
     const possibleSorts: SongSortOptions['type'][] = ['album', 'artist', 'date_added', 'genre', 'playCount', 'title']
     const menu: MenuItem[] = [
       {
-        label: 'Sort by',
+        label: this.$t('contextMenu.sort_by'),
         children: [],
       },
     ]
@@ -93,7 +93,7 @@ export default class ContextMenuMixin extends mixins(
   private getPlaylistSortByMenu(sort: Sort<PlaylistSortOptions>) {
     const menu: MenuItem[] = [
       {
-        label: 'Sort by',
+        label: this.$t('contextMenu.sort_by'),
         children: [
           {
             label: `${this.$t('contextMenu.sort.title')} ${
@@ -117,7 +117,7 @@ export default class ContextMenuMixin extends mixins(
   private getGenericSortByMenu(sort: Sort<NormalSortOptions>) {
     const menu: MenuItem[] = [
       {
-        label: 'Sort by',
+        label: this.$t('contextMenu.sort_by'),
         children: [
           {
             label: `${this.$t('contextMenu.sort.title')} ${

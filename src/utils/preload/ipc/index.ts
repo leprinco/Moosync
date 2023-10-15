@@ -40,7 +40,7 @@ export class IpcRendererHolder {
       try {
         callback(...args)
       } catch (e) {
-        console.log(e)
+        console.error(e)
       }
     })
   }

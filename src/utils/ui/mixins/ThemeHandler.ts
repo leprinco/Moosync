@@ -90,17 +90,14 @@ export default class ThemeHandler extends Vue {
       return rgba
     }
 
-    const split = tmp.split(',').map(val => val.trim())
-
-    console.log(split)
+    const split = tmp.split(',').map((val) => val.trim())
 
     const r = parseInt(split[0])
     const g = parseInt(split[1])
     const b = parseInt(split[2])
-  
-    return `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`;
-  }
 
+    return `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`
+  }
 
   private setCheckboxValues() {
     const docStyle = getComputedStyle(this.root)
@@ -121,8 +118,9 @@ export default class ThemeHandler extends Vue {
       textPrimary = this.rgba2hex(textPrimary)
     }
     sheet.insertRule(
-      `.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after { background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%278%27 height=%278%27 viewBox=%270 0 8 8%27%3e%3cpath fill=%27%23${
-        textPrimary.replace('#', '').trim()
+      `.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after { background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%278%27 height=%278%27 viewBox=%270 0 8 8%27%3e%3cpath fill=%27%23${textPrimary
+        .replace('#', '')
+        .trim()
         .toLowerCase()}%27 d=%27M6.564.75l-3.59 3.612-1.538-1.55L0 4.26l2.974 2.99L8 2.193z%27/%3e%3c/svg%3e") !important; }`,
     )
   }

@@ -11,47 +11,27 @@
   <div>
     <Person id="account" class="accounts-icon" @click="togglePopover" />
     <Transition>
-      <div
-        v-if="showAccountsPopover"
-        triggers="click blur"
-        class="accounts-popover custom-popover"
-        v-click-outside="hidePopover"
-      >
+      <div v-if="showAccountsPopover" triggers="click blur" class="accounts-popover custom-popover"
+        v-click-outside="hidePopover">
         <div class="buttons" :key="`${forceRefresh}`" :id="`${forceRefresh}`">
           <div v-for="p in providers" :key="p.key">
-            <IconButton
-              v-if="p && p.provider.canLogin"
-              :bgColor="p.provider.BgColor"
-              :hoverText="p.provider.loggedIn ? 'Sign out' : p.provider.Title"
-              :title="p.username ? p.username : 'Connect'"
-              @click="handleClick(p)"
-            >
+            <IconButton v-if="p && p.provider.canLogin" :bgColor="p.provider.BgColor"
+              :hoverText="p.provider.loggedIn ? $t('accounts.sign_out') : p.provider.Title"
+              :title="p.username ? p.username : $t('accounts.connect')" @click="handleClick(p)">
               <template #icon>
                 <component v-if="isIconComponent(p.provider.IconComponent)" :is="p.provider.IconComponent" />
-                <inline-svg
-                  class="provider-icon"
-                  v-else-if="p.provider.IconComponent.endsWith('svg')"
-                  :src="`media://${p.provider.IconComponent}`"
-                />
-                <img
-                  v-else
-                  referrerPolicy="no-referrer"
-                  :src="p.provider.IconComponent"
-                  alt="provider icon"
-                  class="provider-icon"
-                />
+                <inline-svg class="provider-icon" v-else-if="p.provider.IconComponent.endsWith('svg')"
+                  :src="`media://${p.provider.IconComponent}`" />
+                <img v-else referrerPolicy="no-referrer" :src="p.provider.IconComponent" alt="provider icon"
+                  class="provider-icon" />
               </template>
             </IconButton>
           </div>
         </div>
       </div>
     </Transition>
-    <ConfirmationModal
-      keyword="log out from "
-      :itemName="activeSignout ? activeSignout.provider.Title : ''"
-      id="signoutModal"
-      @confirm="signout"
-    />
+    <ConfirmationModal keyword="log out from " :itemName="activeSignout ? activeSignout.provider.Title : ''"
+      id="signoutModal" @confirm="signout" />
   </div>
 </template>
 <script lang="ts">
