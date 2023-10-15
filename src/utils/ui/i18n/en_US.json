@@ -361,5 +361,9 @@
     "shuffle": "Shuffle",
     "show_app": "Show app",
     "quit": "Quit"
+  },
+  "toasts": {
+    "queued": "Queued {count} song | Queued {count} songs",
+    "shuffled": "Shuffled"
   }
 }

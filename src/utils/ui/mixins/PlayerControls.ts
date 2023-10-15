@@ -38,7 +38,7 @@ export default class PlayerControls extends Vue {
   }
 
   public showQueueSongsToast(length: number) {
-    if (length > 0) toast(`Queued ${length} song${length !== 1 ? 's' : ''}`)
+    if (length > 0) toast(this.$t('toasts.queued', length))
   }
 
   public async queueSong(songs: Song[], showToast = true) {
@@ -97,7 +97,7 @@ export default class PlayerControls extends Vue {
   public shuffle() {
     vxm.themes.queueSortBy = undefined
     vxm.player.shuffle()
-    toast('Shuffled', {
+    toast(this.$t('toasts.shuffled'), {
       autoClose: 1000,
     })
   }
