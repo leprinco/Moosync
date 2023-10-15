@@ -7,8 +7,6 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { getWindowSize, loadPreferences, setWindowSize } from './db/preferences'
-import { SongEvents, WindowEvents } from './ipc/constants'
 import {
   BrowserWindow,
   Menu,
@@ -23,17 +21,20 @@ import {
   shell,
   webFrameMain,
 } from 'electron'
-
-import { getSongDB } from './db/index'
-import { getExtensionHostChannel } from './ipc'
-import { getMprisChannel, getSpotifyPlayerChannel } from './ipc/index'
-import { logger } from './logger'
-import { getActiveTheme } from './themes/preferences'
-import { nativeTheme } from 'electron'
-import { access, readFile } from 'fs/promises'
 import { ButtonEnum, PlayerButtons } from 'media-controller'
-import path from 'path'
+import { SongEvents, WindowEvents } from './ipc/constants'
+import { access, readFile } from 'fs/promises'
+import { getMprisChannel, getSpotifyPlayerChannel } from './ipc/index'
+import { getWindowSize, loadPreferences, setWindowSize } from './db/preferences'
+
+import { $t } from './i18nLoader'
 import { Readable } from 'stream'
+import { getActiveTheme } from './themes/preferences'
+import { getExtensionHostChannel } from './ipc'
+import { getSongDB } from './db/index'
+import { logger } from './logger'
+import { nativeTheme } from 'electron'
+import path from 'path'
 
 export class WindowHandler {
   private static mainWindow: number
@@ -279,6 +280,8 @@ export class WindowHandler {
 
       if (isMainWindow) WindowHandler.mainWindow = win.id
       else WindowHandler.preferenceWindow = win.id
+
+      console.log('created window', win)
     } else {
       console.info('Window already exists, focusing')
       win = WindowHandler.getWindow(isMainWindow)
@@ -525,7 +528,7 @@ class TrayHandler {
     const buttons: (Electron.MenuItem | Electron.MenuItemConstructorOptions)[] = []
     if (buttonState.play) {
       buttons.push({
-        label: 'Play',
+        label: $t('tray.play'),
         icon: getThemeIcon('play'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Play)
@@ -535,7 +538,7 @@ class TrayHandler {
 
     if (buttonState.pause) {
       buttons.push({
-        label: 'Pause',
+        label: $t('tray.pause'),
         icon: getThemeIcon('pause'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Pause)
@@ -545,7 +548,7 @@ class TrayHandler {
 
     if (buttonState.next) {
       buttons.push({
-        label: 'Next',
+        label: $t('tray.next'),
         icon: getThemeIcon('next_track'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Next)
@@ -555,7 +558,7 @@ class TrayHandler {
 
     if (buttonState.prev) {
       buttons.push({
-        label: 'Prev',
+        label: $t('tray.prev'),
         icon: getThemeIcon('prev_track'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Previous)
@@ -565,7 +568,7 @@ class TrayHandler {
 
     if (buttonState.loop) {
       buttons.push({
-        label: 'Repeat',
+        label: $t('tray.repeat'),
         icon: getThemeIcon('repeat'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Repeat)
@@ -573,7 +576,7 @@ class TrayHandler {
       })
     } else {
       buttons.push({
-        label: 'No Repeat',
+        label: $t('tray.no_repeat'),
         icon: getThemeIcon('repeat'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Repeat)
@@ -583,7 +586,7 @@ class TrayHandler {
 
     if (buttonState.shuffle) {
       buttons.push({
-        label: 'Shuffle',
+        label: $t('tray.shuffle'),
         icon: getThemeIcon('shuffle'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Shuffle)
@@ -596,10 +599,11 @@ class TrayHandler {
 
   private setupContextMenu() {
     if (this._tray && !this._tray.isDestroyed()) {
+      console.log('manual i18n', $t('tray.show_app'))
       this._tray.setContextMenu(
         Menu.buildFromTemplate([
           {
-            label: 'Show App',
+            label: $t('tray.show_app'),
             icon: getThemeIcon('show_eye'),
             click: () => {
               // this.destroy()
@@ -610,7 +614,7 @@ class TrayHandler {
           },
           ...this.extraButtons,
           {
-            label: 'Quit',
+            label: $t('tray.quit'),
             icon: getThemeIcon('close'),
             click: function () {
               AppExitHandler._isQuitting = true
