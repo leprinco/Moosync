@@ -59,6 +59,7 @@
     "cancel": "Cancel"
   },
   "loading": "Loading...",
+  "now_playing": "Now playing",
   "contextMenu": {
     "sort_by": "Sort by",
     "sort": {
