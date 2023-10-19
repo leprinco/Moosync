@@ -27,6 +27,16 @@
     "genres": "Genres",
     "explore": "Przeglądaj"
   },
+  "playlists": {
+    "local": "Local",
+    "new_playlist": {
+      "create": "Create",
+      "description_placeholder": "Description..."
+    },
+    "url": {
+      "input_hint": "Enter URL Here.. (Youtube or Spotify)"
+    }
+  },
   "songView": {
     "details": {
       "songCount": "{count} utwór | {count} utwór"
@@ -42,10 +52,16 @@
     "addToQueue": "Dodaj {title} do kolejki",
     "addToLibrary": "Dodaj {title} do biblioteki",
     "playRandom": "Odtwórz 100 losowych utworów",
-    "fetchAll": "Fetch all songs"
+    "fetchAll": "Fetch all songs",
+    "close": "Close",
+    "add": "Add",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "loading": "Ładowanie...",
+  "now_playing": "Now playing",
   "contextMenu": {
+    "sort_by": "Sort by",
     "sort": {
       "title": "Rozporządzenie Rady (EWG) nr 2658/87 z dnia 23 lipca 1987 r. w sprawie nomenklatury taryfowej i statystycznej oraz w sprawie Wspólnej Taryfy Celnej (Dz.U. L 256 z 7.9.1987, s. 1).",
       "album": "Album (Track No.)",
@@ -87,14 +103,22 @@
     "moreInfo": "Więcej informacji",
     "incorrectPlayback": "Incorrect playback?"
   },
+  "explore": {
+    "you_listened_to": "You've listened to",
+    "of_music": "of music",
+    "played_for": "Played for",
+    "hot_from": "Hot from"
+  },
   "providers": {
     "youtube": "YouTube",
     "spotify": "Spotify",
     "invidious": "Inny",
     "lastfm": "LastFM"
   },
-  "save": "Zapisz",
-  "cancel": "Anuluj",
+  "accounts": {
+    "connect": "Connect",
+    "sign_out": "Sign out"
+  },
   "settings": {
     "paths": {
       "songDirectories": "Katalogi utworów",
@@ -128,7 +152,8 @@
         "name": "Nazwa motywu",
         "author": "Autor",
         "colors": "Kolory",
-        "colors_tooltip": "Zmień kolory, aby dostosować interfejs"
+        "colors_tooltip": "Zmień kolory, aby dostosować interfejs",
+        "css": "Custom CSS"
       },
       "primary": "Podstawowy",
       "secondary": "Drugorzędny",
@@ -276,7 +301,70 @@
       "logSettings": "Ustawienia dziennika",
       "level": "Poziom",
       "process": "Proces",
-      "filterMessage": "Filtruj wiadomość"
+      "filterMessage": "Filtruj wiadomość",
+      "levels": {
+        "all": "All",
+        "debug": "Debug",
+        "info": "Info",
+        "warn": "Warn",
+        "error": "Error"
+      },
+      "debug_logging": "Enable debug logging",
+      "table": {
+        "time": "Time",
+        "level": "Level",
+        "process": "Process",
+        "message": "Message"
+      }
     }
+  },
+  "hotkeys": {
+    "play": "Play Song",
+    "pause": "Pause song",
+    "play_toggle": "Toggle play",
+    "mute_active": "Mute",
+    "mute_inactive": "Unmute",
+    "mute_toggle": " Toggle mute",
+    "volume_inc": "Increase volume",
+    "volume_dec": "Decrease volume",
+    "repeat_active": "Repeat song",
+    "repeat_inactive": "Disable repeat",
+    "repeat_toggle": "Toggle repeat",
+    "queue_open": "Open song queue",
+    "queue_close": "Close song queue",
+    "queue_toggle": "Toggle song queue",
+    "reload_page": "Reload page",
+    "devtools": "Toggle dev-tools",
+    "help": "Open help",
+    "fullscreen": "Fullscreen",
+    "next_song": "Skip song",
+    "prev_song": "Prev song",
+    "seek_forward": "Seek 5s forward",
+    "seek_backwards": "Seek 5s backwards",
+    "seek_0": "Seek to 0%",
+    "seek_1": "Seek to 10%",
+    "seek_2": "Seek to 20%",
+    "seek_3": "Seek to 30%",
+    "seek_4": "Seek to 40%",
+    "seek_5": "Seek to 50%",
+    "seek_6": "Seek to 60%",
+    "seek_7": "Seek to 70%",
+    "seek_8": "Seek to 80%",
+    "seek_9": "Seek to 90%"
+  },
+  "tray": {
+    "play": "Play",
+    "pause": "Pause",
+    "next": "Next",
+    "prev": "Prev",
+    "repeat": "Repeat",
+    "no_repeat": "No repeat",
+    "shuffle": "Shuffle",
+    "show_app": "Show app",
+    "quit": "Quit"
+  },
+  "toasts": {
+    "queued": "Queued {count} song | Queued {count} songs",
+    "shuffled": "Shuffled"
   }
 }
