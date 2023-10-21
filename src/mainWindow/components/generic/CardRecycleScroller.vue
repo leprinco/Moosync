@@ -16,25 +16,12 @@
       </b-col>
     </b-row>
     <b-row class="recycle-row" ref="scrollerRow">
-      <RecycleScroller
-        class="scroller w-100 h-100"
-        :items="filteredItems"
-        :item-size="itemWidth"
-        :itemSecondarySize="itemWidth"
-        :key-field="keyField"
-        :grid-items="itemsInRow"
-        :buffer="100"
-        :direction="'vertical'"
-        @resize="onScrollerResize"
-      >
+      <RecycleScroller class="scroller w-100 h-100" :items="filteredItems" :item-size="itemWidth"
+        :itemSecondarySize="itemWidth" :key-field="keyField" :grid-items="itemsInRow" :buffer="100"
+        :direction="'vertical'" @resize="onScrollerResize">
         <template v-slot="{ item }">
-          <CardView
-            :title="item[titleKey]"
-            :imgSrc="item[imageKey]"
-            :maxWidth="`${itemWidth - 50}px`"
-            @click="emitClick(item)"
-            @CardContextMenu="emitContextMenu(item, ...arguments)"
-          >
+          <CardView :title="item[titleKey]" :imgSrc="item[imageKey]" :maxWidth="`${itemWidth - 50}px`"
+            @click="emitClick(item)" @CardContextMenu="emitContextMenu($event, item, ...arguments)">
             <template #defaultCover>
               <slot ref="defaultCover" name="defaultCover" />
             </template>

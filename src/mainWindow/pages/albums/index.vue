@@ -9,17 +9,10 @@
 
 <template>
   <div class="h-100 w-100 parent" @contextmenu="contextHandler">
-    <CardRecycleScroller
-      :title="$t('pages.albums')"
-      :itemList="filteredAlbumList"
-      :titleKey="'album_name'"
-      :imageKey="'album_coverPath_high'"
-      :keyField="'album_id'"
-      @click="gotoAlbum"
-      @CardContextMenu="singleItemContextHandler"
-      @generalContextMenu="contextHandler"
-      :isSortAsc="isSortAsc"
-    >
+    <CardRecycleScroller :title="$t('pages.albums')" :itemList="filteredAlbumList" :titleKey="'album_name'"
+      :imageKey="'album_coverPath_high'" :keyField="'album_id'" @click="gotoAlbum"
+      @CardContextMenu="(event: MouseEvent, album: Albums) => singleItemContextHandler(event, album)"
+      @generalContextMenu="contextHandler" :isSortAsc="isSortAsc">
       <template #defaultCover>
         <AlbumDefault />
       </template>
@@ -80,7 +73,7 @@ export default class Albums extends mixins(RouterPushes, ContextMenuMixin) {
     })
   }
 
-  public singleItemContextHandler(album: Album, event: MouseEvent) {
+  public singleItemContextHandler(event: MouseEvent, album: Album) {
     this.getContextMenu(event, {
       type: 'ALBUM',
       args: {
