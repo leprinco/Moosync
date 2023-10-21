@@ -14,13 +14,8 @@
         <b-row no-gutters class="d-flex">
           <b-col cols="auto">
             <SongDefault v-if="forceEmptyImg || !tmpSong.song_coverPath_high" class="song-url-cover" />
-            <b-img
-              v-else
-              class="song-url-cover"
-              :src="getImgSrc(getValidImageHigh(tmpSong))"
-              @error="handleImageError"
-              referrerPolicy="no-referrer"
-            ></b-img>
+            <b-img v-else class="song-url-cover" :src="getImgSrc(getValidImageHigh(tmpSong))" @error="handleImageError"
+              referrerPolicy="no-referrer"></b-img>
             <div @click="changeSongCover" class="edit-button d-flex justify-content-center">
               <EditIcon class="align-self-center" />
             </div>
@@ -28,63 +23,34 @@
           <b-col class="details" cols="8" xl="9">
             <b-row>
               <b-col>
-                <b-input
-                  :id="getKey('title')"
-                  :title="getValue('title')"
-                  @input="onInputChange('title', ...arguments)"
-                  class="title text-truncate editable"
-                  :value="song.title"
-                >
+                <b-input :id="getKey('title')" :title="getValue('title')" @input="onInputChange('title', ...arguments)"
+                  class="title text-truncate editable" :value="song.title">
                 </b-input>
               </b-col>
             </b-row>
             <b-row class="mt-1">
               <b-col>
-                <b-tabs
-                  nav-class="custom-nav"
-                  active-nav-item-class="active-nav-item"
-                  no-nav-style
-                  content-class="mt-3 tab-inner-container"
-                  justified
-                  class="h-100"
-                >
+                <b-tabs nav-class="custom-nav" active-nav-item-class="active-nav-item" no-nav-style
+                  content-class="mt-3 tab-inner-container" justified class="h-100">
                   <div v-for="i in tabs" :key="i.tab">
                     <b-tab :title="i.tab" :id="i.tab">
                       <div class="tab-content">
                         <b-container fluid class="tab-content-container">
                           <b-row no-gutters>
-                            <b-col
-                              class="field-col"
-                              :cols="showDatalist(field[0]) ? 12 : 6"
-                              v-for="field in i.items"
-                              :key="getKey(field)"
-                            >
+                            <b-col class="field-col" :cols="showDatalist(field[0]) ? 12 : 6" v-for="field in i.items"
+                              :key="getKey(field)">
                               <b-row no-gutters class="d-flex flex-nowrap">
                                 <b-col cols="auto" @click="copyText(field)" class="field-title">
                                   {{ getKey(field) }}:
                                 </b-col>
                                 <b-col class="ml-2 d-flex">
-                                  <component
-                                    :is="getComponent(field)"
-                                    :id="getKey(field)"
-                                    :ref="getKey(field)"
-                                    :title="getValue(field)"
-                                    :placeholder="getPlaceholder(field)"
-                                    hide-input-on-limit
-                                    add-tags-on-comma
-                                    :limit="getLimit(field[0])"
-                                    :class="`field-value w-100 ${
-                                      getComponent(field) !== 'tags-input' && 'd-flex align-items-center text-truncate'
-                                    } editable`"
-                                    :value="getValue(field)"
-                                    :existingTags="datalist[field[0]]"
-                                    @input="onInputChange(field[0], ...arguments)"
-                                    @tags-updated="onTagsUpdated(field[0])"
-                                    :typeahead="true"
-                                    :typeahead-hide-discard="true"
-                                    typeahead-style="dropdown"
-                                    :typeahead-always-show="false"
-                                  >
+                                  <component :is="getComponent(field)" :id="getKey(field)" :ref="getKey(field)"
+                                    :title="getValue(field)" :placeholder="getPlaceholder(field)" hide-input-on-limit
+                                    add-tags-on-comma :limit="getLimit(field[0])" :class="`field-value w-100 ${getComponent(field) !== 'tags-input' && 'd-flex align-items-center text-truncate'
+                                      } editable`" :value="getValue(field)" :existingTags="datalist[field[0]]"
+                                    @input="onInputChange(field[0], ...arguments)" @tags-updated="onTagsUpdated(field[0])"
+                                    :typeahead="true" :typeahead-hide-discard="true" typeahead-style="dropdown"
+                                    :typeahead-always-show="false">
                                     <span class="w-100 text-truncate" v-if="!field[1]">{{ getValue(field) }}</span>
                                   </component>
                                 </b-col>
@@ -97,14 +63,8 @@
                   </div>
                 </b-tabs>
               </b-col>
-              <b-popover
-                id="clipboard-popover"
-                :show.sync="showPopover"
-                :target="popoverTarget"
-                :key="`${popoverTarget}-popover`"
-                triggers="click blur"
-                placement="top"
-              >
+              <b-popover id="clipboard-popover" :show.sync="showPopover" :target="popoverTarget"
+                :key="`${popoverTarget}-popover`" triggers="click blur" placement="top">
                 Copied!
               </b-popover>
             </b-row>
@@ -112,8 +72,8 @@
         </b-row>
       </b-container>
       <div class="button-container">
-        <b-button class="close-button ml-3" @click="close">Close</b-button>
-        <b-button class="save-button ml-3" @click="save">Save</b-button>
+        <b-button class="close-button ml-3" @click="close">{{ $t('buttons.close') }}</b-button>
+        <b-button class="save-button ml-3" @click="save">{{ $t('buttons.save') }}</b-button>
       </div>
     </div>
   </b-modal>
@@ -163,7 +123,7 @@ export default class SongInfoModal extends mixins(ImgLoader) {
         ['type', false],
         ['size', false, (s: number) => humanByteSize(s)],
         ['genre', true, (g: string[]) => g.map((val) => ({ key: val, value: val }))],
-        ['album', true, (a: Album) => [{ key: a.album_id ?? '', value: a.album_name ?? '' }]],
+        ['album', true, (a: Album) => a.album_id ? [{ key: a.album_id ?? '', value: a.album_name ?? '' }] : []],
         ['artists', true, (a: Artists[]) => a.map((val) => ({ key: val.artist_id, value: val.artist_name ?? '' }))]
       ]
     },
