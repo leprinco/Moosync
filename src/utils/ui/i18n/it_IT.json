@@ -100,6 +100,12 @@
       "gotoAlbum": "Goto album ({title})",
       "gotoArtists": "Goto artists"
     },
+    "artist": {
+      "remove": "Remove artist"
+    },
+    "album": {
+      "remove": "Remove album"
+    },
     "moreInfo": "Più informazioni",
     "incorrectPlayback": "Incorrect playback?"
   },
