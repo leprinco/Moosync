@@ -100,6 +100,12 @@
       "gotoAlbum": "Перейти к альбому ({title})",
       "gotoArtists": "Перейти к исполнителям"
     },
+    "artist": {
+      "remove": "Remove artist"
+    },
+    "album": {
+      "remove": "Remove album"
+    },
     "moreInfo": "Доп. сведения",
     "incorrectPlayback": "Неправильное воспроизведение?"
   },
