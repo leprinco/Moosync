@@ -71,7 +71,8 @@ export default class ArtistsPage extends mixins(RouterPushes, ContextMenuMixin) 
     this.getContextMenu(event, {
       type: 'ARTIST',
       args: {
-        artist
+        artist,
+        refreshCallback: this.getArtists
       }
     })
   }

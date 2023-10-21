@@ -77,7 +77,8 @@ export default class Albums extends mixins(RouterPushes, ContextMenuMixin) {
     this.getContextMenu(event, {
       type: 'ALBUM',
       args: {
-        album
+        album,
+        refreshCallback: this.getAlbums
       }
     })
   }

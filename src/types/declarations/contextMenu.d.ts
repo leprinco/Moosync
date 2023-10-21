@@ -67,12 +67,14 @@ type ContextMenuArgs =
       type: 'ARTIST'
       args: {
         artist: Artists
+        refreshCallback: () => void
       }
     }
   | {
       type: 'ALBUM'
       args: {
         album: Album
+        refreshCallback: () => void
       }
     }
   | {
