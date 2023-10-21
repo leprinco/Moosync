@@ -100,6 +100,12 @@
       "gotoAlbum": "Goto album ({title})",
       "gotoArtists": "Goto artists"
     },
+    "artist": {
+      "remove": "Remove artist"
+    },
+    "album": {
+      "remove": "Remove album"
+    },
     "moreInfo": "詳細情報",
     "incorrectPlayback": "不正確な曲ですか？"
   },
