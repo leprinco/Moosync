@@ -27,6 +27,16 @@
     "genres": "风格",
     "explore": "探索"
   },
+  "playlists": {
+    "local": "Local",
+    "new_playlist": {
+      "create": "Create",
+      "description_placeholder": "Description..."
+    },
+    "url": {
+      "input_hint": "Enter URL Here.. (Youtube or Spotify)"
+    }
+  },
   "songView": {
     "details": {
       "songCount": "{count} 首歌曲 | {count} 首歌曲"
@@ -42,10 +52,16 @@
     "addToQueue": "将 {title} 添加到队列",
     "addToLibrary": "添加 {title} 到库",
     "playRandom": "随机播放100首歌曲",
-    "fetchAll": "Fetch all songs"
+    "fetchAll": "Fetch all songs",
+    "close": "Close",
+    "add": "Add",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "loading": "加载中...",
+  "now_playing": "Now playing",
   "contextMenu": {
+    "sort_by": "Sort by",
     "sort": {
       "title": "标题",
       "album": "Album (Track No.)",
@@ -84,8 +100,20 @@
       "gotoAlbum": "Goto album ({title})",
       "gotoArtists": "Goto artists"
     },
+    "artist": {
+      "remove": "Remove artist"
+    },
+    "album": {
+      "remove": "Remove album"
+    },
     "moreInfo": "更多信息",
     "incorrectPlayback": "Incorrect playback?"
+  },
+  "explore": {
+    "you_listened_to": "You've listened to",
+    "of_music": "of music",
+    "played_for": "Played for",
+    "hot_from": "Hot from"
   },
   "providers": {
     "youtube": "Youtube",
@@ -93,8 +121,10 @@
     "invidious": "偏好",
     "lastfm": "LastFM"
   },
-  "save": "保存",
-  "cancel": "取消",
+  "accounts": {
+    "connect": "Connect",
+    "sign_out": "Sign out"
+  },
   "settings": {
     "paths": {
       "songDirectories": "歌曲目录",
@@ -128,7 +158,8 @@
         "name": "主题名称",
         "author": "作者",
         "colors": "颜色",
-        "colors_tooltip": "更改颜色以自定义界面"
+        "colors_tooltip": "更改颜色以自定义界面",
+        "css": "Custom CSS"
       },
       "primary": "主要",
       "secondary": "背景色",
@@ -164,6 +195,7 @@
         "sponsorBlock": "使用 SpongorBlock 自动跳过高亮显示YouTube 歌曲的部分"
       },
       "audioSettings_tooltip": "相关的音频回放设置",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "此URL不支持邀请API。",
       "invidious_tooltip": "提示：要使用 Invidious 的服务而不是 YouTube",
       "restartApp": "重启Moosync",
@@ -276,7 +308,70 @@
       "logSettings": "日志设置",
       "level": "等级",
       "process": "进程",
-      "filterMessage": "过滤消息"
+      "filterMessage": "过滤消息",
+      "levels": {
+        "all": "All",
+        "debug": "Debug",
+        "info": "Info",
+        "warn": "Warn",
+        "error": "Error"
+      },
+      "debug_logging": "Enable debug logging",
+      "table": {
+        "time": "Time",
+        "level": "Level",
+        "process": "Process",
+        "message": "Message"
+      }
     }
+  },
+  "hotkeys": {
+    "play": "Play Song",
+    "pause": "Pause song",
+    "play_toggle": "Toggle play",
+    "mute_active": "Mute",
+    "mute_inactive": "Unmute",
+    "mute_toggle": " Toggle mute",
+    "volume_inc": "Increase volume",
+    "volume_dec": "Decrease volume",
+    "repeat_active": "Repeat song",
+    "repeat_inactive": "Disable repeat",
+    "repeat_toggle": "Toggle repeat",
+    "queue_open": "Open song queue",
+    "queue_close": "Close song queue",
+    "queue_toggle": "Toggle song queue",
+    "reload_page": "Reload page",
+    "devtools": "Toggle dev-tools",
+    "help": "Open help",
+    "fullscreen": "Fullscreen",
+    "next_song": "Skip song",
+    "prev_song": "Prev song",
+    "seek_forward": "Seek 5s forward",
+    "seek_backwards": "Seek 5s backwards",
+    "seek_0": "Seek to 0%",
+    "seek_1": "Seek to 10%",
+    "seek_2": "Seek to 20%",
+    "seek_3": "Seek to 30%",
+    "seek_4": "Seek to 40%",
+    "seek_5": "Seek to 50%",
+    "seek_6": "Seek to 60%",
+    "seek_7": "Seek to 70%",
+    "seek_8": "Seek to 80%",
+    "seek_9": "Seek to 90%"
+  },
+  "tray": {
+    "play": "Play",
+    "pause": "Pause",
+    "next": "Next",
+    "prev": "Prev",
+    "repeat": "Repeat",
+    "no_repeat": "No repeat",
+    "shuffle": "Shuffle",
+    "show_app": "Show app",
+    "quit": "Quit"
+  },
+  "toasts": {
+    "queued": "Queued {count} song | Queued {count} songs",
+    "shuffled": "Shuffled"
   }
 }

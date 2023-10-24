@@ -3,7 +3,7 @@
     "tabs": {
       "queue": "Warteschlange",
       "allSongs": "Alle Titel",
-      "playlists": "Wiedergabelisten",
+      "playlists": "Playlists",
       "albums": "Alben",
       "artists": "Künstler",
       "genre": "Genres",
@@ -21,11 +21,21 @@
     "noResultsFound": "Keine Ergebnisse gefunden"
   },
   "pages": {
-    "playlists": "Wiedergabelisten",
+    "playlists": "Playlists",
     "albums": "Alben",
     "artists": "Künstler",
     "genres": "Genres",
     "explore": "Erkunden"
+  },
+  "playlists": {
+    "local": "Local",
+    "new_playlist": {
+      "create": "Create",
+      "description_placeholder": "Description..."
+    },
+    "url": {
+      "input_hint": "Enter URL Here.. (Youtube or Spotify)"
+    }
   },
   "songView": {
     "details": {
@@ -42,10 +52,16 @@
     "addToQueue": "{title} zur Warteschlange hinzufügen",
     "addToLibrary": "{title} zur Bibliothek hinzufügen",
     "playRandom": "100 zufällige Titel abspielen",
-    "fetchAll": "Fetch all songs"
+    "fetchAll": "Fetch all songs",
+    "close": "Close",
+    "add": "Add",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "loading": "Wird geladen...",
+  "now_playing": "Now playing",
   "contextMenu": {
+    "sort_by": "Sort by",
     "sort": {
       "title": "Titel",
       "album": "Album (Track No.)",
@@ -74,7 +90,7 @@
       "moveManually": "Manuell verschieben",
       "manualIndex": "Index des Titels festlegen",
       "remove": "Aus der Bibliothek entfernen",
-      "add": "Füge Song zur Bibliothek hinzu | Füge Titel zur Bibliothek hinzu",
+      "add": "Füge Titel zur Bibliothek hinzu | Füge Titel zur Bibliothek hinzu",
       "removeFromPlaylist": "Aus Wiedergabeliste entfernen",
       "hideFromLibrary": "In der Bibliothek ausblenden",
       "showInLibrary": "In Bibliothek anzeigen",
@@ -84,17 +100,31 @@
       "gotoAlbum": "Goto album ({title})",
       "gotoArtists": "Goto artists"
     },
+    "artist": {
+      "remove": "Remove artist"
+    },
+    "album": {
+      "remove": "Remove album"
+    },
     "moreInfo": "Mehr Info",
     "incorrectPlayback": "Falsche Wiedergabe?"
   },
+  "explore": {
+    "you_listened_to": "You've listened to",
+    "of_music": "of music",
+    "played_for": "Played for",
+    "hot_from": "Hot from"
+  },
   "providers": {
-    "youtube": "Youtube",
+    "youtube": "YouTube",
     "spotify": "Spotify",
     "invidious": "Invidiv",
     "lastfm": "LastFM"
   },
-  "save": "Speichern",
-  "cancel": "Abbrechen",
+  "accounts": {
+    "connect": "Connect",
+    "sign_out": "Sign out"
+  },
   "settings": {
     "paths": {
       "songDirectories": "Songverzeichnisse",
@@ -103,8 +133,8 @@
       "songDirectories_exclude_tooltip": "Songs in diesen Verzeichnissen würden nicht gescannt werden",
       "addFolder": "Ordner hinzufügen...",
       "remove": "Entfernen",
-      "artworkPath": "Heruntergeladener Kunstwerkpfad",
-      "artworkPath_tooltip": "Verzeichnis, in dem heruntergeladene Vorlagen gespeichert werden",
+      "artworkPath": "Pfad für heruntergeladene Albumcover",
+      "artworkPath_tooltip": "Verzeichnis, in dem heruntergeladene Albumcover gespeichert werden",
       "thumbnailPath": "Heruntergeladener Miniaturbildpfad",
       "thumbnailPath_tooltip": "Verzeichnis in dem die erzeugten Thumbnails gespeichert werden",
       "splitter": "Interpretenname Split-Muster",
@@ -119,7 +149,7 @@
       "songView_tooltip": "Aussehen der Titelliste anpassen",
       "songView_classic": "Klassisch",
       "songView_compact": "Kompakt",
-      "themes": "Themes",
+      "themes": "Designs",
       "themes_tooltip": "Farben anpassen",
       "themes_default": "Standard",
       "createTheme": "Neues Theme",
@@ -128,7 +158,8 @@
         "name": "Theme-Name",
         "author": "Autor",
         "colors": "Farben",
-        "colors_tooltip": "Ändern Sie die Farben, um die Benutzeroberfläche anzupassen"
+        "colors_tooltip": "Ändern Sie die Farben, um die Benutzeroberfläche anzupassen",
+        "css": "Custom CSS"
       },
       "primary": "Primär",
       "secondary": "Sekundär",
@@ -164,6 +195,7 @@
         "sponsorBlock": "SponsorBlock verwenden, um automatisch zum hervorgehobenen Teil des Youtube-Liedes zu springen"
       },
       "audioSettings_tooltip": "Zugehörige Audio-Wiedergabe",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "Diese URL unterstützt keine Invidious API",
       "invidious_tooltip": "Unheilvolle Instanz anstelle von youtube",
       "restartApp": "Moosync neu starten",
@@ -194,13 +226,13 @@
         }
       },
       "youtube": {
-        "client_id": "Youtube Client ID",
+        "client_id": "YouTube Client-ID",
         "client_secret": "Youtube Client Geheimnis",
         "client_id_tooltip": "Youtube Client-ID erforderlich, um sich bei Youtube anzumelden. Klicken Sie hier, um mehr zu erfahren",
         "client_secret_tooltip": "Youtube Client Secret erforderlich, um sich bei Youtube anzumelden. Klicken Sie hier, um mehr zu erfahren"
       },
       "lastfm": {
-        "client_id": "LastFM Api Key",
+        "client_id": "LastFM API-Schlüssel",
         "client_secret": "LastFM Client Secret"
       },
       "youtubeAlternative": {
@@ -274,9 +306,72 @@
     },
     "logs": {
       "logSettings": "Log-Einstellungen",
-      "level": "Level",
+      "level": "Stufe",
       "process": "Verarbeiten",
-      "filterMessage": "Nachricht filtern"
+      "filterMessage": "Nachricht filtern",
+      "levels": {
+        "all": "All",
+        "debug": "Debug",
+        "info": "Info",
+        "warn": "Warn",
+        "error": "Error"
+      },
+      "debug_logging": "Enable debug logging",
+      "table": {
+        "time": "Time",
+        "level": "Level",
+        "process": "Process",
+        "message": "Message"
+      }
     }
+  },
+  "hotkeys": {
+    "play": "Play Song",
+    "pause": "Pause song",
+    "play_toggle": "Toggle play",
+    "mute_active": "Mute",
+    "mute_inactive": "Unmute",
+    "mute_toggle": " Toggle mute",
+    "volume_inc": "Increase volume",
+    "volume_dec": "Decrease volume",
+    "repeat_active": "Repeat song",
+    "repeat_inactive": "Disable repeat",
+    "repeat_toggle": "Toggle repeat",
+    "queue_open": "Open song queue",
+    "queue_close": "Close song queue",
+    "queue_toggle": "Toggle song queue",
+    "reload_page": "Reload page",
+    "devtools": "Toggle dev-tools",
+    "help": "Open help",
+    "fullscreen": "Fullscreen",
+    "next_song": "Skip song",
+    "prev_song": "Prev song",
+    "seek_forward": "Seek 5s forward",
+    "seek_backwards": "Seek 5s backwards",
+    "seek_0": "Seek to 0%",
+    "seek_1": "Seek to 10%",
+    "seek_2": "Seek to 20%",
+    "seek_3": "Seek to 30%",
+    "seek_4": "Seek to 40%",
+    "seek_5": "Seek to 50%",
+    "seek_6": "Seek to 60%",
+    "seek_7": "Seek to 70%",
+    "seek_8": "Seek to 80%",
+    "seek_9": "Seek to 90%"
+  },
+  "tray": {
+    "play": "Play",
+    "pause": "Pause",
+    "next": "Next",
+    "prev": "Prev",
+    "repeat": "Repeat",
+    "no_repeat": "No repeat",
+    "shuffle": "Shuffle",
+    "show_app": "Show app",
+    "quit": "Quit"
+  },
+  "toasts": {
+    "queued": "Queued {count} song | Queued {count} songs",
+    "shuffled": "Shuffled"
   }
 }

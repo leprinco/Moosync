@@ -27,6 +27,16 @@
     "genres": "शैलियाँ",
     "explore": "एक्सप्लोर करें"
   },
+  "playlists": {
+    "local": "Local",
+    "new_playlist": {
+      "create": "Create",
+      "description_placeholder": "Description..."
+    },
+    "url": {
+      "input_hint": "Enter URL Here.. (Youtube or Spotify)"
+    }
+  },
   "songView": {
     "details": {
       "songCount": "{count} गाना | {count} songs गानें"
@@ -42,10 +52,16 @@
     "addToQueue": "Add {title} to queue",
     "addToLibrary": "Add {title} to library",
     "playRandom": "Play 100 random songs",
-    "fetchAll": "Fetch all songs"
+    "fetchAll": "Fetch all songs",
+    "close": "Close",
+    "add": "Add",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "loading": "लोड हो रहा है...",
+  "now_playing": "Now playing",
   "contextMenu": {
+    "sort_by": "Sort by",
     "sort": {
       "title": "Title",
       "album": "Album (Track No.)",
@@ -84,8 +100,20 @@
       "gotoAlbum": "Goto album ({title})",
       "gotoArtists": "Goto artists"
     },
+    "artist": {
+      "remove": "Remove artist"
+    },
+    "album": {
+      "remove": "Remove album"
+    },
     "moreInfo": "अन्य जानकारी",
     "incorrectPlayback": "Incorrect playback?"
+  },
+  "explore": {
+    "you_listened_to": "You've listened to",
+    "of_music": "of music",
+    "played_for": "Played for",
+    "hot_from": "Hot from"
   },
   "providers": {
     "youtube": "यूट्यूब",
@@ -93,8 +121,10 @@
     "invidious": "अपमानजनक",
     "lastfm": "आखरीएफएम"
   },
-  "save": "Save",
-  "cancel": "Cancel",
+  "accounts": {
+    "connect": "Connect",
+    "sign_out": "Sign out"
+  },
   "settings": {
     "paths": {
       "songDirectories": "Song Directories",
@@ -128,7 +158,8 @@
         "name": "Theme Name",
         "author": "Author",
         "colors": "Colors",
-        "colors_tooltip": "Change the colors to customise UI"
+        "colors_tooltip": "Change the colors to customise UI",
+        "css": "Custom CSS"
       },
       "primary": "Primary",
       "secondary": "Secondary",
@@ -164,6 +195,7 @@
         "sponsorBlock": "Use SponsorBlock to automatically skip to highlighted part of Youtube song"
       },
       "audioSettings_tooltip": "Settings which are related audio playback",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "This url does not support Invidious API",
       "invidious_tooltip": "Invidious instance to use instead of youtube",
       "restartApp": "Restart Moosync",
@@ -276,7 +308,70 @@
       "logSettings": "Log Settings",
       "level": "Level",
       "process": "Process",
-      "filterMessage": "Filter Message"
+      "filterMessage": "Filter Message",
+      "levels": {
+        "all": "All",
+        "debug": "Debug",
+        "info": "Info",
+        "warn": "Warn",
+        "error": "Error"
+      },
+      "debug_logging": "Enable debug logging",
+      "table": {
+        "time": "Time",
+        "level": "Level",
+        "process": "Process",
+        "message": "Message"
+      }
     }
+  },
+  "hotkeys": {
+    "play": "Play Song",
+    "pause": "Pause song",
+    "play_toggle": "Toggle play",
+    "mute_active": "Mute",
+    "mute_inactive": "Unmute",
+    "mute_toggle": " Toggle mute",
+    "volume_inc": "Increase volume",
+    "volume_dec": "Decrease volume",
+    "repeat_active": "Repeat song",
+    "repeat_inactive": "Disable repeat",
+    "repeat_toggle": "Toggle repeat",
+    "queue_open": "Open song queue",
+    "queue_close": "Close song queue",
+    "queue_toggle": "Toggle song queue",
+    "reload_page": "Reload page",
+    "devtools": "Toggle dev-tools",
+    "help": "Open help",
+    "fullscreen": "Fullscreen",
+    "next_song": "Skip song",
+    "prev_song": "Prev song",
+    "seek_forward": "Seek 5s forward",
+    "seek_backwards": "Seek 5s backwards",
+    "seek_0": "Seek to 0%",
+    "seek_1": "Seek to 10%",
+    "seek_2": "Seek to 20%",
+    "seek_3": "Seek to 30%",
+    "seek_4": "Seek to 40%",
+    "seek_5": "Seek to 50%",
+    "seek_6": "Seek to 60%",
+    "seek_7": "Seek to 70%",
+    "seek_8": "Seek to 80%",
+    "seek_9": "Seek to 90%"
+  },
+  "tray": {
+    "play": "Play",
+    "pause": "Pause",
+    "next": "Next",
+    "prev": "Prev",
+    "repeat": "Repeat",
+    "no_repeat": "No repeat",
+    "shuffle": "Shuffle",
+    "show_app": "Show app",
+    "quit": "Quit"
+  },
+  "toasts": {
+    "queued": "Queued {count} song | Queued {count} songs",
+    "shuffled": "Shuffled"
   }
 }
