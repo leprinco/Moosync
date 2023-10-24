@@ -195,6 +195,7 @@
         "sponsorBlock": "Use o SponsorBlock para pular automaticamente para a parte destacada do Youtube música"
       },
       "audioSettings_tooltip": "Configurações relacionadas à reprodução de áudio",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "Esta url não suporta API Invidiosa",
       "invidious_tooltip": "Instância indicada para usar em vez do youtube",
       "restartApp": "Reiniciar o Moosync",
