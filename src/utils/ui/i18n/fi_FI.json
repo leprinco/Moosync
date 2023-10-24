@@ -195,6 +195,7 @@
         "sponsorBlock": "Käytä SponsorBlockia ohittaaksesi automaattisesti Youtube-kappaleen korostetun osan"
       },
       "audioSettings_tooltip": "Asetukset, jotka liittyvät äänen toistoon",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "Tämä url ei tue Invidious API",
       "invidious_tooltip": "Invidious instanssi käyttää sijasta youtube",
       "restartApp": "Käynnistä Moosync Uudelleen",
