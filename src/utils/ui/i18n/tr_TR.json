@@ -3,11 +3,11 @@
     "tabs": {
       "queue": "Sıra",
       "allSongs": "Tüm Şarkılar",
-      "playlists": "Playlists",
-      "albums": "Albums",
-      "artists": "Artists",
-      "genre": "Genres",
-      "explore": "Explore",
+      "playlists": "Çalma listeleri",
+      "albums": "Albümler",
+      "artists": "Sanatçılar",
+      "genre": "Türler",
+      "explore": "Keşfet",
       "paths": "Paths",
       "themes": "Themes",
       "extensions": "Extensions",
@@ -17,64 +17,80 @@
     }
   },
   "topbar": {
-    "searchPlaceholder": "Search...",
-    "noResultsFound": "No results found"
+    "searchPlaceholder": "Ara...",
+    "noResultsFound": "Sonuç bulunamadı"
   },
   "pages": {
-    "playlists": "Playlists",
-    "albums": "Albums",
-    "artists": "Artists",
-    "genres": "Genres",
-    "explore": "Explore"
+    "playlists": "Çalma listeleri",
+    "albums": "Albümler",
+    "artists": "Sanatçılar",
+    "genres": "Türler",
+    "explore": "Keşfet"
+  },
+  "playlists": {
+    "local": "Local",
+    "new_playlist": {
+      "create": "Create",
+      "description_placeholder": "Description..."
+    },
+    "url": {
+      "input_hint": "Enter URL Here.. (Youtube or Spotify)"
+    }
   },
   "songView": {
     "details": {
-      "songCount": "{count} song | {count} songs"
+      "songCount": "{count} şarkı | {count} şarkı"
     },
     "songList": {
       "topbar": {
-        "searchPlaceholder": "Search..."
+        "searchPlaceholder": "Ara..."
       }
     }
   },
   "buttons": {
-    "playSingle": "Play {title}",
-    "addToQueue": "Add {title} to queue",
-    "addToLibrary": "Add {title} to library",
+    "playSingle": "Çal {title}",
+    "addToQueue": "Sıraya {title} ekle",
+    "addToLibrary": "Kütüphaneye {title} ekle",
     "playRandom": "Play 100 random songs",
-    "fetchAll": "Fetch all songs"
+    "fetchAll": "Fetch all songs",
+    "close": "Close",
+    "add": "Add",
+    "save": "Save",
+    "cancel": "Cancel"
   },
-  "loading": "Loading...",
+  "loading": "Yükleniyor...",
+  "now_playing": "Now playing",
   "contextMenu": {
+    "sort_by": "Sort by",
     "sort": {
       "title": "Title",
       "album": "Album (Track No.)",
       "artist": "Artist",
       "genre": "Genre",
       "date_added": "Date added",
-      "provider": "Provider",
+      "provider": "Sağlayıcı",
       "playCount": "Play count"
     },
     "playlist": {
       "new": "New Playlist",
       "addFromURL": "Import from URL",
-      "remove": "Remove playlist",
-      "export": "Export playlist",
-      "add": "Add To Playlist",
+      "remove": "Çalma listesini sil",
+      "export": "Çalma listesini dışa aktar",
+      "add": "Çalma listesine ekle",
       "save": "Add To Library"
     },
     "song": {
-      "addFromURL": "Add from URL",
-      "playNow": "Play Now",
+      "addFromURL": "URL'den ekle",
+      "playNow": "Şimdi çal",
       "playNext": "Play Next",
       "clearAndPlay": "Clear queue and play",
-      "addToQueue": "Add To Queue",
-      "moveToTop": "Move to top",
-      "moveToBottom": "Move to bottom",
-      "moveManually": "Move manually",
-      "manualIndex": "Set index of song",
-      "remove": "Remove from Library",
-      "add": "Add Song to Library | Add Songs to Library",
+      "addToQueue": "Sıraya ekle",
+      "moveToTop": "En üste taşı",
+      "moveToBottom": "En alta taşı",
+      "moveManually": "El ile taşı",
+      "manualIndex": "Şarkı dizinini ayarla",
+      "remove": "Kütüphaneden kaldır",
+      "add": "Kütüphaneye şarkı ekle",
       "removeFromPlaylist": "Remove from playlist",
       "hideFromLibrary": "Hide from library",
       "showInLibrary": "Show in library",
@@ -84,29 +100,43 @@
       "gotoAlbum": "Goto album ({title})",
       "gotoArtists": "Goto artists"
     },
-    "moreInfo": "More Info",
+    "artist": {
+      "remove": "Remove artist"
+    },
+    "album": {
+      "remove": "Remove album"
+    },
+    "moreInfo": "Daha fazla bilgi",
     "incorrectPlayback": "Incorrect playback?"
   },
+  "explore": {
+    "you_listened_to": "You've listened to",
+    "of_music": "of music",
+    "played_for": "Played for",
+    "hot_from": "Hot from"
+  },
   "providers": {
-    "youtube": "Youtube",
+    "youtube": "YouTube",
     "spotify": "Spotify",
     "invidious": "Invidious",
     "lastfm": "LastFM"
   },
-  "save": "Save",
-  "cancel": "Cancel",
+  "accounts": {
+    "connect": "Connect",
+    "sign_out": "Sign out"
+  },
   "settings": {
     "paths": {
-      "songDirectories": "Song Directories",
-      "songDirectories_tooltip": "Directories where all your local music is stored",
+      "songDirectories": "Şarkı Dizinleri",
+      "songDirectories_tooltip": "Tüm yerel müziğinizin depolandığı dizinler",
       "songDirectories_exclude": "Blacklisted Directories",
       "songDirectories_exclude_tooltip": "Songs in these directories would not be scanned",
-      "addFolder": "Add Folder...",
-      "remove": "Remove",
-      "artworkPath": "Downloaded Artwork Path",
-      "artworkPath_tooltip": "Directory where downloaded artworks are stored",
-      "thumbnailPath": "Downloaded Thumbnail Path",
-      "thumbnailPath_tooltip": "Directory where generated thumbnails are stored",
+      "addFolder": "Klasör Ekle...",
+      "remove": "Kaldır",
+      "artworkPath": "İndirilen Çizim Konumu",
+      "artworkPath_tooltip": "İndirilen çizimlerin depolandığı dizin",
+      "thumbnailPath": "İndirilen Küçük Resim Yolu",
+      "thumbnailPath_tooltip": "Oluşturulan küçük resimlerin depolandığı dizin",
       "splitter": "Artist name split pattern",
       "splitter_tooltip": "Regex to split artist names. Leave empty to disable splitting.",
       "scan_interval": "Scan interval",
@@ -115,70 +145,72 @@
       "scan_threads_tooltip": "Number of threads to use when scanning for local music"
     },
     "themes": {
-      "songView": "Songs View",
-      "songView_tooltip": "Customize song list appearance",
-      "songView_classic": "Classic",
-      "songView_compact": "Compact",
-      "themes": "Themes",
-      "themes_tooltip": "Customize colors",
-      "themes_default": "Default",
+      "songView": "Şarkıların Görünümü",
+      "songView_tooltip": "Şarkı listesi görünümünü özelleştirin",
+      "songView_classic": "Klasik",
+      "songView_compact": "Sıkışık",
+      "themes": "Temalar",
+      "themes_tooltip": "Renkleri özelleştir",
+      "themes_default": "Varsayılan",
       "createTheme": "New theme",
       "importTheme": "Import theme",
       "newTheme": {
-        "name": "Theme Name",
-        "author": "Author",
-        "colors": "Colors",
-        "colors_tooltip": "Change the colors to customise UI"
+        "name": "Tema Adı",
+        "author": "Yaratıcı",
+        "colors": "Renkler",
+        "colors_tooltip": "Kullanıcı arayüzünü özelleştirmek için renkleri değiştirin",
+        "css": "Custom CSS"
       },
-      "primary": "Primary",
-      "secondary": "Secondary",
-      "tertiary": "Tertiary",
-      "textPrimary": "Text Primary",
-      "textSecondary": "Text Secondary",
-      "textInverse": "Text Inverse",
-      "accent": "Accent",
-      "divider": "Divider",
+      "primary": "Birincil",
+      "secondary": "İkincil",
+      "tertiary": "Üçüncül",
+      "textPrimary": "Birincil Metin",
+      "textSecondary": "İkincil Metin",
+      "textInverse": "Ters Metin",
+      "accent": "Vurgu",
+      "divider": "Ayırıcı",
       "import_button": "Import"
     },
     "extensions": {
-      "extensions": "Extensions",
-      "extensions_tooltip": "List of all installed extensions",
-      "discover": "Discover",
-      "install": "Install from file",
-      "remove": "Remove"
+      "extensions": "Uzantılar",
+      "extensions_tooltip": "Yüklü tüm uzantıların listesi",
+      "discover": "Keşfet",
+      "install": "Dosyadan yükle",
+      "remove": "Kaldır"
     },
     "system": {
       "systemSettings": {
-        "title": "System Settings",
-        "systemStartup": "Start app on system startup",
-        "minimizeTray": "Minimize to tray on close",
-        "hardwareAcceleration": "Use GPU hardware acceleration",
-        "watchFileChanges": "Watch music directories for changes",
+        "title": "Sistem Ayarları",
+        "systemStartup": "Uygulamayı sistem başlangıcında başlat",
+        "minimizeTray": "Kapatıldığında sistem tepsisine küçült",
+        "hardwareAcceleration": "GPU donanım hızlandırması kullan",
+        "watchFileChanges": "Değişiklikler için müzik dizinlerini takip et",
         "enableJukeboxMode": "Enable toggle for Jukebox mode",
         "lastLoadedPlaybackState": "Load last playback state on startup"
       },
-      "systemSettings_tooltip": "Settings which are related to your system",
+      "systemSettings_tooltip": "Sisteminizle ilgili ayarlar",
       "audioSettings": {
-        "title": "Audio Settings",
-        "gaplessPlayback": "Use gapless playback for wherever possible",
-        "sponsorBlock": "Use SponsorBlock to automatically skip to highlighted part of Youtube song"
+        "title": "Ses Ayarları",
+        "gaplessPlayback": "Mümkün olan her yerde boşluksuz oynatma kullan",
+        "sponsorBlock": "YouTube şarkısının vurgulanan bölümüne otomatik olarak atlamak için SponsorBlock kullan"
       },
-      "audioSettings_tooltip": "Settings which are related audio playback",
-      "invidiousUrlUnsupported": "This url does not support Invidious API",
-      "invidious_tooltip": "Invidious instance to use instead of youtube",
-      "restartApp": "Restart Moosync",
-      "zoom": "Zoom Factor (Beta)",
-      "zoom_tooltip": "Zoom of windows in percentage. This may break the UI.",
+      "audioSettings_tooltip": "Ses çalma ile ilgili ayarlar",
+      "gapless_skip": "Skip song before end (seconds)",
+      "invidiousUrlUnsupported": "Bu URL Invidious API'yi desteklemiyor",
+      "invidious_tooltip": "YouTube kullanmak yerine kullanılacak Invidious oluşumu",
+      "restartApp": "Moosync'i yeniden başlat",
+      "zoom": "Yakınlaştırma Faktörü (Beta)",
+      "zoom_tooltip": "Pencerelerin yüzde olarak yakınlaştırılması. Bu özellik kullanıcı arayüzünü bozabilir.",
       "spotify": {
-        "client_id": "Spotify Client ID",
-        "client_id_tooltip": "Spotify client ID required to login to Spotify. Click to know more",
+        "client_id": "Spotify İstemci Kimliği",
+        "client_id_tooltip": "Spotify'a giriş yapmak için Spotify istemci kimliği gereklidir. Daha fazla bilgi için tıklayın",
         "client_secret": "Spotify Client Secret",
-        "client_secret_tooltip": "Spotify client Secret required to login to Spotify. Click to know more",
-        "autoFetchButton": "Get Spotify details automatically",
-        "autoFetchPreTitle": "Get",
-        "autoFetchTitle": "ClientID and Secret",
-        "autoFetchDisclaimer": "A window will now open where you will be asked to login to your Spotify account. After logging in please do not click anywhere as the whole process will be automated",
-        "openWindow": "Open Window",
+        "client_secret_tooltip": "Spotify istemcisi, Spotify'a giriş yapmak için Secret gereklidir. Daha fazla bilgi için tıklayın",
+        "autoFetchButton": "Spotify ayrıntılarını otomatik olarak al",
+        "autoFetchPreTitle": "Al",
+        "autoFetchTitle": "ClientID ve Secret",
+        "autoFetchDisclaimer": "Şimdi Spotify hesabınıza giriş yapmanızın isteneceği bir pencere açılacaktır. Giriş yaptıktan sonra lütfen hiçbir yere tıklamayın çünkü tüm süreç otomatik olacaktır",
+        "openWindow": "Pencere Aç",
         "title": "Spotify Settings",
         "tooltip": "Options to change the behavior of spotify playback",
         "librespotEnable": "Use librespot (Spotify Premium required)",
@@ -194,13 +226,13 @@
         }
       },
       "youtube": {
-        "client_id": "Youtube Client ID",
+        "client_id": "Youtube İstemci Kimliği",
         "client_secret": "Youtube Client Secret",
         "client_id_tooltip": "Youtube client ID required to login to Youtube. Click to know more",
         "client_secret_tooltip": "Youtube client Secret required to login to Youtube. Click to know more"
       },
       "lastfm": {
-        "client_id": "LastFM Api Key",
+        "client_id": "LastFM Api Anahtarı",
         "client_secret": "LastFM Client Secret"
       },
       "youtubeAlternative": {
@@ -230,8 +262,8 @@
           "useEmbeds": "Use Youtube embeds for playing audio from Youtube"
         }
       },
-      "language": "Language",
-      "language_tooltip": "Change the language of the interface",
+      "language": "Dil",
+      "language_tooltip": "Arayüz dilini değiştirin",
       "clearPreferences": "Reset to default",
       "clear_preferences_title": "Reset to default?",
       "clear_preferences": "Are you sure you want to reset everything to default? The app will restart after you reset.",
@@ -273,10 +305,73 @@
       }
     },
     "logs": {
-      "logSettings": "Log Settings",
-      "level": "Level",
-      "process": "Process",
-      "filterMessage": "Filter Message"
+      "logSettings": "Günlük Ayarları",
+      "level": "Düzey",
+      "process": "İşlem",
+      "filterMessage": "Mesaj Filtrele",
+      "levels": {
+        "all": "All",
+        "debug": "Debug",
+        "info": "Info",
+        "warn": "Warn",
+        "error": "Error"
+      },
+      "debug_logging": "Enable debug logging",
+      "table": {
+        "time": "Time",
+        "level": "Level",
+        "process": "Process",
+        "message": "Message"
+      }
     }
+  },
+  "hotkeys": {
+    "play": "Play Song",
+    "pause": "Pause song",
+    "play_toggle": "Toggle play",
+    "mute_active": "Mute",
+    "mute_inactive": "Unmute",
+    "mute_toggle": " Toggle mute",
+    "volume_inc": "Increase volume",
+    "volume_dec": "Decrease volume",
+    "repeat_active": "Repeat song",
+    "repeat_inactive": "Disable repeat",
+    "repeat_toggle": "Toggle repeat",
+    "queue_open": "Open song queue",
+    "queue_close": "Close song queue",
+    "queue_toggle": "Toggle song queue",
+    "reload_page": "Reload page",
+    "devtools": "Toggle dev-tools",
+    "help": "Open help",
+    "fullscreen": "Fullscreen",
+    "next_song": "Skip song",
+    "prev_song": "Prev song",
+    "seek_forward": "Seek 5s forward",
+    "seek_backwards": "Seek 5s backwards",
+    "seek_0": "Seek to 0%",
+    "seek_1": "Seek to 10%",
+    "seek_2": "Seek to 20%",
+    "seek_3": "Seek to 30%",
+    "seek_4": "Seek to 40%",
+    "seek_5": "Seek to 50%",
+    "seek_6": "Seek to 60%",
+    "seek_7": "Seek to 70%",
+    "seek_8": "Seek to 80%",
+    "seek_9": "Seek to 90%"
+  },
+  "tray": {
+    "play": "Play",
+    "pause": "Pause",
+    "next": "Next",
+    "prev": "Prev",
+    "repeat": "Repeat",
+    "no_repeat": "No repeat",
+    "shuffle": "Shuffle",
+    "show_app": "Show app",
+    "quit": "Quit"
+  },
+  "toasts": {
+    "queued": "Queued {count} song | Queued {count} songs",
+    "shuffled": "Shuffled"
   }
 }

@@ -19,14 +19,26 @@ import { _windowHandler } from '../windowManager'
 export class DBWorkerWrapper {
   private worker: Unpromise<ReturnType<typeof spawn<WorkerModule<string>>>> | undefined
 
+  private preWorkerQueue: { method: string; args: unknown; resolver: (arg: unknown) => void }[] = []
+
   constructor(dbPath?: string) {
     this.start(dbPath ?? path.join(app.getPath('appData'), app.getName(), 'databases', 'songs.db'))
+  }
+
+  private async executeAllPending() {
+    for (const exec of this.preWorkerQueue) {
+      const res = await this.worker?.execute(exec.method, exec.args)
+      exec.resolver(res)
+    }
+
+    this.preWorkerQueue = []
   }
 
   public async start(dbPath: string) {
     this.worker = await spawn(new Worker(`${__dirname}/sqlite3.worker.js`))
     try {
       await this.worker.start(app.getPath('logs'), dbPath, loadSelectivePreference('thumbnailPath'))
+      await this.executeAllPending()
     } catch (e) {
       await this.close()
       console.error(e)
@@ -40,6 +52,12 @@ export class DBWorkerWrapper {
   }
 
   protected async execute(method: string, args: unknown[]) {
+    if (!this.worker) {
+      const promise = new Promise<unknown>((resolver) => {
+        this.preWorkerQueue.push({ method, args, resolver })
+      })
+      return promise
+    }
     return this.worker?.execute(method, args)
   }
 

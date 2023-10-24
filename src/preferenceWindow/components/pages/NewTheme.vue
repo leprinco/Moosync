@@ -38,7 +38,7 @@
             </table>
           </b-col>
         </b-row>
-        <PreferenceHeader title="Custom CSS" tooltip="Optional" class="mt-4" />
+        <PreferenceHeader :title="$t('settings.themes.newTheme.css')" tooltip="Optional" class="mt-4" />
         <b-row no-gutters class="background w-100 mt-2 d-flex">
           <b-row no-gutters class="mt-3 item w-100">
             <b-col cols="auto" align-self="center" class="ml-4 folder-icon">
@@ -56,8 +56,8 @@
         </b-row>
 
         <b-row class="mt-5 mr-4" align-h="end">
-          <b-button class="cancel-button mr-4" @click="dismiss">{{ $t('cancel') }}</b-button>
-          <b-button class="confirm-button" @click="saveTheme">{{ $t('save') }}</b-button>
+          <b-button class="cancel-button mr-4" @click="dismiss">{{ $t('buttons.cancel') }}</b-button>
+          <b-button class="confirm-button" @click="saveTheme">{{ $t('buttons.save') }}</b-button>
         </b-row>
       </b-col>
     </b-row>

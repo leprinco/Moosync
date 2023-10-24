@@ -27,6 +27,16 @@
     "genres": "ジャンル",
     "explore": "探索"
   },
+  "playlists": {
+    "local": "Local",
+    "new_playlist": {
+      "create": "Create",
+      "description_placeholder": "Description..."
+    },
+    "url": {
+      "input_hint": "Enter URL Here.. (Youtube or Spotify)"
+    }
+  },
   "songView": {
     "details": {
       "songCount": "{count} 曲 | {count} 曲"
@@ -42,10 +52,16 @@
     "addToQueue": "キューに {title} を追加",
     "addToLibrary": "ライブラリに {title} を追加",
     "playRandom": "ランダムに100曲再生",
-    "fetchAll": "すべての曲を取得"
+    "fetchAll": "すべての曲を取得",
+    "close": "Close",
+    "add": "Add",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "loading": "読み込み中...",
+  "now_playing": "Now playing",
   "contextMenu": {
+    "sort_by": "Sort by",
     "sort": {
       "title": "タイトル",
       "album": "アルバム",
@@ -84,8 +100,20 @@
       "gotoAlbum": "Goto album ({title})",
       "gotoArtists": "Goto artists"
     },
+    "artist": {
+      "remove": "Remove artist"
+    },
+    "album": {
+      "remove": "Remove album"
+    },
     "moreInfo": "詳細情報",
     "incorrectPlayback": "不正確な曲ですか？"
+  },
+  "explore": {
+    "you_listened_to": "You've listened to",
+    "of_music": "of music",
+    "played_for": "Played for",
+    "hot_from": "Hot from"
   },
   "providers": {
     "youtube": "YouTube",
@@ -93,8 +121,10 @@
     "invidious": "Invidious",
     "lastfm": "LastFM"
   },
-  "save": "保存",
-  "cancel": "キャンセル",
+  "accounts": {
+    "connect": "Connect",
+    "sign_out": "Sign out"
+  },
   "settings": {
     "paths": {
       "songDirectories": "曲のディレクトリ",
@@ -128,7 +158,8 @@
         "name": "テーマ名",
         "author": "作成者",
         "colors": "色",
-        "colors_tooltip": "UIをカスタマイズするために色を変更します"
+        "colors_tooltip": "UIをカスタマイズするために色を変更します",
+        "css": "Custom CSS"
       },
       "primary": "第一配色",
       "secondary": "第二配色",
@@ -164,6 +195,7 @@
         "sponsorBlock": "SponsorBlockでYouTubeの曲の主な部分に自動でスキップ"
       },
       "audioSettings_tooltip": "音声再生の設定",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "このURLはInvidious APIに対応していません",
       "invidious_tooltip": "YouTubeの代わりに使用する Invidious インスタンス",
       "restartApp": "Moosyncを再起動",
@@ -276,7 +308,70 @@
       "logSettings": "ログの設定",
       "level": "対象",
       "process": "処理",
-      "filterMessage": "メッセージの絞り込み"
+      "filterMessage": "メッセージの絞り込み",
+      "levels": {
+        "all": "All",
+        "debug": "Debug",
+        "info": "Info",
+        "warn": "Warn",
+        "error": "Error"
+      },
+      "debug_logging": "Enable debug logging",
+      "table": {
+        "time": "Time",
+        "level": "Level",
+        "process": "Process",
+        "message": "Message"
+      }
     }
+  },
+  "hotkeys": {
+    "play": "Play Song",
+    "pause": "Pause song",
+    "play_toggle": "Toggle play",
+    "mute_active": "Mute",
+    "mute_inactive": "Unmute",
+    "mute_toggle": " Toggle mute",
+    "volume_inc": "Increase volume",
+    "volume_dec": "Decrease volume",
+    "repeat_active": "Repeat song",
+    "repeat_inactive": "Disable repeat",
+    "repeat_toggle": "Toggle repeat",
+    "queue_open": "Open song queue",
+    "queue_close": "Close song queue",
+    "queue_toggle": "Toggle song queue",
+    "reload_page": "Reload page",
+    "devtools": "Toggle dev-tools",
+    "help": "Open help",
+    "fullscreen": "Fullscreen",
+    "next_song": "Skip song",
+    "prev_song": "Prev song",
+    "seek_forward": "Seek 5s forward",
+    "seek_backwards": "Seek 5s backwards",
+    "seek_0": "Seek to 0%",
+    "seek_1": "Seek to 10%",
+    "seek_2": "Seek to 20%",
+    "seek_3": "Seek to 30%",
+    "seek_4": "Seek to 40%",
+    "seek_5": "Seek to 50%",
+    "seek_6": "Seek to 60%",
+    "seek_7": "Seek to 70%",
+    "seek_8": "Seek to 80%",
+    "seek_9": "Seek to 90%"
+  },
+  "tray": {
+    "play": "Play",
+    "pause": "Pause",
+    "next": "Next",
+    "prev": "Prev",
+    "repeat": "Repeat",
+    "no_repeat": "No repeat",
+    "shuffle": "Shuffle",
+    "show_app": "Show app",
+    "quit": "Quit"
+  },
+  "toasts": {
+    "queued": "Queued {count} song | Queued {count} songs",
+    "shuffled": "Shuffled"
   }
 }

@@ -21,17 +21,15 @@
             </b-row>
             <b-row>
               <b-col>
-                <b-dropdown
-                  :text="capitalizeFirstLetter(levelFilter)"
-                  variant="success"
-                  class="dropdown-container mb-3"
-                  toggle-class="inner-dropdown"
-                >
-                  <b-dropdown-item @click="logLevelChange('ALL')">All</b-dropdown-item>
-                  <b-dropdown-item @click="logLevelChange('DEBUG')">Debug</b-dropdown-item>
-                  <b-dropdown-item @click="logLevelChange('INFO')">Info</b-dropdown-item>
-                  <b-dropdown-item @click="logLevelChange('WARN')">Warn</b-dropdown-item>
-                  <b-dropdown-item @click="logLevelChange('ERROR')">Error</b-dropdown-item>
+                <b-dropdown :text="capitalizeFirstLetter($t(`settings.logs.levels.${levelFilter.toLowerCase()}`))"
+                  variant="success" class="dropdown-container mb-3" toggle-class="inner-dropdown">
+                  <b-dropdown-item @click="logLevelChange('ALL')">{{ $t('settings.logs.levels.all') }}</b-dropdown-item>
+                  <b-dropdown-item @click="logLevelChange('DEBUG')">{{ $t('settings.logs.levels.debug')
+                  }}</b-dropdown-item>
+                  <b-dropdown-item @click="logLevelChange('INFO')">{{ $t('settings.logs.levels.info') }}</b-dropdown-item>
+                  <b-dropdown-item @click="logLevelChange('WARN')">{{ $t('settings.logs.levels.warn') }}</b-dropdown-item>
+                  <b-dropdown-item @click="logLevelChange('ERROR')">{{ $t('settings.logs.levels.error')
+                  }}</b-dropdown-item>
                 </b-dropdown>
               </b-col>
             </b-row>
@@ -42,19 +40,11 @@
             </b-row>
             <b-row>
               <b-col>
-                <b-dropdown
-                  :text="processFilter"
-                  variant="success"
-                  class="dropdown-container mb-3"
-                  toggle-class="inner-dropdown"
-                >
+                <b-dropdown :text="processFilter" variant="success" class="dropdown-container mb-3"
+                  toggle-class="inner-dropdown">
                   <b-dropdown-item @click="processFilterChange('All')">All</b-dropdown-item>
-                  <b-dropdown-item
-                    v-for="process in processFilters"
-                    :key="process"
-                    @click="processFilterChange(process)"
-                    >{{ process }}</b-dropdown-item
-                  >
+                  <b-dropdown-item v-for="process in processFilters" :key="process"
+                    @click="processFilterChange(process)">{{ process }}</b-dropdown-item>
                 </b-dropdown>
               </b-col>
             </b-row>
@@ -69,36 +59,21 @@
                   <template #prepend>
                     <SearchIcon class="align-self-center prepend-icon" />
                   </template>
-                  <b-input
-                    class="align-self-center search-field"
-                    placeholder="Search..."
-                    debounce="300"
-                    v-model="searchFilter"
-                  ></b-input>
+                  <b-input class="align-self-center search-field" placeholder="Search..." debounce="300"
+                    v-model="searchFilter"></b-input>
                 </b-input-group>
               </b-col>
             </b-row>
           </b-col>
-          <b-col cols="auto" class="mt-3 align-self-center refresh-icon" @click="refreshLogs"> <RefreshIcon /> </b-col>
+          <b-col cols="auto" class="mt-3 align-self-center refresh-icon" @click="refreshLogs">
+            <RefreshIcon />
+          </b-col>
         </b-row>
       </b-container>
       <div class="log-content w-100" no-gutters>
-        <b-table
-          :filter-function="handleFilter"
-          hover
-          dark
-          sticky-header
-          sort-by="time"
-          :sort-desc="true"
-          :items="logLines"
-          :fields="fields"
-          :filter="filterCriteria"
-          :perPage="perPage"
-          :current-page="currentPage"
-          id="logs-table"
-          class="log-table"
-          @filtered="onFiltered"
-        >
+        <b-table :filter-function="handleFilter" hover dark sticky-header sort-by="time" :sort-desc="true"
+          :items="logLines" :fields="fields" :filter="filterCriteria" :perPage="perPage" :current-page="currentPage"
+          id="logs-table" class="log-table" @filtered="onFiltered">
           <template #cell(time)="data">
             <div :class="`time-col ${data.item.level.toLowerCase()}`">
               {{ data.item.time }}
@@ -124,13 +99,8 @@
           </template>
         </b-table>
       </div>
-      <b-pagination
-        v-model="currentPage"
-        :total-rows="totalRows"
-        :per-page="perPage"
-        aria-controls="logs-table"
-        class="pagination"
-      ></b-pagination>
+      <b-pagination v-model="currentPage" :total-rows="totalRows" :per-page="perPage" aria-controls="logs-table"
+        class="pagination"></b-pagination>
     </div>
   </div>
 </template>
@@ -141,6 +111,7 @@ import { Vue } from 'vue-facing-decorator'
 import CheckboxGroup from '../CheckboxGroup.vue'
 import SearchIcon from '@/icons/SearchIcon.vue'
 import RefreshIcon from '../../../icons/RefreshIcon.vue'
+import { BvTableFieldArray } from 'bootstrap-vue'
 
 type LogLevels = 'ALL' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
 
@@ -168,7 +139,7 @@ export default class Logs extends Vue {
     return [
       {
         key: 'debug_logging',
-        title: 'Enable debug logging',
+        title: this.$t("settings.logs.debug_logging"),
         enabled: false
       }
     ]
@@ -180,7 +151,14 @@ export default class Logs extends Vue {
 
   filterCriteria = 'key'
 
-  fields = [{ key: 'time', sortable: true }, 'level', 'process', 'message']
+  get fields(): BvTableFieldArray {
+    return [
+      { key: 'time', sortable: true, 'label': this.$t('settings.logs.table.time') },
+      { key: 'level', 'label': this.$t('settings.logs.table.level') },
+      { key: 'process', label: this.$t('settings.logs.table.process') },
+      { key: 'message', 'label': this.$t('settings.logs.table.message') }
+    ]
+  }
 
   handleFilter(val: LogLines) {
     const currentLogLevel = this.getLogLevel(this.levelFilter)

@@ -176,6 +176,9 @@ export default class AudioStream extends mixins(
       console.debug('Found player', player?.key)
 
       if (newType === 'LOCAL' && player) {
+        if (song.duration < 0) {
+          song.duration = (await this.getPlaybackDurationFromPlayer(song)) ?? 0
+        }
         break
       }
 
@@ -434,6 +437,8 @@ export default class AudioStream extends mixins(
     return false
   }
 
+  private timeSkipSeconds = 0
+
   /**
    * Register all listeners related to players
    */
@@ -448,11 +453,15 @@ export default class AudioStream extends mixins(
         this.$emit('onTimeUpdate', time)
 
         if (this.currentSong) {
-          if (time >= this.currentSong.duration - preloadDuration) {
+          if (time >= this.currentSong.duration - preloadDuration - this.timeSkipSeconds) {
             await this.preloadNextSong()
             if (this.isSilent()) {
               this.onSongEnded()
             }
+          }
+
+          if (time >= this.currentSong.duration - this.timeSkipSeconds) {
+            this.onSongEnded()
           }
         }
       }
@@ -596,7 +605,7 @@ export default class AudioStream extends mixins(
     })
   }
 
-  private registerListeners() {
+  private async registerListeners() {
     this.registerRoomListeners()
     this.registerMediaControlListener()
 
@@ -607,6 +616,11 @@ export default class AudioStream extends mixins(
       if (this.currentSong) {
         this.loadAudio(this.currentSong, true, true)
       }
+    })
+
+    this.timeSkipSeconds = await window.PreferenceUtils.loadSelective<number>('gapless.skip', false) ?? 0
+    window.PreferenceUtils.listenPreferenceChanged<number>('gapless.skip', true, (_, value) => {
+      this.timeSkipSeconds = value
     })
   }
 
@@ -622,6 +636,29 @@ export default class AudioStream extends mixins(
     }
   }
 
+  private async getPlaybackDurationFromPlayer(song: Song) {
+    try {
+      const data = await new Promise<number | undefined>((resolve, reject) => {
+        const url = song.path ? `media://${song.path}` : song.playbackUrl
+
+        if (url) {
+          const audio = new Audio()
+          audio.onloadedmetadata = () => {
+            if (url) resolve(audio.duration)
+          }
+          audio.onerror = reject
+
+          audio.src = url
+        } else {
+          resolve(undefined)
+        }
+      })
+      return data
+    } catch (e) {
+      console.error('Failed to get duration for url', song.playbackUrl, e)
+    }
+  }
+
   private async getPlaybackUrlAndDuration(
     provider: GenericProvider | undefined,
     song: Song,
@@ -632,23 +669,9 @@ export default class AudioStream extends mixins(
       if (res) return res
     }
 
-    try {
-      const data = await new Promise<{ url: string; duration: number } | undefined>((resolve, reject) => {
-        if (song.playbackUrl) {
-          const audio = new Audio()
-          audio.onloadedmetadata = () => {
-            if (song.playbackUrl) resolve({ url: song.playbackUrl, duration: audio.duration })
-          }
-          audio.onerror = reject
-
-          audio.src = song.playbackUrl
-        } else {
-          resolve(undefined)
-        }
-      })
-      return data
-    } catch (e) {
-      console.error('Failed to get duration for url', song.playbackUrl, e)
+    const duration = await this.getPlaybackDurationFromPlayer(song)
+    if (duration) {
+      return { duration, url: song.playbackUrl }
     }
   }
 

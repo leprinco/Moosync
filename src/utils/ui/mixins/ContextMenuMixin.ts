@@ -42,6 +42,37 @@ export default class ContextMenuMixin extends mixins(
     await window.DBUtils.addToPlaylist(playlist_id, ...songs.map((val) => convertProxy(val)))
   }
 
+  private async removeAlbum(album: Album) {
+    if (!album.album_id) {
+      console.error('Failed to remove album, since album ID is empty')
+      return
+    }
+
+    const albumSongs = await window.SearchUtils.searchSongsByOptions({
+      album: {
+        album_id: album.album_id,
+      },
+    })
+
+    await window.DBUtils.removeSongs(albumSongs)
+  }
+
+  private async removeArtist(artist: Artists) {
+    if (!artist.artist_id) {
+      console.error('Failed to remove artist, since artist ID is empty')
+      return
+    }
+
+    const artistSongs = await window.SearchUtils.searchSongsByOptions({
+      artist: {
+        artist_id: artist.artist_id,
+      },
+      inclusive: true,
+    })
+
+    await window.DBUtils.removeSongs(artistSongs)
+  }
+
   private getSortIcon(currentType: SongSortOptions['type'], requiredType: SongSortOptions['type'], isAsc = true) {
     if (currentType === requiredType) {
       return isAsc ? '▲' : '▼'
@@ -72,7 +103,7 @@ export default class ContextMenuMixin extends mixins(
     const possibleSorts: SongSortOptions['type'][] = ['album', 'artist', 'date_added', 'genre', 'playCount', 'title']
     const menu: MenuItem[] = [
       {
-        label: 'Sort by',
+        label: this.$t('contextMenu.sort_by'),
         children: [],
       },
     ]
@@ -93,7 +124,7 @@ export default class ContextMenuMixin extends mixins(
   private getPlaylistSortByMenu(sort: Sort<PlaylistSortOptions>) {
     const menu: MenuItem[] = [
       {
-        label: 'Sort by',
+        label: this.$t('contextMenu.sort_by'),
         children: [
           {
             label: `${this.$t('contextMenu.sort.title')} ${
@@ -117,7 +148,7 @@ export default class ContextMenuMixin extends mixins(
   private getGenericSortByMenu(sort: Sort<NormalSortOptions>) {
     const menu: MenuItem[] = [
       {
-        label: 'Sort by',
+        label: this.$t('contextMenu.sort_by'),
         children: [
           {
             label: `${this.$t('contextMenu.sort.title')} ${
@@ -468,13 +499,27 @@ export default class ContextMenuMixin extends mixins(
     }
   }
 
-  private getArtistContextMenu(artist: Artists) {
+  private getArtistContextMenu(artist: Artists, refreshCallback: () => void) {
     const items = [this.getEntityInfoMenu(artist)]
+    items.push({
+      label: this.$t('contextMenu.artist.remove'),
+      onClick: async () => {
+        await this.removeArtist(artist)
+        refreshCallback()
+      },
+    })
     return items
   }
 
-  private getAlbumContextMenu(album: Album) {
+  private getAlbumContextMenu(album: Album, refreshCallback: () => void) {
     const items = [this.getEntityInfoMenu(album)]
+    items.push({
+      label: this.$t('contextMenu.album.remove'),
+      onClick: async () => {
+        await this.removeAlbum(album)
+        refreshCallback()
+      },
+    })
     return items
   }
 
@@ -541,10 +586,10 @@ export default class ContextMenuMixin extends mixins(
         items = this.getPlaylistContextMenu(options.args.playlist, options.args.isRemote, options.args.deleteCallback)
         break
       case 'ALBUM':
-        items = this.getAlbumContextMenu(options.args.album)
+        items = this.getAlbumContextMenu(options.args.album, options.args.refreshCallback)
         break
       case 'ARTIST':
-        items = this.getArtistContextMenu(options.args.artist)
+        items = this.getArtistContextMenu(options.args.artist, options.args.refreshCallback)
         break
       case 'GENERAL_PLAYLIST':
         items = this.getGeneralPlaylistMenu(options.args.sort, options.args.refreshCallback)

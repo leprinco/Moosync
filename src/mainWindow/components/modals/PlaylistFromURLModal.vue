@@ -38,7 +38,7 @@
             </b-row>
             <b-row no-gutters>
               <b-col cols="12">
-                <InputGroup class="input-group" hint="Enter URL Here.. (Youtube or Spotify)" v-model="playlistUrl"
+                <InputGroup class="input-group" :hint="$t('playlists.url.input_hint')" v-model="playlistUrl"
                   @update="parseURL" />
               </b-col>
             </b-row>
@@ -56,8 +56,9 @@
           </div>
         </b-row>
       </b-container>
-      <b-button class="close-button ml-3" @click="close">Close</b-button>
-      <b-button class="create-button" :disabled="!addButtonEnabled" @click="addToLibrary">Add</b-button>
+      <b-button class="close-button ml-3" @click="close">{{ $t('buttons.close') }}</b-button>
+      <b-button class="create-button" :disabled="!addButtonEnabled" @click="addToLibrary">{{ $t('buttons.add')
+      }}</b-button>
     </div>
   </b-modal>
 </template>

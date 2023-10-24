@@ -14,17 +14,10 @@
       <b-row no-gutters :class="`${type !== 'range' ? 'mt-3 item' : 'mb-2'} w-100`">
         <b-col cols="auto" align-self="center" class="ml-4 folder-icon"> </b-col>
         <b-col cols="auto" align-self="center" class="flex-grow-1 justify-content-start">
-          <input
-            :type="type"
-            v-model="value"
-            id="ext-input"
-            class="ext-input w-100"
-            :class="`${type === 'range' ? 'slider' : 'ext-input-hover'}`"
-            v-bind:style="{
+          <input :type="type" v-model="value" id="ext-input" class="ext-input w-100"
+            :class="`${type === 'range' ? 'slider' : 'ext-input-hover'}`" v-bind:style="{
               background: `${type === 'range' ? computedGradient : 'inherit'}`
-            }"
-            @change="formatAndUpdate"
-          />
+            }" @change="formatAndUpdate" />
         </b-col>
         <b-col class="range-text" v-if="showRangeText && type === 'range'">{{ value }}%</b-col>
         <b-col cols="auto" class="mr-4"></b-col>
@@ -88,12 +81,15 @@ export default class EditText extends mixins(ExtensionPreferenceMixin) {
 
   private formatVal(input: string) {
     let ret = input
-    if (this.maxValue) {
-      ret = ret.substring(0, this.maxValue)
-    }
 
-    if (this.onlyNumber) {
-      ret = ret.replace(/\D/g, '')
+    if (typeof ret === 'string') {
+      if (this.maxValue) {
+        ret = ret.substring(0, this.maxValue)
+      }
+
+      if (this.onlyNumber) {
+        ret = ret.replace(/\D/g, '')
+      }
     }
     return ret
   }

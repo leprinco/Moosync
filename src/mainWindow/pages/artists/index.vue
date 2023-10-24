@@ -9,17 +9,10 @@
 
 <template>
   <div class="h-100 w-100 parent" @contextmenu="contextHandler">
-    <CardRecycleScroller
-      :title="$t('pages.artists')"
-      :itemList="artistList"
-      :titleKey="'artist_name'"
-      :imageKey="'artist_coverPath'"
-      :keyField="'artist_id'"
-      @click="gotoArtist"
-      @CardContextMenu="singleItemContextHandler"
-      @generalContextMenu="contextHandler"
-      :isSortAsc="isSortAsc"
-    >
+    <CardRecycleScroller :title="$t('pages.artists')" :itemList="artistList" :titleKey="'artist_name'"
+      :imageKey="'artist_coverPath'" :keyField="'artist_id'" @click="gotoArtist"
+      @CardContextMenu="(event: MouseEvent, artist: Artists) => singleItemContextHandler(event, artist)"
+      @generalContextMenu="contextHandler" :isSortAsc="isSortAsc">
       <template #defaultCover>
         <ArtistDefault />
       </template>
@@ -73,11 +66,13 @@ export default class ArtistsPage extends mixins(RouterPushes, ContextMenuMixin) 
     vxm.themes.entitySortBy = options
   }
 
-  public singleItemContextHandler(artist: Artists, event: MouseEvent) {
+  public singleItemContextHandler(event: MouseEvent, artist: Artists) {
+    console.log(event, artist)
     this.getContextMenu(event, {
       type: 'ARTIST',
       args: {
-        artist
+        artist,
+        refreshCallback: this.getArtists
       }
     })
   }

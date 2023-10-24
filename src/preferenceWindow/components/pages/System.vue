@@ -12,125 +12,69 @@
     <b-container fluid>
       <b-row no-gutters class="w-100">
         <div class="path-selector w-100">
-          <CheckboxGroup
-            :title="$t('settings.system.systemSettings.title')"
-            :tooltip="$t('settings.system.systemSettings_tooltip')"
-            :isExtension="false"
-            :defaultValue="systemCheckboxValues"
-            :onValueChange="onSystemPrefChange"
-            :onValueFetch="onSystemPrefFetch"
-            key="system"
-          />
+          <CheckboxGroup :title="$t('settings.system.systemSettings.title')"
+            :tooltip="$t('settings.system.systemSettings_tooltip')" :isExtension="false"
+            :defaultValue="systemCheckboxValues" :onValueChange="onSystemPrefChange" :onValueFetch="onSystemPrefFetch"
+            key="system" />
 
           <b-col v-if="showJukeboxField">
-            <EditText
-              class="mt-5 mb-3"
-              :isExtension="false"
-              :title="$t('settings.system.jukebox.pin')"
-              key="jukebox_pin"
-              :tooltip="$t('settings.system.jukebox.pin_tooltip')"
-              defaultValue=""
-              maxValue="6"
-              :onlyNumber="true"
-              type="password"
-            />
+            <EditText class="mt-5 mb-3" :isExtension="false" :title="$t('settings.system.jukebox.pin')" key="jukebox_pin"
+              :tooltip="$t('settings.system.jukebox.pin_tooltip')" defaultValue="" maxValue="6" :onlyNumber="true"
+              type="password" />
 
-            <CheckboxGroup
-              :title="$t('settings.system.jukebox.optionalFields')"
-              :tooltip="$t('settings.system.jukebox.optionalFields_tooltip')"
-              :isExtension="false"
-              :defaultValue="jukeboxOptionalFields"
-              key="jukebox_optional_fields"
-            />
+            <CheckboxGroup :title="$t('settings.system.jukebox.optionalFields')"
+              :tooltip="$t('settings.system.jukebox.optionalFields_tooltip')" :isExtension="false"
+              :defaultValue="jukeboxOptionalFields" key="jukebox_optional_fields" />
           </b-col>
 
-          <CheckboxGroup
-            :title="$t('settings.system.queueSettings.title')"
-            class="mt-4"
-            :tooltip="$t('settings.system.queueSettings.tooltip')"
-            :isExtension="false"
-            :defaultValue="queueCheckboxValues"
-            key="queue"
-          />
+          <CheckboxGroup :title="$t('settings.system.queueSettings.title')" class="mt-4"
+            :tooltip="$t('settings.system.queueSettings.tooltip')" :isExtension="false"
+            :defaultValue="queueCheckboxValues" key="queue" />
 
-          <CheckboxGroup
-            :title="$t('settings.system.audioSettings.title')"
-            class="mt-4"
-            :tooltip="$t('settings.system.audioSettings_tooltip')"
-            :isExtension="false"
-            :defaultValue="audioCheckboxValues"
-            key="audio"
-          />
+          <CheckboxGroup :title="$t('settings.system.audioSettings.title')" class="mt-4"
+            :tooltip="$t('settings.system.audioSettings_tooltip')" :isExtension="false"
+            :defaultValue="audioCheckboxValues" key="audio" />
 
-          <RadioCheckbox
-            :title="$t('settings.system.volumePersistMode.title')"
-            class="mt-4"
-            :tooltip="$t('settings.system.volumePersistMode.tooltip')"
-            :isExtension="false"
-            :defaultValue="volumePersistModeCheckboxValues"
-            :onValueChange="onVolumePersistValueChange"
-            :onValueFetch="onVolumePersistValueChange"
-            key="volumePersistMode"
-          />
+          <EditText class="mt-4" :title="$t('settings.system.gapless_skip')" :onlyNumber="true" :key="`gapless.skip`"
+            :defaultValue="0" type="number" />
+
+          <RadioCheckbox :title="$t('settings.system.volumePersistMode.title')" class="mt-4"
+            :tooltip="$t('settings.system.volumePersistMode.tooltip')" :isExtension="false"
+            :defaultValue="volumePersistModeCheckboxValues" :onValueChange="onVolumePersistValueChange"
+            :onValueFetch="onVolumePersistValueChange" key="volumePersistMode" />
 
           <b-col v-if="showVolumeMapField">
             <b-container class="ml-1 mt-2" fluid>
               <b-row no-gutters class="d-flex" v-for="provider of volumeMapProviders" :key="provider.key">
                 <b-col cols="4" class="align-self-center text-left">{{ provider.title }}</b-col>
                 <b-col cols="8" lg="6">
-                  <EditText
-                    :onlyNumber="true"
-                    :key="`clampMap.${provider.key.replaceAll('.', '_').toLowerCase()}.clamp`"
-                    :defaultValue="provider.clamp"
-                    type="range"
-                    :showRangeText="true"
-                  />
+                  <EditText :onlyNumber="true" :key="`clampMap.${provider.key.replaceAll('.', '_').toLowerCase()}.clamp`"
+                    :defaultValue="provider.clamp" type="range" :showRangeText="true" />
                 </b-col>
               </b-row>
             </b-container>
           </b-col>
 
-          <CheckboxGroup
-            :title="$t('settings.system.scrobble.provider_toggle.title')"
-            class="mt-4"
-            :tooltip="$t('settings.system.scrobble.provider_toggle.tooltip')"
-            :isExtension="false"
-            :defaultValue="scrobbleProviderCheckboxValues"
-            key="scrobble.provider_toggle"
-          />
+          <CheckboxGroup :title="$t('settings.system.scrobble.provider_toggle.title')" class="mt-4"
+            :tooltip="$t('settings.system.scrobble.provider_toggle.tooltip')" :isExtension="false"
+            :defaultValue="scrobbleProviderCheckboxValues" key="scrobble.provider_toggle" />
 
-          <RadioCheckbox
-            :title="$t('settings.system.youtubeAlternative.title')"
-            class="mt-4"
-            :tooltip="$t('settings.system.youtubeAlternative.tooltip')"
-            :isExtension="false"
-            :defaultValue="youtubeAlternativeCheckboxValues"
-            :onValueChange="onYoutubeAlternativesChanged"
-            :onValueFetch="onYoutubeAlternativesFetched"
-            key="youtubeAlt"
-          />
+          <RadioCheckbox :title="$t('settings.system.youtubeAlternative.title')" class="mt-4"
+            :tooltip="$t('settings.system.youtubeAlternative.tooltip')" :isExtension="false"
+            :defaultValue="youtubeAlternativeCheckboxValues" :onValueChange="onYoutubeAlternativesChanged"
+            :onValueFetch="onYoutubeAlternativesFetched" key="youtubeAlt" />
 
           <b-col v-if="showYoutubeField">
-            <CheckboxGroup
-              :title="$t('settings.system.youtubeAlternative.youtube.options')"
-              class="mt-4"
-              :tooltip="$t('settings.system.youtubeAlternative.youtube.options_tooltip')"
-              :isExtension="false"
-              :defaultValue="youtubeAdvancedCheckboxValues"
-              key="youtubeOptions"
-            />
+            <CheckboxGroup :title="$t('settings.system.youtubeAlternative.youtube.options')" class="mt-4"
+              :tooltip="$t('settings.system.youtubeAlternative.youtube.options_tooltip')" :isExtension="false"
+              :defaultValue="youtubeAdvancedCheckboxValues" key="youtubeOptions" />
           </b-col>
 
           <b-col v-if="showInvidiousField">
-            <AutoFillEditText
-              class="mt-4"
-              key="invidious_instance"
-              :datalist="invidiousInstances"
+            <AutoFillEditText class="mt-4" key="invidious_instance" :datalist="invidiousInstances"
               :title="$t('settings.system.youtubeAlternative.invidious.url')"
               :tooltip="$t('settings.system.youtubeAlternative.invidious.url_tooltip')"
-              :onValueChange="onInvidiousInstanceChange"
-              :onValueFetch="onInvidiousInstanceChange"
-            />
+              :onValueChange="onInvidiousInstanceChange" :onValueFetch="onInvidiousInstanceChange" />
 
             <b-container class="invidious-details">
               <b-row>
@@ -139,80 +83,38 @@
                 </b-col>
               </b-row>
             </b-container>
-            <CheckboxGroup
-              :title="$t('settings.system.youtubeAlternative.invidious.options')"
-              class="mt-4"
-              :tooltip="$t('settings.system.youtubeAlternative.invidious.options_tooltip')"
-              :isExtension="false"
-              :defaultValue="invidiousAdvancedCheckboxValues"
-              key="invidious"
-            />
+            <CheckboxGroup :title="$t('settings.system.youtubeAlternative.invidious.options')" class="mt-4"
+              :tooltip="$t('settings.system.youtubeAlternative.invidious.options_tooltip')" :isExtension="false"
+              :defaultValue="invidiousAdvancedCheckboxValues" key="invidious" />
           </b-col>
 
           <b-col v-if="showPipedField">
-            <AutoFillEditText
-              class="mt-4"
-              key="piped_instance"
-              :datalist="pipedInstances"
+            <AutoFillEditText class="mt-4" key="piped_instance" :datalist="pipedInstances"
               :title="$t('settings.system.youtubeAlternative.piped.url')"
-              :tooltip="$t('settings.system.youtubeAlternative.piped.url_tooltip')"
-            />
+              :tooltip="$t('settings.system.youtubeAlternative.piped.url_tooltip')" />
 
-            <EditText
-              class="mt-4"
-              :isExtension="false"
-              :title="$t('settings.system.youtubeAlternative.piped.username')"
-              key="piped.username"
-              :tooltip="$t('settings.system.youtubeAlternative.piped.username_tooltip')"
-            />
+            <EditText class="mt-4" :isExtension="false" :title="$t('settings.system.youtubeAlternative.piped.username')"
+              key="piped.username" :tooltip="$t('settings.system.youtubeAlternative.piped.username_tooltip')" />
 
-            <EditText
-              class="mt-2"
-              :isExtension="false"
-              :title="$t('settings.system.youtubeAlternative.piped.password')"
-              key="piped.password"
-              :tooltip="$t('settings.system.youtubeAlternative.piped.password_tooltip')"
-              type="password"
-            />
+            <EditText class="mt-2" :isExtension="false" :title="$t('settings.system.youtubeAlternative.piped.password')"
+              key="piped.password" :tooltip="$t('settings.system.youtubeAlternative.piped.password_tooltip')"
+              type="password" />
           </b-col>
 
-          <CheckboxGroup
-            :title="$t('settings.system.spotify.title')"
-            :tooltip="$t('settings.system.spotify.tooltip')"
-            class="mt-4"
-            key="spotify.options"
-            :defaultValue="spotifyCheckboxValues"
-            :isExtension="false"
-            :onValueChange="onSpotifyValueFetch"
-            :onValueFetch="onSpotifyValueFetch"
-          />
+          <CheckboxGroup :title="$t('settings.system.spotify.title')" :tooltip="$t('settings.system.spotify.tooltip')"
+            class="mt-4" key="spotify.options" :defaultValue="spotifyCheckboxValues" :isExtension="false"
+            :onValueChange="onSpotifyValueFetch" :onValueFetch="onSpotifyValueFetch" />
 
           <b-col v-if="showSpotifyUserPass">
-            <EditText
-              class="mt-4"
-              :isExtension="false"
-              :title="$t('settings.system.spotify.username')"
-              key="spotify.username"
-              :tooltip="$t('settings.system.spotify.username_tooltip')"
-            />
+            <EditText class="mt-4" :isExtension="false" :title="$t('settings.system.spotify.username')"
+              key="spotify.username" :tooltip="$t('settings.system.spotify.username_tooltip')" />
 
-            <EditText
-              class="mt-2"
-              :isExtension="false"
-              :title="$t('settings.system.spotify.password')"
-              key="spotify.password"
-              :tooltip="$t('settings.system.spotify.password_tooltip')"
-              type="password"
-            />
+            <EditText class="mt-2" :isExtension="false" :title="$t('settings.system.spotify.password')"
+              key="spotify.password" :tooltip="$t('settings.system.spotify.password_tooltip')" type="password" />
 
-            <CheckboxGroup
-              :title="$t('settings.system.spotify.librespot.title')"
-              :tooltip="$t('settings.system.spotify.librespot.tooltip')"
-              class="mt-4"
-              key="spotify.librespot.options"
-              :defaultValue="librespotOptions"
-              :isExtension="false"
-            />
+            <CheckboxGroup :title="$t('settings.system.spotify.librespot.title')"
+              :tooltip="$t('settings.system.spotify.librespot.tooltip')" class="mt-4" key="spotify.librespot.options"
+              :defaultValue="librespotOptions" :isExtension="false" />
           </b-col>
 
           <b-row v-if="showRestartButton">
@@ -221,83 +123,36 @@
             </b-col>
           </b-row>
 
-          <CheckboxGroup
-            :title="$t('settings.system.lyrics.title')"
-            class="mt-4"
-            :tooltip="$t('settings.system.lyrics.tooltip')"
-            :isExtension="false"
-            :defaultValue="lyricsCheckboxValues"
-            key="lyrics_fetchers"
-          />
+          <CheckboxGroup :title="$t('settings.system.lyrics.title')" class="mt-4"
+            :tooltip="$t('settings.system.lyrics.tooltip')" :isExtension="false" :defaultValue="lyricsCheckboxValues"
+            key="lyrics_fetchers" />
 
-          <EditText
-            class="mt-5 mb-3"
-            :isExtension="false"
-            :title="$t('settings.system.zoom')"
-            key="zoomFactor"
-            :tooltip="$t('settings.system.zoom_tooltip')"
-            :onValueChange="onZoomUpdate"
-            defaultValue="100"
-            type="number"
-          />
+          <EditText class="mt-5 mb-3" :isExtension="false" :title="$t('settings.system.zoom')" key="zoomFactor"
+            :tooltip="$t('settings.system.zoom_tooltip')" :onValueChange="onZoomUpdate" defaultValue="100"
+            type="number" />
 
-          <EditText
-            class="mt-5 mb-3"
-            :isExtension="false"
-            :title="$t('settings.system.spotify.client_id')"
-            key="spotify.client_id"
-            :tooltip="$t('settings.system.spotify.client_id_tooltip')"
-            @tooltipClick="openSpotifyHelp"
-          />
-          <EditText
-            :isExtension="false"
-            :tooltip="$t('settings.system.spotify.client_secret_tooltip')"
-            :title="$t('settings.system.spotify.client_secret')"
-            key="spotify.client_secret"
-            @tooltipClick="openSpotifyHelp"
-          />
+          <EditText class="mt-5 mb-3" :isExtension="false" :title="$t('settings.system.spotify.client_id')"
+            key="spotify.client_id" :tooltip="$t('settings.system.spotify.client_id_tooltip')"
+            @tooltipClick="openSpotifyHelp" />
+          <EditText :isExtension="false" :tooltip="$t('settings.system.spotify.client_secret_tooltip')"
+            :title="$t('settings.system.spotify.client_secret')" key="spotify.client_secret"
+            @tooltipClick="openSpotifyHelp" />
 
-          <EditText
-            v-if="!youtubeEnvExists"
-            class="mt-5 mb-3"
-            :isExtension="false"
-            :title="$t('settings.system.youtube.client_id')"
-            :tooltip="$t('settings.system.youtube.client_id_tooltip')"
-            @tooltipClick="openYoutubeHelp"
-            key="youtube.client_id"
-          />
-          <EditText
-            v-if="!youtubeEnvExists"
-            :isExtension="false"
-            :title="$t('settings.system.youtube.client_secret')"
-            :tooltip="$t('settings.system.youtube.client_secret_tooltip')"
-            @tooltipClick="openYoutubeHelp"
-            key="youtube.client_secret"
-          />
+          <EditText v-if="!youtubeEnvExists" class="mt-5 mb-3" :isExtension="false"
+            :title="$t('settings.system.youtube.client_id')" :tooltip="$t('settings.system.youtube.client_id_tooltip')"
+            @tooltipClick="openYoutubeHelp" key="youtube.client_id" />
+          <EditText v-if="!youtubeEnvExists" :isExtension="false" :title="$t('settings.system.youtube.client_secret')"
+            :tooltip="$t('settings.system.youtube.client_secret_tooltip')" @tooltipClick="openYoutubeHelp"
+            key="youtube.client_secret" />
 
-          <EditText
-            v-if="!lastfmEnvExists"
-            class="mt-5 mb-3"
-            :isExtension="false"
-            :title="$t('settings.system.lastfm.client_id')"
-            key="lastfm.client_id"
-          />
+          <EditText v-if="!lastfmEnvExists" class="mt-5 mb-3" :isExtension="false"
+            :title="$t('settings.system.lastfm.client_id')" key="lastfm.client_id" />
 
-          <EditText
-            v-if="!lastfmEnvExists"
-            :isExtension="false"
-            :title="$t('settings.system.lastfm.client_secret')"
-            key="lastfm.client_secret"
-          />
+          <EditText v-if="!lastfmEnvExists" :isExtension="false" :title="$t('settings.system.lastfm.client_secret')"
+            key="lastfm.client_secret" />
 
-          <Dropdown
-            class="mt-5"
-            :defaultValue="languageDropdown"
-            :title="$t('settings.system.language')"
-            :tooltip="$t('settings.system.language_tooltip')"
-            key="system_language"
-            :onValueChange="onLanguageChanged"
-          />
+          <Dropdown class="mt-5" :defaultValue="languageDropdown" :title="$t('settings.system.language')"
+            :tooltip="$t('settings.system.language_tooltip')" key="system_language" :onValueChange="onLanguageChanged" />
 
           <b-button class="delete-button mt-4" @click="showClearPreferencesDisclaimer">{{
             $t('settings.system.clearPreferences')
@@ -316,10 +171,8 @@
         </b-row>
         <b-row>
           <b-col class="d-flex justify-content-center">
-            <div
-              @click="clearPreferences"
-              class="delete-button button-grow mt-4 d-flex justify-content-center align-items-center"
-            >
+            <div @click="clearPreferences"
+              class="delete-button button-grow mt-4 d-flex justify-content-center align-items-center">
               {{ $t('settings.system.clear_preferences_button') }}
             </div>
           </b-col>
@@ -389,9 +242,8 @@ export default class System extends Vue {
         true
       )
       if (resp) {
-        this.invidiousDetails = `Software: ${resp.software.name}:${resp.software.branch}-${
-          resp.software.version
-        }\nUsers: ${resp.usage.users.total}\nSignup: ${resp.openRegistrations ? 'Open' : 'Closed'}`
+        this.invidiousDetails = `Software: ${resp.software.name}:${resp.software.branch}-${resp.software.version
+          }\nUsers: ${resp.usage.users.total}\nSignup: ${resp.openRegistrations ? 'Open' : 'Closed'}`
       }
     } catch (e) {
       this.invidiousDetails = this.$t('settings.system.invidiousUrlUnsupported')
