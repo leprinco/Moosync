@@ -195,6 +195,7 @@
         "sponsorBlock": "Bruk SponsorBlock til å automatisk hoppe over uthevede deler av YouTube-sangen"
       },
       "audioSettings_tooltip": "Innstillinger som er relatert lydavspilling",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "Denne nettadressen støtter ikke Invidious API",
       "invidious_tooltip": "Invidiøs forekomst å bruke istedenfor youtube",
       "restartApp": "Restart Moosync",
