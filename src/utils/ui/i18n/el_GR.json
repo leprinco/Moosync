@@ -195,6 +195,7 @@
         "sponsorBlock": "Χρησιμοποιήστε το SponsorBlock για αυτόματη μετάβαση στο επισημασμένο τμήμα του τραγουδιού του Youtube"
       },
       "audioSettings_tooltip": "Ρυθμίσεις που σχετίζονται με αναπαραγωγή ήχου",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "Αυτή η διεύθυνση URL δεν υποστηρίζει Invidious API",
       "invidious_tooltip": "Invidious instance για χρήση αντί για youtube",
       "restartApp": "Επανεκκίνηση Moosync",
