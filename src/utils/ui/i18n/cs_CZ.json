@@ -195,6 +195,7 @@
         "sponsorBlock": "Použít SponsorBlock k automatickému přeskočení zvýrazněné části Youtube písně"
       },
       "audioSettings_tooltip": "Nastavení související přehrávání zvuku",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "Tato url nepodporuje Invidious API",
       "invidious_tooltip": "Invidious instance k použití místo youtube",
       "restartApp": "Restartovat Moosync",
