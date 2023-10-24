@@ -195,6 +195,7 @@
         "sponsorBlock": "使用 SpongorBlock 自动跳过高亮显示YouTube 歌曲的部分"
       },
       "audioSettings_tooltip": "相关的音频回放设置",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "此URL不支持邀请API。",
       "invidious_tooltip": "提示：要使用 Invidious 的服务而不是 YouTube",
       "restartApp": "重启Moosync",
