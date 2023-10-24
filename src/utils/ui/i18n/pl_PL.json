@@ -195,6 +195,7 @@
         "sponsorBlock": "Użyj SponsorBlock, aby automatycznie pominąć podświetloną część utworu YouTube"
       },
       "audioSettings_tooltip": "Ustawienia powiązane z odtwarzaniem dźwięku",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "Ten adres URL nie obsługuje Invidious API",
       "invidious_tooltip": "Podejrzana instancja do użycia zamiast Youtube",
       "restartApp": "Uruchom ponownie Moosync",
