@@ -437,6 +437,8 @@ export default class AudioStream extends mixins(
     return false
   }
 
+  private timeSkipSeconds = 0
+
   /**
    * Register all listeners related to players
    */
@@ -451,11 +453,15 @@ export default class AudioStream extends mixins(
         this.$emit('onTimeUpdate', time)
 
         if (this.currentSong) {
-          if (time >= this.currentSong.duration - preloadDuration) {
+          if (time >= this.currentSong.duration - preloadDuration - this.timeSkipSeconds) {
             await this.preloadNextSong()
             if (this.isSilent()) {
               this.onSongEnded()
             }
+          }
+
+          if (time >= this.currentSong.duration - this.timeSkipSeconds) {
+            this.onSongEnded()
           }
         }
       }
@@ -599,7 +605,7 @@ export default class AudioStream extends mixins(
     })
   }
 
-  private registerListeners() {
+  private async registerListeners() {
     this.registerRoomListeners()
     this.registerMediaControlListener()
 
@@ -610,6 +616,11 @@ export default class AudioStream extends mixins(
       if (this.currentSong) {
         this.loadAudio(this.currentSong, true, true)
       }
+    })
+
+    this.timeSkipSeconds = await window.PreferenceUtils.loadSelective<number>('gapless.skip', false) ?? 0
+    window.PreferenceUtils.listenPreferenceChanged<number>('gapless.skip', true, (_, value) => {
+      this.timeSkipSeconds = value
     })
   }
 
