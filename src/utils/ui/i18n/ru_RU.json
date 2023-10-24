@@ -195,6 +195,7 @@
         "sponsorBlock": "Использовать SponsorBlock для автоперехода к выделенной части трека на Youtube"
       },
       "audioSettings_tooltip": "Настройки, связанные с воспроизведением аудио",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "Эта ссылка не поддерживает Invidious API",
       "invidious_tooltip": "Invidious экземпляр для использования вместо youtube",
       "restartApp": "Перезапустить Moosync",
