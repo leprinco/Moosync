@@ -195,6 +195,7 @@
         "sponsorBlock": "Use SponsorBlock to automatically skip to highlighted part of Youtube song"
       },
       "audioSettings_tooltip": "Settings which are related audio playback",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "This url does not support Invidious API",
       "invidious_tooltip": "Invidious instance to use instead of youtube",
       "restartApp": "Restart Moosync",
