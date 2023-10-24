@@ -195,6 +195,7 @@
         "sponsorBlock": "YouTube şarkısının vurgulanan bölümüne otomatik olarak atlamak için SponsorBlock kullan"
       },
       "audioSettings_tooltip": "Ses çalma ile ilgili ayarlar",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "Bu URL Invidious API'yi desteklemiyor",
       "invidious_tooltip": "YouTube kullanmak yerine kullanılacak Invidious oluşumu",
       "restartApp": "Moosync'i yeniden başlat",
