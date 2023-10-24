@@ -81,12 +81,15 @@ export default class EditText extends mixins(ExtensionPreferenceMixin) {
 
   private formatVal(input: string) {
     let ret = input
-    if (this.maxValue) {
-      ret = ret.substring(0, this.maxValue)
-    }
 
-    if (this.onlyNumber) {
-      ret = ret.replace(/\D/g, '')
+    if (typeof ret === 'string') {
+      if (this.maxValue) {
+        ret = ret.substring(0, this.maxValue)
+      }
+
+      if (this.onlyNumber) {
+        ret = ret.replace(/\D/g, '')
+      }
     }
     return ret
   }
