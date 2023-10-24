@@ -195,6 +195,7 @@
         "sponsorBlock": "SponsorBlock gebruiken om automatisch over te slaan naar gemarkeerd deel van het Youtube nummer"
       },
       "audioSettings_tooltip": "Instellingen voor verwante audio afspelen",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "Deze url biedt geen ondersteuning voor Invidious API",
       "invidious_tooltip": "Onbenauwde instantie om te gebruiken in plaats van youtube",
       "restartApp": "Herstart Moosync",
