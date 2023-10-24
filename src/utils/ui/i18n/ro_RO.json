@@ -195,6 +195,7 @@
         "sponsorBlock": "Folosește SponsorBlock pentru a sări automat în partea evidențiată a cântecului Youtube"
       },
       "audioSettings_tooltip": "Setări care sunt legate de redarea audio",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "Acest url nu acceptă API Invidious",
       "invidious_tooltip": "Instanță invidioasă de folosit în loc de youtub",
       "restartApp": "Repornește Moosync",
