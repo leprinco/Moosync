@@ -668,7 +668,7 @@ export default class ContextMenuMixin extends mixins(
       const items: (ExtendedExtensionContextMenuItems<ContextMenuTypes> & MenuItem)[] =
         await window.ExtensionUtils.getContextMenuItems(type as ContextMenuTypes)
       for (const i of items) {
-        i.onClick = () => window.ExtensionUtils.fireContextMenuHandler(i.id, i.packageName, arg)
+        i.onClick = () => window.ExtensionUtils.fireContextMenuHandler(i.id, i.packageName, convertProxy(arg))
       }
 
       return items as MenuItem[]
