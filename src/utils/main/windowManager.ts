@@ -520,6 +520,12 @@ class TrayHandler {
       } catch (e) {
         this._tray = new Tray(path.join(__static, process.platform === 'darwin' ? 'logo_osx.png' : 'logo.png'))
       }
+
+      this._tray.addListener('double-click', () => {
+        AppExitHandler._isQuitting = false
+        WindowHandler.getWindow()?.show()
+        WindowHandler.getWindow()?.focus()
+      })
       this.setupContextMenu()
     }
   }
@@ -599,7 +605,6 @@ class TrayHandler {
 
   private setupContextMenu() {
     if (this._tray && !this._tray.isDestroyed()) {
-      console.log('manual i18n', $t('tray.show_app'))
       this._tray.setContextMenu(
         Menu.buildFromTemplate([
           {
