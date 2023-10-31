@@ -37,7 +37,8 @@ const enum ButtonEnum {
   Shuffle = 10,
   Repeat = 11,
   Seek = 12,
-  PlayPause = 13
+  PlayPause = 13,
+  Position = 14
 }
 
 const SONG_CHANGE_DEBOUNCE = 100
@@ -281,6 +282,7 @@ export default class AudioStream extends mixins(
    * Method triggered when user seeks on timeline and forceSeek prop changes
    */
   onSeek(newValue?: number) {
+    console.log('seeking to', newValue)
     if (typeof newValue === 'number') {
       if (this.activePlayer) {
         this.activePlayer.currentTime = newValue
@@ -452,6 +454,8 @@ export default class AudioStream extends mixins(
       this.activePlayer.onTimeUpdate = async (time) => {
         this.$emit('onTimeUpdate', time)
 
+        this.updateMprisPosition(time)
+
         if (this.currentSong) {
           if (time >= this.currentSong.duration - preloadDuration - this.timeSkipSeconds) {
             await this.preloadNextSong()
@@ -574,9 +578,20 @@ export default class AudioStream extends mixins(
     }
   }
 
+  private handleSeek(seek: number, relative: boolean) {
+    if (seek) {
+      console.log('seeking', seek)
+      const parsed = seek / 10e5
+      const newPos = relative ? vxm.player.currentTime + parsed : parsed
+      bus.emit('forceSeek', newPos)
+      vxm.player.forceSeek = newPos
+    }
+  }
+
   private registerMediaControlListener() {
-    window.MprisUtils.listenMediaButtonPress((args) => {
-      switch (args) {
+    window.MprisUtils.listenMediaButtonPress((button, arg) => {
+      console.log('pressed', button, arg)
+      switch (button) {
         case ButtonEnum.Play:
           this.play()
           break
@@ -601,8 +616,18 @@ export default class AudioStream extends mixins(
         case ButtonEnum.PlayPause:
           this.togglePlay()
           break
+        case ButtonEnum.Seek:
+          this.handleSeek(arg as number, true)
+          break
+        case ButtonEnum.Position:
+          this.handleSeek((arg as { position: number })?.position, false)
+          break
       }
     })
+  }
+
+  private async updateMprisPosition(position: number) {
+    await window.MprisUtils.updatePosition(position)
   }
 
   private async registerListeners() {
@@ -665,6 +690,7 @@ export default class AudioStream extends mixins(
     player: string
   ): Promise<{ url: string | undefined; duration?: number } | undefined> {
     if (provider) {
+      console.debug('Fetching playback URL and duration from', provider.key)
       const res = await provider.getPlaybackUrlAndDuration(song, player)
       if (res) return res
     }
@@ -681,7 +707,9 @@ export default class AudioStream extends mixins(
   private async setMediaInfo(song: Song) {
     const raw = convertProxy(song)
     await window.MprisUtils.updateSongInfo({
+      id: raw._id,
       title: raw.title,
+      duration: raw.duration,
       albumName: raw.album?.album_name,
       albumArtist: raw.album?.album_artist,
       artistName: raw.artists && raw.artists.map((val) => val.artist_name).join(', '),

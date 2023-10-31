@@ -7,6 +7,8 @@
  *  See LICENSE in the project root for license information.
  */
 
+import { ButtonEnum, PlayerButtons } from 'media-controller'
+import { ConstructorConfig, PlayerEvent, PlayerEventTypes, TokenScope } from 'librespot-node'
 import {
   ExtensionHostEvents,
   IpcEvents,
@@ -24,11 +26,9 @@ import {
 } from '@/utils/main/ipc/constants'
 import { contextBridge, ipcRenderer, webFrame } from 'electron'
 
-import { SpotifyEvents } from '../main/ipc/constants'
 import { IpcRendererHolder } from '@/utils/preload/ipc/index'
-import { ConstructorConfig, PlayerEvent, PlayerEventTypes, TokenScope } from 'librespot-node'
 import { LogLevelDesc } from 'loglevel'
-import { ButtonEnum, PlayerButtons } from 'media-controller'
+import { SpotifyEvents } from '../main/ipc/constants'
 import ytpl from 'ytpl'
 
 const ipcRendererHolder = new IpcRendererHolder(ipcRenderer)
@@ -732,6 +732,12 @@ contextBridge.exposeInMainWorld('MprisUtils', {
 
   listenMediaButtonPress: (callback: (args: typeof ButtonEnum) => void) =>
     ipcRendererHolder.on(MprisEvents.ON_BUTTON_PRESSED, callback),
+
+  updatePosition: (position: number) =>
+    ipcRendererHolder.send<MprisRequests.Position>(IpcEvents.MPRIS, {
+      type: MprisEvents.POSITION_CHANGED,
+      params: { position },
+    }),
 })
 
 contextBridge.exposeInMainWorld('SpotifyPlayer', {

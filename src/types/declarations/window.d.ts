@@ -343,7 +343,8 @@ interface mprisUtils {
   updateSongInfo: (data: MprisRequests.SongInfo) => Promise<void>
   updatePlaybackState: (state: PlayerState) => Promise<void>
   setButtonStatus: (status: import('media-controller').PlayerButtons) => Promise<void>
-  listenMediaButtonPress: (callback: (args: number) => void) => Promise<void>
+  listenMediaButtonPress: (callback: (button: number, arg: unknown) => void) => Promise<void>
+  updatePosition: (position: number) => Promise<void>
 }
 
 interface spotifyPlayer {

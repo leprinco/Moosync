@@ -127,7 +127,6 @@ export default class MusicBar extends mixins(ImgLoader, JukeboxMixin, ContextMen
   }
 
   updateTimestmp(value: number) {
-    console.trace(value)
     bus.emit('forceSeek', value / 1000)
     vxm.player.forceSeek = value / 1000
   }
