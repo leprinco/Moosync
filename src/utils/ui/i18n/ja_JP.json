@@ -53,10 +53,10 @@
     "addToLibrary": "ライブラリに {title} を追加",
     "playRandom": "ランダムに100曲再生",
     "fetchAll": "すべての曲を取得",
-    "close": "Close",
+    "close": "閉じる",
     "add": "Add",
     "save": "Save",
-    "cancel": "Cancel"
+    "cancel": "キャンセル"
   },
   "loading": "読み込み中...",
   "now_playing": "Now playing",
@@ -159,7 +159,7 @@
         "author": "作成者",
         "colors": "色",
         "colors_tooltip": "UIをカスタマイズするために色を変更します",
-        "css": "Custom CSS"
+        "css": "カスタムCSS"
       },
       "primary": "第一配色",
       "secondary": "第二配色",
@@ -310,18 +310,18 @@
       "process": "処理",
       "filterMessage": "メッセージの絞り込み",
       "levels": {
-        "all": "All",
-        "debug": "Debug",
-        "info": "Info",
-        "warn": "Warn",
-        "error": "Error"
+        "all": "すべて",
+        "debug": "デバッグ",
+        "info": "情報",
+        "warn": "警告",
+        "error": "エラー"
       },
-      "debug_logging": "Enable debug logging",
+      "debug_logging": "デバッグ用に記録",
       "table": {
-        "time": "Time",
-        "level": "Level",
-        "process": "Process",
-        "message": "Message"
+        "time": "日時",
+        "level": "対象",
+        "process": "プロセス",
+        "message": "メッセージ"
       }
     }
   },
@@ -360,15 +360,15 @@
     "seek_9": "Seek to 90%"
   },
   "tray": {
-    "play": "Play",
-    "pause": "Pause",
-    "next": "Next",
-    "prev": "Prev",
-    "repeat": "Repeat",
-    "no_repeat": "No repeat",
-    "shuffle": "Shuffle",
-    "show_app": "Show app",
-    "quit": "Quit"
+    "play": "再生",
+    "pause": "停止",
+    "next": "次へ",
+    "prev": "前へ",
+    "repeat": "リピート",
+    "no_repeat": "リピートなし",
+    "shuffle": "シャッフル",
+    "show_app": "アプリを表示",
+    "quit": "終了"
   },
   "toasts": {
     "queued": "Queued {count} song | Queued {count} songs",
