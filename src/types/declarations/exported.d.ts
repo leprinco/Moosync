@@ -666,6 +666,12 @@ interface extensionAPI {
   addSongs(...songs: Song[]): Promise<(Song | undefined)[] | undefined>
 
   /**
+   * Update song in library by ID
+   * @param song song to update
+   */
+  updateSong(song: Song): Promise<Song | undefined>
+
+  /**
    * @deprecated pass song instead of song_id
    * Remove song from library
    * @param song_id id of song to remove

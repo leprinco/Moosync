@@ -7,8 +7,8 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { extensionRequests } from '../constants'
 import crypto from 'crypto'
+import { extensionRequests } from '../constants'
 
 export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
   private packageName: string
@@ -84,6 +84,10 @@ export class ExtensionRequestGenerator implements ExtendedExtensionAPI {
 
   public async addSongs(...songs: Song[]) {
     return sendAsync<(Song | undefined)[]>(this.packageName, 'add-songs', songs)
+  }
+
+  public async updateSong(song: Song) {
+    return sendAsync<Song>(this.packageName, 'update-song', song)
   }
 
   public async removeSong(song: Song | string) {
