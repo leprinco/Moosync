@@ -612,7 +612,7 @@ export default class ContextMenuMixin extends mixins(
       case 'PLAYLIST_SORT':
         items = this.getPlaylistSortByMenu(options.args.sortOptions)
         break
-      case 'PLAYLIST_SONGS':
+      case 'PLAYLIST_CONTENT':
         items = await this.getPlaylistSongContextMenu(
           options.args.playlistId,
           options.args.exclude,
@@ -626,6 +626,7 @@ export default class ContextMenuMixin extends mixins(
         break
     }
 
+    console.log(options.type)
     items.push(...(await this.getExtensionItems(options.type, this.getExtensionArgs(options))))
     this.emitMenu(event, items)
   }
