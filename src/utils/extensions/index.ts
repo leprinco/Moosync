@@ -325,8 +325,8 @@ class ExtensionRequestHandler {
     }
 
     if (message.type === 'update-song') {
-      const song = sanitizeSong(message.extensionName, message.data as Song)
-      resp.data = await getSongDB().updateSong(song?.[0])
+      const song = message.data
+      resp.data = await getSongDB().updateSong(song as Song)
     }
 
     if (message.type === 'add-playlist') {
