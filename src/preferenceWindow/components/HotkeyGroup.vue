@@ -253,7 +253,8 @@ export default class HotkeyGroup extends mixins(ExtensionPreferenceMixin) {
   }
 
   toggleKeybindListener(index: number) {
-    if (this.abortController) {
+    console.log('here', this.abortController)
+    if (this.listeningIndex !== -1) {
       this.stopListeningKeybind()
     } else {
       this.startListeningKeybind(index)
@@ -287,6 +288,10 @@ export default class HotkeyGroup extends mixins(ExtensionPreferenceMixin) {
     document.addEventListener(
       'mousedown',
       (e: MouseEvent) => {
+        if (e.button == 0 || e.button == 2) {
+          return
+        }
+
         e.stopPropagation()
         this.keyComboMap[`Mouse${e.button}`] = true
         this.setSelectedKeybind(index, [Object.keys(this.keyComboMap)])
@@ -294,8 +299,8 @@ export default class HotkeyGroup extends mixins(ExtensionPreferenceMixin) {
       { signal: this.abortController?.signal }
     )
 
-    document.addEventListener('mouseup', this.stopListeningKeybind, { signal: this.abortController?.signal })
-    document.addEventListener('keyup', this.stopListeningKeybind, { signal: this.abortController?.signal })
+    document.addEventListener('mouseup', this.stopListeningKeybind.bind(this), { signal: this.abortController?.signal })
+    document.addEventListener('keyup', this.stopListeningKeybind.bind(this), { signal: this.abortController?.signal })
   }
 
   removeKeybind(index: number) {
