@@ -30,7 +30,7 @@
   "playlists": {
     "local": "Local",
     "new_playlist": {
-      "create": "Create",
+      "create": "Crear",
       "description_placeholder": "Description..."
     },
     "url": {
@@ -52,16 +52,16 @@
     "addToQueue": "Añadir {title} a la cola",
     "addToLibrary": "Añadir {title} a la biblioteca",
     "playRandom": "Reproducir 100 canciones aleatorias",
-    "fetchAll": "Fetch all songs",
-    "close": "Close",
-    "add": "Add",
-    "save": "Save",
-    "cancel": "Cancel"
+    "fetchAll": "Obtener todas las canciones",
+    "close": "Cerrar",
+    "add": "Añadir",
+    "save": "Guardar",
+    "cancel": "Cancelar"
   },
   "loading": "Cargando...",
-  "now_playing": "Now playing",
+  "now_playing": "Reproduciendo",
   "contextMenu": {
-    "sort_by": "Sort by",
+    "sort_by": "Ordenar por",
     "sort": {
       "title": "Título",
       "album": "Album (Track No.)",
@@ -96,7 +96,7 @@
       "showInLibrary": "Mostrar en la biblioteca",
       "showHidden": "Mostrar canciones ocultas",
       "hideHidden": "Ocultar canciones ocultas",
-      "openInBrowser": "Open in browser",
+      "openInBrowser": "Abrir en el navegador",
       "gotoAlbum": "Goto album ({title})",
       "gotoArtists": "Goto artists"
     },
@@ -110,9 +110,9 @@
     "incorrectPlayback": "Incorrect playback?"
   },
   "explore": {
-    "you_listened_to": "You've listened to",
-    "of_music": "of music",
-    "played_for": "Played for",
+    "you_listened_to": "Has escuchado",
+    "of_music": "de música",
+    "played_for": "Reproducido por",
     "hot_from": "Hot from"
   },
   "providers": {
@@ -123,7 +123,7 @@
   },
   "accounts": {
     "connect": "Connect",
-    "sign_out": "Sign out"
+    "sign_out": "Cerrar sesión"
   },
   "settings": {
     "paths": {
@@ -159,7 +159,7 @@
         "author": "Autor",
         "colors": "Colores",
         "colors_tooltip": "Cambiar los colores para personalizar la interfaz de usuario",
-        "css": "Custom CSS"
+        "css": "CSS personalizado"
       },
       "primary": "Principal",
       "secondary": "Secundario",
@@ -168,7 +168,7 @@
       "textSecondary": "Texto secundario",
       "textInverse": "Texto inverso",
       "accent": "Acento",
-      "divider": "Divider",
+      "divider": "Divisor",
       "import_button": "Importar"
     },
     "extensions": {
