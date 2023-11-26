@@ -28,13 +28,13 @@
     "explore": "探索"
   },
   "playlists": {
-    "local": "Local",
+    "local": "端末内",
     "new_playlist": {
-      "create": "Create",
-      "description_placeholder": "Description..."
+      "create": "作成",
+      "description_placeholder": "説明..."
     },
     "url": {
-      "input_hint": "Enter URL Here.. (Youtube or Spotify)"
+      "input_hint": "URL を入力.. (Youtube か Spotify)"
     }
   },
   "songView": {
@@ -53,15 +53,15 @@
     "addToLibrary": "ライブラリに {title} を追加",
     "playRandom": "ランダムに100曲再生",
     "fetchAll": "すべての曲を取得",
-    "close": "Close",
-    "add": "Add",
-    "save": "Save",
-    "cancel": "Cancel"
+    "close": "閉じる",
+    "add": "追加",
+    "save": "保存",
+    "cancel": "キャンセル"
   },
   "loading": "読み込み中...",
-  "now_playing": "Now playing",
+  "now_playing": "再生中",
   "contextMenu": {
-    "sort_by": "Sort by",
+    "sort_by": "並び替え",
     "sort": {
       "title": "タイトル",
       "album": "アルバム",
@@ -97,23 +97,23 @@
       "showHidden": "非表示の曲を表示",
       "hideHidden": "非表示の曲を非表示",
       "openInBrowser": "ブラウザで開く",
-      "gotoAlbum": "Goto album ({title})",
-      "gotoArtists": "Goto artists"
+      "gotoAlbum": "アルバムを開く({title})",
+      "gotoArtists": "アーティストを開く"
     },
     "artist": {
-      "remove": "Remove artist"
+      "remove": "アーティストを削除"
     },
     "album": {
-      "remove": "Remove album"
+      "remove": "アルバムを削除"
     },
     "moreInfo": "詳細情報",
     "incorrectPlayback": "不正確な曲ですか？"
   },
   "explore": {
-    "you_listened_to": "You've listened to",
-    "of_music": "of music",
-    "played_for": "Played for",
-    "hot_from": "Hot from"
+    "you_listened_to": "大好きな音楽を",
+    "of_music": "楽しみました",
+    "played_for": "この曲に夢中",
+    "hot_from": "注目の"
   },
   "providers": {
     "youtube": "YouTube",
@@ -122,8 +122,8 @@
     "lastfm": "LastFM"
   },
   "accounts": {
-    "connect": "Connect",
-    "sign_out": "Sign out"
+    "connect": "接続",
+    "sign_out": "ログアウト"
   },
   "settings": {
     "paths": {
@@ -159,7 +159,7 @@
         "author": "作成者",
         "colors": "色",
         "colors_tooltip": "UIをカスタマイズするために色を変更します",
-        "css": "Custom CSS"
+        "css": "カスタムCSS"
       },
       "primary": "第一配色",
       "secondary": "第二配色",
@@ -195,7 +195,7 @@
         "sponsorBlock": "SponsorBlockでYouTubeの曲の主な部分に自動でスキップ"
       },
       "audioSettings_tooltip": "音声再生の設定",
-      "gapless_skip": "Skip song before end (seconds)",
+      "gapless_skip": "曲が終わる前にスキップ(秒)",
       "invidiousUrlUnsupported": "このURLはInvidious APIに対応していません",
       "invidious_tooltip": "YouTubeの代わりに使用する Invidious インスタンス",
       "restartApp": "Moosyncを再起動",
@@ -310,68 +310,68 @@
       "process": "処理",
       "filterMessage": "メッセージの絞り込み",
       "levels": {
-        "all": "All",
-        "debug": "Debug",
-        "info": "Info",
-        "warn": "Warn",
-        "error": "Error"
+        "all": "すべて",
+        "debug": "デバッグ",
+        "info": "情報",
+        "warn": "警告",
+        "error": "エラー"
       },
-      "debug_logging": "Enable debug logging",
+      "debug_logging": "デバッグ用に記録",
       "table": {
-        "time": "Time",
-        "level": "Level",
-        "process": "Process",
-        "message": "Message"
+        "time": "日時",
+        "level": "対象",
+        "process": "プロセス",
+        "message": "メッセージ"
       }
     }
   },
   "hotkeys": {
-    "play": "Play Song",
-    "pause": "Pause song",
-    "play_toggle": "Toggle play",
-    "mute_active": "Mute",
-    "mute_inactive": "Unmute",
-    "mute_toggle": " Toggle mute",
-    "volume_inc": "Increase volume",
-    "volume_dec": "Decrease volume",
-    "repeat_active": "Repeat song",
-    "repeat_inactive": "Disable repeat",
-    "repeat_toggle": "Toggle repeat",
-    "queue_open": "Open song queue",
-    "queue_close": "Close song queue",
-    "queue_toggle": "Toggle song queue",
-    "reload_page": "Reload page",
-    "devtools": "Toggle dev-tools",
-    "help": "Open help",
-    "fullscreen": "Fullscreen",
-    "next_song": "Skip song",
-    "prev_song": "Prev song",
-    "seek_forward": "Seek 5s forward",
-    "seek_backwards": "Seek 5s backwards",
-    "seek_0": "Seek to 0%",
-    "seek_1": "Seek to 10%",
-    "seek_2": "Seek to 20%",
-    "seek_3": "Seek to 30%",
-    "seek_4": "Seek to 40%",
-    "seek_5": "Seek to 50%",
-    "seek_6": "Seek to 60%",
-    "seek_7": "Seek to 70%",
-    "seek_8": "Seek to 80%",
-    "seek_9": "Seek to 90%"
+    "play": "曲を再生",
+    "pause": "曲を一時停止",
+    "play_toggle": "再生の切り替え",
+    "mute_active": "ミュート",
+    "mute_inactive": "ミュート解除",
+    "mute_toggle": "ミュートの切り替え",
+    "volume_inc": "音量を上げる",
+    "volume_dec": "音量を下げる",
+    "repeat_active": "曲をリピート",
+    "repeat_inactive": "リピートなし",
+    "repeat_toggle": "リピートの切り替え",
+    "queue_open": "キューを表示",
+    "queue_close": "キューを閉じる",
+    "queue_toggle": "キューの表示を切替",
+    "reload_page": "ページを再読み込み",
+    "devtools": "開発ツールの切替",
+    "help": "ヘルプを開く",
+    "fullscreen": "全画面",
+    "next_song": "次の曲へ",
+    "prev_song": "前の曲へ",
+    "seek_forward": "5秒進む",
+    "seek_backwards": "5秒戻る",
+    "seek_0": "0%に移動",
+    "seek_1": "10%に移動",
+    "seek_2": "20%に移動",
+    "seek_3": "30%に移動",
+    "seek_4": "40%に移動",
+    "seek_5": "50%に移動",
+    "seek_6": "60%に移動",
+    "seek_7": "70%に移動",
+    "seek_8": "80%に移動",
+    "seek_9": "90%に移動"
   },
   "tray": {
-    "play": "Play",
-    "pause": "Pause",
-    "next": "Next",
-    "prev": "Prev",
-    "repeat": "Repeat",
-    "no_repeat": "No repeat",
-    "shuffle": "Shuffle",
-    "show_app": "Show app",
-    "quit": "Quit"
+    "play": "再生",
+    "pause": "停止",
+    "next": "次へ",
+    "prev": "前へ",
+    "repeat": "リピート",
+    "no_repeat": "リピートなし",
+    "shuffle": "シャッフル",
+    "show_app": "アプリを表示",
+    "quit": "終了"
   },
   "toasts": {
-    "queued": "Queued {count} song | Queued {count} songs",
-    "shuffled": "Shuffled"
+    "queued": "キューに{count}曲追加 | キューに{count}曲追加",
+    "shuffled": "シャッフルしました"
   }
 }
