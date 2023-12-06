@@ -8,3 +8,9 @@
  */
 
 declare const __static: string
+
+declare namespace NodeJS {
+  interface Process extends NodeJS.EventEmitter {
+    off(eventName: string | symbol, listener: (...args: any[]) => void): this
+  }
+}

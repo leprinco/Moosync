@@ -7,16 +7,16 @@
  *  See LICENSE in the project root for license information.
  */
 
+import log, { LogLevelDesc } from 'loglevel'
 import {
   mainRequests,
   mainRequestsKeys,
   providerExtensionKeys,
   providerFetchRequests,
 } from '@/utils/extensions/constants'
+import { prefixLogger, setLogLevel } from '@/utils/main/logger/utils'
 
 import { ExtensionHandler } from '@/utils/extensions/sandbox/extensionHandler'
-import { prefixLogger, setLogLevel } from '@/utils/main/logger/utils'
-import log, { LogLevelDesc } from 'loglevel'
 
 class ExtensionHostIPCHandler {
   private extensionHandler: ExtensionHandler
@@ -93,6 +93,7 @@ class ExtensionHostIPCHandler {
   }
 
   private registerListeners() {
+    process.setMaxListeners(11)
     process.on('message', (message: extensionHostMessage) => {
       this.parseMessage(message as mainRequestMessage)
     })
