@@ -165,7 +165,8 @@
     "better-sqlite3": "^9.2.2",
     "nan": "^2.18.0",
     "@vue/cli-service": "^5.0.8",
-    "@achrinza/node-ipc": "^10.1.10"
+    "@achrinza/node-ipc": "^10.1.10",
+    "@achrinza/event-pubsub": "^5.0.10"
   },
   "whiteListedModules": [
     "threads"
