@@ -280,8 +280,6 @@ export class WindowHandler {
 
       if (isMainWindow) WindowHandler.mainWindow = win.id
       else WindowHandler.preferenceWindow = win.id
-
-      console.log('created window', win)
     } else {
       console.info('Window already exists, focusing')
       win = WindowHandler.getWindow(isMainWindow)

@@ -446,7 +446,6 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       this.lastUpdateRequest[packageName] = undefined
     }
 
-    console.log('updating', packageName, 'in 500ms')
     const timeout = setTimeout(() => {
       this.lastUpdateRequest[packageName] = undefined
       vxm.providers.updateExtensionProvider(packageName)

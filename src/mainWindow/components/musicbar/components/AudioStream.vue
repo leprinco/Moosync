@@ -282,7 +282,6 @@ export default class AudioStream extends mixins(
    * Method triggered when user seeks on timeline and forceSeek prop changes
    */
   onSeek(newValue?: number) {
-    console.log('seeking to', newValue)
     if (typeof newValue === 'number') {
       if (this.activePlayer) {
         this.activePlayer.currentTime = newValue
@@ -580,7 +579,6 @@ export default class AudioStream extends mixins(
 
   private handleSeek(seek: number, relative: boolean) {
     if (seek) {
-      console.log('seeking', seek)
       const parsed = seek / 10e5
       const newPos = relative ? vxm.player.currentTime + parsed : parsed
       bus.emit('forceSeek', newPos)
@@ -590,7 +588,6 @@ export default class AudioStream extends mixins(
 
   private registerMediaControlListener() {
     window.MprisUtils.listenMediaButtonPress((button, arg) => {
-      console.log('pressed', button, arg)
       switch (button) {
         case ButtonEnum.Play:
           this.play()

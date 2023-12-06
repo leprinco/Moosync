@@ -84,7 +84,6 @@ export class MprisChannel implements IpcChannelInterface {
           duration: 0,
         })
       } else {
-        console.log('setting duration', (duration ?? 0) * 10e5)
         this.controller.updatePlayerDetails({
           id: 'track/0',
           title,
