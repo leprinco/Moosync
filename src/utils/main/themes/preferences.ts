@@ -1,5 +1,6 @@
 import { isEmpty, isThemeDetails } from '../../common'
 import { loadSelectivePreference, saveSelectivePreference, store } from '../db/preferences'
+
 import { SystemThemeHandler } from './system'
 import { app } from 'electron'
 import { promises as fsP } from 'fs'
@@ -160,22 +161,26 @@ export async function setupSystemThemes() {
   const themes: { [key: string]: ThemeDetails } = {}
 
   const systemThemeHandler = new SystemThemeHandler()
-  if (process.platform === 'linux') {
-    const theme = await systemThemeHandler.getLinuxStyle()
-    if (theme) {
-      themes[theme.id] = theme
+  try {
+    if (process.platform === 'linux') {
+      const theme = await systemThemeHandler.getLinuxStyle()
+      if (theme) {
+        themes[theme.id] = theme
+      }
     }
-  }
 
-  if (process.platform === 'win32') {
-    const theme = await systemThemeHandler.getWindowsStyle()
-    if (theme) {
-      themes[theme.id] = theme
+    if (process.platform === 'win32') {
+      const theme = await systemThemeHandler.getWindowsStyle()
+      if (theme) {
+        themes[theme.id] = theme
+      }
     }
-  }
 
-  for (const key in themes) {
-    saveTheme(themes[key])
+    for (const key in themes) {
+      saveTheme(themes[key])
+    }
+  } catch (e) {
+    console.error(e)
   }
 }
 
