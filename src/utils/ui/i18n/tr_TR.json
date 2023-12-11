@@ -8,12 +8,12 @@
       "artists": "Sanatçılar",
       "genre": "Türler",
       "explore": "Keşfet",
-      "paths": "Paths",
-      "themes": "Themes",
-      "extensions": "Extensions",
-      "system": "System",
-      "logs": "Logs",
-      "keybinds": "Keybinds"
+      "paths": "Dosya Dizini",
+      "themes": "Temalar",
+      "extensions": "Eklentiler",
+      "system": "Sistem Ayarları",
+      "logs": "Hata Kaydı",
+      "keybinds": "Kısayol Tuşları"
     }
   },
   "topbar": {
@@ -28,13 +28,13 @@
     "explore": "Keşfet"
   },
   "playlists": {
-    "local": "Local",
+    "local": "Yerel",
     "new_playlist": {
-      "create": "Create",
-      "description_placeholder": "Description..."
+      "create": "Oluştur",
+      "description_placeholder": "Açıklama..."
     },
     "url": {
-      "input_hint": "Enter URL Here.. (Youtube or Spotify)"
+      "input_hint": "URL'yi yapıştır (Youtube veya Spotify)"
     }
   },
   "songView": {
@@ -51,33 +51,33 @@
     "playSingle": "Çal {title}",
     "addToQueue": "Sıraya {title} ekle",
     "addToLibrary": "Kütüphaneye {title} ekle",
-    "playRandom": "Play 100 random songs",
-    "fetchAll": "Fetch all songs",
-    "close": "Close",
-    "add": "Add",
-    "save": "Save",
-    "cancel": "Cancel"
+    "playRandom": "100 adet rastgele şarkı çal 🎲",
+    "fetchAll": "Tüm şarkıları çek",
+    "close": "Kapat",
+    "add": "Ekle",
+    "save": "Kaydet",
+    "cancel": "İptal et"
   },
   "loading": "Yükleniyor...",
-  "now_playing": "Now playing",
+  "now_playing": "Şuan çalıyor",
   "contextMenu": {
-    "sort_by": "Sort by",
+    "sort_by": "Sırala",
     "sort": {
-      "title": "Title",
-      "album": "Album (Track No.)",
-      "artist": "Artist",
-      "genre": "Genre",
-      "date_added": "Date added",
+      "title": "Başlığa göre sırala",
+      "album": "Albüm(No) göre sırala",
+      "artist": "Sanatçı",
+      "genre": "Tür",
+      "date_added": "Eklenme tarihi",
       "provider": "Sağlayıcı",
-      "playCount": "Play count"
+      "playCount": "Çalma Sayısı"
     },
     "playlist": {
-      "new": "New Playlist",
-      "addFromURL": "Import from URL",
+      "new": "Yeni Oynatma Listesi",
+      "addFromURL": "URL'den ekle",
       "remove": "Çalma listesini sil",
       "export": "Çalma listesini dışa aktar",
       "add": "Çalma listesine ekle",
-      "save": "Add To Library"
+      "save": "Kütüphaneye Ekle"
     },
     "song": {
       "addFromURL": "URL'den ekle",
