@@ -273,7 +273,8 @@ interface loggerUtils {
  * Utils related to notifications
  */
 interface notifierUtils {
-  registerMainProcessNotifier: (callback: (obj: NotificationObject) => void) => void
+  watchFileChanges: (path: string, watch: boolean, mainWindow: boolean | 'both') => Promise<void>
+  onFileChanged: (callback: (path: string) => void) => void
 }
 
 /**
@@ -329,6 +330,8 @@ interface themeUtils {
   importTheme: (themeZipPath: string) => Promise<void>
   listenGenerateIconRequest: (callback: (params: IpcRequest<PreferenceRequests.GenerateIcon>) => void) => void
   replyToGenerateIconRequest: (buffer: string, channel: string) => Promise<void>
+  setTempTheme: (theme: ThemeDetails) => Promise<void>
+  onThemeRefresh: (callback: (theme: ThemeDetails) => void) => void
 }
 
 interface updateUtils {

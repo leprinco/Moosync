@@ -79,7 +79,6 @@ import { convertProxy } from '@/utils/ui/common'
 export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandlerMixin, JukeboxMixin, ProviderMixin) {
   async created() {
     this.fetchProviderExtensions()
-    this.registerNotifier()
     this.setLanguage()
     this.listenPreferenceChanges()
     this.listenExtensionEvents()
@@ -281,20 +280,6 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       playlists[p.playlist_id] = p.playlist_name
     }
     vxm.playlist.playlists = playlists
-  }
-
-  private registerNotifier() {
-    window.NotifierUtils.registerMainProcessNotifier((obj) => {
-      vxm.notifier.emit(obj)
-      if (obj.id === 'started-scan' || obj.id === 'completed-scan') {
-        if (obj.id === 'completed-scan') {
-          vxm.themes.refreshPage = true
-        }
-        toast(obj.message, {
-          type: obj.id === 'completed-scan' ? 'success' : 'default'
-        })
-      }
-    })
   }
 
   private getFileName(path: string) {

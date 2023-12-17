@@ -427,6 +427,17 @@ contextBridge.exposeInMainWorld('ThemeUtils', {
 
   replyToGenerateIconRequest: (buffer: string, channel: string) =>
     ipcRenderer.send(PreferenceEvents.GENERATE_ICON, { channel, buffer }),
+
+  setTempTheme: (theme: ThemeDetails) =>
+    ipcRendererHolder.send<PreferenceRequests.Theme>(IpcEvents.PREFERENCES, {
+      type: PreferenceEvents.SET_TEMP_THEME,
+      params: {
+        theme,
+      },
+    }),
+
+  onThemeRefresh: (callback: (theme: ThemeDetails) => void) =>
+    ipcRendererHolder.on(PreferenceEvents.THEME_REFRESH, callback),
 })
 
 contextBridge.exposeInMainWorld('WindowUtils', {
@@ -594,8 +605,16 @@ contextBridge.exposeInMainWorld('LoggerUtils', {
 })
 
 contextBridge.exposeInMainWorld('NotifierUtils', {
-  registerMainProcessNotifier: (callback: (obj: NotificationObject) => void) =>
-    ipcRendererHolder.on(IpcEvents.NOTIFIER, callback),
+  watchFileChanges: (path: string, watch: boolean, mainWindow: boolean) =>
+    ipcRendererHolder.send<NotifierRequests.FileChanges>(IpcEvents.NOTIFIER, {
+      type: NotifierEvents.WATCH_FILE_CHANGES,
+      params: {
+        path,
+        watch,
+        mainWindow,
+      },
+    }),
+  onFileChanged: (callback: (path: string) => void) => ipcRendererHolder.on(NotifierEvents.FILE_CHANGED, callback),
 })
 
 contextBridge.exposeInMainWorld('ExtensionUtils', {

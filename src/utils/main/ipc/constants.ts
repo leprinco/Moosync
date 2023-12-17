@@ -74,6 +74,7 @@ export enum PreferenceEvents {
   PACK_THEME = 'packTheme',
   IMPORT_THEME = 'importTheme',
   GENERATE_ICON = 'generateIcon',
+  SET_TEMP_THEME = 'setTempTheme',
 }
 
 export enum WindowEvents {
@@ -193,7 +194,8 @@ export enum SpotifyEvents {
 }
 
 export enum NotifierEvents {
-  LIBVIPS_INSTALLED = 'isLibvipsInstalled',
+  WATCH_FILE_CHANGES = 'watchFileChanges',
+  FILE_CHANGED = 'fileChanged',
 }
 
 export enum MprisEvents {

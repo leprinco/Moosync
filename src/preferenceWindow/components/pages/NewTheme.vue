@@ -57,7 +57,9 @@
             <CrossIcon color="#E62017" @click="clearCustomCSS" />
           </b-col>
         </b-row>
-
+        <b-row class="mt-2">
+          <CheckboxGroup key="css_options" :defaultValue="cssOptions" :onValueChange="cssOptionsChanged" />
+        </b-row>
         <b-row class="mt-5 mr-4" align-h="end">
           <b-button class="cancel-button mr-4" @click="dismiss">{{ $t('buttons.cancel') }}</b-button>
           <b-button class="confirm-button" @click="saveTheme">{{ $t('buttons.save') }}</b-button>
@@ -79,6 +81,7 @@ import FolderIcon from '@/icons/FolderIcon.vue'
 import { bus } from '@/preferenceWindow/main'
 import { convertProxy } from '../../../utils/ui/common'
 import CrossIcon from '../../../icons/CrossIcon.vue';
+import CheckboxGroup from '../CheckboxGroup.vue';
 
 @Component({
   components: {
@@ -88,7 +91,8 @@ import CrossIcon from '../../../icons/CrossIcon.vue';
     ColorPicker,
     NavBack,
     FolderIcon,
-    CrossIcon
+    CrossIcon,
+    CheckboxGroup
   }
 })
 export default class NewTheme extends Vue {
@@ -101,6 +105,8 @@ export default class NewTheme extends Vue {
   popoverTarget = v4()
   showPopover = false
   private popoverTimeout: ReturnType<typeof setTimeout> | undefined
+
+  private lastActivePath: string | undefined
 
   themeKeys: ThemeKey[] = [
     'primary',
@@ -144,6 +150,15 @@ export default class NewTheme extends Vue {
     return v1()
   }
 
+  mounted() {
+    window.NotifierUtils.onFileChanged(async (path) => {
+      if (path === this.lastActivePath)
+        await window.ThemeUtils.setTempTheme(convertProxy(this.generateThemeMetadata(), true))
+    })
+
+    this.listenPathChanges()
+  }
+
   private generateThemeMetadata(): ThemeDetails {
     return {
       id: this.currentThemeID,
@@ -153,7 +168,8 @@ export default class NewTheme extends Vue {
     }
   }
 
-  dismiss() {
+  async dismiss() {
+    await this.stopListeningPath()
     this.$router.push({
       name: 'themes'
     })
@@ -208,20 +224,52 @@ export default class NewTheme extends Vue {
   }
 
   clearCustomCSS() {
+    this.stopListeningPath()
     this.customTheme['customCSS'] = undefined
   }
 
-  openFileBrowser() {
-    window.WindowUtils.openFileBrowser(false, true, [
+  private async stopListeningPath() {
+    if (this.lastActivePath)
+      await window.NotifierUtils.watchFileChanges(this.lastActivePath, false, false)
+  }
+
+  cssOptionsChanged(options: Checkbox[]) {
+    const shouldWatch = options[0].enabled
+    if (this.customTheme['customCSS']) {
+      this.stopListeningPath()
+      window.NotifierUtils.watchFileChanges(this.customTheme['customCSS'], shouldWatch, false)
+      this.lastActivePath = this.customTheme['customCSS']
+      window.ThemeUtils.setTempTheme(convertProxy(this.generateThemeMetadata(), true))
+    }
+  }
+
+  get cssOptions(): Checkbox[] {
+    return [
+      {
+        'enabled': false,
+        'key': 'watch_css_changes',
+        'title': 'Watch CSS for file changes'
+      }
+    ]
+  }
+
+  private async listenPathChanges() {
+    const cssOptions = await window.PreferenceUtils.loadSelective<Checkbox[]>('css_options.watch_css_changes') ?? this.cssOptions
+    this.cssOptionsChanged(cssOptions)
+  }
+
+  async openFileBrowser() {
+    const data = await window.WindowUtils.openFileBrowser(false, true, [
       {
         extensions: ['css'],
         name: 'CSS Stylesheets'
       }
-    ]).then((data) => {
-      if (!data.canceled && data.filePaths.length > 0) {
-        this.customTheme['customCSS'] = data.filePaths[0]
-      }
-    })
+    ])
+
+    if (!data.canceled && data.filePaths.length > 0) {
+      this.customTheme['customCSS'] = data.filePaths[0]
+      await this.listenPathChanges()
+    }
   }
 
   copy() {

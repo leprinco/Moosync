@@ -334,3 +334,11 @@ declare namespace MprisRequests {
     repeat: 'Playlist' | 'Track' | 'None'
   }
 }
+
+declare namespace NotifierRequests {
+  interface FileChanges {
+    path: string
+    watch: boolean
+    mainWindow: boolean | 'both'
+  }
+}
