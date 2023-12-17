@@ -42,10 +42,9 @@ export class LocalPlayer extends Player {
 
   protected async _load(src?: string, volume?: number, autoplay?: boolean): Promise<void> {
     if (src) {
-      console.debug('Loading src', src)
       this.playerInstance.setSrc(src, autoplay)
     }
-    volume && this.volume === volume
+    if (volume) this.volume = volume
   }
 
   protected async _play(): Promise<void> {

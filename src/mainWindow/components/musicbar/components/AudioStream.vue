@@ -140,10 +140,6 @@ export default class AudioStream extends mixins(
     vxm.themes.showPlayer = show
   }
 
-  get volume() {
-    return vxm.player.volume
-  }
-
   /**
    * Method called when vuex player state changes
    * This method is responsible for reflecting that state on active player
@@ -172,9 +168,9 @@ export default class AudioStream extends mixins(
     let player: Player | undefined = undefined
 
     let tries = 0
-    while (!(player && (song.playbackUrl || song.path)) && tries < vxm.playerRepo.allPlayers.length) {
+    while (!(player && (song.path ?? song.playbackUrl)) && tries < vxm.playerRepo.allPlayers.length) {
       player = this.findPlayer(newType, this.playerBlacklist)
-      console.debug('Found player', player?.key)
+      console.debug('Found player', song, newType, player?.key)
 
       if (newType === 'LOCAL' && player) {
         if (song.duration < 0) {
@@ -188,7 +184,7 @@ export default class AudioStream extends mixins(
       }
 
       if (!player) {
-        console.error('No player found to play', song.playbackUrl)
+        console.error('No player found to play', song.path || song.playbackUrl)
         if (vxm.player.queueOrder.length > 1) {
           this.playerBlacklist = []
           this.nextSong()
@@ -225,7 +221,7 @@ export default class AudioStream extends mixins(
 
         this.activePlayer = player
 
-        this.activePlayer.volume = vxm.player.volume
+        this.activePlayer.volume = this.volume
         this.registerPlayerListeners()
         this.activePlayerTypes = newType
 
@@ -272,9 +268,9 @@ export default class AudioStream extends mixins(
   /**
    * Method triggered when vuex volume changes
    */
-  onVolumeChanged(newValue: number) {
+  onVolumeChanged() {
     if (this.activePlayer) {
-      this.activePlayer.volume = newValue
+      this.activePlayer.volume = this.volume
     }
   }
 
@@ -910,6 +906,7 @@ export default class AudioStream extends mixins(
     }
 
     if (PlayerTypes === 'LOCAL') {
+      console.trace('loading local player with volume', this.volume)
       this.activePlayer?.load(
         song.path ? 'media://' + song.path : song.playbackUrl,
         this.volume,
