@@ -169,6 +169,11 @@ export default class AudioStream extends mixins(
 
     let tries = 0
     while (!(player && (song.path ?? song.playbackUrl)) && tries < vxm.playerRepo.allPlayers.length) {
+
+      if (song.path && !this.playerBlacklist.includes('LOCAL')) {
+        newType = 'LOCAL'
+      }
+
       player = this.findPlayer(newType, this.playerBlacklist)
       console.debug('Found player', song, newType, player?.key)
 
@@ -905,28 +910,19 @@ export default class AudioStream extends mixins(
       return
     }
 
-    if (PlayerTypes === 'LOCAL') {
+    try {
       this.activePlayer?.load(
         song.path ? 'media://' + song.path : song.playbackUrl,
         this.volume,
         vxm.player.playAfterLoad || this.playerState === 'PLAYING'
       )
-      console.debug('Loaded song at', song.path ? 'media://' + song.path : song.playbackUrl)
-      vxm.player.loading = false
-    } else {
-      console.debug('PlaybackUrl for song', song._id, 'is', song.playbackUrl)
-      console.debug('Loaded song at', song.playbackUrl)
-
-      try {
-        await this.activePlayer?.load(
-          song.playbackUrl,
-          this.volume,
-          vxm.player.playAfterLoad || this.playerState !== 'PAUSED'
-        )
-      } catch (e) {
-        console.error('failed to load song', e)
-      }
+    } catch (e) {
+      console.error('failed to load song', e)
     }
+
+    console.debug('Loaded song at', song.path ? 'media://' + song.path : song.playbackUrl)
+    vxm.player.loading = false
+
 
     vxm.player.playAfterLoad = false
 
