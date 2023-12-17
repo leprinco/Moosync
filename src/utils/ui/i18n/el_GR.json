@@ -159,7 +159,8 @@
         "author": "Συγγραφέας",
         "colors": "Χρώματα",
         "colors_tooltip": "Αλλάξτε τα χρώματα για να προσαρμόσετε το UI",
-        "css": "Custom CSS"
+        "css": "Custom CSS",
+        "watch_css": "Watch CSS for file changes"
       },
       "primary": "Κύριο",
       "secondary": "Δευτερεύον",
