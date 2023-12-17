@@ -248,7 +248,7 @@ export default class NewTheme extends Vue {
       {
         'enabled': false,
         'key': 'watch_css_changes',
-        'title': 'Watch CSS for file changes'
+        'title': this.$t('settings.themes.newTheme.watch_css')
       }
     ]
   }
