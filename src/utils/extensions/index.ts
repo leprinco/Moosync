@@ -198,7 +198,6 @@ class MainRequestGenerator {
   }
 
   public async getContextMenuItems<T extends ContextMenuTypes>(type: T) {
-    console.log('getting context menu items')
     return this.sendAsync<ExtendedExtensionContextMenuItems<T>>('get-extension-context-menu', { type })
   }
 

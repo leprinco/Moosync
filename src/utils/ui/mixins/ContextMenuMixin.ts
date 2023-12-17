@@ -626,7 +626,6 @@ export default class ContextMenuMixin extends mixins(
         break
     }
 
-    console.log(options.type)
     items.push(...(await this.getExtensionItems(options.type, this.getExtensionArgs(options))))
     this.emitMenu(event, items)
   }

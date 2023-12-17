@@ -67,7 +67,6 @@ export default class ArtistsPage extends mixins(RouterPushes, ContextMenuMixin) 
   }
 
   public singleItemContextHandler(event: MouseEvent, artist: Artists) {
-    console.log(event, artist)
     this.getContextMenu(event, {
       type: 'ARTIST',
       args: {

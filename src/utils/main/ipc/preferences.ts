@@ -212,7 +212,6 @@ export class PreferenceChannel implements IpcChannelInterface {
   private async setTempTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.Theme>) {
     WindowHandler.getWindow(true)?.webContents.send(PreferenceEvents.THEME_REFRESH, request.params.theme)
     WindowHandler.getWindow(false)?.webContents.send(PreferenceEvents.THEME_REFRESH, request.params.theme)
-    console.log('refreshed themes')
     event.reply(request.responseChannel)
   }
 

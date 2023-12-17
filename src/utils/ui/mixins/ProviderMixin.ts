@@ -67,7 +67,6 @@ export default class ProviderMixin extends Vue {
     if (song.providerExtension) {
       return this.getProviderByKey(song.providerExtension)
     } else {
-      console.log(this.getProviderByKey(song.type))
       return this.getProviderByKey(song.type)
     }
   }
