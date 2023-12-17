@@ -159,7 +159,8 @@
         "author": "Yaratıcı",
         "colors": "Renkler",
         "colors_tooltip": "Kullanıcı arayüzünü özelleştirmek için renkleri değiştirin",
-        "css": "Özel CSS"
+        "css": "Özel CSS",
+        "watch_css": "Watch CSS for file changes"
       },
       "primary": "Birincil",
       "secondary": "İkincil",
