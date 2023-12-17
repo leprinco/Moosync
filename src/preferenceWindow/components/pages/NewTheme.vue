@@ -40,7 +40,7 @@
         </b-row>
         <PreferenceHeader :title="$t('settings.themes.newTheme.css')" tooltip="Optional" class="mt-4" />
         <b-row no-gutters class="background w-100 mt-2 d-flex">
-          <b-row no-gutters class="mt-3 item w-100">
+          <b-row no-gutters class="mt-3 item">
             <b-col cols="auto" align-self="center" class="ml-4 folder-icon">
               <FolderIcon @click="openFileBrowser" />
             </b-col>
@@ -53,6 +53,9 @@
               Copied!
             </b-popover>
           </b-row>
+          <b-col cols="auto" align-self="center" class="ml-4 cross-icon">
+            <CrossIcon color="#E62017" @click="clearCustomCSS" />
+          </b-col>
         </b-row>
 
         <b-row class="mt-5 mr-4" align-h="end">
@@ -75,6 +78,7 @@ import NavBack from '@/icons/NavBackIcon.vue'
 import FolderIcon from '@/icons/FolderIcon.vue'
 import { bus } from '@/preferenceWindow/main'
 import { convertProxy } from '../../../utils/ui/common'
+import CrossIcon from '../../../icons/CrossIcon.vue';
 
 @Component({
   components: {
@@ -83,7 +87,8 @@ import { convertProxy } from '../../../utils/ui/common'
     PreferenceHeader,
     ColorPicker,
     NavBack,
-    FolderIcon
+    FolderIcon,
+    CrossIcon
   }
 })
 export default class NewTheme extends Vue {
@@ -202,6 +207,10 @@ export default class NewTheme extends Vue {
     }
   }
 
+  clearCustomCSS() {
+    this.customTheme['customCSS'] = undefined
+  }
+
   openFileBrowser() {
     window.WindowUtils.openFileBrowser(false, true, [
       {
@@ -230,7 +239,7 @@ export default class NewTheme extends Vue {
 }
 </script>
 
-<style lang="sass">
+<style lang="sass" scoped>
 .preview, .metadata
   min-width: 320px
   max-width: 600px
@@ -272,6 +281,7 @@ export default class NewTheme extends Vue {
 .item
   height: 35px
   flex-wrap: nowrap
+  width: 80%
 
 .item-text
   font-size: 18px
@@ -297,5 +307,10 @@ export default class NewTheme extends Vue {
 .vacp-color-input
   background-color: var(--primary)
   border: var(--vacp-border-width) solid var(--textSecondary)
+
+.cross-icon
+  width: 20px
+  position: absolute
+  right: 20px
 
 </style>
