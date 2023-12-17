@@ -906,7 +906,6 @@ export default class AudioStream extends mixins(
     }
 
     if (PlayerTypes === 'LOCAL') {
-      console.trace('loading local player with volume', this.volume)
       this.activePlayer?.load(
         song.path ? 'media://' + song.path : song.playbackUrl,
         this.volume,
