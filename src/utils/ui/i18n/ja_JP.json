@@ -159,7 +159,8 @@
         "author": "作成者",
         "colors": "色",
         "colors_tooltip": "UIをカスタマイズするために色を変更します",
-        "css": "カスタムCSS"
+        "css": "カスタムCSS",
+        "watch_css": "Watch CSS for file changes"
       },
       "primary": "第一配色",
       "secondary": "第二配色",
