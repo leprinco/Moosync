@@ -160,7 +160,7 @@
         "colors": "Цвета",
         "colors_tooltip": "Изменить цвета для настройки интерфейса",
         "css": "Пользовательский CSS",
-        "watch_css": "Watch CSS for file changes"
+        "watch_css": "См. CSS для изменения файлов"
       },
       "primary": "Основной",
       "secondary": "Вторичный",
