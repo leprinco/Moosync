@@ -159,7 +159,8 @@
         "author": "作者",
         "colors": "颜色",
         "colors_tooltip": "更改颜色以自定义界面",
-        "css": "自定义 CSS"
+        "css": "自定义 CSS",
+        "watch_css": "Watch CSS for file changes"
       },
       "primary": "主要",
       "secondary": "背景色",

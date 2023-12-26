@@ -159,7 +159,8 @@
         "author": "Auteur",
         "colors": "Couleurs",
         "colors_tooltip": "Changer les couleurs pour personnaliser l'interface utilisateur",
-        "css": "Custom CSS"
+        "css": "Custom CSS",
+        "watch_css": "Watch CSS for file changes"
       },
       "primary": "Primaire",
       "secondary": "Secondaire",

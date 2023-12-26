@@ -159,7 +159,8 @@
         "author": "Tekijä",
         "colors": "Värit",
         "colors_tooltip": "Muuta värejä muokkataksesi käyttöliittymää",
-        "css": "Custom CSS"
+        "css": "Custom CSS",
+        "watch_css": "Watch CSS for file changes"
       },
       "primary": "Ensisijainen",
       "secondary": "Toissijainen",

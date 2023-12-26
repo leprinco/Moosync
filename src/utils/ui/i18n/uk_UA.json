@@ -159,7 +159,8 @@
         "author": "Автор",
         "colors": "Кольори",
         "colors_tooltip": "Зміна кольору інтерфейсу користувача",
-        "css": "Custom CSS"
+        "css": "Custom CSS",
+        "watch_css": "Watch CSS for file changes"
       },
       "primary": "Первинний",
       "secondary": "Вторинна",
