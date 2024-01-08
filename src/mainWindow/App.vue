@@ -414,9 +414,10 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
 
       if (data.type === 'show-toast') {
         const parsedData = data.data as { message: string; duration: number; type: ToastType }
+        console.log(parsedData)
         toast(parsedData.message, {
           autoClose: Math.max(parsedData.duration, 5000),
-          type: parsedData.type
+          type: parsedData.type,
         })
         window.ExtensionUtils.replyToRequest({ ...data, data: true })
       }
