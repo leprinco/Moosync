@@ -8,12 +8,12 @@
       "artists": "Artistas",
       "genre": "Géneros",
       "explore": "Explorar",
-      "paths": "Paths",
+      "paths": "Rutas",
       "themes": "Temas",
       "extensions": "Extensiones",
       "system": "Sistema",
-      "logs": "Logs",
-      "keybinds": "Keybinds"
+      "logs": "Registros",
+      "keybinds": "Atajos del teclado"
     }
   },
   "topbar": {
@@ -31,10 +31,10 @@
     "local": "Local",
     "new_playlist": {
       "create": "Crear",
-      "description_placeholder": "Description..."
+      "description_placeholder": "Descripción..."
     },
     "url": {
-      "input_hint": "Enter URL Here.. (Youtube or Spotify)"
+      "input_hint": "Ingrese la URL aquí... (YouTube o Spotify)"
     }
   },
   "songView": {
@@ -64,7 +64,7 @@
     "sort_by": "Ordenar por",
     "sort": {
       "title": "Título",
-      "album": "Album (Track No.)",
+      "album": "Álbum (Núm. Pista)",
       "artist": "Artista",
       "genre": "Género",
       "date_added": "Fecha añadida",
@@ -97,17 +97,17 @@
       "showHidden": "Mostrar canciones ocultas",
       "hideHidden": "Ocultar canciones ocultas",
       "openInBrowser": "Abrir en el navegador",
-      "gotoAlbum": "Goto album ({title})",
-      "gotoArtists": "Goto artists"
+      "gotoAlbum": "Ir al álbum ({title})",
+      "gotoArtists": "Ir a artistas"
     },
     "artist": {
-      "remove": "Remove artist"
+      "remove": "Eliminar artista"
     },
     "album": {
-      "remove": "Remove album"
+      "remove": "Eliminar álbum"
     },
     "moreInfo": "Más información",
-    "incorrectPlayback": "Incorrect playback?"
+    "incorrectPlayback": "¿Reproducción incorrecta?"
   },
   "explore": {
     "you_listened_to": "Has escuchado",
@@ -122,7 +122,7 @@
     "lastfm": "LastFM"
   },
   "accounts": {
-    "connect": "Connect",
+    "connect": "Conectar",
     "sign_out": "Cerrar sesión"
   },
   "settings": {
@@ -139,7 +139,7 @@
       "thumbnailPath_tooltip": "Directorio donde se almacenan las miniaturas generadas",
       "splitter": "Patrón dividido del nombre del artista",
       "splitter_tooltip": "Regex para dividir nombres de artista. Dejar en blanco para desactivar la separación.",
-      "scan_interval": "Scan interval",
+      "scan_interval": "Intervalo de escaneo",
       "scan_interval_tooltip": "Interval in minutes to trigger a scan task. Set to -1 to disable automatic scanning",
       "scan_threads": "Scan CPU threads",
       "scan_threads_tooltip": "Number of threads to use when scanning for local music"
