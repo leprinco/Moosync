@@ -1,13 +1,15 @@
+import { Component } from 'vue-facing-decorator'
 import { GenericProvider } from '../providers/generics/genericProvider'
 import ProviderMixin from './ProviderMixin'
-import { vxm } from '@/mainWindow/store'
-import { Component } from 'vue-facing-decorator'
 import { convertProxy } from '../common'
+import { vxm } from '@/mainWindow/store'
 
 @Component
 export default class ProviderFetchMixin extends ProviderMixin {
   private loadingMap: Record<string, boolean> = {}
   public songList: Song[] = []
+
+  private songMap: Record<string, Song> = {}
   generator:
     | ((
         provider: GenericProvider,
@@ -45,21 +47,12 @@ export default class ProviderFetchMixin extends ProviderMixin {
     return Object.values(this.loadingMap).includes(true)
   }
 
-  private async fetchProviderSonglist(provider: GenericProvider) {
+  private async *fetchProviderSonglist(provider: GenericProvider) {
     this.loadingMap[provider.key] = true
     if (this.generator) {
       for await (const items of this.generator(provider, this.nextPageToken[provider.key])) {
         this.nextPageToken[provider.key] = items.nextPageToken
-        for (const s of items.songs) {
-          if (!this.songList.find((val) => val._id === s._id)) {
-            this.songList.push(s)
-
-            if (!this.optionalSongList[provider.key]) {
-              this.optionalSongList[provider.key] = []
-            }
-            this.optionalSongList[provider.key].push(s._id)
-          }
-        }
+        yield items
       }
     }
 
@@ -70,7 +63,9 @@ export default class ProviderFetchMixin extends ProviderMixin {
 
   async fetchSongList() {
     this.loadingMap['local'] = true
-    this.songList = (await this.localSongFetch?.(convertProxy(vxm.themes.songSortBy))) ?? []
+    ;((await this.localSongFetch?.(convertProxy(vxm.themes.songSortBy))) ?? []).forEach((val) => {
+      this.songMap[val._id] = val
+    })
     this.optionalSongList['local'] = this.songList.map((val) => val._id)
     this.loadingMap['local'] = false
   }
@@ -78,54 +73,74 @@ export default class ProviderFetchMixin extends ProviderMixin {
   public async fetchAll(afterFetch?: (songs: Song[]) => void, onFetchEnded?: (songCount: number) => void) {
     if (!this.isFetching) {
       this.isFetching = true
-      let songListLastSong = this.songList.length - 1
 
       let count = 0
-
       for (const key of Object.keys(this.nextPageToken)) {
         while (this.nextPageToken[key]) {
-          await this.loadNextPage()
-          const newList = this.songList.slice(songListLastSong)
-          count += newList.length
-          afterFetch?.(newList)
-          songListLastSong = this.songList.length
+          for await (const songs of this.loadNextPageWrapper()) {
+            afterFetch?.(songs.songs)
+            count += songs.songs.length
+          }
         }
       }
 
+      this.songList = Object.values(this.songMap)
       onFetchEnded?.(count)
       this.isFetching = false
     }
   }
 
   async loadNextPage() {
+    for await (const s of this.loadNextPageWrapper()) {
+    }
+    this.songList = Object.values(this.songMap)
+  }
+
+  async *loadNextPageWrapper() {
     for (const key of Object.keys(this.nextPageToken)) {
       if (this.nextPageToken[key]) {
         for (const [key, checked] of Object.entries(this.activeProviders)) {
           if (checked) {
-            await this.fetchRemoteProviderByKey(key)
+            for await (const s of this.fetchRemoteProviderByKey(key)) {
+              yield s
+            }
           }
         }
       }
     }
   }
 
-  private async fetchRemoteProviderByKey(key: string) {
+  private async *fetchRemoteProviderByKey(key: string) {
     const provider = this.getProviderByKey(key)
     if (provider) {
-      await this.fetchProviderSonglist(provider)
+      for await (const items of this.fetchProviderSonglist(provider)) {
+        for (const s of items.songs) {
+          if (!this.songMap[s._id]) {
+            this.songMap[s._id] = s
+            if (!this.optionalSongList[provider.key]) {
+              this.optionalSongList[provider.key] = []
+            }
+            this.optionalSongList[provider.key].push(s._id)
+          }
+        }
+
+        yield items
+      }
       return
     }
   }
 
-  onProviderChanged({ key, checked }: { key: string; checked: boolean }) {
+  async onProviderChanged({ key, checked }: { key: string; checked: boolean }) {
     this.activeProviders[key] = checked
     if (checked) {
-      this.fetchRemoteProviderByKey(key)
+      for await (const s of this.fetchRemoteProviderByKey(key)) {
+      }
+      this.songList = Object.values(this.songMap)
     }
   }
 
   clearSongList() {
-    this.songList = []
+    this.songMap = {}
   }
 
   clearNextPageTokens() {
