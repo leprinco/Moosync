@@ -8,12 +8,12 @@
       "artists": "Artistas",
       "genre": "Géneros",
       "explore": "Explorar",
-      "paths": "Paths",
+      "paths": "Rutas",
       "themes": "Temas",
       "extensions": "Extensiones",
       "system": "Sistema",
-      "logs": "Logs",
-      "keybinds": "Keybinds"
+      "logs": "Registros",
+      "keybinds": "Atajos del teclado"
     }
   },
   "topbar": {
@@ -31,10 +31,10 @@
     "local": "Local",
     "new_playlist": {
       "create": "Crear",
-      "description_placeholder": "Description..."
+      "description_placeholder": "Descripción..."
     },
     "url": {
-      "input_hint": "Enter URL Here.. (Youtube or Spotify)"
+      "input_hint": "Ingrese la URL aquí... (YouTube o Spotify)"
     }
   },
   "songView": {
@@ -64,7 +64,7 @@
     "sort_by": "Ordenar por",
     "sort": {
       "title": "Título",
-      "album": "Album (Track No.)",
+      "album": "Álbum (Núm. Pista)",
       "artist": "Artista",
       "genre": "Género",
       "date_added": "Fecha añadida",
@@ -97,17 +97,17 @@
       "showHidden": "Mostrar canciones ocultas",
       "hideHidden": "Ocultar canciones ocultas",
       "openInBrowser": "Abrir en el navegador",
-      "gotoAlbum": "Goto album ({title})",
-      "gotoArtists": "Goto artists"
+      "gotoAlbum": "Ir al álbum ({title})",
+      "gotoArtists": "Ir a artistas"
     },
     "artist": {
-      "remove": "Remove artist"
+      "remove": "Eliminar artista"
     },
     "album": {
-      "remove": "Remove album"
+      "remove": "Eliminar álbum"
     },
     "moreInfo": "Más información",
-    "incorrectPlayback": "Incorrect playback?"
+    "incorrectPlayback": "¿Reproducción incorrecta?"
   },
   "explore": {
     "you_listened_to": "Has escuchado",
@@ -122,7 +122,7 @@
     "lastfm": "LastFM"
   },
   "accounts": {
-    "connect": "Connect",
+    "connect": "Conectar",
     "sign_out": "Cerrar sesión"
   },
   "settings": {
@@ -139,10 +139,10 @@
       "thumbnailPath_tooltip": "Directorio donde se almacenan las miniaturas generadas",
       "splitter": "Patrón dividido del nombre del artista",
       "splitter_tooltip": "Regex para dividir nombres de artista. Dejar en blanco para desactivar la separación.",
-      "scan_interval": "Scan interval",
-      "scan_interval_tooltip": "Interval in minutes to trigger a scan task. Set to -1 to disable automatic scanning",
+      "scan_interval": "Intervalo de escaneo",
+      "scan_interval_tooltip": "Intervalo en minutos para activar una tarea de escaneo. Establecer en -1 para desactivar el escaneo automático",
       "scan_threads": "Scan CPU threads",
-      "scan_threads_tooltip": "Number of threads to use when scanning for local music"
+      "scan_threads_tooltip": "Número de hilos a utilizar cuando se busca música local"
     },
     "themes": {
       "songView": "Vista de canciones",
@@ -160,7 +160,7 @@
         "colors": "Colores",
         "colors_tooltip": "Cambiar los colores para personalizar la interfaz de usuario",
         "css": "CSS personalizado",
-        "watch_css": "Watch CSS for file changes"
+        "watch_css": "Ver CSS para cambios de archivo"
       },
       "primary": "Principal",
       "secondary": "Secundario",
@@ -187,7 +187,7 @@
         "hardwareAcceleration": "Usar aceleración por hardware de la GPU",
         "watchFileChanges": "Ver directorios de música para cambios",
         "enableJukeboxMode": "Activar el interruptor para el modo Jukebox",
-        "lastLoadedPlaybackState": "Load last playback state on startup"
+        "lastLoadedPlaybackState": "Cargar el último estado de reproducción al iniciar"
       },
       "systemSettings_tooltip": "Ajustes relacionados con su sistema",
       "audioSettings": {
@@ -196,7 +196,7 @@
         "sponsorBlock": "Usa SponsorBlock para saltar automáticamente a la parte resaltada de la canción de Youtube"
       },
       "audioSettings_tooltip": "Ajustes relacionados con la reproducción de audio",
-      "gapless_skip": "Skip song before end (seconds)",
+      "gapless_skip": "Saltar canción antes del final (segundos)",
       "invidiousUrlUnsupported": "Esta url no soporta API Invidious",
       "invidious_tooltip": "Instancia invidiosa a usar en lugar de youtube",
       "restartApp": "Reiniciar Moosync",
@@ -272,19 +272,19 @@
       "jukebox": {
         "pin": "Pin del modo tocadiscos",
         "pin_tooltip": "El pin Tis será necesario para salir del modo Jukebox. Debe ser numérico.",
-        "optionalFields": "Button visibility",
-        "optionalFields_tooltip": "Toggle optional buttons to show in Jukebox mode",
-        "optional_skip": "Track Skip buttons",
-        "optional_shuffle": "Shuffle button",
-        "optional_repeat": "Repeat button"
+        "optionalFields": "Visibilidad del botón",
+        "optionalFields_tooltip": "Activa los botones opcionales para mostrar en modo Jukebox",
+        "optional_skip": "Botones para saltar la pista",
+        "optional_shuffle": "Botón aleatorio",
+        "optional_repeat": "Botón de repetición"
       },
       "lyrics": {
         "title": "Proveedores de letras",
         "tooltip": "Selecciona qué proveedores de letras usar para buscar letras",
         "az_lyrics": "Usar AZLyrics",
         "google_lyrics": "Usar letras de búsqueda de Google",
-        "spotify_lyrics": "Use Spotify for lyrics (Requires librespot)",
-        "genius_lyrics": "Use Genius"
+        "spotify_lyrics": "Usar Spotify para letras (Requiere librespot)",
+        "genius_lyrics": "Usar Genius"
       },
       "queueSettings": {
         "title": "Ajustes de cola",
@@ -298,11 +298,11 @@
         }
       },
       "volumePersistMode": {
-        "title": "Volume behavior",
-        "tooltip": "Change the way volume slider behaves",
-        "noPersist": "Normal behavior",
-        "persistSeparateVolumes": "Remember separate volume for each provider",
-        "persistClampVolume": "Manually adjust volume range for each provider"
+        "title": "Comportamiento del volumen",
+        "tooltip": "Cambiar el comportamiento del deslizador de volumen",
+        "noPersist": "Comportamiento normal",
+        "persistSeparateVolumes": "Recordar volumen separado para cada proveedor",
+        "persistClampVolume": "Ajustar manualmente el rango de volumen para cada proveedor"
       }
     },
     "logs": {
@@ -311,30 +311,30 @@
       "process": "Proceso",
       "filterMessage": "Filtrar mensaje",
       "levels": {
-        "all": "All",
-        "debug": "Debug",
-        "info": "Info",
+        "all": "Todos",
+        "debug": "Depurar",
+        "info": "Información",
         "warn": "Warn",
         "error": "Error"
       },
-      "debug_logging": "Enable debug logging",
+      "debug_logging": "Activar registro de depuración",
       "table": {
         "time": "Time",
-        "level": "Level",
-        "process": "Process",
+        "level": "Nivel",
+        "process": "Proceso",
         "message": "Message"
       }
     }
   },
   "hotkeys": {
-    "play": "Play Song",
-    "pause": "Pause song",
-    "play_toggle": "Toggle play",
-    "mute_active": "Mute",
-    "mute_inactive": "Unmute",
+    "play": "Reproducir canción",
+    "pause": "Pausar canción",
+    "play_toggle": "Activar reproducción",
+    "mute_active": "Silenciar",
+    "mute_inactive": "Dejar de silenciar",
     "mute_toggle": " Toggle mute",
-    "volume_inc": "Increase volume",
-    "volume_dec": "Decrease volume",
+    "volume_inc": "Subir volumen",
+    "volume_dec": "Bajar volumen",
     "repeat_active": "Repeat song",
     "repeat_inactive": "Disable repeat",
     "repeat_toggle": "Toggle repeat",
