@@ -612,7 +612,7 @@ export default class ContextMenuMixin extends mixins(
       case 'PLAYLIST_SORT':
         items = this.getPlaylistSortByMenu(options.args.sortOptions)
         break
-      case 'PLAYLIST_SONGS':
+      case 'PLAYLIST_CONTENT':
         items = await this.getPlaylistSongContextMenu(
           options.args.playlistId,
           options.args.exclude,
@@ -668,7 +668,7 @@ export default class ContextMenuMixin extends mixins(
       const items: (ExtendedExtensionContextMenuItems<ContextMenuTypes> & MenuItem)[] =
         await window.ExtensionUtils.getContextMenuItems(type as ContextMenuTypes)
       for (const i of items) {
-        i.onClick = () => window.ExtensionUtils.fireContextMenuHandler(i.id, i.packageName, arg)
+        i.onClick = () => window.ExtensionUtils.fireContextMenuHandler(i.id, i.packageName, convertProxy(arg))
       }
 
       return items as MenuItem[]

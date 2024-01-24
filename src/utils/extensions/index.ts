@@ -7,24 +7,24 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { loadSelectivePreference, saveSelectivePreference } from '../main/db/preferences'
-import { extensionUIRequestsKeys, mainRequests, providerFetchRequests } from '@/utils/extensions/constants'
 import { ChildProcess, Serializable, fork } from 'child_process'
 import { app, ipcMain, shell } from 'electron'
-
-import { getStoreChannel } from '../main/ipc'
-import { WindowHandler } from '../main/windowManager'
-import { playerControlRequests } from './constants'
+import { extensionUIRequestsKeys, mainRequests, providerFetchRequests } from '@/utils/extensions/constants'
 import { getVersion, sanitizeSong } from '@/utils/common'
-import { sanitizePlaylist } from '@/utils/common'
-import { getSongDB } from '@/utils/main/db/index'
-import { ExtensionHostEvents } from '@/utils/main/ipc/constants'
-import { oauthHandler } from '@/utils/main/oauth/handler'
+import { loadSelectivePreference, saveSelectivePreference } from '../main/db/preferences'
+
 import { BrowserWindow } from 'electron'
-import { promises as fsP } from 'fs'
+import { ExtensionHostEvents } from '@/utils/main/ipc/constants'
 import { LogLevelDesc } from 'loglevel'
+import { WindowHandler } from '../main/windowManager'
 import { async } from 'node-stream-zip'
+import { promises as fsP } from 'fs'
+import { getSongDB } from '@/utils/main/db/index'
+import { getStoreChannel } from '../main/ipc'
+import { oauthHandler } from '@/utils/main/oauth/handler'
 import path from 'path'
+import { playerControlRequests } from './constants'
+import { sanitizePlaylist } from '@/utils/common'
 import { v4 } from 'uuid'
 
 export const defaultExtensionPath = path.join(app.getPath('appData'), app.getName(), 'extensions')
@@ -321,6 +321,11 @@ class ExtensionRequestHandler {
           }
         }
       }
+    }
+
+    if (message.type === 'update-song') {
+      const song = message.data
+      resp.data = await getSongDB().updateSong(song as Song)
     }
 
     if (message.type === 'add-playlist') {

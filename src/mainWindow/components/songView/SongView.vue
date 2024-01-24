@@ -9,62 +9,27 @@
 
 <template>
   <b-container fluid class="song-container h-100" @contextmenu="onGeneralContextMenu">
-    <transition
-      name="custom-classes-transition"
+    <transition name="custom-classes-transition"
       enter-active-class="animate__animated animate__slideInLeft animate__delay-1s animate__slideInLeft_delay"
-      leave-active-class="animate__animated animate__slideOutRight animate__slideOutRight_faster"
-    >
-      <SongViewCompact
-        v-if="songView === 'SongViewCompact'"
-        :songList="filteredSongList"
-        :currentSong="currentSong"
-        :defaultDetails="defaultDetails"
-        :detailsButtonGroup="detailsButtonGroup"
-        :optionalProviders="optionalProviders"
-        :isLoading="isLoading"
-        @onItemsChanged="onOptionalProviderChanged"
-        @onRowDoubleClicked="(song: Song) => queueSong([song])"
-        @onRowContext="onSongContextMenu"
-        @onRowSelected="updateCoverDetails"
-        @onRowSelectionClear="clearSelection"
-        @onRowPlayNowClicked="(song: Song) => playTop([song])"
-        @onArtistClicked="gotoArtist"
-        @onAlbumClicked="gotoAlbum"
-        @playAll="playAll"
-        @addToQueue="addToQueue"
-        @addToLibrary="addToLibrary"
-        @onSortClicked="showSortMenu"
-        @onSearchChange="onSearchChange"
-        @playRandom="playRandom"
-        @fetchAll="fetchAll"
-        @onScrollEnd="onScrollEnd"
-      ></SongViewCompact>
+      leave-active-class="animate__animated animate__slideOutRight animate__slideOutRight_faster">
+      <SongViewCompact v-if="songView === 'SongViewCompact'" :songList="filteredSongList" :currentSong="currentSong"
+        :defaultDetails="defaultDetails" :detailsButtonGroup="detailsButtonGroup" :optionalProviders="optionalProviders"
+        :isLoading="isLoading" @onItemsChanged="onOptionalProviderChanged"
+        @onRowDoubleClicked="(song: Song) => queueSong([song])" @onRowContext="onSongContextMenu"
+        @onRowSelected="updateCoverDetails" @onRowSelectionClear="clearSelection"
+        @onRowPlayNowClicked="(song: Song) => playTop([song])" @onArtistClicked="gotoArtist" @onAlbumClicked="gotoAlbum"
+        @playAll="playAll" @addToQueue="addToQueue" @addToLibrary="addToLibrary" @onSortClicked="showSortMenu"
+        @onSearchChange="onSearchChange" @playRandom="playRandom" @fetchAll="fetchAll" @onScrollEnd="onScrollEnd">
+      </SongViewCompact>
 
-      <SongViewClassic
-        v-else
-        :songList="filteredSongList"
-        :currentSong="currentSong"
-        :defaultDetails="defaultDetails"
-        :detailsButtonGroup="detailsButtonGroup"
-        :optionalProviders="optionalProviders"
-        :isLoading="isLoading"
-        @onItemsChanged="onOptionalProviderChanged"
-        @onRowDoubleClicked="(song: Song) => queueSong([song])"
-        @onRowContext="onSongContextMenu"
-        @onRowSelected="updateCoverDetails"
-        @onRowSelectionClear="clearSelection"
-        @onRowPlayNowClicked="(song: Song) => playTop([song])"
-        @onArtistClicked="gotoArtist"
-        @onAlbumClicked="gotoAlbum"
-        @playAll="playAll"
-        @addToQueue="addToQueue"
-        @addToLibrary="addToLibrary"
-        @onSortClicked="showSortMenu"
-        @onSearchChange="onSearchChange"
-        @playRandom="playRandom"
-        @fetchAll="fetchAll"
-        @onScrollEnd="onScrollEnd"
-      ></SongViewClassic>
+      <SongViewClassic v-else :songList="filteredSongList" :currentSong="currentSong" :defaultDetails="defaultDetails"
+        :detailsButtonGroup="detailsButtonGroup" :optionalProviders="optionalProviders" :isLoading="isLoading"
+        @onItemsChanged="onOptionalProviderChanged" @onRowDoubleClicked="(song: Song) => queueSong([song])"
+        @onRowContext="onSongContextMenu" @onRowSelected="updateCoverDetails" @onRowSelectionClear="clearSelection"
+        @onRowPlayNowClicked="(song: Song) => playTop([song])" @onArtistClicked="gotoArtist" @onAlbumClicked="gotoAlbum"
+        @playAll="playAll" @addToQueue="addToQueue" @addToLibrary="addToLibrary" @onSortClicked="showSortMenu"
+        @onSearchChange="onSearchChange" @playRandom="playRandom" @fetchAll="fetchAll" @onScrollEnd="onScrollEnd">
+      </SongViewClassic>
     </transition>
   </b-container>
 </template>

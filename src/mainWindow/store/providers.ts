@@ -7,14 +7,15 @@
  *  See LICENSE in the project root for license information.
  */
 
+import { action, mutation } from 'vuex-class-component'
+
+import { ExtensionProvider } from '@/utils/ui/providers/extensionWrapper'
+import { InvidiousProvider } from '@/utils/ui/providers/invidious'
 import { LastFMProvider } from '../../utils/ui/providers/lastfm'
 import { PipedProvider } from '../../utils/ui/providers/piped'
 import { SpotifyProvider } from '../../utils/ui/providers/spotify'
 import { VuexModule } from './module'
-import { ExtensionProvider } from '@/utils/ui/providers/extensionWrapper'
-import { InvidiousProvider } from '@/utils/ui/providers/invidious'
 import { YoutubeProvider } from '@/utils/ui/providers/youtube'
-import { action, mutation } from 'vuex-class-component'
 
 export enum YoutubeAlts {
   YOUTUBE = 0,
@@ -72,7 +73,6 @@ export class ProviderStore extends VuexModule.With({ namespaced: 'providers' }) 
 
   @action
   async updateExtensionProvider(packageName: string) {
-    console.log('updating extension', packageName)
     const scopes = (await window.ExtensionUtils.getExtensionProviderScopes(packageName))[packageName]
     if (scopes.length > 0) {
       this.addExtensionProvider(new ExtensionProvider(packageName, scopes))

@@ -84,7 +84,7 @@ type ContextMenuArgs =
       }
     }
   | {
-      type: 'PLAYLIST_SONGS'
+      type: 'PLAYLIST_CONTENT'
       args: {
         exclude?: string
         refreshCallback?: () => void

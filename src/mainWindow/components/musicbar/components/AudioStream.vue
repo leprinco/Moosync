@@ -37,7 +37,8 @@ const enum ButtonEnum {
   Shuffle = 10,
   Repeat = 11,
   Seek = 12,
-  PlayPause = 13
+  PlayPause = 13,
+  Position = 14
 }
 
 const SONG_CHANGE_DEBOUNCE = 100
@@ -139,10 +140,6 @@ export default class AudioStream extends mixins(
     vxm.themes.showPlayer = show
   }
 
-  get volume() {
-    return vxm.player.volume
-  }
-
   /**
    * Method called when vuex player state changes
    * This method is responsible for reflecting that state on active player
@@ -171,9 +168,14 @@ export default class AudioStream extends mixins(
     let player: Player | undefined = undefined
 
     let tries = 0
-    while (!(player && (song.playbackUrl || song.path)) && tries < vxm.playerRepo.allPlayers.length) {
+    while (!(player && (song.path ?? song.playbackUrl)) && tries < vxm.playerRepo.allPlayers.length) {
+
+      if (song.path && !this.playerBlacklist.includes('LOCAL')) {
+        newType = 'LOCAL'
+      }
+
       player = this.findPlayer(newType, this.playerBlacklist)
-      console.debug('Found player', player?.key)
+      console.debug('Found player', song, newType, player?.key)
 
       if (newType === 'LOCAL' && player) {
         if (song.duration < 0) {
@@ -187,7 +189,7 @@ export default class AudioStream extends mixins(
       }
 
       if (!player) {
-        console.error('No player found to play', song.playbackUrl)
+        console.error('No player found to play', song.path || song.playbackUrl)
         if (vxm.player.queueOrder.length > 1) {
           this.playerBlacklist = []
           this.nextSong()
@@ -224,7 +226,7 @@ export default class AudioStream extends mixins(
 
         this.activePlayer = player
 
-        this.activePlayer.volume = vxm.player.volume
+        this.activePlayer.volume = this.volume
         this.registerPlayerListeners()
         this.activePlayerTypes = newType
 
@@ -271,9 +273,9 @@ export default class AudioStream extends mixins(
   /**
    * Method triggered when vuex volume changes
    */
-  onVolumeChanged(newValue: number) {
+  onVolumeChanged() {
     if (this.activePlayer) {
-      this.activePlayer.volume = newValue
+      this.activePlayer.volume = this.volume
     }
   }
 
@@ -452,6 +454,8 @@ export default class AudioStream extends mixins(
       this.activePlayer.onTimeUpdate = async (time) => {
         this.$emit('onTimeUpdate', time)
 
+        this.updateMprisPosition(time)
+
         if (this.currentSong) {
           if (time >= this.currentSong.duration - preloadDuration - this.timeSkipSeconds) {
             await this.preloadNextSong()
@@ -574,9 +578,18 @@ export default class AudioStream extends mixins(
     }
   }
 
+  private handleSeek(seek: number, relative: boolean) {
+    if (seek) {
+      const parsed = seek / 10e5
+      const newPos = relative ? vxm.player.currentTime + parsed : parsed
+      bus.emit('forceSeek', newPos)
+      vxm.player.forceSeek = newPos
+    }
+  }
+
   private registerMediaControlListener() {
-    window.MprisUtils.listenMediaButtonPress((args) => {
-      switch (args) {
+    window.MprisUtils.listenMediaButtonPress((button, arg) => {
+      switch (button) {
         case ButtonEnum.Play:
           this.play()
           break
@@ -601,8 +614,18 @@ export default class AudioStream extends mixins(
         case ButtonEnum.PlayPause:
           this.togglePlay()
           break
+        case ButtonEnum.Seek:
+          this.handleSeek(arg as number, true)
+          break
+        case ButtonEnum.Position:
+          this.handleSeek((arg as { position: number })?.position, false)
+          break
       }
     })
+  }
+
+  private async updateMprisPosition(position: number) {
+    await window.MprisUtils.updatePosition(position)
   }
 
   private async registerListeners() {
@@ -665,6 +688,7 @@ export default class AudioStream extends mixins(
     player: string
   ): Promise<{ url: string | undefined; duration?: number } | undefined> {
     if (provider) {
+      console.debug('Fetching playback URL and duration from', provider.key)
       const res = await provider.getPlaybackUrlAndDuration(song, player)
       if (res) return res
     }
@@ -681,7 +705,9 @@ export default class AudioStream extends mixins(
   private async setMediaInfo(song: Song) {
     const raw = convertProxy(song)
     await window.MprisUtils.updateSongInfo({
+      id: raw._id,
       title: raw.title,
+      duration: raw.duration,
       albumName: raw.album?.album_name,
       albumArtist: raw.album?.album_artist,
       artistName: raw.artists && raw.artists.map((val) => val.artist_name).join(', '),
@@ -884,28 +910,19 @@ export default class AudioStream extends mixins(
       return
     }
 
-    if (PlayerTypes === 'LOCAL') {
+    try {
       this.activePlayer?.load(
         song.path ? 'media://' + song.path : song.playbackUrl,
         this.volume,
         vxm.player.playAfterLoad || this.playerState === 'PLAYING'
       )
-      console.debug('Loaded song at', song.path ? 'media://' + song.path : song.playbackUrl)
-      vxm.player.loading = false
-    } else {
-      console.debug('PlaybackUrl for song', song._id, 'is', song.playbackUrl)
-      console.debug('Loaded song at', song.playbackUrl)
-
-      try {
-        await this.activePlayer?.load(
-          song.playbackUrl,
-          this.volume,
-          vxm.player.playAfterLoad || this.playerState !== 'PAUSED'
-        )
-      } catch (e) {
-        console.error('failed to load song', e)
-      }
+    } catch (e) {
+      console.error('failed to load song', e)
     }
+
+    console.debug('Loaded song at', song.path ? 'media://' + song.path : song.playbackUrl)
+    vxm.player.loading = false
+
 
     vxm.player.playAfterLoad = false
 

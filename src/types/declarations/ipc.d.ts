@@ -325,8 +325,20 @@ declare namespace MprisRequests {
   type SongInfo = import('media-controller').PlayerDetails
   type ButtonStatus = import('media-controller').PlayerButtons
 
+  type Position = {
+    position: number
+  }
+
   interface ShuffleRepeat {
     shuffle: boolean
     repeat: 'Playlist' | 'Track' | 'None'
+  }
+}
+
+declare namespace NotifierRequests {
+  interface FileChanges {
+    path: string
+    watch: boolean
+    mainWindow: boolean | 'both'
   }
 }

@@ -7,18 +7,9 @@
  *  See LICENSE in the project root for license information.
  */
 
-import {
-  loadSelectiveArrayPreference,
-  loadSelectivePreference,
-  onPreferenceChanged,
-  removeSelectivePreference,
-  resetPrefsToDefault,
-  saveSelectivePreference,
-  setPreferenceListenKey,
-} from '../db/preferences'
 import { EventBus, IpcEvents, PreferenceEvents } from './constants'
-
-import { ThemePacker } from '../themes/packer'
+import { WindowHandler, _windowHandler } from '../windowManager'
+import { app, ipcMain } from 'electron'
 import {
   getActiveTheme,
   getSongView,
@@ -30,10 +21,19 @@ import {
   setSongView,
   transformCSS,
 } from '../themes/preferences'
-import { WindowHandler, _windowHandler } from '../windowManager'
-import { app, ipcMain } from 'electron'
-import { promises as fsP } from 'fs'
+import {
+  loadSelectiveArrayPreference,
+  loadSelectivePreference,
+  onPreferenceChanged,
+  removeSelectivePreference,
+  resetPrefsToDefault,
+  saveSelectivePreference,
+  setPreferenceListenKey,
+} from '../db/preferences'
 import { mkdir, rm, writeFile } from 'fs/promises'
+
+import { ThemePacker } from '../themes/packer'
+import { promises as fsP } from 'fs'
 import path from 'path/posix'
 import { v1 } from 'uuid'
 
@@ -92,6 +92,9 @@ export class PreferenceChannel implements IpcChannelInterface {
         break
       case PreferenceEvents.IMPORT_THEME:
         this.importTheme(event, request as IpcRequest<PreferenceRequests.ImportTheme>)
+        break
+      case PreferenceEvents.SET_TEMP_THEME:
+        this.setTempTheme(event, request as IpcRequest<PreferenceRequests.Theme>)
         break
     }
   }
@@ -203,6 +206,12 @@ export class PreferenceChannel implements IpcChannelInterface {
         this.generateIconFile(theme)
       }
     }
+    event.reply(request.responseChannel)
+  }
+
+  private async setTempTheme(event: Electron.IpcMainEvent, request: IpcRequest<PreferenceRequests.Theme>) {
+    WindowHandler.getWindow(true)?.webContents.send(PreferenceEvents.THEME_REFRESH, request.params.theme)
+    WindowHandler.getWindow(false)?.webContents.send(PreferenceEvents.THEME_REFRESH, request.params.theme)
     event.reply(request.responseChannel)
   }
 

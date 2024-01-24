@@ -8,12 +8,12 @@
       "artists": "कलाकार",
       "genre": "शैलियाँ",
       "explore": "एक्सप्लोर करें",
-      "paths": "Paths",
-      "themes": "Themes",
-      "extensions": "Extensions",
-      "system": "System",
-      "logs": "Logs",
-      "keybinds": "Keybinds"
+      "paths": "पथ",
+      "themes": "विषय",
+      "extensions": "विस्तार",
+      "system": "प्रणाली",
+      "logs": "लॉग",
+      "keybinds": "कीबाइंड्स"
     }
   },
   "topbar": {
@@ -28,13 +28,13 @@
     "explore": "एक्सप्लोर करें"
   },
   "playlists": {
-    "local": "Local",
+    "local": "स्थानीय",
     "new_playlist": {
-      "create": "Create",
-      "description_placeholder": "Description..."
+      "create": "बनाएँ",
+      "description_placeholder": "विवरण"
     },
     "url": {
-      "input_hint": "Enter URL Here.. (Youtube or Spotify)"
+      "input_hint": "यहाँ URL दर्ज करें.. (YouTube या Spotify)"
     }
   },
   "songView": {
@@ -48,11 +48,11 @@
     }
   },
   "buttons": {
-    "playSingle": "Play {title}",
-    "addToQueue": "Add {title} to queue",
-    "addToLibrary": "Add {title} to library",
-    "playRandom": "Play 100 random songs",
-    "fetchAll": "Fetch all songs",
+    "playSingle": "खेलें{title}",
+    "addToQueue": "कतार में {title} जोड़ें",
+    "addToLibrary": "लाइब्रेर में {title} जोड़ें",
+    "playRandom": "100 यादृच्छिक गाने बजाएँ",
+    "fetchAll": "सभी गाने प्राप्त करें",
     "close": "Close",
     "add": "Add",
     "save": "Save",
@@ -159,7 +159,8 @@
         "author": "Author",
         "colors": "Colors",
         "colors_tooltip": "Change the colors to customise UI",
-        "css": "Custom CSS"
+        "css": "Custom CSS",
+        "watch_css": "Watch CSS for file changes"
       },
       "primary": "Primary",
       "secondary": "Secondary",

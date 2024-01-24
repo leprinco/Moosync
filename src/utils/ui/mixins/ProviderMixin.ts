@@ -7,11 +7,12 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { GenericProvider } from '../providers/generics/genericProvider'
-import { vxm } from '@/mainWindow/store'
-import { isEmpty } from '@/utils/common'
-import { ProviderScopes } from '@/utils/commonConstants'
 import { Component, Vue } from 'vue-facing-decorator'
+
+import { GenericProvider } from '../providers/generics/genericProvider'
+import { ProviderScopes } from '@/utils/commonConstants'
+import { isEmpty } from '@/utils/common'
+import { vxm } from '@/mainWindow/store'
 
 @Component
 export default class ProviderMixin extends Vue {
@@ -46,7 +47,7 @@ export default class ProviderMixin extends Vue {
       ...vxm.providers.extensionProviders,
     ]
 
-    return allProviders.find((val) => val.key === key)
+    return allProviders.find((val) => val.key.toLowerCase() === key.toLowerCase())
   }
 
   onProvidersChanged(callback: () => void) {
@@ -66,7 +67,7 @@ export default class ProviderMixin extends Vue {
     if (song.providerExtension) {
       return this.getProviderByKey(song.providerExtension)
     } else {
-      return this.getProviderByKey(song.type.toLowerCase())
+      return this.getProviderByKey(song.type)
     }
   }
 }

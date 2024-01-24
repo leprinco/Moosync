@@ -10,26 +10,12 @@
 <template>
   <div class="h-100 w-100">
     <div v-if="computedImg" class="dark-overlay" :style="{ top: !hasFrame ? '-28px' : '0px' }"></div>
-    <transition
-      name="custom-fade"
-      enter-active-class="animate__animated animate__fadeIn"
-      leave-active-class="animate__animated animate__fadeOut animate__faster"
-    >
-      <video
-        v-if="showSpotifyCanvas && spotifyCanvas"
-        class="bg-img w-100 h-100"
-        :src="spotifyCanvas"
-        :key="spotifyCanvas"
-        autoplay
-        loop
-      />
-      <b-img
-        class="bg-img"
-        v-else-if="computedImg"
-        :src="computedImg"
-        :key="computedImg"
-        referrerPolicy="no-referrer"
-      ></b-img>
+    <transition name="custom-fade" enter-active-class="animate__animated animate__fadeIn"
+      leave-active-class="animate__animated animate__fadeOut animate__faster">
+      <video v-if="showSpotifyCanvas && spotifyCanvas" class="bg-img w-100 h-100" :src="spotifyCanvas"
+        :key="spotifyCanvas" autoplay loop />
+      <b-img class="bg-img" v-else-if="computedImg" :src="computedImg" :key="computedImg"
+        referrerPolicy="no-referrer"></b-img>
     </transition>
 
     <b-container fluid class="w-100 h-100 main-container">
@@ -40,14 +26,8 @@
       </b-row>
       <b-row no-gutters align-h="center" class="h-100 flex-nowrap">
         <b-col cols="4">
-          <SongDetailsCompact
-            :cardHoverText="lyrics"
-            :forceWhiteText="true"
-            :currentSong="currentSong"
-            :forceCover="computedImg"
-            :isShowLyricsActive="showPlayer"
-            @toggleLyrics="onToggleLyrics"
-          />
+          <SongDetailsCompact :cardHoverText="lyrics" :forceWhiteText="true" :currentSong="currentSong"
+            :forceCover="computedImg" :isShowLyricsActive="showPlayer" @toggleLyrics="onToggleLyrics" />
           <div class="audioStream-slot" v-show="showPlayer === 2">
             <b-container fluid class="scrollable">
               <b-row no-gutters>
@@ -74,21 +54,11 @@
             </b-row>
             <b-row class="queue-container-outer">
               <b-col class="h-100 queue-container mr-4">
-                <RecycleScroller
-                  class="w-100 h-100"
-                  :items="queueOrder"
-                  :item-size="94"
-                  ref="recycle-scroller"
-                  key-field="id"
-                  :direction="'vertical'"
-                >
+                <RecycleScroller class="w-100 h-100" :items="queueOrder" :item-size="94" ref="recycle-scroller"
+                  key-field="id" :direction="'vertical'">
                   <template v-slot="{ item, index }">
-                    <QueueItem
-                      :id="`queue-item-${item.id}`"
-                      :song="getSong(item.songID)"
-                      :index="index"
-                      :current="index === currentIndex"
-                    />
+                    <QueueItem :id="`queue-item-${item.id}`" :song="getSong(item.songID)" :index="index"
+                      :current="index === currentIndex" />
                   </template>
                 </RecycleScroller>
               </b-col>
@@ -172,7 +142,8 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
       return
     }
 
-    ;(this.$refs['recycle-scroller'] as typeof RecycleScroller)?.$el.scrollTo({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ; (this.$refs['recycle-scroller'] as any)?.$el.scrollTo({
       top: this.currentIndex * 94,
       behavior: 'smooth'
     })
@@ -228,8 +199,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
       } else {
         const searchRes = (
           await vxm.providers.spotifyProvider.searchSongs(
-            `${
-              this.currentSong.artists ? this.currentSong.artists?.map((val) => val.artist_name).join(', ') + ' - ' : ''
+            `${this.currentSong.artists ? this.currentSong.artists?.map((val) => val.artist_name).join(', ') + ' - ' : ''
             }${this.currentSong.title}`
           )
         )[0]

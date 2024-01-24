@@ -159,7 +159,8 @@
         "author": "Författare",
         "colors": "Färger",
         "colors_tooltip": "Ändra färger för att anpassa UI",
-        "css": "Custom CSS"
+        "css": "Custom CSS",
+        "watch_css": "Watch CSS for file changes"
       },
       "primary": "Primär",
       "secondary": "Sekundär",

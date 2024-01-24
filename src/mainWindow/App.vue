@@ -79,7 +79,6 @@ import { convertProxy } from '@/utils/ui/common'
 export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandlerMixin, JukeboxMixin, ProviderMixin) {
   async created() {
     this.fetchProviderExtensions()
-    this.registerNotifier()
     this.setLanguage()
     this.listenPreferenceChanges()
     this.listenExtensionEvents()
@@ -283,20 +282,6 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
     vxm.playlist.playlists = playlists
   }
 
-  private registerNotifier() {
-    window.NotifierUtils.registerMainProcessNotifier((obj) => {
-      vxm.notifier.emit(obj)
-      if (obj.id === 'started-scan' || obj.id === 'completed-scan') {
-        if (obj.id === 'completed-scan') {
-          vxm.themes.refreshPage = true
-        }
-        toast(obj.message, {
-          type: obj.id === 'completed-scan' ? 'success' : 'default'
-        })
-      }
-    })
-  }
-
   private getFileName(path: string) {
     const li = Math.max(path.lastIndexOf('/'), path.lastIndexOf('\\'))
     const fileName = path.substring(li + 1)
@@ -429,9 +414,10 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
 
       if (data.type === 'show-toast') {
         const parsedData = data.data as { message: string; duration: number; type: ToastType }
+        console.log(parsedData)
         toast(parsedData.message, {
           autoClose: Math.max(parsedData.duration, 5000),
-          type: parsedData.type
+          type: parsedData.type,
         })
         window.ExtensionUtils.replyToRequest({ ...data, data: true })
       }
@@ -446,7 +432,6 @@ export default class App extends mixins(ThemeHandler, PlayerControls, KeyHandler
       this.lastUpdateRequest[packageName] = undefined
     }
 
-    console.log('updating', packageName, 'in 500ms')
     const timeout = setTimeout(() => {
       this.lastUpdateRequest[packageName] = undefined
       vxm.providers.updateExtensionProvider(packageName)

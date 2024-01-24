@@ -11,6 +11,7 @@ export const extensionRequestsKeys = [
   'get-songs',
   'get-entity',
   'add-songs',
+  'update-song',
   'add-playlist',
   'add-song-to-playlist',
   'remove-song',

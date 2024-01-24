@@ -165,8 +165,15 @@ export default class ThemeHandler extends Vue {
     )
   }
 
+  private listenTempTheme() {
+    window.ThemeUtils.onThemeRefresh((theme) => {
+      this.setColorsToRoot(theme)
+    })
+  }
+
   mounted() {
     this.fetchSongView()
     this.fetchThemeFromID()
+    this.listenTempTheme()
   }
 }

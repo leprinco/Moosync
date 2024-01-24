@@ -159,7 +159,8 @@
         "author": "المؤلف",
         "colors": "الألوان",
         "colors_tooltip": "تغيير الألوان لتخصيص واجهة المستخدم",
-        "css": "Custom CSS"
+        "css": "Custom CSS",
+        "watch_css": "Watch CSS for file changes"
       },
       "primary": "اساسي",
       "secondary": "ثانوي",

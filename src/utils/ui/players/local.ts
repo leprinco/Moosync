@@ -42,10 +42,9 @@ export class LocalPlayer extends Player {
 
   protected async _load(src?: string, volume?: number, autoplay?: boolean): Promise<void> {
     if (src) {
-      console.debug('Loading src', src)
       this.playerInstance.setSrc(src, autoplay)
     }
-    volume && this.volume === volume
+    if (volume) this.volume = volume
   }
 
   protected async _play(): Promise<void> {
@@ -91,10 +90,11 @@ export class LocalPlayer extends Player {
 
   protected listenOnError(callback: (err: Error) => void): void {
     this.playerInstance.onerror = (event, source, line, col, err) => {
-      console.error('error', event, source, line, col, err)
+      const finalErr = err ?? ((event as ErrorEvent).target as HTMLAudioElement).error
+      console.error('error', event, source, line, col, finalErr)
       if (callback) {
-        if (err) {
-          callback(err)
+        if (finalErr) {
+          callback(finalErr as Error)
         } else {
           if (typeof event === 'string') {
             callback(new Error(event))

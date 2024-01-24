@@ -97,7 +97,6 @@ export default class ColorPickerr extends Vue {
 
   changeColor(color: ColorPickerOutput) {
     const parsed = this.RGBAToString(color.colors.rgb)
-    console.log('changing color', parsed, this.color)
 
     if (parsed !== this.color) {
       this.color = parsed

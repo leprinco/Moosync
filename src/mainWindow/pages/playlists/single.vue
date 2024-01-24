@@ -14,21 +14,10 @@
 </route>
 <template>
   <div class="w-100 h-100">
-    <SongView
-      :defaultDetails="defaultDetails"
-      :songList="songList"
-      :detailsButtonGroup="buttonGroups"
-      :isLoading="isLoading"
-      :isRemote="isRemote"
-      :onSongContextMenuOverride="onSongContextMenuOverride"
-      @playAll="playPlaylist"
-      @addToQueue="addPlaylistToQueue"
-      @addToLibrary="addPlaylistToLibrary"
-      @onScrollEnd="loadNextPage"
-      @onSearchChange="onSearchChange"
-      @playRandom="playRandom"
-      @fetchAll="fetchAll"
-    />
+    <SongView :defaultDetails="defaultDetails" :songList="songList" :detailsButtonGroup="buttonGroups"
+      :isLoading="isLoading" :isRemote="isRemote" :onSongContextMenuOverride="onSongContextMenuOverride"
+      @playAll="playPlaylist" @addToQueue="addPlaylistToQueue" @addToLibrary="addPlaylistToLibrary"
+      @onScrollEnd="loadNextPage" @onSearchChange="onSearchChange" @playRandom="playRandom" @fetchAll="fetchAll" />
   </div>
 </template>
 
@@ -118,7 +107,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   private async refresh() {
     for (const [key, checked] of Object.entries(this.activeProviders)) {
       if (checked) {
-        await this.onProviderChanged({key, checked})
+        await this.onProviderChanged({ key, checked })
       }
     }
   }
@@ -135,7 +124,6 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
       })
 
     this.generator = (provider, nextPageToken) => {
-      console.log(this.playlist)
       if (this.playlist) {
         return provider.getPlaylistContent(
           provider.sanitizeId(this.playlist.playlist_id, 'PLAYLIST'),
@@ -217,7 +205,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
 
   onSongContextMenuOverride(event: PointerEvent, songs: Song[]) {
     this.getContextMenu(event, {
-      type: 'PLAYLIST_SONGS',
+      type: 'PLAYLIST_CONTENT',
       args: {
         playlistId: this.playlist.playlist_id,
         songs,

@@ -159,7 +159,8 @@
         "author": "Forfatter",
         "colors": "Farger",
         "colors_tooltip": "Endre farger for å tilpasse brukergrensesnittet",
-        "css": "Custom CSS"
+        "css": "Custom CSS",
+        "watch_css": "Watch CSS for file changes"
       },
       "primary": "Primær",
       "secondary": "Sekundær",

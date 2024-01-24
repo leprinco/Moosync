@@ -7,9 +7,10 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { WindowHandler } from '../windowManager'
 import { IpcEvents, MprisEvents } from './constants'
 import MediaController, { ButtonEnum, PlaybackStateEnum, PlayerButtons } from 'media-controller'
+
+import { WindowHandler } from '../windowManager'
 
 function checkStarted() {
   return function (target: unknown, propertyKey: string, descriptor: PropertyDescriptor) {
@@ -54,13 +55,24 @@ export class MprisChannel implements IpcChannelInterface {
       case MprisEvents.BUTTON_STATUS_CHANGED:
         this.setButtonStatus(event, request as IpcRequest<MprisRequests.ButtonStatus>)
         break
+      case MprisEvents.POSITION_CHANGED:
+        this.updatePosition(event, request as IpcRequest<MprisRequests.Position>)
+        break
     }
+  }
+
+  @checkStarted()
+  private updatePosition(event: Electron.IpcMainEvent, request: IpcRequest<MprisRequests.Position>) {
+    if (request.params) {
+      this.controller.setCurrentDuration(request.params.position * 10e5)
+    }
+    event.reply(request.responseChannel)
   }
 
   @checkStarted()
   private onSongInfoChange(event: Electron.IpcMainEvent, request: IpcRequest<MprisRequests.SongInfo>) {
     if (request.params) {
-      const { title, albumName, artistName, albumArtist, thumbnail, genres } = request.params
+      const { title, albumName, artistName, albumArtist, thumbnail, genres, id, duration } = request.params
       if (!title) {
         this.controller.updatePlayerDetails({
           title: '',
@@ -69,9 +81,19 @@ export class MprisChannel implements IpcChannelInterface {
           thumbnail: '',
           genres: [],
           albumArtist: '',
+          duration: 0,
         })
       } else {
-        this.controller.updatePlayerDetails({ title, albumName, artistName, thumbnail, genres, albumArtist })
+        this.controller.updatePlayerDetails({
+          id: 'track/0',
+          title,
+          albumName,
+          artistName,
+          thumbnail,
+          genres,
+          albumArtist,
+          duration: (duration ?? 0) * 10e5,
+        })
       }
 
       if (this.buttonState) {
@@ -134,8 +156,8 @@ export class MprisChannel implements IpcChannelInterface {
   }
 
   @checkStarted()
-  public onButtonPressed(button: ValueOf<typeof ButtonEnum>) {
-    WindowHandler.getWindow(true)?.webContents.send(MprisEvents.ON_BUTTON_PRESSED, button)
+  public onButtonPressed(button: ValueOf<typeof ButtonEnum>, arg?: unknown) {
+    WindowHandler.getWindow(true)?.webContents.send(MprisEvents.ON_BUTTON_PRESSED, button, arg)
   }
 
   @checkStarted()

@@ -17,26 +17,13 @@
         </b-col>
       </b-row>
       <b-row no-gutters class="h-100">
-        <RecycleScroller
-          :class="`scroller w-100  ${isLoading ? 'low-height' : 'full-height'}`"
-          :items="songList"
-          :item-size="94"
-          key-field="_id"
-          :direction="'vertical'"
-          @scroll-end="onScrollEnd"
-          v-click-outside="clearSelection"
-        >
+        <RecycleScroller :class="`scroller w-100  ${isLoading ? 'low-height' : 'full-height'}`" :items="songList"
+          :item-size="94" key-field="_id" :direction="'vertical'" @scroll-end="onScrollEnd"
+          v-click-outside="clearSelection">
           <template v-slot="{ item, index }">
-            <SongListCompactItem
-              :item="item"
-              :index="index"
-              :selected="selected"
-              @onRowDoubleClicked="onRowDoubleClicked"
-              @onRowSelected="onRowSelected"
-              @onRowContext="onRowContext"
-              @onPlayNowClicked="onPlayNowClicked"
-              @onArtistClicked="onArtistClicked"
-            />
+            <SongListCompactItem :item="item" :index="index" :selected="selected" @onRowDoubleClicked="onRowDoubleClicked"
+              @onRowSelected="onRowSelected" @onRowContext="onRowContext" @onPlayNowClicked="onPlayNowClicked"
+              @onArtistClicked="onArtistClicked" />
           </template>
         </RecycleScroller>
       </b-row>
