@@ -17,6 +17,7 @@ import {
   NotifierEvents,
   PlaylistEvents,
   PreferenceEvents,
+  RodioEvents,
   ScannerEvents,
   SearchEvents,
   SongEvents,
@@ -809,6 +810,22 @@ contextBridge.exposeInMainWorld('SpotifyPlayer', {
         scopes,
       },
     }),
+})
+
+contextBridge.exposeInMainWorld('RodioUtils', {
+  initialize: () => ipcRendererHolder.send(IpcEvents.RODIO, { type: RodioEvents.INITIALIZE, params: undefined }),
+  setSrc: (path: string) =>
+    ipcRendererHolder.send<RodioRequests.SetSrc>(IpcEvents.RODIO, { type: RodioEvents.SET_SRC, params: { path } }),
+  play: () => ipcRendererHolder.send(IpcEvents.RODIO, { type: RodioEvents.PLAY, params: undefined }),
+  pause: () => ipcRendererHolder.send(IpcEvents.RODIO, { type: RodioEvents.PAUSE, params: undefined }),
+  stop: () => ipcRendererHolder.send(IpcEvents.RODIO, { type: RodioEvents.STOP, params: undefined }),
+  seek: (pos: number) =>
+    ipcRendererHolder.send<RodioRequests.Seek>(IpcEvents.RODIO, { type: RodioEvents.SEEK, params: { pos } }),
+  setVolume: (volume: number) =>
+    ipcRendererHolder.send<RodioRequests.Volume>(IpcEvents.RODIO, { type: RodioEvents.SET_VOLUME, params: { volume } }),
+  // getCurrentTime: () => ipcRendererHolder.send(IpcEvents.RODIO, { type: RodioEvents.GET_POSITION, params: undefined }),
+  // getVolume: () => ipcRendererHolder.send(IpcEvents.RODIO, { type: RodioEvents.GET_VOLUME, params: undefined }),
+  listenEvents: (callback: (event: RodioEvents) => void) => ipcRendererHolder.on(IpcEvents.RODIO, callback),
 })
 
 function clearCache() {

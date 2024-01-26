@@ -7,6 +7,8 @@
  *  See LICENSE in the project root for license information.
  */
 
+import { RodioEvents } from '@/utils/main/ipc/constants'
+
 /**
  * Utils related to database operations
  */
@@ -365,18 +367,32 @@ interface spotifyPlayer {
   getToken: (scopes: TokenScope[]) => Promise<import('librespot-node').Token>
 }
 
-interface Window {
-  DBUtils: DBUtils
-  SearchUtils: searchUtils
-  FileUtils: fileUtils
-  PreferenceUtils: preferenceUtils
-  WindowUtils: windowUtils
-  Store: store
-  LoggerUtils: loggerUtils
-  NotifierUtils: notifierUtils
-  ExtensionUtils: extensionUtils
-  ThemeUtils: themeUtils
-  UpdateUtils: updateUtils
-  MprisUtils: mprisUtils
-  SpotifyPlayer: spotifyPlayer
+interface rodioUtils {
+  initialize: () => Promise<void>
+  setSrc: (path: string) => Promise<void>
+  play: () => Promise<void>
+  pause: () => Promise<void>
+  stop: () => Promise<void>
+  seek: (pos: number) => Promise<void>
+  setVolume: (volume: number) => Promise<void>
+  listenEvents: (callback: (event: RodioEvents) => void) => void
+}
+
+declare global {
+  interface Window {
+    DBUtils: DBUtils
+    SearchUtils: searchUtils
+    FileUtils: fileUtils
+    PreferenceUtils: preferenceUtils
+    WindowUtils: windowUtils
+    Store: store
+    LoggerUtils: loggerUtils
+    NotifierUtils: notifierUtils
+    ExtensionUtils: extensionUtils
+    ThemeUtils: themeUtils
+    UpdateUtils: updateUtils
+    MprisUtils: mprisUtils
+    SpotifyPlayer: spotifyPlayer
+    RodioUtils: rodioUtils
+  }
 }
