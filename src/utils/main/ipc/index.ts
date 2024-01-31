@@ -26,6 +26,7 @@ import { ipcMain } from 'electron'
 let scannerChannel: ScannerChannel | undefined = undefined
 let updateChannel: UpdateChannel | undefined = undefined
 let extensionChannel: ExtensionHostChannel | undefined = undefined
+let rodioChannel: RodioChannel | undefined = undefined
 let preferenceChannel: PreferenceChannel | undefined = undefined
 let storeChannel: StoreChannel | undefined = undefined
 let mprisChannel: MprisChannel | undefined = undefined
@@ -46,9 +47,16 @@ export function registerIpcChannels() {
     new NotifierChannel(),
     getMprisChannel(),
     getSpotifyPlayerChannel(),
-    new RodioChannel(),
+    getRodioChannel(),
   ]
   ipcChannels.forEach((channel) => ipcMain.on(channel.name, (event, request) => channel.handle(event, request)))
+}
+
+export function getRodioChannel() {
+  if (!rodioChannel) {
+    rodioChannel = new RodioChannel()
+  }
+  return rodioChannel
 }
 
 export function getExtensionHostChannel() {

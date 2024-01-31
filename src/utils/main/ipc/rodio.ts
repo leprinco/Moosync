@@ -82,13 +82,13 @@ export class RodioChannel implements IpcChannelInterface {
     event.reply(request.responseChannel)
   }
 
-  private async stop(event: Electron.IpcMainEvent, request: IpcRequest) {
+  public async stop(event?: Electron.IpcMainEvent, request?: IpcRequest) {
     try {
       await this.rodioInstance?.stop()
     } catch (e) {
       this.emitError(e)
     }
-    event.reply(request.responseChannel)
+    event?.reply(request?.responseChannel ?? '')
   }
 
   private async setVolume(event: Electron.IpcMainEvent, request: IpcRequest<RodioRequests.Volume>) {

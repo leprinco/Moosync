@@ -85,6 +85,7 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
         break
       case HotkeyEvents.RELOAD_PAGE:
         window.SpotifyPlayer.close()
+          .then(() => window.RodioUtils.stop())
           .then(() => window.WindowUtils.handleReload())
           .then(() => location.reload())
         break
