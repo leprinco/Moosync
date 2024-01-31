@@ -14,6 +14,7 @@ if (fs.existsSync('/usr/lib/electron') && fs.existsSync('/usr/lib/electron/versi
   archElectronConfig.electronVersion = fs
     .readFileSync('/usr/lib/electron/version', { encoding: 'utf-8' })
     .replace('v', '')
+    .trim()
 }
 
 const RendererSecrets = {}
@@ -79,6 +80,7 @@ module.exports = {
       sharp: "require('sharp')",
       'librespot-node': 'commonjs librespot-node',
       'scanner-native': 'commonjs scanner-native',
+      'rodio-audio-backend': 'commonjs rodio-audio-backend',
     },
     devtool: 'source-map',
     resolve: {
@@ -225,7 +227,7 @@ module.exports = {
       disableMainProcessTypescript: false,
       mainProcessTypeChecking: true,
       preload: 'src/utils/preload/preload.ts',
-      externals: ['better-sqlite3', 'vm2', 'sharp', 'librespot-node', 'scanner-native'],
+      externals: ['better-sqlite3', 'vm2', 'sharp', 'librespot-node', 'scanner-native', 'rodio-audio-backend'],
       chainWebpackMainProcess: (config) => {
         config.devtool('source-map').end()
 

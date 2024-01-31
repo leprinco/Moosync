@@ -66,6 +66,7 @@ export default class ProviderFetchMixin extends ProviderMixin {
     ;((await this.localSongFetch?.(convertProxy(vxm.themes.songSortBy))) ?? []).forEach((val) => {
       this.songMap[val._id] = val
     })
+    this.songList = Object.values(this.songMap)
     this.optionalSongList['local'] = this.songList.map((val) => val._id)
     this.loadingMap['local'] = false
   }
@@ -133,6 +134,7 @@ export default class ProviderFetchMixin extends ProviderMixin {
   async onProviderChanged({ key, checked }: { key: string; checked: boolean }) {
     this.activeProviders[key] = checked
     if (checked) {
+      console.debug('Fetching from provider', key, checked)
       for await (const s of this.fetchRemoteProviderByKey(key)) {
       }
       this.songList = Object.values(this.songMap)

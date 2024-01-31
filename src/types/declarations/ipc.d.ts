@@ -342,3 +342,17 @@ declare namespace NotifierRequests {
     mainWindow: boolean | 'both'
   }
 }
+
+declare namespace RodioRequests {
+  interface SetSrc {
+    path: string
+  }
+
+  interface Volume {
+    volume: number
+  }
+
+  interface Seek {
+    pos: number
+  }
+}

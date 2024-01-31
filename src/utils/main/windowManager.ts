@@ -24,7 +24,7 @@ import {
 import { ButtonEnum, PlayerButtons } from 'media-controller'
 import { SongEvents, WindowEvents } from './ipc/constants'
 import { access, readFile } from 'fs/promises'
-import { getMprisChannel, getSpotifyPlayerChannel } from './ipc/index'
+import { getMprisChannel, getRodioChannel, getSpotifyPlayerChannel } from './ipc/index'
 import { getWindowSize, loadPreferences, setWindowSize } from './db/preferences'
 
 import { $t } from './i18nLoader'
@@ -314,6 +314,7 @@ export class WindowHandler {
   }
 
   public async stopAll() {
+    getRodioChannel().stop()
     getSpotifyPlayerChannel().closePlayer()
     // Stop extension Host
     await getExtensionHostChannel().closeExtensionHost()
@@ -352,10 +353,6 @@ export class WindowHandler {
         }
       }
     })
-    // window.webContents.on('', (event, url) {
-    //   event.preventDefault()
-    //   open(url)
-    // })
 
     window.webContents.on(
       'did-frame-navigate',

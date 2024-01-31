@@ -7,24 +7,26 @@
  *  See LICENSE in the project root for license information.
  */
 
+import { BrowserWindowChannel } from './window'
 import { ExtensionHostChannel } from './extensionHost'
 import { LoggerChannel } from './logger'
 import { MprisChannel } from './mpris'
 import { NotifierChannel } from './notifier'
 import { PlaylistsChannel } from './playlists'
 import { PreferenceChannel } from './preferences'
+import { RodioChannel } from './rodio'
 import { ScannerChannel } from './scanner'
 import { SearchChannel } from './search'
 import { SongsChannel } from './songs'
 import { SpotifyPlayerChannel } from './spotifyPlayer'
 import { StoreChannel } from './store'
 import { UpdateChannel } from './update'
-import { BrowserWindowChannel } from './window'
 import { ipcMain } from 'electron'
 
 let scannerChannel: ScannerChannel | undefined = undefined
 let updateChannel: UpdateChannel | undefined = undefined
 let extensionChannel: ExtensionHostChannel | undefined = undefined
+let rodioChannel: RodioChannel | undefined = undefined
 let preferenceChannel: PreferenceChannel | undefined = undefined
 let storeChannel: StoreChannel | undefined = undefined
 let mprisChannel: MprisChannel | undefined = undefined
@@ -45,8 +47,16 @@ export function registerIpcChannels() {
     new NotifierChannel(),
     getMprisChannel(),
     getSpotifyPlayerChannel(),
+    getRodioChannel(),
   ]
   ipcChannels.forEach((channel) => ipcMain.on(channel.name, (event, request) => channel.handle(event, request)))
+}
+
+export function getRodioChannel() {
+  if (!rodioChannel) {
+    rodioChannel = new RodioChannel()
+  }
+  return rodioChannel
 }
 
 export function getExtensionHostChannel() {
