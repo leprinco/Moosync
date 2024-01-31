@@ -68,6 +68,7 @@ import { EventBus } from '@/utils/main/ipc/constants'
 import { nextTick } from 'vue'
 import { convertProxy } from '@/utils/ui/common'
 import { RepeatState } from '../../../../utils/commonConstants';
+import { RodioPlayer } from '../../../../utils/ui/players/rodio';
 
 @Component({
   emits: ['onTimeUpdate']
@@ -223,6 +224,7 @@ export default class AudioStream extends mixins(
       if (player) {
         console.debug('Initializing player', player.key)
         await this.initializePlayer(player)
+        console.debug('Initialized player', player.key)
 
         this.activePlayer = player
 
@@ -326,6 +328,7 @@ export default class AudioStream extends mixins(
     const players = await new Promise<Player[]>((resolve) => {
       const players: Player[] = []
 
+      players.push(new RodioPlayer())
       players.push(new LocalPlayer())
       players.push(new DashPlayer())
       players.push(new HLSPlayer())
@@ -378,7 +381,7 @@ export default class AudioStream extends mixins(
       return
     }
 
-    if (player instanceof SpotifyPlayer) {
+    if (player instanceof SpotifyPlayer || player instanceof RodioPlayer) {
       await player.initialize()
     }
 
@@ -464,7 +467,7 @@ export default class AudioStream extends mixins(
             }
           }
 
-          if (time >= this.currentSong.duration - this.timeSkipSeconds) {
+          if (this.timeSkipSeconds && time >= this.currentSong.duration - this.timeSkipSeconds) {
             this.onSongEnded()
           }
         }

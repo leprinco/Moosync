@@ -26,6 +26,7 @@ export enum IpcEvents {
   UPDATE = 'update',
   MPRIS = 'mpris',
   SPOTIFY = 'spotify',
+  RODIO = 'rodio',
 }
 
 export enum StoreEvents {
@@ -204,6 +205,26 @@ export enum MprisEvents {
   BUTTON_STATUS_CHANGED = 'buttonStatusChanged',
   POSITION_CHANGED = 'positionChanged',
   ON_BUTTON_PRESSED = 'onButtonPressed',
+}
+
+export enum RodioEvents {
+  INITIALIZE = 'initialize',
+  SET_SRC = 'setSrc',
+  PLAY = 'play',
+  PAUSE = 'pause',
+  STOP = 'stop',
+  SET_VOLUME = 'setVolume',
+  GET_VOLUME = 'getVolume',
+  GET_POSITION = 'getPosition',
+  SEEK = 'seek',
+
+  ON_PLAY = 'onPlay',
+  ON_PAUSE = 'onPause',
+  ON_STOP = 'onStop',
+  ON_TIME_UPDATE = 'onTimeUpdate',
+  ON_LOADED = 'onLoaded',
+  ON_ENDED = 'onEnded',
+  ON_ERROR = 'onError',
 }
 
 export enum ExtensionHostEvents {
