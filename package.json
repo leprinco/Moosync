@@ -102,7 +102,7 @@
     "qs": "^6.11.2",
     "reflect-metadata": "^0.2.1",
     "replace": "^1.2.2",
-    "rodio-audio-backend": "https://github.com/Moosync/node-rodio-backend",
+    "rodio-audio-backend": "git+https://github.com/Moosync/node-rodio-backend",
     "sass": "~1.70.0",
     "sass-loader": "14.0.0",
     "scanner-native": "git+https://github.com/Moosync/file-scanner.git",

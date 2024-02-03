@@ -10933,9 +10933,9 @@ roarr@^2.15.3:
     semver-compare "^1.0.0"
     sprintf-js "^1.1.2"
 
-"rodio-audio-backend@https://github.com/Moosync/node-rodio-backend":
+"rodio-audio-backend@git+https://github.com/Moosync/node-rodio-backend":
   version "0.0.0"
-  resolved "https://github.com/Moosync/node-rodio-backend#57feb7cec6d93a2545f33d9b50a2b5460439c598"
+  resolved "git+https://github.com/Moosync/node-rodio-backend#57feb7cec6d93a2545f33d9b50a2b5460439c598"
   dependencies:
     "@types/node" "^20.11.6"
     ts-node "^10.9.2"
