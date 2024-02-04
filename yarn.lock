@@ -10980,7 +10980,7 @@ roarr@^2.15.3:
 
 "rodio-audio-backend@git+https://github.com/Moosync/node-rodio-backend":
   version "0.0.0"
-  resolved "git+https://github.com/Moosync/node-rodio-backend#dc720e5c5f0f287e09c28297be3038b10a424ab7"
+  resolved "git+https://github.com/Moosync/node-rodio-backend#90e033b914953ac5d3f832579ec5ec7a5c8a6441"
   dependencies:
     "@types/node" "^20.11.6"
     ts-node "^10.9.2"
