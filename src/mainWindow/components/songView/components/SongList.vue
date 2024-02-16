@@ -43,7 +43,7 @@
           @scroll.native="onScroll"
         >
           <template v-slot="{ item, index }">
-            <div class="wrapper w-100 field-content" :class="{ selectedItem: selected.includes(index) }">
+            <div class="wrapper w-100 field-content" :class="{ selectedItem: isSelectedIndex(index) }">
               <div
                 v-for="(field, i1) of extrafields"
                 :key="`${item._id}-${field.key}`"
@@ -90,7 +90,7 @@ import { Component, Prop, Ref, Vue } from 'vue-property-decorator'
 
 @Component({})
 export default class SongList extends mixins(SongListMixin) {
-  private refreshKey = false
+  //private refreshKey = false
 
   @Prop({ default: {} })
   extrafields!: [{ key: TableFields; label?: string }]
@@ -242,7 +242,7 @@ export default class SongList extends mixins(SongListMixin) {
     this.$emit(
       'onRowContext',
       event,
-      this.selected.length > 1 ? this.selected.map((val) => this.songList[val]) : [item]
+      this.selected().length > 1 ? this.selected().map((val) => this.songList[val]) : [item]
     )
   }
 
@@ -267,9 +267,9 @@ export default class SongList extends mixins(SongListMixin) {
   }
 
   // For some reason table isn't rerendered on window size change through maximize and minimize functions
-  private rerenderTable() {
-    this.refreshKey = !this.refreshKey
-  }
+  //private rerenderTable() {
+  //  this.refreshKey = !this.refreshKey
+  //}
 
   onScroll(e: Event) {
     this.$emit('scroll', e)

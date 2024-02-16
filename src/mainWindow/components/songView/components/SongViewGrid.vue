@@ -29,7 +29,7 @@
           @click.ctrl="onRowSelected(index, 'Control')"
           @contextmenu="onRowContext(arguments[0], item)"
           class="wrapper w-100"
-          :class="{ selectedItem: selected.includes(index) }"
+          :class="{ selectedItem: isSelectedIndex(index) }"
         >
           <b-row no-gutters align-content="center" class="w-100">
             <b-col cols="1" align-self="center">
@@ -98,6 +98,9 @@ export default class SongViewGrid extends mixins(ImgLoader, ModelHelper, SongLis
   @Prop({ default: false })
   currentSong!: Song | undefined | null
 
+  @Prop({ default: 1 })
+  songsPerRow!: number
+
   @Prop({ default: false })
   isLoading!: boolean
 
@@ -129,7 +132,7 @@ export default class SongViewGrid extends mixins(ImgLoader, ModelHelper, SongLis
     this.$emit(
       'onRowContext',
       event,
-      this.selected.length > 1 ? this.selected.map((val) => this.songList[val]) : [item]
+      this.selected().length > 1 ? this.selected().map((val) => this.songList[val]) : [item]
     )
   }
 

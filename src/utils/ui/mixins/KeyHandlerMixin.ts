@@ -12,12 +12,13 @@ import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import { mixins } from 'vue-class-component'
 import { bus } from '@/mainWindow/main'
 import { defaultKeybinds, HotkeyEvents } from '@/utils/commonConstants'
+import { KeyboardNavigation } from './KeyboardNavigation'
 
 @Component
 export default class KeyHandlerMixin extends mixins(PlayerControls) {
-  private pressedKeys: Record<string, boolean> = {}
-
   private keyboardHotKeyMap: readonly HotkeyPair[] = []
+
+  private currentKeyboardNavigation!: KeyboardNavigation
 
   async created() {
     this.keyboardHotKeyMap = Object.freeze(
@@ -27,11 +28,13 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
     window.PreferenceUtils.listenPreferenceChanged('hotkeys', true, (_, val: HotkeyPair[]) => {
       this.keyboardHotKeyMap = Object.freeze(val)
     })
+
+    bus.$on('activateKeyboardNavigation', (keyboardNavigation: KeyboardNavigation) => {
+      this.currentKeyboardNavigation = keyboardNavigation
+    })
   }
 
-  private onlyRequiredKeysPressed(requiredKeys: string[]) {
-    const pressedKeys = Object.keys(this.pressedKeys)
-
+  private onlyRequiredKeysPressed(pressedKeys: string[], requiredKeys: string[]) {
     for (const val of requiredKeys) {
       if (!pressedKeys.includes(val)) {
         return false
@@ -118,17 +121,31 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
       case HotkeyEvents.BOTTOM:
       case HotkeyEvents.LEFT:
       case HotkeyEvents.RIGHT:
-        bus.$emit('onMove', action)
+        this.currentKeyboardNavigation.onMove(action)
         break
     }
   }
 
-  private isHotkeyActive() {
+  private handleEvent(e: KeyboardEvent) {
+    const pressedKeys = []
+    pressedKeys.push(e.code)
+    if (e.shiftKey) {
+      pressedKeys.push('shiftKey')
+    }
+    if (e.ctrlKey) {
+      pressedKeys.push('ctrlKey')
+    }
+    if (e.altKey) {
+      pressedKeys.push('altKey')
+    }
+    if (e.metaKey) {
+      pressedKeys.push('metaKey')
+    }
+
     for (const combinations of this.keyboardHotKeyMap) {
       for (const key of combinations.key) {
-        if (this.onlyRequiredKeysPressed(key)) {
+        if (this.onlyRequiredKeysPressed(pressedKeys, key)) {
           this.performAction(combinations.value)
-          this.pressedKeys = {}
         }
       }
     }
@@ -137,24 +154,14 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
   protected registerKeyboardHotkeys() {
     document.addEventListener('keydown', (e) => {
       if ((e.target as HTMLElement)?.tagName?.toLocaleLowerCase() !== 'input') {
-        this.pressedKeys[e.code] = true
-        this.isHotkeyActive()
+        this.handleEvent(e)
       }
-    })
-
-    document.addEventListener('keyup', (e) => {
-      delete this.pressedKeys[e.code]
     })
 
     document.addEventListener('mousedown', (e) => {
       if ((e.target as HTMLElement).tagName !== 'INPUT') {
-        this.pressedKeys[`Mouse${e.button}`] = true
-        this.isHotkeyActive()
+        //this.pressedKeys[`Mouse${e.button}`] = true
       }
-    })
-
-    document.addEventListener('mouseup', (e) => {
-      delete this.pressedKeys[`Mouse${e.button}`]
     })
   }
 }

@@ -17,6 +17,7 @@
     </b-row>
     <b-row class="recycle-row" ref="scrollerRow">
       <RecycleScroller
+        ref="scroller"
         class="scroller w-100 h-100"
         :items="filteredItems"
         :item-size="itemWidth"
@@ -27,11 +28,12 @@
         :direction="'vertical'"
         @resize="onScrollerResize"
       >
-        <template v-slot="{ item }">
+        <template v-slot="{ item, index }">
           <CardView
             :title="item[titleKey]"
             :imgSrc="item[imageKey]"
-            :maxWidth="`${itemWidth - 50}px`"
+            :maxWidth="`${itemWidth - 60}px`"
+            :selected="isSelectedIndex(index)"
             @click.native="emitClick(item)"
             @CardContextMenu="emitContextMenu(item, ...arguments)"
           >
@@ -47,9 +49,11 @@
 
 <script lang="ts">
 import CardView from '@/mainWindow/components/generic/CardView.vue'
-import { Component, Prop, Ref } from 'vue-property-decorator'
-import { Vue } from 'vue-property-decorator'
+import { Component, Prop, Ref, Vue } from 'vue-property-decorator'
 import TabCarousel from '../../components/generic/TabCarousel.vue'
+import { RecycleScroller } from 'vue-virtual-scroller'
+import { KeyboardNavigation } from '@/utils/ui/mixins/KeyboardNavigation'
+import { bus } from '@/mainWindow/main'
 
 @Component({
   components: {
@@ -79,8 +83,21 @@ export default class CardRecycleScroller extends Vue {
   @Ref('scrollerRow')
   private scrollerRow!: HTMLDivElement
 
+  @Ref('scroller')
+  scroller!: typeof RecycleScroller
+
+  keyboardNavigation!: KeyboardNavigation
+
   get filteredItems() {
     return this.itemList.filter((val) => val[this.titleKey].toLowerCase().includes(this.searchText))
+  }
+
+  selected() {
+    return this.keyboardNavigation.selection()
+  }
+
+  isSelectedIndex(index: number) {
+    return this.selected().includes(index)
   }
 
   private searchText = ''
@@ -104,8 +121,17 @@ export default class CardRecycleScroller extends Vue {
     this.$emit('CardContextMenu', item, ...args)
   }
 
+  callback(selection: number[]) {
+    console.info('CardRecycleScroller.callback')
+  }
+
   mounted() {
     this.totalWidth = this.scrollerRow.clientWidth - 30 // 30 for scrollbar width
+
+    if (this.keyboardNavigation == null) {
+      this.keyboardNavigation = new KeyboardNavigation(this.scroller, this.callback)
+    }
+    bus.$emit('activateKeyboardNavigation', this.keyboardNavigation)
   }
 
   public onScrollerResize() {

@@ -31,7 +31,7 @@
             <SongListCompactItem
               :item="item"
               :index="index"
-              :selected="selected"
+              :selected="isSelectedIndex(index)"
               @onRowDoubleClicked="onRowDoubleClicked"
               @onRowSelected="onRowSelected"
               @onRowContext="onRowContext"
@@ -73,7 +73,7 @@ export default class SongListCompact extends mixins(ImgLoader, SongListMixin) {
     this.$emit(
       'onRowContext',
       event,
-      this.selected.length > 1 ? this.selected.map((val) => this.songList[val]) : [item]
+      this.selected().length > 1 ? this.selected().map((val) => this.songList[val]) : [item]
     )
   }
 

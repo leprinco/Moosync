@@ -7,7 +7,7 @@
     @click.ctrl="onRowSelected(index, 'Control')"
     @contextmenu="onRowContext(arguments[0], item)"
     class="wrapper w-100"
-    :class="{ selectedItem: selected.includes(index) }"
+    :class="{ selectedItem: selected }"
   >
     <b-row no-gutters align-content="center" class="w-100">
       <LowImageCol
@@ -106,8 +106,8 @@ export default class SongListCompactItem extends mixins(ImgLoader, JukeboxMixin)
     return this.item.type
   }
 
-  @Prop({ default: () => [] })
-  selected!: number[]
+  @Prop({ default: () => false })
+  selected!: boolean
 
   @Prop({ default: () => null })
   item!: Song
