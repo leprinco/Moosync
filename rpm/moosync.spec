@@ -5,14 +5,12 @@
 
 Summary: Moosync is a customizable desktop music player with a clean interface
 Name: moosync
-Version: 9.0.2
+Version: 10.3.2
 Release: 1
 URL: https://github.com/Moosync/Moosync
 License: GPLv3+
 Group: Applications/Multimedia
 ExclusiveArch: x86_64
-
-Requires: vips >= 8
 
 BuildRequires: desktop-file-utils
  

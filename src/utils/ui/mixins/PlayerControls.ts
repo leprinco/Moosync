@@ -7,12 +7,13 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Vue } from 'vue-facing-decorator'
+import { RepeatState, VolumePersistMode } from '@/utils/commonConstants'
 
 import { PeerMode } from '@/mainWindow/store/syncState'
-import { vxm } from '@/mainWindow/store'
 import { Player } from '../players/player'
-import { VolumePersistMode } from '@/utils/commonConstants'
+import { toast } from 'vue3-toastify'
+import { vxm } from '@/mainWindow/store'
 
 const maxp = 100
 
@@ -36,8 +37,8 @@ export default class PlayerControls extends Vue {
     else vxm.player.prevSong()
   }
 
-  public async showQueueSongsToast(length: number) {
-    this.$toasted.show(`Queued ${length} song${length !== 1 ? 's' : ''}`)
+  public showQueueSongsToast(length: number) {
+    if (length > 0) toast(this.$t('toasts.queued', length))
   }
 
   public async queueSong(songs: Song[], showToast = true) {
@@ -51,7 +52,6 @@ export default class PlayerControls extends Vue {
   }
 
   public async playTop(songs: Song[]) {
-    console.log(songs.map((val) => val.title))
     if (this.isSyncing) {
       await vxm.sync.pushInQueue({ item: songs.slice(), top: true, skipImmediate: vxm.sync.queueOrder.length > 0 })
     } else {
@@ -60,7 +60,7 @@ export default class PlayerControls extends Vue {
 
     if (!this.isSyncing) vxm.player.playAfterLoad = true
 
-    this.$toasted.show(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
+    this.showQueueSongsToast(songs.length)
     this.play()
   }
 
@@ -73,7 +73,7 @@ export default class PlayerControls extends Vue {
 
     if (!this.isSyncing) vxm.player.playAfterLoad = true
 
-    this.$toasted.show(`Queued ${songs.length} song${songs.length !== 1 ? 's' : ''}`)
+    this.showQueueSongsToast(songs.length)
   }
 
   public clearQueue() {
@@ -97,13 +97,13 @@ export default class PlayerControls extends Vue {
   public shuffle() {
     vxm.themes.queueSortBy = undefined
     vxm.player.shuffle()
-    this.$toasted.show('Shuffled', {
-      duration: 1000
+    toast(this.$t('toasts.shuffled'), {
+      autoClose: 1000,
     })
   }
 
   public togglePlayerState() {
-    if (this.playerState == 'PAUSED' || this.playerState == 'STOPPED') {
+    if (this.playerState === 'PAUSED' || this.playerState === 'STOPPED') {
       vxm.player.playerState = 'PLAYING'
     } else {
       vxm.player.playerState = 'PAUSED'
@@ -134,12 +134,22 @@ export default class PlayerControls extends Vue {
     return vxm.player.Repeat
   }
 
-  set repeat(val: boolean) {
+  set repeat(val: RepeatState) {
     vxm.player.Repeat = val
   }
 
   public toggleRepeat() {
-    this.repeat = !this.repeat
+    switch (this.repeat) {
+      case RepeatState.ONCE:
+        this.repeat = RepeatState.ALWAYS
+        break
+      case RepeatState.ALWAYS:
+        this.repeat = RepeatState.DISABLED
+        break
+      default:
+        this.repeat = RepeatState.ONCE
+        break
+    }
   }
 
   private oldVolume = 50
@@ -148,7 +158,7 @@ export default class PlayerControls extends Vue {
     const maxv = Math.log(this.clamp)
     const scale = maxv / maxp
 
-    const volume = vxm.player.volume
+    const volume = Math.min(Math.max(vxm.player.volume, 0), 100)
 
     if (volume > 0) {
       return Math.log(volume) / scale
@@ -158,16 +168,18 @@ export default class PlayerControls extends Vue {
   }
 
   set volume(value: number) {
+    let parsedVolume = value
+
     const maxv = Math.log(this.clamp)
     const scale = maxv / maxp
 
     if (value > 0) {
-      value = Math.exp(scale * value)
+      parsedVolume = Math.exp(scale * value)
     }
 
-    vxm.player.volume = value
-    if (value != 0) {
-      this.oldVolume = value
+    vxm.player.volume = parsedVolume
+    if (parsedVolume !== 0) {
+      this.oldVolume = parsedVolume
     }
   }
 

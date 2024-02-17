@@ -13,7 +13,8 @@
       <PrevTrack :disabled="!enableTrackControls" />
     </b-col>
     <b-col class="col-button" @click="toggleRepeat()" v-if="isRepeatEnabled">
-      <Repeat :filled="repeat" />
+      <RepeatOnceIcon v-if="repeat === 1" :filled="true" />
+      <Repeat v-else :filled="repeat === 2" />
     </b-col>
     <b-col class="col-play-button" v-if="isLoading && !isJukeboxModeActive">
       <b-spinner label="Loading..."></b-spinner>
@@ -37,19 +38,21 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop } from 'vue-facing-decorator'
 import PrevTrack from '@/icons/PrevTrackIcon.vue'
 import NextTrack from '@/icons/NextTrackIcon.vue'
 import Play from '@/icons/PlayIcon.vue'
 import Repeat from '@/icons/RepeatIcon.vue'
 import FavIcon from '@/icons/FavIcon.vue'
 import Shuffle from '@/icons/ShuffleIcon.vue'
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import { vxm } from '@/mainWindow/store'
 import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import { FAVORITES_PLAYLIST_ID } from '@/utils/commonConstants'
+import RepeatOnceIcon from '../../../../icons/RepeatOnceIcon.vue';
+import { convertProxy } from '@/utils/ui/common'
 
 @Component({
   components: {
@@ -57,6 +60,7 @@ import { FAVORITES_PLAYLIST_ID } from '@/utils/commonConstants'
     NextTrack,
     Play,
     Repeat,
+    RepeatOnceIcon,
     Shuffle,
     Timestamp,
     FavIcon
@@ -64,10 +68,10 @@ import { FAVORITES_PLAYLIST_ID } from '@/utils/commonConstants'
 })
 export default class MusicBar extends mixins(PlayerControls, JukeboxMixin) {
   @Prop({ default: 0 })
-  private duration!: number
+  duration!: number
 
   @Prop({ default: 0 })
-  private timestamp!: number
+  timestamp!: number
 
   get playerState() {
     return vxm.player.playerState
@@ -77,15 +81,15 @@ export default class MusicBar extends mixins(PlayerControls, JukeboxMixin) {
     return this.isSyncing ? vxm.sync.queueOrder.length > 1 : vxm.player.queueOrder.length > 1
   }
 
-  private nextSongWrapper() {
+  nextSongWrapper() {
     if (this.enableTrackControls) this.nextSong()
   }
 
-  private prevSongWrapper() {
+  prevSongWrapper() {
     if (this.enableTrackControls) this.prevSong()
   }
 
-  private isFavorite = false
+  isFavorite = false
 
   created() {
     vxm.player.$watch(
@@ -109,12 +113,12 @@ export default class MusicBar extends mixins(PlayerControls, JukeboxMixin) {
     )
   }
 
-  private async favoriteSong() {
+  async favoriteSong() {
     if (vxm.player.currentSong) {
       if (!this.isFavorite) {
-        await window.DBUtils.addToPlaylist(FAVORITES_PLAYLIST_ID, vxm.player.currentSong)
+        await window.DBUtils.addToPlaylist(FAVORITES_PLAYLIST_ID, convertProxy(vxm.player.currentSong))
       } else {
-        await window.DBUtils.removeFromPlaylist(FAVORITES_PLAYLIST_ID, vxm.player.currentSong)
+        await window.DBUtils.removeFromPlaylist(FAVORITES_PLAYLIST_ID, convertProxy(vxm.player.currentSong))
       }
       this.isFavorite = !this.isFavorite
     }

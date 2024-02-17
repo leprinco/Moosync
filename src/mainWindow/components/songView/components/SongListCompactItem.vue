@@ -1,22 +1,10 @@
 <template>
-  <b-container
-    fluid
-    @dblclick="onRowDoubleClicked(item)"
-    @click.exact="onRowSelected(index, undefined)"
-    @click.shift="onRowSelected(index, 'Shift')"
-    @click.ctrl="onRowSelected(index, 'Control')"
-    @contextmenu="onRowContext(arguments[0], item)"
-    class="wrapper w-100"
-    :class="{ selectedItem: selected }"
-  >
+  <b-container fluid @dblclick="onRowDoubleClicked(item)" @click.exact="onRowSelected(index, undefined)"
+    @click.shift="onRowSelected(index, 'Shift')" @click.ctrl="onRowSelected(index, 'Control')"
+    @contextmenu="onRowContext($event, item)" class="wrapper w-100" :class="{ selectedItem: selected }">
     <b-row no-gutters align-content="center" class="w-100">
-      <LowImageCol
-        @click.native="onPlayNowClicked(item)"
-        height="56px"
-        width="56px"
-        :src="getValidImageLow(item)"
-        :showPlayHoverButton="showPlayHoverButton"
-      />
+      <LowImageCol @imgClicked="onPlayNowClicked(item)" height="56px" width="56px" :src="getValidImageLow(item)"
+        :showPlayHoverButton="showPlayHoverButton" />
       <b-col cols="5" class="ml-2" align-self="center">
         <b-row no-gutters align-v="center">
           <b-col cols="auto" class="d-flex">
@@ -28,32 +16,22 @@
           </b-col>
         </b-row>
         <b-row no-gutters class="flex-nowrap">
-          <div
-            v-for="(artist, index) in item.artists"
-            :key="index"
-            class="subtitle text-truncate"
-            :class="index !== 0 ? 'ml-1' : ''"
-            @click="onSubtitleClicked(artist)"
-          >
-            <span> {{ artist.artist_name }}{{ index !== item.artists.length - 1 ? ',' : '' }}</span>
+          <div v-for="(artist, index) in item.artists" :key="index" class="subtitle text-truncate"
+            :class="index !== 0 ? 'ml-1' : ''" @click="onSubtitleClicked(artist)">
+            <span> {{ artist.artist_name }}{{ index !== (item.artists?.length ?? 0) - 1 ? ',' : '' }}</span>
           </div>
         </b-row>
       </b-col>
       <b-col cols="auto" align-self="center" offset="1" class="ml-auto timestamp" v-if="showDuration">
-        {{ item._id === currentSong?._id && currentSong._id ? 'Now Playing' : formattedDuration(item.duration) }}
+        {{ item._id === currentSong?._id && currentSong._id ? $t('now_playing') : formattedDuration(item.duration) }}
       </b-col>
       <b-col cols="auto" align-self="center" class="button-icon ml-5" v-if="showAddToQueueButton">
-        <AddToQueue title="Add song to queue" @click.native="onRowDoubleClicked(item)"
-      /></b-col>
-      <b-col
-        v-if="!isJukeboxModeActive && showEllipsis"
-        cols="auto"
-        align-self="center"
-        class="ml-5 mr-3 py-2 ellipsis-icon"
-        @click="onRowContext(arguments[0], item)"
-      >
-        <Ellipsis
-      /></b-col>
+        <AddToQueue title="Add song to queue" @click="onRowDoubleClicked(item)" />
+      </b-col>
+      <b-col v-if="!isJukeboxModeActive && showEllipsis" cols="auto" align-self="center"
+        class="ml-5 mr-3 py-2 ellipsis-icon" @click="onRowContext($event, item)">
+        <Ellipsis />
+      </b-col>
     </b-row>
   </b-container>
 </template>
@@ -61,8 +39,8 @@
 <script lang="ts">
 import { convertDuration } from '@/utils/common'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
-import { mixins } from 'vue-class-component'
-import { Component, Prop } from 'vue-property-decorator'
+import { mixins } from 'vue-facing-decorator'
+import { Component, Prop } from 'vue-facing-decorator'
 import LowImageCol from '@/mainWindow/components/generic/LowImageCol.vue'
 import Ellipsis from '@/icons/EllipsisIcon.vue'
 
@@ -79,7 +57,8 @@ import IconHandler from '@/mainWindow/components/generic/IconHandler.vue'
     IconHandler,
     PlainPlay,
     AddToQueue
-  }
+  },
+  emits: ['onRowDoubleClicked', 'onRowContext', 'onRowSelected', 'onPlayNowClicked', 'onArtistClicked']
 })
 export default class SongListCompactItem extends mixins(ImgLoader, JukeboxMixin) {
   formattedDuration = convertDuration

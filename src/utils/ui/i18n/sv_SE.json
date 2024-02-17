@@ -6,7 +6,7 @@
       "playlists": "Spellistor",
       "albums": "Album",
       "artists": "Artister",
-      "genre": "Genres",
+      "genre": "Genrer",
       "explore": "Utforska",
       "paths": "Paths",
       "themes": "Teman",
@@ -24,8 +24,18 @@
     "playlists": "Spellistor",
     "albums": "Album",
     "artists": "Artister",
-    "genres": "Genres",
+    "genres": "Genrer",
     "explore": "Utforska"
+  },
+  "playlists": {
+    "local": "Local",
+    "new_playlist": {
+      "create": "Create",
+      "description_placeholder": "Description..."
+    },
+    "url": {
+      "input_hint": "Enter URL Here.. (Youtube or Spotify)"
+    }
   },
   "songView": {
     "details": {
@@ -41,13 +51,20 @@
     "playSingle": "Spela {title}",
     "addToQueue": "Lägg till {title} i kö",
     "addToLibrary": "Lägg till {title} i biblioteket",
-    "playRandom": "Spela 100 slumpmässiga låtar"
+    "playRandom": "Spela 100 slumpmässiga låtar",
+    "fetchAll": "Fetch all songs",
+    "close": "Close",
+    "add": "Add",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "loading": "Laddar...",
+  "now_playing": "Now playing",
   "contextMenu": {
+    "sort_by": "Sort by",
     "sort": {
       "title": "Titel",
-      "album": "Album",
+      "album": "Album (Track No.)",
       "artist": "Konstnären",
       "genre": "Genre",
       "date_added": "Datum tillagd",
@@ -79,10 +96,24 @@
       "showInLibrary": "Visa i bibliotek",
       "showHidden": "Visa dolda låtar",
       "hideHidden": "Dölj dolda låtar",
-      "openInBrowser": "Open in browser"
+      "openInBrowser": "Open in browser",
+      "gotoAlbum": "Goto album ({title})",
+      "gotoArtists": "Goto artists"
+    },
+    "artist": {
+      "remove": "Remove artist"
+    },
+    "album": {
+      "remove": "Remove album"
     },
     "moreInfo": "Mer information",
     "incorrectPlayback": "Incorrect playback?"
+  },
+  "explore": {
+    "you_listened_to": "You've listened to",
+    "of_music": "of music",
+    "played_for": "Played for",
+    "hot_from": "Hot from"
   },
   "providers": {
     "youtube": "YouTube",
@@ -90,12 +121,14 @@
     "invidious": "Olivlig",
     "lastfm": "LastFM"
   },
-  "save": "Spara",
-  "cancel": "Avbryt",
+  "accounts": {
+    "connect": "Connect",
+    "sign_out": "Sign out"
+  },
   "settings": {
     "paths": {
-      "songDirectories": "Låtkataloger",
-      "songDirectories_tooltip": "Kataloger där all din lokala musik lagras",
+      "songDirectories": "Låtsökväg",
+      "songDirectories_tooltip": "Sökväg där all din lokala musik lagras",
       "songDirectories_exclude": "Svartlistade kataloger",
       "songDirectories_exclude_tooltip": "Låtar i dessa kataloger skulle inte skannas",
       "addFolder": "Lägg till mapp...",
@@ -107,7 +140,9 @@
       "splitter": "Artistens namn delat mönster",
       "splitter_tooltip": "Regex för att dela artistnamn. Lämna tomt för att inaktivera delning.",
       "scan_interval": "Scan interval",
-      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
+      "scan_interval_tooltip": "Interval in minutes to trigger a scan task. Set to -1 to disable automatic scanning",
+      "scan_threads": "Scan CPU threads",
+      "scan_threads_tooltip": "Number of threads to use when scanning for local music"
     },
     "themes": {
       "songView": "Visning av låtar",
@@ -124,7 +159,9 @@
         "name": "Temas namn",
         "author": "Författare",
         "colors": "Färger",
-        "colors_tooltip": "Ändra färger för att anpassa UI"
+        "colors_tooltip": "Ändra färger för att anpassa UI",
+        "css": "Custom CSS",
+        "watch_css": "Watch CSS for file changes"
       },
       "primary": "Primär",
       "secondary": "Sekundär",
@@ -160,6 +197,7 @@
         "sponsorBlock": "Använd SponsorBlock för att automatiskt hoppa över till markerad del av Youtube-låten"
       },
       "audioSettings_tooltip": "Inställningar som är relaterade ljud uppspelning",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "Denna url stöder inte Invidious API",
       "invidious_tooltip": "Olivlig instans att använda istället för youtube",
       "restartApp": "Starta om Moosync",
@@ -272,7 +310,70 @@
       "logSettings": "Logga inställningar",
       "level": "Nivå",
       "process": "Bearbeta",
-      "filterMessage": "Filtrera meddelande"
+      "filterMessage": "Filtrera meddelande",
+      "levels": {
+        "all": "All",
+        "debug": "Debug",
+        "info": "Info",
+        "warn": "Warn",
+        "error": "Error"
+      },
+      "debug_logging": "Enable debug logging",
+      "table": {
+        "time": "Time",
+        "level": "Level",
+        "process": "Process",
+        "message": "Message"
+      }
     }
+  },
+  "hotkeys": {
+    "play": "Play Song",
+    "pause": "Pause song",
+    "play_toggle": "Toggle play",
+    "mute_active": "Mute",
+    "mute_inactive": "Unmute",
+    "mute_toggle": " Toggle mute",
+    "volume_inc": "Increase volume",
+    "volume_dec": "Decrease volume",
+    "repeat_active": "Repeat song",
+    "repeat_inactive": "Disable repeat",
+    "repeat_toggle": "Toggle repeat",
+    "queue_open": "Open song queue",
+    "queue_close": "Close song queue",
+    "queue_toggle": "Toggle song queue",
+    "reload_page": "Reload page",
+    "devtools": "Toggle dev-tools",
+    "help": "Open help",
+    "fullscreen": "Fullscreen",
+    "next_song": "Skip song",
+    "prev_song": "Prev song",
+    "seek_forward": "Seek 5s forward",
+    "seek_backwards": "Seek 5s backwards",
+    "seek_0": "Seek to 0%",
+    "seek_1": "Seek to 10%",
+    "seek_2": "Seek to 20%",
+    "seek_3": "Seek to 30%",
+    "seek_4": "Seek to 40%",
+    "seek_5": "Seek to 50%",
+    "seek_6": "Seek to 60%",
+    "seek_7": "Seek to 70%",
+    "seek_8": "Seek to 80%",
+    "seek_9": "Seek to 90%"
+  },
+  "tray": {
+    "play": "Play",
+    "pause": "Pause",
+    "next": "Next",
+    "prev": "Prev",
+    "repeat": "Repeat",
+    "no_repeat": "No repeat",
+    "shuffle": "Shuffle",
+    "show_app": "Show app",
+    "quit": "Quit"
+  },
+  "toasts": {
+    "queued": "Queued {count} song | Queued {count} songs",
+    "shuffled": "Shuffled"
   }
 }

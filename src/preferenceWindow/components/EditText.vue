@@ -14,17 +14,10 @@
       <b-row no-gutters :class="`${type !== 'range' ? 'mt-3 item' : 'mb-2'} w-100`">
         <b-col cols="auto" align-self="center" class="ml-4 folder-icon"> </b-col>
         <b-col cols="auto" align-self="center" class="flex-grow-1 justify-content-start">
-          <input
-            :type="type"
-            v-model="value"
-            id="ext-input"
-            class="ext-input w-100"
-            :class="`${type === 'range' ? 'slider' : 'ext-input-hover'}`"
-            v-bind:style="{
+          <input :type="type" v-model="value" id="ext-input" class="ext-input w-100"
+            :class="`${type === 'range' ? 'slider' : 'ext-input-hover'}`" v-bind:style="{
               background: `${type === 'range' ? computedGradient : 'inherit'}`
-            }"
-            @change="formatAndUpdate"
-          />
+            }" @change="formatAndUpdate" />
         </b-col>
         <b-col class="range-text" v-if="showRangeText && type === 'range'">{{ value }}%</b-col>
         <b-col cols="auto" class="mr-4"></b-col>
@@ -34,63 +27,69 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from 'vue-property-decorator'
-import { Mixins } from 'vue-property-decorator'
+import { Component, Prop } from 'vue-facing-decorator'
+import { mixins } from 'vue-facing-decorator'
 import PreferenceHeader from './PreferenceHeader.vue'
 import { ExtensionPreferenceMixin } from '../mixins/extensionPreferenceMixin'
 
 @Component({
   components: {
     PreferenceHeader
-  }
+  },
+  emits: ['tooltipClick']
 })
-export default class EditText extends Mixins<ExtensionPreferenceMixin<string>>(ExtensionPreferenceMixin) {
+export default class EditText extends mixins(ExtensionPreferenceMixin) {
   @Prop()
-  private title!: string
+  title!: string
 
   @Prop()
-  private tooltip!: string
+  tooltip!: string
 
   @Prop({ default: 500 })
-  private debounce!: number
+  debounce!: number
 
   @Prop({ default: null })
-  private maxValue!: number | null
+  maxValue!: number | null
 
   @Prop({ default: false })
-  private onlyNumber!: boolean
+  onlyNumber!: boolean
 
   @Prop({ default: false })
-  private showRangeText!: boolean
+  showRangeText!: boolean
 
-  private get computedGradient() {
+  declare value: string
+
+  get computedGradient() {
     return `linear-gradient(90deg, var(--accent) 0%, var(--accent) ${Math.min(
       100,
       Math.max(parseInt(this.value ?? '0'), 0)
     )}%, var(--textSecondary) 0%)`
   }
 
-  private emitTooltipClick() {
+  emitTooltipClick() {
     this.$emit('tooltipClick')
   }
 
   private debounceTimer: ReturnType<typeof setTimeout> | undefined = undefined
-  private formatAndUpdate() {
+  formatAndUpdate() {
     const formatted = this.formatVal(this.value ?? '')
     this.value = formatted
 
     clearTimeout(this.debounceTimer)
-    this.debounceTimer = setTimeout(() => this.onInputChange(), this.maxValue ? 0 : this.debounce)
+    this.debounceTimer = setTimeout(() => this.onInputChange(this.value), this.maxValue ? 0 : this.debounce)
   }
 
   private formatVal(input: string) {
     let ret = input
-    if (this.maxValue) {
-      ret = ret.substring(0, this.maxValue)
-    }
 
-    if (this.onlyNumber) {
-      ret = ret.replace(/\D/g, '')
+    if (typeof ret === 'string') {
+      if (this.maxValue) {
+        ret = ret.substring(0, this.maxValue)
+      }
+
+      if (this.onlyNumber) {
+        ret = ret.replace(/\D/g, '')
+      }
     }
     return ret
   }

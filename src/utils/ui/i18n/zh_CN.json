@@ -8,12 +8,12 @@
       "artists": "歌手",
       "genre": "风格",
       "explore": "探索",
-      "paths": "Paths",
-      "themes": "Themes",
-      "extensions": "Extensions",
-      "system": "System",
-      "logs": "Logs",
-      "keybinds": "Keybinds"
+      "paths": "路径",
+      "themes": "主题",
+      "extensions": "扩展程序",
+      "system": "系统",
+      "logs": "日志",
+      "keybinds": "热键绑定"
     }
   },
   "topbar": {
@@ -26,6 +26,16 @@
     "artists": "歌手",
     "genres": "风格",
     "explore": "探索"
+  },
+  "playlists": {
+    "local": "本地",
+    "new_playlist": {
+      "create": "创建",
+      "description_placeholder": "描述..."
+    },
+    "url": {
+      "input_hint": "在此输入网址... (YouTube 或 Spotify)"
+    }
   },
   "songView": {
     "details": {
@@ -41,13 +51,20 @@
     "playSingle": "播放 {title}",
     "addToQueue": "将 {title} 添加到队列",
     "addToLibrary": "添加 {title} 到库",
-    "playRandom": "随机播放100首歌曲"
+    "playRandom": "随机播放100首歌曲",
+    "fetchAll": "获取所有歌曲",
+    "close": "关闭",
+    "add": "添加",
+    "save": "保存",
+    "cancel": "取消"
   },
   "loading": "加载中...",
+  "now_playing": "正在播放",
   "contextMenu": {
+    "sort_by": "排序方式",
     "sort": {
       "title": "标题",
-      "album": "专辑",
+      "album": "相册(音轨编号)",
       "artist": "歌手",
       "genre": "风格",
       "date_added": "添加日期",
@@ -79,10 +96,24 @@
       "showInLibrary": "显示媒体库",
       "showHidden": "显示隐藏歌曲",
       "hideHidden": "不显示隐藏的歌曲",
-      "openInBrowser": "Open in browser"
+      "openInBrowser": "在浏览器中打开",
+      "gotoAlbum": "转到专辑({title})",
+      "gotoArtists": "转到艺人"
+    },
+    "artist": {
+      "remove": "删除艺人"
+    },
+    "album": {
+      "remove": "移除相册"
     },
     "moreInfo": "更多信息",
-    "incorrectPlayback": "Incorrect playback?"
+    "incorrectPlayback": "播放错误？"
+  },
+  "explore": {
+    "you_listened_to": "您已经听过",
+    "of_music": "播放中",
+    "played_for": "播放",
+    "hot_from": "热门"
   },
   "providers": {
     "youtube": "Youtube",
@@ -90,8 +121,10 @@
     "invidious": "偏好",
     "lastfm": "LastFM"
   },
-  "save": "保存",
-  "cancel": "取消",
+  "accounts": {
+    "connect": "连接",
+    "sign_out": "注销"
+  },
   "settings": {
     "paths": {
       "songDirectories": "歌曲目录",
@@ -106,8 +139,10 @@
       "thumbnailPath_tooltip": "存储生成的缩略图的目录",
       "splitter": "小艺术家名称分割图案",
       "splitter_tooltip": "正则表示分割艺术家的名字。留空则禁用分割。",
-      "scan_interval": "Scan interval",
-      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
+      "scan_interval": "扫描间隔：",
+      "scan_interval_tooltip": "触发扫描任务的分钟间隔。设置为 -1 禁用自动扫描",
+      "scan_threads": "扫描 CPU 线程",
+      "scan_threads_tooltip": "扫描本地音乐时要使用的线程数"
     },
     "themes": {
       "songView": "歌曲视图",
@@ -124,7 +159,9 @@
         "name": "主题名称",
         "author": "作者",
         "colors": "颜色",
-        "colors_tooltip": "更改颜色以自定义界面"
+        "colors_tooltip": "更改颜色以自定义界面",
+        "css": "自定义 CSS",
+        "watch_css": "Watch CSS for file changes"
       },
       "primary": "主要",
       "secondary": "背景色",
@@ -151,7 +188,7 @@
         "hardwareAcceleration": "使用 GPU 硬件加速",
         "watchFileChanges": "监视音乐目录的更改",
         "enableJukeboxMode": "启用唱片机模式开关",
-        "lastLoadedPlaybackState": "Load last playback state on startup"
+        "lastLoadedPlaybackState": "启动时加载上次播放状态"
       },
       "systemSettings_tooltip": "与您的系统相关的设置",
       "audioSettings": {
@@ -160,6 +197,7 @@
         "sponsorBlock": "使用 SpongorBlock 自动跳过高亮显示YouTube 歌曲的部分"
       },
       "audioSettings_tooltip": "相关的音频回放设置",
+      "gapless_skip": "在结束前跳过歌曲 (秒)",
       "invidiousUrlUnsupported": "此URL不支持邀请API。",
       "invidious_tooltip": "提示：要使用 Invidious 的服务而不是 YouTube",
       "restartApp": "重启Moosync",
@@ -234,19 +272,19 @@
       "clear_preferences_button": "确认",
       "jukebox": {
         "pin": "唱片机模式 Pin",
-        "pin_tooltip": "This pin will be required to exit Jukebox Mode. Should be numeric.",
-        "optionalFields": "Button visibility",
-        "optionalFields_tooltip": "Toggle optional buttons to show in Jukebox mode",
-        "optional_skip": "Track Skip buttons",
-        "optional_shuffle": "Shuffle button",
-        "optional_repeat": "Repeat button"
+        "pin_tooltip": "提示：退出光盘机模式需要使用 PIN。应为数字。",
+        "optionalFields": "按钮可见性",
+        "optionalFields_tooltip": "切换可选按钮在唱片机模式中显示",
+        "optional_skip": "曲目跳过按钮",
+        "optional_shuffle": "随机播放按钮",
+        "optional_repeat": "重复按钮"
       },
       "lyrics": {
         "title": "歌词提供商",
         "tooltip": "选择用于搜索歌词的歌词提供商",
         "az_lyrics": "使用 AZLyrics",
         "google_lyrics": "使用谷歌搜索歌词",
-        "spotify_lyrics": "Use Spotify for lyrics (Requires librespot)",
+        "spotify_lyrics": "使用 Spotify 显示歌词 (需要 librespot)",
         "genius_lyrics": "Use Genius"
       },
       "queueSettings": {
@@ -261,18 +299,81 @@
         }
       },
       "volumePersistMode": {
-        "title": "Volume behavior",
-        "tooltip": "Change the way volume slider behaves",
-        "noPersist": "Normal behavior",
-        "persistSeparateVolumes": "Remember separate volume for each provider",
-        "persistClampVolume": "Manually adjust volume range for each provider"
+        "title": "音量",
+        "tooltip": "更改音量滑块的行为",
+        "noPersist": "正常行为",
+        "persistSeparateVolumes": "记住每个提供商的单独音量",
+        "persistClampVolume": "手动调整每个提供商的音量范围"
       }
     },
     "logs": {
       "logSettings": "日志设置",
       "level": "等级",
       "process": "进程",
-      "filterMessage": "过滤消息"
+      "filterMessage": "过滤消息",
+      "levels": {
+        "all": "所有",
+        "debug": "调试选项",
+        "info": "系统消息",
+        "warn": "警告",
+        "error": "错误"
+      },
+      "debug_logging": "启用调试日志",
+      "table": {
+        "time": "时间",
+        "level": "等级",
+        "process": "进程",
+        "message": "消息"
+      }
     }
+  },
+  "hotkeys": {
+    "play": "播放歌曲",
+    "pause": "暂停歌曲",
+    "play_toggle": "切换播放",
+    "mute_active": "静音",
+    "mute_inactive": "取消静言",
+    "mute_toggle": " 打开/关闭静音",
+    "volume_inc": "增加音量",
+    "volume_dec": "降低音量",
+    "repeat_active": "重复歌曲",
+    "repeat_inactive": "禁用重复",
+    "repeat_toggle": "循环播放",
+    "queue_open": "打开歌曲队列",
+    "queue_close": "关闭歌曲队列",
+    "queue_toggle": "切换歌曲队列",
+    "reload_page": "刷新页面",
+    "devtools": "切换开发工具",
+    "help": "打开帮助",
+    "fullscreen": "全屏",
+    "next_song": "下一曲",
+    "prev_song": "上一曲",
+    "seek_forward": "快进",
+    "seek_backwards": "快退",
+    "seek_0": "Seek to 0%",
+    "seek_1": "Seek to 10%",
+    "seek_2": "Seek to 20%",
+    "seek_3": "Seek to 30%",
+    "seek_4": "Seek to 40%",
+    "seek_5": "Seek to 50%",
+    "seek_6": "Seek to 60%",
+    "seek_7": "Seek to 70%",
+    "seek_8": "Seek to 80%",
+    "seek_9": "Seek to 90%"
+  },
+  "tray": {
+    "play": "播放",
+    "pause": "暂停",
+    "next": "下一页",
+    "prev": "上一页",
+    "repeat": "循环",
+    "no_repeat": "不要重复",
+    "shuffle": "随机播放",
+    "show_app": "显示应用",
+    "quit": "退出"
+  },
+  "toasts": {
+    "queued": "排队的{count} 首歌曲|排队的{count} 首歌曲",
+    "shuffled": "随机"
   }
 }

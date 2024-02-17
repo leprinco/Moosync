@@ -12,49 +12,31 @@
     <div class="modal-content-container">
       <b-container fluid class="p-0">
         <b-row no-gutters class="d-flex">
-          <canvas
-            crossorigin="anonymous"
-            v-if="!forceEmptyImg"
-            ref="canvas"
-            width="800"
-            height="800"
-            id="playlist-cover"
-            class="playlist-cover"
-          ></canvas>
+          <canvas crossorigin="anonymous" v-if="!forceEmptyImg" ref="canvas" width="800" height="800" id="playlist-cover"
+            class="playlist-cover"></canvas>
           <SongDefault v-if="forceEmptyImg" class="playlist-cover" />
           <b-col class="playlist-details">
             <div class="d-flex">
-              <b-input
-                v-model="title"
-                id="playlist-title"
-                class="playlist-title"
-                maxlength="20"
-                placeholder="Playlist Name..."
-              />
+              <b-input v-model="title" id="playlist-title" class="playlist-title" maxlength="20"
+                placeholder="Playlist Name..." />
             </div>
             <p class="songs-count">{{ songCount }} {{ songCount == 1 ? 'Song' : 'Songs' }}</p>
           </b-col>
         </b-row>
         <b-row no-gutters>
-          <b-form-textarea
-            class="playlist-desc"
-            id="playlist-desc"
-            v-model="desc"
-            placeholder="Description..."
-            rows="3"
-            max-rows="6"
-          ></b-form-textarea>
+          <b-form-textarea class="playlist-desc" id="playlist-desc" v-model="desc"
+            :placeholder="$t('playlists.new_playlist.description_placeholder')" rows="3" max-rows="6"></b-form-textarea>
         </b-row>
       </b-container>
-      <b-button class="create-button" @click="createPlaylist">Create</b-button>
+      <b-button class="create-button" @click="createPlaylist">{{ $t('playlists.new_playlist.create') }}</b-button>
     </div>
   </b-modal>
 </template>
 
 <script lang="ts">
 import { EventBus } from '@/utils/main/ipc/constants'
-import { Component, Prop, Ref } from 'vue-property-decorator'
-import { mixins } from 'vue-class-component'
+import { Component, Prop, Ref } from 'vue-facing-decorator'
+import { mixins } from 'vue-facing-decorator'
 import { bus } from '@/mainWindow/main'
 import { vxm } from '@/mainWindow/store'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
@@ -200,7 +182,7 @@ export default class NewPlaylistModal extends mixins(ImgLoader, RemoteSong) {
   }
 
   mounted() {
-    bus.$on(EventBus.SHOW_NEW_PLAYLIST_MODAL, (songs: Song[], createCallback?: () => void) => {
+    bus.on(EventBus.SHOW_NEW_PLAYLIST_MODAL, (songs: Song[], createCallback?: () => void) => {
       if (!this.showing) {
         this.songs = songs
         this.songCount = songs.length

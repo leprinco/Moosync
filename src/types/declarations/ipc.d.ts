@@ -157,8 +157,7 @@ declare namespace PreferenceRequests {
 
   interface PreferenceChange {
     key: string
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    value: any
+    value: unknown
   }
 
   interface ThemeID {
@@ -188,6 +187,11 @@ declare namespace PreferenceRequests {
   interface ListenKey {
     key: string
     isMainWindow: boolean
+  }
+
+  interface GenerateIcon {
+    colors: ThemeDetails
+    size: number
   }
 }
 
@@ -321,8 +325,34 @@ declare namespace MprisRequests {
   type SongInfo = import('media-controller').PlayerDetails
   type ButtonStatus = import('media-controller').PlayerButtons
 
+  type Position = {
+    position: number
+  }
+
   interface ShuffleRepeat {
     shuffle: boolean
     repeat: 'Playlist' | 'Track' | 'None'
+  }
+}
+
+declare namespace NotifierRequests {
+  interface FileChanges {
+    path: string
+    watch: boolean
+    mainWindow: boolean | 'both'
+  }
+}
+
+declare namespace RodioRequests {
+  interface SetSrc {
+    path: string
+  }
+
+  interface Volume {
+    volume: number
+  }
+
+  interface Seek {
+    pos: number
   }
 }

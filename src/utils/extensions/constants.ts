@@ -11,6 +11,7 @@ export const extensionRequestsKeys = [
   'get-songs',
   'get-entity',
   'add-songs',
+  'update-song',
   'add-playlist',
   'add-song-to-playlist',
   'remove-song',
@@ -22,7 +23,7 @@ export const extensionRequestsKeys = [
   'open-external',
   'register-account',
   'set-artist-editable-info',
-  'set-album-editable-info'
+  'set-album-editable-info',
 ] as const
 export const extensionUIRequestsKeys = [
   'get-current-song',
@@ -34,7 +35,7 @@ export const extensionUIRequestsKeys = [
   'close-login-modal',
   'show-toast',
   'update-preferences',
-  'extension-updated'
+  'extension-updated',
 ] as const
 export const playerControlRequests = ['play', 'pause', 'stop', 'next', 'prev'] as const
 export const mainRequestsKeys = [
@@ -50,12 +51,12 @@ export const mainRequestsKeys = [
   'set-log-level',
   'get-accounts',
   'perform-account-login',
-  'get-display-name'
+  'get-display-name',
 ] as const
 
 export const providerExtensionKeys = ['get-extension-provider-scopes'] as const
 
-export type extensionUIRequests = (typeof extensionUIRequestsKeys)[number] | (typeof playerControlRequests)[number]
-export type extensionRequests = (typeof extensionRequestsKeys)[number] | extensionUIRequests
-export type mainRequests = (typeof mainRequestsKeys)[number]
-export type providerFetchRequests = (typeof providerExtensionKeys)[number]
+export type extensionUIRequests = typeof extensionUIRequestsKeys[number] | typeof playerControlRequests[number]
+export type extensionRequests = typeof extensionRequestsKeys[number] | extensionUIRequests
+export type mainRequests = typeof mainRequestsKeys[number]
+export type providerFetchRequests = typeof providerExtensionKeys[number]

@@ -7,70 +7,44 @@
  *  See LICENSE in the project root for license information.
  */
 
-import '@/preferenceWindow/plugins/vueBootstrap'
-import '@/sass/global.sass'
 import '@/preferenceWindow/plugins/recycleScroller'
-import { i18n } from './plugins/i18n'
+import '@/preferenceWindow/plugins/vueBootstrap'
+import '@/preferenceWindow/plugins/contextmenu'
+import '@/sass/global.sass'
 import 'animate.css'
+import 'vue3-colorpicker/style.css'
 
 import App from './Preferences.vue'
-import Vue from 'vue'
-import router from '@/preferenceWindow/plugins/router'
-import { getErrorMessage } from '@/utils/common'
+import ContextMenu from '@imengyu/vue3-context-menu'
+import EventEmitter from 'events'
+import Vue3ColorPicker from 'vue3-colorpicker'
+import { createApp } from 'vue'
+import { i18n } from '@/preferenceWindow/plugins/i18n'
+import { registerLogger } from '@/utils/ui/common'
+import { router } from '@/preferenceWindow/plugins/router'
 
-Vue.config.productionTip = false
-Vue.config.devtools = false
+export const bus = new EventEmitter()
 
-function registerLogger() {
-  const preservedConsoleInfo = console.info
-  const preservedConsoleError = console.error
-  const preservedConsoleWarn = console.warn
-  const preservedConsoleDebug = console.debug
-  const preservedConsoleTrace = console.trace
+const app = createApp(App)
+app.use(i18n)
+app.use(router)
+app.use(ContextMenu)
+app.use(Vue3ColorPicker)
 
-  if (window.LoggerUtils && window.LoggerUtils.info && window.LoggerUtils.error) {
-    console.info = (...args: unknown[]) => {
-      preservedConsoleInfo.apply(console, args)
-      window.LoggerUtils.info(...args)
+app.directive('click-outside', {
+  mounted(el, binding) {
+    el.clickOutsideEvent = function (e: Event) {
+      if (el !== e.target && !el.contains(e.target)) {
+        binding.value(e, el)
+      }
     }
+    document.body.addEventListener('click', el.clickOutsideEvent)
+  },
+  unmounted(el) {
+    document.body.removeEventListener('click', el.clickOutsideEvent)
+  },
+})
 
-    console.error = (...args: unknown[]) => {
-      const error = getErrorMessage(...args)
-      preservedConsoleError.apply(console, args)
-      window.LoggerUtils.error(...error)
-    }
+registerLogger(app)
 
-    console.warn = (...args: unknown[]) => {
-      preservedConsoleWarn.apply(console, args)
-      window.LoggerUtils.warn(...args)
-    }
-
-    console.debug = (...args: unknown[]) => {
-      preservedConsoleDebug.apply(console, args)
-      window.LoggerUtils.debug(...args)
-    }
-
-    console.trace = (...args: unknown[]) => {
-      preservedConsoleTrace.apply(console, args)
-      window.LoggerUtils.trace(...args)
-    }
-
-    window.onerror = (err) => {
-      const error = getErrorMessage(err)
-      console.error(...error)
-    }
-
-    Vue.config.errorHandler = (err) => {
-      console.error(err)
-    }
-  }
-}
-
-registerLogger()
-
-new Vue({
-  components: { App },
-  router,
-  i18n,
-  template: '<App/>'
-}).$mount('#app')
+app.mount('#app')

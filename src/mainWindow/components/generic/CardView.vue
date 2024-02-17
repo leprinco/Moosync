@@ -9,22 +9,17 @@
 
 <template>
   <div class="mb-2" :class="{ selectedItem: selected }">
-    <div class="card card-grow" @contextmenu="emitContext" :style="{ 'max-width': maxWidth }">
+    <div class="card card-grow" @contextmenu="emitContext" :style="{ 'max-width': maxWidth }"
+      @click="$emit('click', $event)">
       <div class="card-img-top">
         <div class="icon-container" v-if="iconBgColor" :style="{ background: iconBgColor }">
           <slot name="icon" />
         </div>
         <div class="embed-responsive embed-responsive-1by1">
           <div class="embed-responsive-item img-container">
-            <img
-              referrerPolicy="no-referrer"
-              v-if="imgSrc && !forceEmptyImg"
-              :src="getImgSrc(imgSrc)"
-              alt="Album Art"
-              :class="[isOverlayExists ? 'overlay-base' : '']"
-              class="img-fluid w-100 h-100"
-              @error="handlerImageError(arguments[0], handleError)"
-            />
+            <img referrerPolicy="no-referrer" v-if="imgSrc && !forceEmptyImg" :src="getImgSrc(imgSrc)" alt="Album Art"
+              :class="[isOverlayExists ? 'overlay-base' : '']" class="img-fluid w-100 h-100"
+              @error="handlerImageError($event, handleError)" />
             <div class="overlay me-auto justify-content-center d-flex align-items-center h-100 w-100">
               <slot name="overlay" />
             </div>
@@ -44,15 +39,16 @@
 
 <script lang="ts">
 import ImageLoader from '@/utils/ui/mixins/ImageLoader'
-import { mixins } from 'vue-class-component'
-import { Component, Prop, Watch } from 'vue-property-decorator'
+import { mixins } from 'vue-facing-decorator'
+import { Component, Prop, Watch } from 'vue-facing-decorator'
 import ErrorHandler from '@/utils/ui/mixins/errorHandler'
 import Play2 from '@/icons/PlayIcon2.vue'
 
 @Component({
   components: {
     Play2
-  }
+  },
+  emits: ['click', 'CardContextMenu']
 })
 export default class CardView extends mixins(ImageLoader, ErrorHandler) {
   @Prop({ default: '' })

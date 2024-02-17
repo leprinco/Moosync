@@ -7,12 +7,14 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component, Prop, Vue, Ref } from 'vue-property-decorator'
 import { bus } from '@/mainWindow/main'
 import RecycleScroller from 'vue-virtual-scroller'
 import { KeyboardNavigation } from './KeyboardNavigation'
+import { Component, Prop, Vue, Ref } from 'vue-facing-decorator'
 
-@Component
+@Component({
+  emits: ['onRowSelectionClear', 'onRowSelected'],
+})
 export default class SongListMixin extends Vue {
   @Ref('scroller')
   scroller!: typeof RecycleScroller
@@ -78,5 +80,9 @@ export default class SongListMixin extends Vue {
     bus.$on('onQueueSelection', () => {
       this.queueSelection()
     })
+  }
+
+  beforeUnmount() {
+    this.destroyKeyEvents()
   }
 }

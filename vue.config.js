@@ -1,5 +1,5 @@
 const webpack = require('webpack')
-const dotenv = require('dotenv').config({ path: __dirname + '/config.env' })
+const dotenv = require('dotenv').config({ path: `${__dirname}/config.env` })
 const fs = require('fs')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const { resolve } = require('path')
@@ -14,6 +14,7 @@ if (fs.existsSync('/usr/lib/electron') && fs.existsSync('/usr/lib/electron/versi
   archElectronConfig.electronVersion = fs
     .readFileSync('/usr/lib/electron/version', { encoding: 'utf-8' })
     .replace('v', '')
+    .trim()
 }
 
 const RendererSecrets = {}
@@ -32,25 +33,45 @@ module.exports = {
     index: {
       entry: 'src/mainWindow/main.ts',
       template: 'public/index.html',
-      filename: 'index.html'
+      filename: 'index.html',
     },
     preferenceWindow: {
       entry: 'src/preferenceWindow/main.ts',
       template: 'public/index.html',
-      filename: 'preferenceWindow.html'
-    }
+      filename: 'preferenceWindow.html',
+    },
+  },
+  chainWebpack: (config) => {
+    config.resolve.alias.set('vue-facing-decorator', 'vue-facing-decorator/dist/index-return-cons')
+    config.resolve.alias.set('vue', '@vue/compat')
+    config.module
+      .rule('vue')
+      .use('vue-loader')
+      .tap((options) => {
+        return {
+          ...options,
+          compilerOptions: {
+            compatConfig: {
+              MODE: 2,
+            },
+          },
+        }
+      })
   },
   configureWebpack: {
     plugins: [
       new webpack.DefinePlugin({
         'process.browser': 'true',
         'process.env.MOOSYNC_VERSION': JSON.stringify(manifest.version),
-        ...RendererSecrets
+        __VUE_I18N_FULL_INSTALL__: JSON.stringify(true),
+        __INTLIFY_PROD_DEVTOOLS__: JSON.stringify(false),
+        __VUE_I18N_LEGACY_API__: JSON.stringify(false),
+        ...RendererSecrets,
       }),
 
       new webpack.ProvidePlugin({
-        Buffer: ['buffer', 'Buffer']
-      })
+        Buffer: ['buffer', 'Buffer'],
+      }),
       // new BundleAnalyzerPlugin()
     ],
     externals: {
@@ -58,7 +79,8 @@ module.exports = {
       vm2: "require('vm2')",
       sharp: "require('sharp')",
       'librespot-node': 'commonjs librespot-node',
-      'scanner-native': 'commonjs scanner-native'
+      'scanner-native': 'commonjs scanner-native',
+      'rodio-audio-backend': 'commonjs rodio-audio-backend',
     },
     devtool: 'source-map',
     resolve: {
@@ -75,9 +97,9 @@ module.exports = {
         buffer: require.resolve('buffer'),
         http: false,
         https: false,
-        zlib: false
-      }
-    }
+        zlib: false,
+      },
+    },
   },
   pluginOptions: {
     electronBuilder: {
@@ -90,23 +112,25 @@ module.exports = {
         artifactName: '${productName}-${version}-${os}-${arch}.${ext}',
         icon: './build/icons/512x512.png',
         mac: {
-          icon: './build/icons/icon.icns'
+          icon: './build/icons/icon.icns',
+          category: 'public.app-category.music',
         },
         win: {
           verifyUpdateCodeSignature: false,
-          target: ['portable', 'nsis']
+          target: ['portable', 'nsis'],
         },
         linux: {
           icon: './build/icons/',
-          target: ['AppImage', 'deb', 'tar.gz', 'pacman', 'rpm']
+          target: ['AppImage', 'deb', 'tar.gz', 'pacman', 'rpm'],
+          category: 'Audio',
         },
         nsis: {
           oneClick: false,
           perMachine: false,
-          allowToChangeInstallationDirectory: true
+          allowToChangeInstallationDirectory: true,
         },
         portable: {
-          artifactName: '${productName}-${version}-${os}-${arch}-portable.${ext}'
+          artifactName: '${productName}-${version}-${os}-${arch}-portable.${ext}',
         },
         snap: {
           stagePackages: [
@@ -118,58 +142,58 @@ module.exports = {
             'libatomic1',
             'libicu-dev',
             'libasound2-dev',
-            'libvips-dev'
+            'libvips-dev',
           ],
           // https://github.com/electron-userland/electron-builder/issues/4982#issuecomment-641598670
-          publish: ['github']
+          publish: ['github'],
         },
         deb: {
-          depends: ['libnotify4', 'libxtst6', 'libnss3', 'libatomic1', 'libicu-dev', 'libasound2-dev']
+          depends: ['libnotify4', 'libxtst6', 'libnss3', 'libatomic1', 'libicu-dev', 'libasound2-dev'],
         },
         rpm: {
-          depends: ['/usr/lib64/libuuid.so.1', '/usr/lib64/libnss3.so', '/usr/lib64/libnssutil3.so']
+          depends: ['/usr/lib64/libuuid.so.1', '/usr/lib64/libnss3.so', '/usr/lib64/libnssutil3.so'],
         },
         fileAssociations: [
           {
             ext: 'mp3',
             description: 'Music file extension',
-            role: 'Viewer'
+            role: 'Viewer',
           },
           {
             ext: 'flac',
             description: 'Music file extension',
-            role: 'Viewer'
+            role: 'Viewer',
           },
           {
             ext: 'aac',
             description: 'Music file extension',
-            role: 'Viewer'
+            role: 'Viewer',
           },
           {
             ext: 'ogg',
             description: 'Music file extension',
-            role: 'Viewer'
+            role: 'Viewer',
           },
           {
             ext: 'wav',
             description: 'Music file extension',
-            role: 'Viewer'
+            role: 'Viewer',
           },
           {
             ext: 'm4a',
             description: 'Music file extension',
-            role: 'Viewer'
+            role: 'Viewer',
           },
           {
             ext: 'webm',
             description: 'Music file extension',
-            role: 'Viewer'
+            role: 'Viewer',
           },
           {
             ext: 'wv',
             description: 'Music file extension',
-            role: 'Viewer'
-          }
+            role: 'Viewer',
+          },
         ],
         publish: [
           {
@@ -177,8 +201,8 @@ module.exports = {
             owner: 'Moosync',
             repo: 'Moosync',
             vPrefixedTagName: true,
-            releaseType: 'draft'
-          }
+            releaseType: 'draft',
+          },
         ],
         files: ['**/*', '!node_modules/librespot-node/native/target/*', '!node_modules/scanner-native/target/*'],
         asarUnpack: [
@@ -187,69 +211,46 @@ module.exports = {
           'spotify.js',
           '**/node_modules/**/*.node',
           'node_modules/bindings',
-          'node_modules/file-uri-to-path'
+          'node_modules/file-uri-to-path',
+          'node_modules/better-sqlite3',
         ],
         protocols: [
           {
             name: 'Default protocol',
-            schemes: ['moosync']
-          }
+            schemes: ['moosync'],
+          },
         ],
         beforeBuild: 'scripts/fontFix.js',
-        afterPack: 'scripts/beforePack.js'
+        afterPack: 'scripts/beforePack.js',
       },
       nodeIntegration: false,
       disableMainProcessTypescript: false,
       mainProcessTypeChecking: true,
       preload: 'src/utils/preload/preload.ts',
-      externals: ['better-sqlite3', 'vm2', 'sharp', 'librespot-node', 'scanner-native'],
+      externals: ['better-sqlite3', 'vm2', 'sharp', 'librespot-node', 'scanner-native', 'rodio-audio-backend'],
       chainWebpackMainProcess: (config) => {
         config.devtool('source-map').end()
-        config.module
-          .rule('babel')
-          .before('ts')
-          .exclude.add(/node_modules|regenerator-runtime|core-js|webpack/)
-          .end()
-          .use('babel')
-          .loader('babel-loader')
-          .options({
-            presets: [['@babel/preset-env', { modules: false }]],
-            plugins: [
-              '@babel/plugin-proposal-class-properties',
-              ['@babel/plugin-transform-runtime', { regenerator: true }],
-              '@babel/plugin-syntax-bigint'
-            ]
-          })
 
         config.plugin('define').tap((args) => {
           args[0] = {
             ...args[0],
             'process.env.MOOSYNC_VERSION': JSON.stringify(manifest.version),
-            ...MainSecrets
+            ...MainSecrets,
           }
 
           return args
         })
 
-        config
-          .entry('sandbox')
-          .add(__dirname + '/src/utils/extensions/sandbox/index.ts')
-          .end()
+        config.entry('sandbox').add(`${__dirname}/src/utils/extensions/sandbox/index.ts`).end()
 
-        config
-          .entry('spotify')
-          .add(__dirname + '/src/utils/spotify/index.ts')
-          .end()
+        config.entry('spotify').add(`${__dirname}/src/utils/spotify/index.ts`).end()
 
-        config
-          .entry('sqlite3.worker')
-          .add(__dirname + '/src/utils/main/db/workers/sqlite3.ts')
-          .end()
+        config.entry('sqlite3.worker').add(`${__dirname}/src/utils/main/db/workers/sqlite3.ts`).end()
 
         config.plugin('copy').use(CopyWebpackPlugin, [{ patterns: [{ from: resolve('dev-app-update.yml') }] }])
 
         // config.plugin('copy').use(BundleAnalyzerPlugin)
-      }
-    }
-  }
+      },
+    },
+  },
 }

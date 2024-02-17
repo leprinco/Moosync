@@ -8,129 +8,73 @@
 -->
 
 <template>
-  <div class="w-100 h-100" :key="refreshPage">
+  <div class="w-100 h-100" :key="refreshPage.toString()">
     <b-container fluid>
       <b-row no-gutters class="w-100">
         <div class="path-selector w-100">
-          <CheckboxGroup
-            :title="$t('settings.system.systemSettings.title')"
-            :tooltip="$t('settings.system.systemSettings_tooltip')"
-            :isExtension="false"
-            :defaultValue="systemCheckboxValues"
-            :onValueChange="onSystemPrefChange"
-            :onValueFetch="onSystemPrefFetch"
-            key="system"
-          />
+          <CheckboxGroup :title="$t('settings.system.systemSettings.title')"
+            :tooltip="$t('settings.system.systemSettings_tooltip')" :isExtension="false"
+            :defaultValue="systemCheckboxValues" :onValueChange="onSystemPrefChange" :onValueFetch="onSystemPrefFetch"
+            key="system" />
 
           <b-col v-if="showJukeboxField">
-            <EditText
-              class="mt-5 mb-3"
-              :isExtension="false"
-              :title="$t('settings.system.jukebox.pin')"
-              key="jukebox_pin"
-              :tooltip="$t('settings.system.jukebox.pin_tooltip')"
-              defaultValue=""
-              maxValue="6"
-              :onlyNumber="true"
-              type="password"
-            />
+            <EditText class="mt-5 mb-3" :isExtension="false" :title="$t('settings.system.jukebox.pin')" key="jukebox_pin"
+              :tooltip="$t('settings.system.jukebox.pin_tooltip')" defaultValue="" maxValue="6" :onlyNumber="true"
+              type="password" />
 
-            <CheckboxGroup
-              :title="$t('settings.system.jukebox.optionalFields')"
-              :tooltip="$t('settings.system.jukebox.optionalFields_tooltip')"
-              :isExtension="false"
-              :defaultValue="jukeboxOptionalFields"
-              key="jukebox_optional_fields"
-            />
+            <CheckboxGroup :title="$t('settings.system.jukebox.optionalFields')"
+              :tooltip="$t('settings.system.jukebox.optionalFields_tooltip')" :isExtension="false"
+              :defaultValue="jukeboxOptionalFields" key="jukebox_optional_fields" />
           </b-col>
 
-          <CheckboxGroup
-            :title="$t('settings.system.queueSettings.title')"
-            class="mt-4"
-            :tooltip="$t('settings.system.queueSettings.tooltip')"
-            :isExtension="false"
-            :defaultValue="queueCheckboxValues"
-            key="queue"
-          />
+          <CheckboxGroup :title="$t('settings.system.queueSettings.title')" class="mt-4"
+            :tooltip="$t('settings.system.queueSettings.tooltip')" :isExtension="false"
+            :defaultValue="queueCheckboxValues" key="queue" />
 
-          <CheckboxGroup
-            :title="$t('settings.system.audioSettings.title')"
-            class="mt-4"
-            :tooltip="$t('settings.system.audioSettings_tooltip')"
-            :isExtension="false"
-            :defaultValue="audioCheckboxValues"
-            key="audio"
-          />
+          <CheckboxGroup :title="$t('settings.system.audioSettings.title')" class="mt-4"
+            :tooltip="$t('settings.system.audioSettings_tooltip')" :isExtension="false"
+            :defaultValue="audioCheckboxValues" key="audio" />
 
-          <RadioCheckbox
-            :title="$t('settings.system.volumePersistMode.title')"
-            class="mt-4"
-            :tooltip="$t('settings.system.volumePersistMode.tooltip')"
-            :isExtension="false"
-            :defaultValue="volumePersistModeCheckboxValues"
-            :onValueChange="onVolumePersistValueChange"
-            :onValueFetch="onVolumePersistValueChange"
-            key="volumePersistMode"
-          />
+          <EditText class="mt-4" :title="$t('settings.system.gapless_skip')" :onlyNumber="true" :key="`gapless.skip`"
+            :defaultValue="0" type="number" />
+
+          <RadioCheckbox :title="$t('settings.system.volumePersistMode.title')" class="mt-4"
+            :tooltip="$t('settings.system.volumePersistMode.tooltip')" :isExtension="false"
+            :defaultValue="volumePersistModeCheckboxValues" :onValueChange="onVolumePersistValueChange"
+            :onValueFetch="onVolumePersistValueChange" key="volumePersistMode" />
 
           <b-col v-if="showVolumeMapField">
             <b-container class="ml-1 mt-2" fluid>
               <b-row no-gutters class="d-flex" v-for="provider of volumeMapProviders" :key="provider.key">
                 <b-col cols="4" class="align-self-center text-left">{{ provider.title }}</b-col>
                 <b-col cols="8" lg="6">
-                  <EditText
-                    :onlyNumber="true"
-                    :key="`clampMap.${provider.key.replaceAll('.', '_').toLowerCase()}.clamp`"
-                    :defaultValue="provider.clamp"
-                    type="range"
-                    :showRangeText="true"
-                  />
+                  <EditText :onlyNumber="true" :key="`clampMap.${provider.key.replaceAll('.', '_').toLowerCase()}.clamp`"
+                    :defaultValue="provider.clamp" type="range" :showRangeText="true" />
                 </b-col>
               </b-row>
             </b-container>
           </b-col>
 
-          <CheckboxGroup
-            :title="$t('settings.system.scrobble.provider_toggle.title')"
-            class="mt-4"
-            :tooltip="$t('settings.system.scrobble.provider_toggle.tooltip')"
-            :isExtension="false"
-            :defaultValue="scrobbleProviderCheckboxValues"
-            key="scrobble.provider_toggle"
-          />
+          <CheckboxGroup :title="$t('settings.system.scrobble.provider_toggle.title')" class="mt-4"
+            :tooltip="$t('settings.system.scrobble.provider_toggle.tooltip')" :isExtension="false"
+            :defaultValue="scrobbleProviderCheckboxValues" key="scrobble.provider_toggle" />
 
-          <RadioCheckbox
-            :title="$t('settings.system.youtubeAlternative.title')"
-            class="mt-4"
-            :tooltip="$t('settings.system.youtubeAlternative.tooltip')"
-            :isExtension="false"
-            :defaultValue="youtubeAlternativeCheckboxValues"
-            :onValueChange="onYoutubeAlternativesChanged"
-            :onValueFetch="onYoutubeAlternativesFetched"
-            key="youtubeAlt"
-          />
+          <RadioCheckbox :title="$t('settings.system.youtubeAlternative.title')" class="mt-4"
+            :tooltip="$t('settings.system.youtubeAlternative.tooltip')" :isExtension="false"
+            :defaultValue="youtubeAlternativeCheckboxValues" :onValueChange="onYoutubeAlternativesChanged"
+            :onValueFetch="onYoutubeAlternativesFetched" key="youtubeAlt" />
 
           <b-col v-if="showYoutubeField">
-            <CheckboxGroup
-              :title="$t('settings.system.youtubeAlternative.youtube.options')"
-              class="mt-4"
-              :tooltip="$t('settings.system.youtubeAlternative.youtube.options_tooltip')"
-              :isExtension="false"
-              :defaultValue="youtubeAdvancedCheckboxValues"
-              key="youtubeOptions"
-            />
+            <CheckboxGroup :title="$t('settings.system.youtubeAlternative.youtube.options')" class="mt-4"
+              :tooltip="$t('settings.system.youtubeAlternative.youtube.options_tooltip')" :isExtension="false"
+              :defaultValue="youtubeAdvancedCheckboxValues" key="youtubeOptions" />
           </b-col>
 
           <b-col v-if="showInvidiousField">
-            <AutoFillEditText
-              class="mt-4"
-              key="invidious_instance"
-              :datalist="invidiousInstances"
+            <AutoFillEditText class="mt-4" key="invidious_instance" :datalist="invidiousInstances"
               :title="$t('settings.system.youtubeAlternative.invidious.url')"
               :tooltip="$t('settings.system.youtubeAlternative.invidious.url_tooltip')"
-              :onValueChange="onInvidiousInstanceChange"
-              :onValueFetch="onInvidiousInstanceChange"
-            />
+              :onValueChange="onInvidiousInstanceChange" :onValueFetch="onInvidiousInstanceChange" />
 
             <b-container class="invidious-details">
               <b-row>
@@ -139,80 +83,38 @@
                 </b-col>
               </b-row>
             </b-container>
-            <CheckboxGroup
-              :title="$t('settings.system.youtubeAlternative.invidious.options')"
-              class="mt-4"
-              :tooltip="$t('settings.system.youtubeAlternative.invidious.options_tooltip')"
-              :isExtension="false"
-              :defaultValue="invidiousAdvancedCheckboxValues"
-              key="invidious"
-            />
+            <CheckboxGroup :title="$t('settings.system.youtubeAlternative.invidious.options')" class="mt-4"
+              :tooltip="$t('settings.system.youtubeAlternative.invidious.options_tooltip')" :isExtension="false"
+              :defaultValue="invidiousAdvancedCheckboxValues" key="invidious" />
           </b-col>
 
           <b-col v-if="showPipedField">
-            <AutoFillEditText
-              class="mt-4"
-              key="piped_instance"
-              :datalist="pipedInstances"
+            <AutoFillEditText class="mt-4" key="piped_instance" :datalist="pipedInstances"
               :title="$t('settings.system.youtubeAlternative.piped.url')"
-              :tooltip="$t('settings.system.youtubeAlternative.piped.url_tooltip')"
-            />
+              :tooltip="$t('settings.system.youtubeAlternative.piped.url_tooltip')" />
 
-            <EditText
-              class="mt-4"
-              :isExtension="false"
-              :title="$t('settings.system.youtubeAlternative.piped.username')"
-              key="piped.username"
-              :tooltip="$t('settings.system.youtubeAlternative.piped.username_tooltip')"
-            />
+            <EditText class="mt-4" :isExtension="false" :title="$t('settings.system.youtubeAlternative.piped.username')"
+              key="piped.username" :tooltip="$t('settings.system.youtubeAlternative.piped.username_tooltip')" />
 
-            <EditText
-              class="mt-2"
-              :isExtension="false"
-              :title="$t('settings.system.youtubeAlternative.piped.password')"
-              key="piped.password"
-              :tooltip="$t('settings.system.youtubeAlternative.piped.password_tooltip')"
-              type="password"
-            />
+            <EditText class="mt-2" :isExtension="false" :title="$t('settings.system.youtubeAlternative.piped.password')"
+              key="piped.password" :tooltip="$t('settings.system.youtubeAlternative.piped.password_tooltip')"
+              type="password" />
           </b-col>
 
-          <CheckboxGroup
-            :title="$t('settings.system.spotify.title')"
-            :tooltip="$t('settings.system.spotify.tooltip')"
-            class="mt-4"
-            key="spotify.options"
-            :defaultValue="spotifyCheckboxValues"
-            :isExtension="false"
-            :onValueChange="onSpotifyValueFetch"
-            :onValueFetch="onSpotifyValueFetch"
-          />
+          <CheckboxGroup :title="$t('settings.system.spotify.title')" :tooltip="$t('settings.system.spotify.tooltip')"
+            class="mt-4" key="spotify.options" :defaultValue="spotifyCheckboxValues" :isExtension="false"
+            :onValueChange="onSpotifyValueFetch" :onValueFetch="onSpotifyValueFetch" />
 
           <b-col v-if="showSpotifyUserPass">
-            <EditText
-              class="mt-4"
-              :isExtension="false"
-              :title="$t('settings.system.spotify.username')"
-              key="spotify.username"
-              :tooltip="$t('settings.system.spotify.username_tooltip')"
-            />
+            <EditText class="mt-4" :isExtension="false" :title="$t('settings.system.spotify.username')"
+              key="spotify.username" :tooltip="$t('settings.system.spotify.username_tooltip')" />
 
-            <EditText
-              class="mt-2"
-              :isExtension="false"
-              :title="$t('settings.system.spotify.password')"
-              key="spotify.password"
-              :tooltip="$t('settings.system.spotify.password_tooltip')"
-              type="password"
-            />
+            <EditText class="mt-2" :isExtension="false" :title="$t('settings.system.spotify.password')"
+              key="spotify.password" :tooltip="$t('settings.system.spotify.password_tooltip')" type="password" />
 
-            <CheckboxGroup
-              :title="$t('settings.system.spotify.librespot.title')"
-              :tooltip="$t('settings.system.spotify.librespot.tooltip')"
-              class="mt-4"
-              key="spotify.librespot.options"
-              :defaultValue="librespotOptions"
-              :isExtension="false"
-            />
+            <CheckboxGroup :title="$t('settings.system.spotify.librespot.title')"
+              :tooltip="$t('settings.system.spotify.librespot.tooltip')" class="mt-4" key="spotify.librespot.options"
+              :defaultValue="librespotOptions" :isExtension="false" />
           </b-col>
 
           <b-row v-if="showRestartButton">
@@ -221,95 +123,36 @@
             </b-col>
           </b-row>
 
-          <CheckboxGroup
-            :title="$t('settings.system.lyrics.title')"
-            class="mt-4"
-            :tooltip="$t('settings.system.lyrics.tooltip')"
-            :isExtension="false"
-            :defaultValue="lyricsCheckboxValues"
-            key="lyrics_fetchers"
-          />
+          <CheckboxGroup :title="$t('settings.system.lyrics.title')" class="mt-4"
+            :tooltip="$t('settings.system.lyrics.tooltip')" :isExtension="false" :defaultValue="lyricsCheckboxValues"
+            key="lyrics_fetchers" />
 
-          <EditText
-            class="mt-5 mb-3"
-            :isExtension="false"
-            :title="$t('settings.system.zoom')"
-            key="zoomFactor"
-            :tooltip="$t('settings.system.zoom_tooltip')"
-            :onValueChange="onZoomUpdate"
-            defaultValue="100"
-            type="number"
-          />
+          <EditText class="mt-5 mb-3" :isExtension="false" :title="$t('settings.system.zoom')" key="zoomFactor"
+            :tooltip="$t('settings.system.zoom_tooltip')" :onValueChange="onZoomUpdate" defaultValue="100"
+            type="number" />
 
-          <EditText
-            class="mt-5 mb-3"
-            :isExtension="false"
-            :title="$t('settings.system.spotify.client_id')"
-            key="spotify.client_id"
-            :tooltip="$t('settings.system.spotify.client_id_tooltip')"
-            @tooltipClick="openSpotifyHelp"
-            :onValueFetch="onSpotifySecretsFetch"
-            :onValueChange="onSpotifySecretsFetch"
-          />
-          <EditText
-            :isExtension="false"
-            :tooltip="$t('settings.system.spotify.client_secret_tooltip')"
-            :title="$t('settings.system.spotify.client_secret')"
-            key="spotify.client_secret"
-            @tooltipClick="openSpotifyHelp"
-            :onValueFetch="onSpotifySecretsFetch"
-            :onValueChange="onSpotifySecretsFetch"
-          />
+          <EditText class="mt-5 mb-3" :isExtension="false" :title="$t('settings.system.spotify.client_id')"
+            key="spotify.client_id" :tooltip="$t('settings.system.spotify.client_id_tooltip')"
+            @tooltipClick="openSpotifyHelp" />
+          <EditText :isExtension="false" :tooltip="$t('settings.system.spotify.client_secret_tooltip')"
+            :title="$t('settings.system.spotify.client_secret')" key="spotify.client_secret"
+            @tooltipClick="openSpotifyHelp" />
 
-          <b-row v-if="showSpotifyButton">
-            <b-col cols="auto">
-              <b-button class="create-button" @click="showSpotifyAutomateDisclaimer">{{
-                $t('settings.system.spotify.autoFetchButton')
-              }}</b-button>
-            </b-col>
-          </b-row>
+          <EditText v-if="!youtubeEnvExists" class="mt-5 mb-3" :isExtension="false"
+            :title="$t('settings.system.youtube.client_id')" :tooltip="$t('settings.system.youtube.client_id_tooltip')"
+            @tooltipClick="openYoutubeHelp" key="youtube.client_id" />
+          <EditText v-if="!youtubeEnvExists" :isExtension="false" :title="$t('settings.system.youtube.client_secret')"
+            :tooltip="$t('settings.system.youtube.client_secret_tooltip')" @tooltipClick="openYoutubeHelp"
+            key="youtube.client_secret" />
 
-          <EditText
-            v-if="!youtubeEnvExists"
-            class="mt-5 mb-3"
-            :isExtension="false"
-            :title="$t('settings.system.youtube.client_id')"
-            :tooltip="$t('settings.system.youtube.client_id_tooltip')"
-            @tooltipClick="openYoutubeHelp"
-            key="youtube.client_id"
-          />
-          <EditText
-            v-if="!youtubeEnvExists"
-            :isExtension="false"
-            :title="$t('settings.system.youtube.client_secret')"
-            :tooltip="$t('settings.system.youtube.client_secret_tooltip')"
-            @tooltipClick="openYoutubeHelp"
-            key="youtube.client_secret"
-          />
+          <EditText v-if="!lastfmEnvExists" class="mt-5 mb-3" :isExtension="false"
+            :title="$t('settings.system.lastfm.client_id')" key="lastfm.client_id" />
 
-          <EditText
-            v-if="!lastfmEnvExists"
-            class="mt-5 mb-3"
-            :isExtension="false"
-            :title="$t('settings.system.lastfm.client_id')"
-            key="lastfm.client_id"
-          />
+          <EditText v-if="!lastfmEnvExists" :isExtension="false" :title="$t('settings.system.lastfm.client_secret')"
+            key="lastfm.client_secret" />
 
-          <EditText
-            v-if="!lastfmEnvExists"
-            :isExtension="false"
-            :title="$t('settings.system.lastfm.client_secret')"
-            key="lastfm.client_secret"
-          />
-
-          <Dropdown
-            class="mt-5"
-            :defaultValue="languageDropdown"
-            :title="$t('settings.system.language')"
-            :tooltip="$t('settings.system.language_tooltip')"
-            key="system_language"
-            :onValueChange="onLanguageChanged"
-          />
+          <Dropdown class="mt-5" :defaultValue="languageDropdown" :title="$t('settings.system.language')"
+            :tooltip="$t('settings.system.language_tooltip')" key="system_language" :onValueChange="onLanguageChanged" />
 
           <b-button class="delete-button mt-4" @click="showClearPreferencesDisclaimer">{{
             $t('settings.system.clearPreferences')
@@ -317,29 +160,6 @@
         </div>
       </b-row>
     </b-container>
-    <b-modal no-close-on-backdrop centered size="md" id="spotify-automate-modal" hide-footer hide-header>
-      <b-container class="response-container">
-        <b-row no-gutters class="d-flex">
-          <b-col class="title" cols="auto">{{ $t('settings.system.spotify.autoFetchPreTitle') }}</b-col>
-          <b-col class="title ml-2" cols="auto" :style="{ color: '#1ED760' }">Spotify</b-col>
-          <b-col class="title ml-2" cols="auto">{{ $t('settings.system.spotify.autoFetchTitle') }}</b-col>
-        </b-row>
-        <b-row>
-          <b-col class="mt-4 waiting">{{ $t('settings.system.spotify.autoFetchDisclaimer') }}</b-col>
-        </b-row>
-        <b-row>
-          <b-col class="d-flex justify-content-center">
-            <div
-              @click="openSpotifyAutomation"
-              class="start-button button-grow mt-4 d-flex justify-content-center align-items-center"
-            >
-              {{ $t('settings.system.spotify.openWindow') }}
-            </div>
-          </b-col>
-        </b-row>
-      </b-container>
-      <CrossIcon @click.native="closeSpotifyAutomateModal" class="close-icon button-grow" />
-    </b-modal>
 
     <b-modal no-close-on-backdrop centered size="md" id="clear-preferences-modal" hide-footer hide-header>
       <b-container class="response-container">
@@ -351,16 +171,14 @@
         </b-row>
         <b-row>
           <b-col class="d-flex justify-content-center">
-            <div
-              @click="clearPreferences"
-              class="delete-button button-grow mt-4 d-flex justify-content-center align-items-center"
-            >
+            <div @click="clearPreferences"
+              class="delete-button button-grow mt-4 d-flex justify-content-center align-items-center">
               {{ $t('settings.system.clear_preferences_button') }}
             </div>
           </b-col>
         </b-row>
       </b-container>
-      <CrossIcon @click.native="closeClearPreferencesModal" class="close-icon button-grow" />
+      <CrossIcon @click="closeClearPreferencesModal" class="close-icon button-grow" />
     </b-modal>
   </div>
 </template>
@@ -375,8 +193,8 @@ type InvidiousInstances = [
   }
 ][]
 
-import { Component } from 'vue-property-decorator'
-import Vue from 'vue'
+import { Component } from 'vue-facing-decorator'
+import { Vue } from 'vue-facing-decorator'
 import CheckboxGroup from '../CheckboxGroup.vue'
 import EditText from '../EditText.vue'
 import PreferenceHeader from '../PreferenceHeader.vue'
@@ -385,7 +203,6 @@ import AutoFillEditText from '../AutoFillEditText.vue'
 import { InvidiousApiResources } from '@/utils/commonConstants'
 import Dropdown from '../Dropdown.vue'
 import { messages } from '@/utils/ui/i18n'
-import { i18n } from '@/preferenceWindow/plugins/i18n'
 import RadioCheckbox from '../RadioCheckbox.vue'
 import { VolumePersistMode } from '../../../utils/commonConstants'
 
@@ -401,23 +218,22 @@ import { VolumePersistMode } from '../../../utils/commonConstants'
   }
 })
 export default class System extends Vue {
-  private showSpotifyButton = false
-  private showRestartButton = false
-  private showInvidiousField = false
-  private showYoutubeField = false
-  private showPipedField = false
-  private showJukeboxField = false
-  private showSpotifyUserPass = false
-  private showVolumeMapField = false
+  showRestartButton = false
+  showInvidiousField = false
+  showYoutubeField = false
+  showPipedField = false
+  showJukeboxField = false
+  showSpotifyUserPass = false
+  showVolumeMapField = false
 
-  private invidiousInstances: string[] = []
-  private invidiousDetails = ''
+  invidiousInstances: string[] = []
+  invidiousDetails = ''
 
-  private pipedInstances: string[] = []
+  pipedInstances: string[] = []
 
-  private extensions: ExtensionDetails[] = []
+  extensions: ExtensionDetails[] = []
 
-  private async onInvidiousInstanceChange() {
+  async onInvidiousInstanceChange() {
     try {
       const resp = await window.SearchUtils.requestInvidious(
         InvidiousApiResources.STATS,
@@ -426,16 +242,15 @@ export default class System extends Vue {
         true
       )
       if (resp) {
-        this.invidiousDetails = `Software: ${resp.software.name}:${resp.software.branch}-${
-          resp.software.version
-        }\nUsers: ${resp.usage.users.total}\nSignup: ${resp.openRegistrations ? 'Open' : 'Closed'}`
+        this.invidiousDetails = `Software: ${resp.software.name}:${resp.software.branch}-${resp.software.version
+          }\nUsers: ${resp.usage.users.total}\nSignup: ${resp.openRegistrations ? 'Open' : 'Closed'}`
       }
     } catch (e) {
-      this.invidiousDetails = this.$tc('settings.system.invidiousUrlUnsupported')
+      this.invidiousDetails = this.$t('settings.system.invidiousUrlUnsupported')
     }
   }
 
-  private get languageDropdown() {
+  get languageDropdown() {
     const items = new Intl.DisplayNames(['en'], {
       type: 'language'
     })
@@ -450,14 +265,14 @@ export default class System extends Vue {
     return languages
   }
 
-  private onLanguageChanged(key: Checkbox[]) {
+  onLanguageChanged(key: Checkbox[]) {
     const active = key.find((val) => val.enabled) ?? this.languageDropdown[0]
     console.debug('changing locale to', active.key)
-    i18n.locale = active.key
+    this.$i18n.locale = active.key
     window.ThemeUtils.setLanguage(active.key)
   }
 
-  private async fetchInvidiousInstances() {
+  async fetchInvidiousInstances() {
     const resp: InvidiousInstances = await (await fetch('https://api.invidious.io/instances.json')).json()
     for (const instance of resp) {
       if (typeof instance[1] === 'object' && instance[1].api && instance[1].type === 'https') {
@@ -466,7 +281,7 @@ export default class System extends Vue {
     }
   }
 
-  private async fetchPipedInstances() {
+  async fetchPipedInstances() {
     const resp = await (
       await fetch('https://raw.githubusercontent.com/wiki/TeamPiped/Piped-Frontend/Instances.md')
     ).text()
@@ -486,14 +301,14 @@ export default class System extends Vue {
       .filter((instance) => instance?.length ?? 0 > 0) as string[]
   }
 
-  private defaultSystemSettings: SystemSettings[] = []
-  private defaultYoutubeAlts: Checkbox[] = []
+  defaultSystemSettings: SystemSettings[] = []
+  defaultYoutubeAlts: Checkbox[] = []
 
   get spotifyCheckboxValues(): Checkbox[] {
     return [
       {
         key: 'use_librespot',
-        title: this.$tc('settings.system.spotify.librespotEnable'),
+        title: this.$t('settings.system.spotify.librespotEnable'),
         enabled: false
       }
     ]
@@ -503,18 +318,18 @@ export default class System extends Vue {
     return [
       {
         key: 'use_spotify_canvas',
-        title: this.$tc('settings.system.spotify.librespot.useSpotifyCanvas'),
+        title: this.$t('settings.system.spotify.librespot.useSpotifyCanvas'),
         enabled: true
       },
       {
         key: 'use_librespot_playback',
-        title: this.$tc('settings.system.spotify.librespot.useLibrespotPlayback'),
+        title: this.$t('settings.system.spotify.librespot.useLibrespotPlayback'),
         enabled: true
       }
     ]
   }
 
-  private onSpotifyValueFetch(value: Checkbox[]) {
+  onSpotifyValueFetch(value: Checkbox[]) {
     this.showSpotifyUserPass = value.find((val) => val.key === 'use_librespot')?.enabled ?? false
   }
 
@@ -522,13 +337,13 @@ export default class System extends Vue {
     return [
       {
         key: 'always_proxy',
-        title: this.$tc('settings.system.youtubeAlternative.invidious.always_proxy'),
+        title: this.$t('settings.system.youtubeAlternative.invidious.always_proxy'),
         enabled: true
       }
     ]
   }
 
-  private onVolumePersistValueChange(value: Checkbox[]) {
+  onVolumePersistValueChange(value: Checkbox[]) {
     const active = value.find((val) => val.enabled)
 
     this.showVolumeMapField = false
@@ -541,17 +356,17 @@ export default class System extends Vue {
     return [
       {
         key: VolumePersistMode.SINGLE,
-        title: this.$tc('settings.system.volumePersistMode.noPersist'),
+        title: this.$t('settings.system.volumePersistMode.noPersist'),
         enabled: true
       },
       {
         key: VolumePersistMode.SEPARATE_VOLUME_MAP,
-        title: this.$tc('settings.system.volumePersistMode.persistSeparateVolumes'),
+        title: this.$t('settings.system.volumePersistMode.persistSeparateVolumes'),
         enabled: false
       },
       {
         key: VolumePersistMode.CLAMP_MAP,
-        title: this.$tc('settings.system.volumePersistMode.persistClampVolume'),
+        title: this.$t('settings.system.volumePersistMode.persistClampVolume'),
         enabled: false
       }
     ]
@@ -561,12 +376,12 @@ export default class System extends Vue {
     return [
       {
         key: 'gapless_playback',
-        title: this.$tc('settings.system.audioSettings.gaplessPlayback'),
+        title: this.$t('settings.system.audioSettings.gaplessPlayback'),
         enabled: false
       },
       {
         key: 'sponsorblock',
-        title: this.$tc('settings.system.audioSettings.sponsorBlock'),
+        title: this.$t('settings.system.audioSettings.sponsorBlock'),
         enabled: false
       }
     ]
@@ -576,7 +391,7 @@ export default class System extends Vue {
     return [
       {
         key: 'youtube_embeds',
-        title: this.$tc('settings.system.youtubeAlternative.youtube.useEmbeds'),
+        title: this.$t('settings.system.youtubeAlternative.youtube.useEmbeds'),
         enabled: true
       }
     ]
@@ -586,17 +401,17 @@ export default class System extends Vue {
     return [
       {
         key: 'use_youtube',
-        title: this.$tc('settings.system.youtubeAlternative.useYoutube'),
+        title: this.$t('settings.system.youtubeAlternative.useYoutube'),
         enabled: true
       },
       {
         key: 'use_invidious',
-        title: this.$tc('settings.system.youtubeAlternative.useInvidious'),
+        title: this.$t('settings.system.youtubeAlternative.useInvidious'),
         enabled: false
       },
       {
         key: 'use_piped',
-        title: this.$tc('settings.system.youtubeAlternative.usePiped'),
+        title: this.$t('settings.system.youtubeAlternative.usePiped'),
         enabled: false
       }
     ]
@@ -605,22 +420,22 @@ export default class System extends Vue {
   get lyricsCheckboxValues(): Checkbox[] {
     return [
       {
-        title: this.$tc('settings.system.lyrics.az_lyrics'),
+        title: this.$t('settings.system.lyrics.az_lyrics'),
         key: 'az_lyrics',
         enabled: true
       },
       {
-        title: this.$tc('settings.system.lyrics.google_lyrics'),
+        title: this.$t('settings.system.lyrics.google_lyrics'),
         key: 'google_lyrics',
         enabled: true
       },
       {
-        title: this.$tc('settings.system.lyrics.spotify_lyrics'),
+        title: this.$t('settings.system.lyrics.spotify_lyrics'),
         key: 'spotify_lyrics',
         enabled: true
       },
       {
-        title: this.$tc('settings.system.lyrics.genius_lyrics'),
+        title: this.$t('settings.system.lyrics.genius_lyrics'),
         key: 'genius_lyrics',
         enabled: true
       }
@@ -641,7 +456,7 @@ export default class System extends Vue {
   get lastLoadedPlaybackState(): SystemSettings {
     return {
       key: 'last_loaded_playback_state',
-      title: this.$tc('settings.system.systemSettings.lastLoadedPlaybackState'),
+      title: this.$t('settings.system.systemSettings.lastLoadedPlaybackState'),
       enabled: false
     }
   }
@@ -649,7 +464,7 @@ export default class System extends Vue {
   get enableJukeboxMode() {
     return {
       key: 'jukebox_mode_toggle',
-      title: this.$tc('settings.system.systemSettings.enableJukeboxMode'),
+      title: this.$t('settings.system.systemSettings.enableJukeboxMode'),
       enabled: false
     }
   }
@@ -658,17 +473,17 @@ export default class System extends Vue {
     return [
       {
         key: 'jukebox_skip',
-        title: this.$tc('settings.system.jukebox.optional_skip'),
+        title: this.$t('settings.system.jukebox.optional_skip'),
         enabled: false
       },
       {
         key: 'jukebox_shuffle',
-        title: this.$tc('settings.system.jukebox.optional_shuffle'),
+        title: this.$t('settings.system.jukebox.optional_shuffle'),
         enabled: false
       },
       {
         key: 'jukebox_repeat',
-        title: this.$tc('settings.system.jukebox.optional_repeat'),
+        title: this.$t('settings.system.jukebox.optional_repeat'),
         enabled: false
       }
     ]
@@ -685,7 +500,7 @@ export default class System extends Vue {
   get startupCheckbox(): SystemSettings {
     return {
       key: 'startOnStartup',
-      title: this.$tc('settings.system.systemSettings.systemStartup'),
+      title: this.$t('settings.system.systemSettings.systemStartup'),
       enabled: false
     }
   }
@@ -693,7 +508,7 @@ export default class System extends Vue {
   get minimizeToTrayCheckbox(): SystemSettings {
     return {
       key: 'minimizeToTray',
-      title: this.$tc('settings.system.systemSettings.minimizeTray'),
+      title: this.$t('settings.system.systemSettings.minimizeTray'),
       enabled: true
     }
   }
@@ -701,7 +516,7 @@ export default class System extends Vue {
   get hardwareAcceleration(): SystemSettings {
     return {
       key: 'hardwareAcceleration',
-      title: this.$tc('settings.system.systemSettings.hardwareAcceleration'),
+      title: this.$t('settings.system.systemSettings.hardwareAcceleration'),
       enabled: true
     }
   }
@@ -709,7 +524,7 @@ export default class System extends Vue {
   get watchFileChanges(): SystemSettings {
     return {
       key: 'watchFileChanges',
-      title: this.$tc('settings.system.systemSettings.watchFileChanges'),
+      title: this.$t('settings.system.systemSettings.watchFileChanges'),
       enabled: false
     }
   }
@@ -718,7 +533,7 @@ export default class System extends Vue {
     return [
       {
         key: 'clear_queue_playlist',
-        title: this.$tc('settings.system.queueSettings.clearQueue'),
+        title: this.$t('settings.system.queueSettings.clearQueue'),
         enabled: false
       }
     ]
@@ -784,25 +599,25 @@ export default class System extends Vue {
     return ret
   }
 
-  private openSpotifyHelp() {
+  openSpotifyHelp() {
     window.WindowUtils.openExternal('https://moosync.app/wiki/integrations#enabling-spotify-integration')
   }
 
-  private openYoutubeHelp() {
+  openYoutubeHelp() {
     window.WindowUtils.openExternal('https://moosync.app/wiki/integrations#enabling-youtube-integration')
   }
 
-  private closeSpotifyAutomateModal() {
+  closeSpotifyAutomateModal() {
     this.$bvModal.hide('spotify-automate-modal')
   }
 
-  private onSystemPrefFetch(value: SystemSettings[]) {
+  onSystemPrefFetch(value: SystemSettings[]) {
     this.defaultSystemSettings = JSON.parse(JSON.stringify(value))
     this.showJukeboxField =
       this.defaultSystemSettings.find((val) => val.key === this.enableJukeboxMode.key)?.enabled ?? false
   }
 
-  private onSystemPrefChange(value: SystemSettings[]) {
+  onSystemPrefChange(value: SystemSettings[]) {
     if (Array.isArray(value)) {
       for (let i = 0; i < value.length; i++) {
         if (value[i].key === this.hardwareAcceleration.key) {
@@ -821,7 +636,7 @@ export default class System extends Vue {
     }
   }
 
-  private onYoutubeAlternativesChanged(value: Checkbox[]) {
+  onYoutubeAlternativesChanged(value: Checkbox[]) {
     if (Array.isArray(value)) {
       this.showYoutubeField = value.find((val) => val.key === 'use_youtube')?.enabled ?? false
       this.showInvidiousField = value.find((val) => val.key === 'use_invidious')?.enabled ?? false
@@ -838,58 +653,40 @@ export default class System extends Vue {
     }
   }
 
-  private onYoutubeAlternativesFetched(value: Checkbox[]) {
+  onYoutubeAlternativesFetched(value: Checkbox[]) {
     this.defaultYoutubeAlts = JSON.parse(JSON.stringify(value))
     this.showYoutubeField = value.find((val) => val.key === 'use_youtube')?.enabled ?? false
     this.showInvidiousField = value.find((val) => val.key === 'use_invidious')?.enabled ?? false
     this.showPipedField = value.find((val) => val.key === 'use_piped')?.enabled ?? false
   }
 
-  private async restartApp() {
+  async restartApp() {
     await window.WindowUtils.restartApp()
   }
 
-  private onSpotifySecretsFetch(value: string) {
-    if (!value) {
-      this.showSpotifyButton = true
-    } else {
-      this.showSpotifyButton = false
-    }
-  }
-
-  private showSpotifyAutomateDisclaimer() {
+  showSpotifyAutomateDisclaimer() {
     this.$bvModal.show('spotify-automate-modal')
   }
 
-  private async openSpotifyAutomation() {
-    const data = await window.WindowUtils.automateSpotify()
-    this.closeSpotifyAutomateModal()
-
-    if (data) {
-      window.PreferenceUtils.saveSelective('spotify.client_id', data.clientID, false)
-      window.PreferenceUtils.saveSelective('spotify.client_secret', data.clientSecret, false)
-    }
-  }
-
-  private async onZoomUpdate() {
+  async onZoomUpdate() {
     await window.WindowUtils.updateZoom()
   }
 
-  private refreshPage = false
-  private showClearPreferencesDisclaimer() {
+  refreshPage = false
+  showClearPreferencesDisclaimer() {
     this.$bvModal.show('clear-preferences-modal')
   }
 
-  private async clearPreferences() {
+  async clearPreferences() {
     await window.PreferenceUtils.resetToDefault()
     await this.restartApp()
   }
 
-  private closeClearPreferencesModal() {
+  closeClearPreferencesModal() {
     this.$bvModal.hide('clear-preferences-modal')
   }
 
-  private async fetchExtensions() {
+  async fetchExtensions() {
     this.extensions = await window.ExtensionUtils.getAllExtensions()
   }
 

@@ -8,25 +8,23 @@
  */
 
 import { IpcEvents, ScannerEvents } from './constants'
-
 import { IpcMainEvent, app } from 'electron'
-import { getSongDB } from '@/utils/main/db/index'
-import fs from 'fs'
-import os from 'os'
-
-import { WindowHandler } from '../windowManager'
-import { setupScanTask } from '../scheduler'
+import type { Playlist as ScanPlaylist, Song as ScanSong, SongWithLen } from 'scanner-native'
 import { getCombinedMusicPaths, loadPreferences, loadSelectivePreference } from '../db/preferences'
-import path from 'path'
 
-import type { SongWithLen, Song as ScanSong, Playlist as ScanPlaylist } from 'scanner-native'
-import { v4 } from 'uuid'
 import { MetadataFetcher } from '../fetchers/metadata'
+import { WindowHandler } from '../windowManager'
+import fs from 'fs'
+import { getSongDB } from '@/utils/main/db/index'
+import os from 'os'
+import path from 'path'
+import { setupScanTask } from '../scheduler'
+import { v4 } from 'uuid'
 
 enum ScanStatus {
-  UNDEFINED,
-  SCANNING,
-  QUEUED
+  UNDEFINED = 0,
+  SCANNING = 1,
+  QUEUED = 2,
 }
 
 export class ScannerChannel implements IpcChannelInterface {
@@ -76,7 +74,7 @@ export class ScannerChannel implements IpcChannelInterface {
     event.reply(request.responseChannel, {
       status: this.scanStatus,
       total: this.totalScanFiles,
-      current: this.currentScanFile
+      current: this.currentScanFile,
     })
   }
 
@@ -87,8 +85,8 @@ export class ScannerChannel implements IpcChannelInterface {
 
     const toRemove: Song[] = []
     for (const s of allSongs) {
-      if (s.type == 'LOCAL') {
-        if (paths.length == 0 || !s.path || s.path?.match(excludeRegex)) {
+      if (s.type === 'LOCAL') {
+        if (paths.length === 0 || !s.path || s.path?.match(excludeRegex)) {
           toRemove.push(s)
           continue
         }
@@ -113,7 +111,7 @@ export class ScannerChannel implements IpcChannelInterface {
     WindowHandler.getWindow(false)?.webContents.send(ScannerEvents.PROGRESS_CHANNEL, {
       current: this.currentScanFile,
       total: this.totalScanFiles,
-      status: this.scanStatus
+      status: this.scanStatus,
     } as Progress)
   }
 
@@ -121,7 +119,7 @@ export class ScannerChannel implements IpcChannelInterface {
     return {
       ...data,
       _id: v4(),
-      date_added: Date.now()
+      date_added: Date.now(),
     } as Song
   }
 
@@ -136,7 +134,7 @@ export class ScannerChannel implements IpcChannelInterface {
         this.saveToDb(target.splice(0, target.length))
       }
       return true
-    }
+    },
   })
 
   private async storeSong(data: SongWithLen) {
@@ -150,7 +148,7 @@ export class ScannerChannel implements IpcChannelInterface {
     return {
       playlist_name: data.title,
       playlist_path: data.path,
-      playlist_id: data.id
+      playlist_id: data.id,
     }
   }
 
@@ -184,6 +182,8 @@ export class ScannerChannel implements IpcChannelInterface {
               } else {
                 lastValue.songs.push(this.parseScannedSong(res.song))
               }
+            } else {
+              console.error(err)
             }
           },
           (err, res) => {
@@ -193,6 +193,8 @@ export class ScannerChannel implements IpcChannelInterface {
               } else {
                 lastValue.playlists.push(this.parseScannedPlaylist(res))
               }
+            } else {
+              console.error(err)
             }
           },
           () =>
@@ -200,7 +202,7 @@ export class ScannerChannel implements IpcChannelInterface {
               if (store) this.saveToDb(this.songList)
               this.songList = []
               return resolve(lastValue)
-            })
+            }),
         )
       })
     }
@@ -218,7 +220,7 @@ export class ScannerChannel implements IpcChannelInterface {
     this.scrapeStatus = ScanStatus.SCANNING as ScanStatus
 
     const artists = await getSongDB().getEntityByOptions<Artists>({
-      artist: true
+      artist: true,
     })
     const fetcher = new MetadataFetcher()
     await fetcher.fetchMBID(artists)
@@ -245,7 +247,7 @@ export class ScannerChannel implements IpcChannelInterface {
     await this.scanFilePromisified(
       paths.filter((val) => val.enabled).map((val) => val.path),
       request?.params.forceScan,
-      true
+      true,
     )
 
     this.reportProgress(this.totalScanFiles)

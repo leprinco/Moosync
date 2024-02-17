@@ -21,17 +21,15 @@
             </b-row>
             <b-row>
               <b-col>
-                <b-dropdown
-                  :text="capitalizeFirstLetter(levelFilter)"
-                  variant="success"
-                  class="dropdown-container mb-3"
-                  toggle-class="inner-dropdown"
-                >
-                  <b-dropdown-item @click="logLevelChange('ALL')">All</b-dropdown-item>
-                  <b-dropdown-item @click="logLevelChange('DEBUG')">Debug</b-dropdown-item>
-                  <b-dropdown-item @click="logLevelChange('INFO')">Info</b-dropdown-item>
-                  <b-dropdown-item @click="logLevelChange('WARN')">Warn</b-dropdown-item>
-                  <b-dropdown-item @click="logLevelChange('ERROR')">Error</b-dropdown-item>
+                <b-dropdown :text="capitalizeFirstLetter($t(`settings.logs.levels.${levelFilter.toLowerCase()}`))"
+                  variant="success" class="dropdown-container mb-3" toggle-class="inner-dropdown">
+                  <b-dropdown-item @click="logLevelChange('ALL')">{{ $t('settings.logs.levels.all') }}</b-dropdown-item>
+                  <b-dropdown-item @click="logLevelChange('DEBUG')">{{ $t('settings.logs.levels.debug')
+                  }}</b-dropdown-item>
+                  <b-dropdown-item @click="logLevelChange('INFO')">{{ $t('settings.logs.levels.info') }}</b-dropdown-item>
+                  <b-dropdown-item @click="logLevelChange('WARN')">{{ $t('settings.logs.levels.warn') }}</b-dropdown-item>
+                  <b-dropdown-item @click="logLevelChange('ERROR')">{{ $t('settings.logs.levels.error')
+                  }}</b-dropdown-item>
                 </b-dropdown>
               </b-col>
             </b-row>
@@ -42,19 +40,11 @@
             </b-row>
             <b-row>
               <b-col>
-                <b-dropdown
-                  :text="processFilter"
-                  variant="success"
-                  class="dropdown-container mb-3"
-                  toggle-class="inner-dropdown"
-                >
+                <b-dropdown :text="processFilter" variant="success" class="dropdown-container mb-3"
+                  toggle-class="inner-dropdown">
                   <b-dropdown-item @click="processFilterChange('All')">All</b-dropdown-item>
-                  <b-dropdown-item
-                    v-for="process in processFilters"
-                    :key="process"
-                    @click="processFilterChange(process)"
-                    >{{ process }}</b-dropdown-item
-                  >
+                  <b-dropdown-item v-for="process in processFilters" :key="process"
+                    @click="processFilterChange(process)">{{ process }}</b-dropdown-item>
                 </b-dropdown>
               </b-col>
             </b-row>
@@ -69,36 +59,21 @@
                   <template #prepend>
                     <SearchIcon class="align-self-center prepend-icon" />
                   </template>
-                  <b-input
-                    class="align-self-center search-field"
-                    placeholder="Search..."
-                    debounce="300"
-                    v-model="searchFilter"
-                  ></b-input>
+                  <b-input class="align-self-center search-field" placeholder="Search..." debounce="300"
+                    v-model="searchFilter"></b-input>
                 </b-input-group>
               </b-col>
             </b-row>
           </b-col>
-          <b-col cols="auto" class="mt-3 align-self-center refresh-icon" @click="refreshLogs"> <RefreshIcon /> </b-col>
+          <b-col cols="auto" class="mt-3 align-self-center refresh-icon" @click="refreshLogs">
+            <RefreshIcon />
+          </b-col>
         </b-row>
       </b-container>
       <div class="log-content w-100" no-gutters>
-        <b-table
-          :filter-function="handleFilter"
-          hover
-          dark
-          sticky-header
-          sort-by="time"
-          :sort-desc="true"
-          :items="logLines"
-          :fields="fields"
-          :filter="filterCriteria"
-          :perPage="perPage"
-          :current-page="currentPage"
-          id="logs-table"
-          class="log-table"
-          @filtered="onFiltered"
-        >
+        <b-table :filter-function="handleFilter" hover dark sticky-header sort-by="time" :sort-desc="true"
+          :items="logLines" :fields="fields" :filter="filterCriteria" :perPage="perPage" :current-page="currentPage"
+          id="logs-table" class="log-table" @filtered="onFiltered">
           <template #cell(time)="data">
             <div :class="`time-col ${data.item.level.toLowerCase()}`">
               {{ data.item.time }}
@@ -124,23 +99,19 @@
           </template>
         </b-table>
       </div>
-      <b-pagination
-        v-model="currentPage"
-        :total-rows="totalRows"
-        :per-page="perPage"
-        aria-controls="logs-table"
-        class="pagination"
-      ></b-pagination>
+      <b-pagination v-model="currentPage" :total-rows="totalRows" :per-page="perPage" aria-controls="logs-table"
+        class="pagination"></b-pagination>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator'
-import Vue from 'vue'
+import { Component } from 'vue-facing-decorator'
+import { Vue } from 'vue-facing-decorator'
 import CheckboxGroup from '../CheckboxGroup.vue'
 import SearchIcon from '@/icons/SearchIcon.vue'
 import RefreshIcon from '../../../icons/RefreshIcon.vue'
+import { BvTableFieldArray } from 'bootstrap-vue'
 
 type LogLevels = 'ALL' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
 
@@ -152,37 +123,44 @@ type LogLevels = 'ALL' | 'DEBUG' | 'INFO' | 'WARN' | 'ERROR'
   }
 })
 export default class Logs extends Vue {
-  private logLines: LogLines[] = []
+  logLines: LogLines[] = []
 
-  private levelFilter: LogLevels = 'ALL'
-  private processFilter = 'All'
-  private possibleProcessFilters: Set<string> = new Set(['Main', 'Renderer', 'Extension Host'])
+  levelFilter: LogLevels = 'ALL'
+  processFilter = 'All'
+  possibleProcessFilters: Set<string> = new Set(['Main', 'Renderer', 'Extension Host'])
 
-  private searchFilter = ''
+  searchFilter = ''
 
-  private perPage = 50
-  private currentPage = 1
-  private totalRows = this.logLines.length
+  perPage = 50
+  currentPage = 1
+  totalRows = this.logLines.length
 
-  private get logSettings(): Checkbox[] {
+  get logSettings(): Checkbox[] {
     return [
       {
         key: 'debug_logging',
-        title: 'Enable debug logging',
+        title: this.$t("settings.logs.debug_logging"),
         enabled: false
       }
     ]
   }
 
-  private get processFilters() {
+  get processFilters() {
     return Array.from(this.possibleProcessFilters)
   }
 
-  private filterCriteria = 'key'
+  filterCriteria = 'key'
 
-  private fields = [{ key: 'time', sortable: true }, 'level', 'process', 'message']
+  get fields(): BvTableFieldArray {
+    return [
+      { key: 'time', sortable: true, 'label': this.$t('settings.logs.table.time') },
+      { key: 'level', 'label': this.$t('settings.logs.table.level') },
+      { key: 'process', label: this.$t('settings.logs.table.process') },
+      { key: 'message', 'label': this.$t('settings.logs.table.message') }
+    ]
+  }
 
-  private handleFilter(val: LogLines) {
+  handleFilter(val: LogLines) {
     const currentLogLevel = this.getLogLevel(this.levelFilter)
     const itemLogLevel = this.getLogLevel(val.level)
 
@@ -201,7 +179,7 @@ export default class Logs extends Vue {
     return true
   }
 
-  private getLogLevel(level: LogLevels) {
+  getLogLevel(level: LogLevels) {
     switch (level) {
       case 'ERROR':
         return 5
@@ -216,15 +194,15 @@ export default class Logs extends Vue {
     }
   }
 
-  private processFilterChange(name: string) {
+  processFilterChange(name: string) {
     this.processFilter = name
   }
 
-  private logLevelChange(level: LogLevels) {
+  logLevelChange(level: LogLevels) {
     this.levelFilter = level
   }
 
-  private onFiltered(filteredItems: LogLines[]) {
+  onFiltered(filteredItems: LogLines[]) {
     this.totalRows = filteredItems.length
   }
 
@@ -232,7 +210,7 @@ export default class Logs extends Vue {
     this.refreshLogs()
   }
 
-  private refreshLogs() {
+  refreshLogs() {
     window.LoggerUtils.watchLogs((data) => {
       this.logLines = data
       const uniqueProcesses = new Set(data.map((item) => item.process))
@@ -241,11 +219,11 @@ export default class Logs extends Vue {
     })
   }
 
-  beforeDestroy() {
+  beforeUnmount() {
     window.LoggerUtils.unwatchLogs()
   }
 
-  private capitalizeFirstLetter(str: string) {
+  capitalizeFirstLetter(str: string) {
     return str.charAt(0).toUpperCase() + str.toLowerCase().slice(1)
   }
 }

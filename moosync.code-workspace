@@ -6,8 +6,6 @@
   ],
   "settings": {
     "eslint.validate": [
-      "typescript",
-      "javascript",
       "vue"
     ],
     "editor.tabSize": 2,
@@ -124,10 +122,17 @@
     "editor.formatOnPaste": true,
     "typescript.tsdk": "node_modules/typescript/lib",
     "[vue]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode"
+      "editor.defaultFormatter": "Vue.volar"
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "rome.rome"
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "rome.rome"
     },
     "search.exclude": {
-      "**/node_modules": false
+      "**/node_modules": false,
+      "flatpak": true
     },
     "markdownlint.config": {
       "MD028": false,
@@ -227,6 +232,11 @@
       "xtr1common": "cpp",
       "xtree": "cpp",
       "xutility": "cpp"
-    },
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "rome.rome"
+    ]
   }
 }

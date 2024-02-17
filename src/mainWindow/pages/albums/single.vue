@@ -14,27 +14,18 @@
 </route>
 <template>
   <div class="w-100 h-100">
-    <SongView
-      :defaultDetails="defaultDetails"
-      :songList="filteredSongList"
-      :detailsButtonGroup="buttonGroups"
-      :isRemote="isRemote"
-      :isLoading="isLoading"
-      @playAll="playAlbum"
-      @addToQueue="addAlbumToQueue"
-      @addToLibrary="addToLibrary"
-      @onOptionalProviderChanged="onProviderChanged"
-      :optionalProviders="albumSongProviders"
-      @playRandom="playRandom"
-    />
+    <SongView :defaultDetails="defaultDetails" :songList="filteredSongList" :detailsButtonGroup="buttonGroups"
+      :isRemote="isRemote" :isLoading="isLoading" @playAll="playAlbum" @addToQueue="addAlbumToQueue"
+      @addToLibrary="addToLibrary" @onOptionalProviderChanged="onProviderChanged" :optionalProviders="albumSongProviders"
+      @playRandom="playRandom" />
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Watch } from 'vue-property-decorator'
+import { Component, Watch } from 'vue-facing-decorator'
 import SongView from '@/mainWindow/components/songView/SongView.vue'
 
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
@@ -89,7 +80,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     return {
       defaultTitle: this.album?.album_name,
       defaultSubtitle: this.album?.album_artist,
-      defaultSubSubtitle: this.$tc('songView.details.songCount', this.filteredSongList.length),
+      defaultSubSubtitle: this.$t('songView.details.songCount', this.filteredSongList.length),
       defaultCover: this.album?.album_coverPath_high
     }
   }
@@ -114,12 +105,23 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
         return emptyGen()
       }
     }
-    this.onAlbumChange()
   }
 
   @Watch('$route.query.id')
   private async onAlbumChange() {
     const promises: Promise<void>[] = []
+
+    if (!this.$route.query.id && this.$route.query.name) {
+      const id = ((await window.SearchUtils.searchEntityByOptions({
+        album: {
+          album_name: this.$route.query.name.toString()
+        }
+      }))?.[0] as Album)?.album_id
+
+      if (id)
+        this.$route.query.id = id
+    }
+
     if (typeof this.$route.query.id === 'string') {
       this.album = null
       this.clearNextPageTokens()
@@ -130,12 +132,14 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin, PlayerCont
     await Promise.all(promises)
   }
 
-  mounted() {
+  async mounted() {
+    await this.onAlbumChange()
+
     if (this.$route.query.defaultProviders) {
       for (const p of this.$route.query.defaultProviders) {
         if (p) {
           this.onProviderChanged({ key: p, checked: true })
-          bus.$emit(EventBus.UPDATE_OPTIONAL_PROVIDER, p)
+          bus.emit(EventBus.UPDATE_OPTIONAL_PROVIDER, p)
         }
       }
     }

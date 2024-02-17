@@ -18,19 +18,22 @@
 
     <b-row no-gutters class="w-100 mt-2 d-flex keybind-row">
       <b-row no-gutters class="w-100 mb-2">
-        <b-col><div>Actions</div></b-col>
-        <b-col class="keybind-title"><div>Keybinds</div></b-col>
-        <b-col><div></div></b-col>
+        <b-col>
+          <div>Actions</div>
+        </b-col>
+        <b-col class="keybind-title">
+          <div>Keybinds</div>
+        </b-col>
+        <b-col>
+          <div></div>
+        </b-col>
       </b-row>
       <b-row no-gutters class="w-100 actions-row mt-2" v-for="(defined, index) of definedActions" :key="defined.value">
         <b-col>
           <b-row no-gutters>
             <b-dropdown block :text="getActiveTitle(index)" toggle-class="dropdown-button h-100" class="w-100">
-              <b-dropdown-item
-                v-for="action in getFilteredDropdownList(index)"
-                :key="action.val"
-                @click="setSelectedAction(index, action.key)"
-                >{{ action.title }}
+              <b-dropdown-item v-for="action in getFilteredDropdownList()" :key="action.key"
+                @click="setSelectedAction(index, action.key)">{{ action.title }}
               </b-dropdown-item>
             </b-dropdown>
           </b-row>
@@ -39,7 +42,9 @@
           <div class="key-input" :style="{ color: getKeybindColor(index) }">{{ getKeybind(index) }}</div>
         </b-col>
         <b-col align-self="center" class="d-flex justify-content-end">
-          <div class="cross-icon" @click="removeKeybind(index)"><CrossIcon color="#E62017" /></div>
+          <div class="cross-icon" @click="removeKeybind(index)">
+            <CrossIcon color="#E62017" />
+          </div>
         </b-col>
         <div class="divider"></div>
       </b-row>
@@ -48,68 +53,169 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop } from 'vue-property-decorator'
-import { Mixins } from 'vue-property-decorator'
+import { Component, Prop } from 'vue-facing-decorator'
+import { mixins } from 'vue-facing-decorator'
 import PreferenceHeader from './PreferenceHeader.vue'
 import { ExtensionPreferenceMixin } from '../mixins/extensionPreferenceMixin'
-import { HotkeyEvents, HotKeyEventsExtras } from '@/utils/commonConstants'
+import { HotkeyEvents } from '@/utils/commonConstants'
 import CrossIcon from '@/icons/CrossIcon.vue'
-
 @Component({
   components: {
     PreferenceHeader,
     CrossIcon
   }
 })
-export default class HotkeyGroup extends Mixins<ExtensionPreferenceMixin<HotkeyPair[]>>(ExtensionPreferenceMixin) {
-  constructor() {
-    super()
-    this.shouldMergeDefaultValues = false
-  }
+export default class HotkeyGroup extends mixins(ExtensionPreferenceMixin) {
+  declare value: HotkeyPair[]
 
-  private get definedActions() {
+  shouldMergeDefaultValues = false
+
+  get definedActions() {
     return this.value
   }
 
-  private getActiveTitle(index: number) {
-    if (this.value) {
-      return HotKeyEventsExtras[this.value[index]?.value ?? 0].title
+  private get HotKeyEventsExtras(): Record<HotkeyEvents, { title: string }> {
+    return {
+      [HotkeyEvents.PLAY]: {
+        title: this.$t('hotkeys.play'),
+      },
+      [HotkeyEvents.PAUSE]: {
+        title: this.$t('hotkeys.pause'),
+      },
+      [HotkeyEvents.PLAY_TOGGLE]: {
+        title: this.$t('hotkeys.play_toggle'),
+      },
+      [HotkeyEvents.MUTE_ACTIVE]: {
+        title: this.$t('hotkeys.mute_active'),
+      },
+      [HotkeyEvents.MUTE_INACTIVE]: {
+        title: this.$t('hotkeys.mute_inactive'),
+      },
+      [HotkeyEvents.MUTE_TOGGLE]: {
+        title: this.$t('hotkeys.mute_toggle'),
+      },
+      [HotkeyEvents.VOLUME_INC]: {
+        title: this.$t('hotkeys.volume_inc'),
+      },
+      [HotkeyEvents.VOLUME_DEC]: {
+        title: this.$t('hotkeys.volume_dec'),
+      },
+      [HotkeyEvents.REPEAT_ACTIVE]: {
+        title: this.$t('hotkeys.repeat_active'),
+      },
+      [HotkeyEvents.REPEAT_INACTIVE]: {
+        title: this.$t('hotkeys.repeat_inactive'),
+      },
+      [HotkeyEvents.REPEAT_TOGGLE]: {
+        title: this.$t('hotkeys.repeat_toggle'),
+      },
+      [HotkeyEvents.QUEUE_OPEN]: {
+        title: this.$t('hotkeys.queue_open'),
+      },
+      [HotkeyEvents.QUEUE_CLOSE]: {
+        title: this.$t('hotkeys.queue_close'),
+      },
+      [HotkeyEvents.QUEUE_TOGGLE]: {
+        title: this.$t('hotkeys.queue_toggle'),
+      },
+      [HotkeyEvents.RELOAD_PAGE]: {
+        title: this.$t('hotkeys.reload_page'),
+      },
+      [HotkeyEvents.DEVTOOLS_TOGGLE]: {
+        title: this.$t('hotkeys.devtools'),
+      },
+      [HotkeyEvents.HELP]: {
+        title: this.$t('hotkeys.help'),
+      },
+      [HotkeyEvents.FULLSCREEN]: {
+        title: this.$t('hotkeys.fullscreen'),
+      },
+      [HotkeyEvents.NEXT_SONG]: {
+        title: this.$t('hotkeys.next_song'),
+      },
+      [HotkeyEvents.PREV_SONG]: {
+        title: this.$t('hotkeys.prev_song'),
+      },
+      [HotkeyEvents.SEEK_FORWARD]: {
+        title: this.$t('hotkeys.seek_forward'),
+      },
+      [HotkeyEvents.SEEK_BACKWARDS]: {
+        title: this.$t('hotkeys.seek_backwards'),
+      },
+      [HotkeyEvents.SEEK_0]: {
+        title: this.$t('hotkeys.seek_0'),
+      },
+      [HotkeyEvents.SEEK_1]: {
+        title: this.$t('hotkeys.seek_1'),
+      },
+      [HotkeyEvents.SEEK_2]: {
+        title: this.$t('hotkeys.seek_2'),
+      },
+      [HotkeyEvents.SEEK_3]: {
+        title: this.$t('hotkeys.seek_3'),
+      },
+      [HotkeyEvents.SEEK_4]: {
+        title: this.$t('hotkeys.seek_4'),
+      },
+      [HotkeyEvents.SEEK_5]: {
+        title: this.$t('hotkeys.seek_5'),
+      },
+      [HotkeyEvents.SEEK_6]: {
+        title: this.$t('hotkeys.seek_6'),
+      },
+      [HotkeyEvents.SEEK_7]: {
+        title: this.$t('hotkeys.seek_7'),
+      },
+      [HotkeyEvents.SEEK_8]: {
+        title: this.$t('hotkeys.seek_8'),
+      },
+      [HotkeyEvents.SEEK_9]: {
+        title: this.$t('hotkeys.seek_9'),
+      },
     }
   }
 
-  private getHotkeyValue() {
+
+  getActiveTitle(index: number) {
+    if (this.value) {
+      this.value[index]?.value
+      return this.HotKeyEventsExtras[this.value[index]?.value ?? 0]?.title
+    }
+  }
+
+  getHotkeyValue() {
     return Object.values(HotkeyEvents).filter(
       (key) => typeof key === 'number' && this.value?.findIndex((val) => val.value === key) === -1
     ) as HotkeyEvents[]
   }
 
-  private getFilteredDropdownList() {
+  getFilteredDropdownList() {
     return this.getHotkeyValue().map((val: HotkeyEvents) => {
-      return { title: HotKeyEventsExtras[val].title, key: val }
+      return { title: this.HotKeyEventsExtras[val].title, key: val }
     })
   }
 
-  private getKeybind(index: number) {
+  getKeybind(index: number) {
     if (this.value) {
       const combo = this.value[index]?.key?.at(0) ?? []
       return combo.length > 0 ? combo.map((val) => this.sanitizeKeys(val)).join(' + ') : 'Unassigned'
     }
   }
 
-  private setSelectedAction(index: number, item: HotkeyEvents) {
+  setSelectedAction(index: number, item: HotkeyEvents) {
     this.value?.splice(index, 1, {
       key: this.value[index].key,
       value: item
     })
-    this.onInputChange()
+    this.onInputChange(this.value)
   }
 
-  private setSelectedKeybind(index: number, combo: HotkeyPair['key']) {
+  setSelectedKeybind(index: number, combo: HotkeyPair['key']) {
     this.value?.splice(index, 1, {
       key: combo,
       value: this.value[index].value
     })
-    this.onInputChange()
+    this.onInputChange(this.value)
   }
 
   private abortController: AbortController | null = null
@@ -138,7 +244,7 @@ export default class HotkeyGroup extends Mixins<ExtensionPreferenceMixin<HotkeyP
     return input
   }
 
-  private getKeybindColor(index: number) {
+  getKeybindColor(index: number) {
     if (index === this.listeningIndex) {
       return 'var(--accent)'
     }
@@ -146,8 +252,9 @@ export default class HotkeyGroup extends Mixins<ExtensionPreferenceMixin<HotkeyP
     return 'var(--textPrimary)'
   }
 
-  private toggleKeybindListener(index: number) {
-    if (this.abortController) {
+  toggleKeybindListener(index: number) {
+    console.log('here', this.abortController)
+    if (this.listeningIndex !== -1) {
       this.stopListeningKeybind()
     } else {
       this.startListeningKeybind(index)
@@ -156,7 +263,7 @@ export default class HotkeyGroup extends Mixins<ExtensionPreferenceMixin<HotkeyP
 
   private keyComboMap: Record<string, boolean> = {}
 
-  private stopListeningKeybind(e?: KeyboardEvent | MouseEvent) {
+  stopListeningKeybind(e?: KeyboardEvent | MouseEvent) {
     e?.preventDefault()
     this.abortController?.abort()
     this.abortController = null
@@ -164,7 +271,7 @@ export default class HotkeyGroup extends Mixins<ExtensionPreferenceMixin<HotkeyP
     this.keyComboMap = {}
   }
 
-  private startListeningKeybind(index: number) {
+  startListeningKeybind(index: number) {
     this.abortController = new AbortController()
     this.listeningIndex = index
 
@@ -181,6 +288,10 @@ export default class HotkeyGroup extends Mixins<ExtensionPreferenceMixin<HotkeyP
     document.addEventListener(
       'mousedown',
       (e: MouseEvent) => {
+        if (e.button == 0 || e.button == 2) {
+          return
+        }
+
         e.stopPropagation()
         this.keyComboMap[`Mouse${e.button}`] = true
         this.setSelectedKeybind(index, [Object.keys(this.keyComboMap)])
@@ -188,16 +299,16 @@ export default class HotkeyGroup extends Mixins<ExtensionPreferenceMixin<HotkeyP
       { signal: this.abortController?.signal }
     )
 
-    document.addEventListener('mouseup', this.stopListeningKeybind, { signal: this.abortController?.signal })
-    document.addEventListener('keyup', this.stopListeningKeybind, { signal: this.abortController?.signal })
+    document.addEventListener('mouseup', this.stopListeningKeybind.bind(this), { signal: this.abortController?.signal })
+    document.addEventListener('keyup', this.stopListeningKeybind.bind(this), { signal: this.abortController?.signal })
   }
 
-  private removeKeybind(index: number) {
+  removeKeybind(index: number) {
     this.value?.splice(index, 1)
-    this.onInputChange()
+    this.onInputChange(this.value)
   }
 
-  private addKeybind() {
+  addKeybind() {
     this.value?.push({
       key: [],
       value: 0
@@ -205,10 +316,10 @@ export default class HotkeyGroup extends Mixins<ExtensionPreferenceMixin<HotkeyP
   }
 
   @Prop()
-  private title!: string
+  title!: string
 
   @Prop()
-  private tooltip!: string
+  tooltip!: string
 }
 </script>
 

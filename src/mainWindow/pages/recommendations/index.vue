@@ -14,37 +14,26 @@
 
       <b-row no-gutters>
         <b-col class="d-flex total-listen-time">
-          You've listened to
-          <div
-            :class="`${index === 0 ? 'ml-2 mr-2' : 'mr-2'} total-listen-time-item`"
-            v-for="(i, index) in totalListenTime"
-            :key="i"
-          >
+          {{ $t('explore.you_listened_to') }}
+          <div :class="`${index === 0 ? 'ml-2 mr-2' : 'mr-2'} total-listen-time-item`"
+            v-for="(i, index) in totalListenTime" :key="i">
             {{ i }}
           </div>
-          of music
+          {{ $t('explore.of_music') }}
         </b-col>
       </b-row>
       <b-row no-gutters v-if="analyticsSongs.length > 0" class="analytics">
         <b-col>
           <b-row no-gutters>
             <b-col class="big-song">
-              <SongDetailsCompact
-                :currentSong="analyticsSongs[0]"
-                :showSubSubTitle="false"
-                :scrollable="false"
-                :showPlayHoverButton="true"
-                @click="playTop([analyticsSongs[0]])"
-              />
+              <SongDetailsCompact :currentSong="analyticsSongs[0]" :showSubSubTitle="false" :scrollable="false"
+                :showPlayHoverButton="true" @click="playTop([analyticsSongs[0]])" />
             </b-col>
             <b-col cols="auto">
-              <div class="played-for">Played for</div>
+              <div class="played-for">{{ $t('explore.played_for') }}</div>
               <div v-for="(item, index) in maxPlayTimeFormatted" :key="index" class="d-flex">
-                <span
-                  v-for="(i, index) in item"
-                  :key="i"
-                  :class="`${index === 0 ? 'playtime' : 'playtime-suffix'} big-playtime`"
-                >
+                <span v-for="(i, index) in item" :key="i"
+                  :class="`${index === 0 ? 'playtime' : 'playtime-suffix'} big-playtime`">
                   {{ i }}
                 </span>
               </div>
@@ -62,18 +51,12 @@
       <b-row v-for="p of providers" :key="p.key">
         <b-col v-if="hasRecommendations(p.key) || loadingMap[p.key]">
           <b-row align-v="center" class="mt-3">
-            <b-col cols="auto" class="provider-title">Hot from {{ p.Title }}</b-col>
+            <b-col cols="auto" class="provider-title">{{ $t('explore.hot_from') }} {{ p.Title }}</b-col>
             <b-col cols="2" class="d-flex button-group mt-1" v-if="hasRecommendations(p.key)">
-              <PlainPlay
-                v-if="!isJukeboxModeActive"
-                :title="$t('buttons.playSingle', { title: p.Title })"
-                @click.native="playAll(p.key)"
-              />
-              <AddToQueue :title="$t('buttons.addToQueue', { title: p.Title })" @click.native="addToQueue(p.key)" />
-              <AddToLibrary
-                :title="$t('buttons.addToLibrary', { title: p.Title })"
-                @click.native="addToLibrary(p.key)"
-              />
+              <PlainPlay v-if="!isJukeboxModeActive" :title="$t('buttons.playSingle', { title: p.Title })"
+                @click="playAll(p.key)" />
+              <AddToQueue :title="$t('buttons.addToQueue', { title: p.Title })" @click="addToQueue(p.key)" />
+              <AddToLibrary :title="$t('buttons.addToLibrary', { title: p.Title })" @click="addToLibrary(p.key)" />
             </b-col>
             <b-col cols="auto" v-if="loadingMap[p.key]">
               <div class="loading-spinner d-flex justify-content-center">
@@ -93,8 +76,8 @@
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator'
-import { mixins } from 'vue-class-component'
+import { Component } from 'vue-facing-decorator'
+import { mixins } from 'vue-facing-decorator'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import CardView from '../../components/generic/CardView.vue'
@@ -257,7 +240,7 @@ export default class Albums extends mixins(
   }
 
   private async getResults(key: string, gen: AsyncGenerator<Song[]>) {
-    this.$set(this.loadingMap, key, true)
+    this.loadingMap[key] = true
     for await (const s of gen) {
       if (!this.recommendationList[key]) {
         this.recommendationList[key] = []
@@ -265,7 +248,7 @@ export default class Albums extends mixins(
       this.recommendationList[key].push(...s)
       this.recommendationList = Object.assign({}, this.recommendationList)
     }
-    this.$set(this.loadingMap, key, false)
+    this.loadingMap[key] = false
   }
 }
 </script>

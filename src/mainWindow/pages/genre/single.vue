@@ -14,25 +14,20 @@
 </route>
 <template>
   <div class="w-100 h-100">
-    <SongView
-      :defaultDetails="defaultDetails"
-      :songList="songList"
-      :detailsButtonGroup="buttonGroups"
-      @onRowContext="getSongMenu(arguments[0], arguments[1], undefined)"
-      @playAll="playGenre"
-      @addToQueue="addGenreToQueue"
-    />
+    <SongView :defaultDetails="defaultDetails" :songList="songList" :detailsButtonGroup="buttonGroups"
+      @onRowContext="getSongMenu($event, arguments[1], undefined)" @playAll="playGenre" @addToQueue="addGenreToQueue" />
   </div>
 </template>
 
 <script lang="ts">
-import { Component } from 'vue-property-decorator'
+import { Component } from 'vue-facing-decorator'
 import SongView from '@/mainWindow/components/songView/SongView.vue'
 
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import { arrayDiff, getRandomFromArray } from '@/utils/common'
 import { vxm } from '@/mainWindow/store'
+import { convertProxy } from '../../../utils/ui/common';
 
 @Component({
   components: {
@@ -55,7 +50,7 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin) {
   get defaultDetails(): SongDetailDefaults {
     return {
       defaultTitle: this.genre?.genre_name,
-      defaultSubSubtitle: this.$tc('songView.details.songCount', this.songList.length)
+      defaultSubSubtitle: this.$t('songView.details.songCount', this.songList.length)
     }
   }
 
@@ -79,11 +74,11 @@ export default class SingleAlbumView extends mixins(ContextMenuMixin) {
       genre: {
         genre_id: this.$route.query.id as string
       },
-      sortBy: vxm.themes.songSortBy
+      sortBy: convertProxy(vxm.themes.songSortBy)
     })
   }
 
-  getSongMenu(event: Event, songs: Song[], exclude: string | undefined) {
+  getSongMenu(event: MouseEvent, songs: Song[], exclude: string | undefined) {
     this.getContextMenu(event, {
       type: 'SONGS',
       args: {

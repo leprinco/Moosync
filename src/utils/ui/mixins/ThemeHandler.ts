@@ -7,9 +7,9 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component } from 'vue-property-decorator'
-import Vue from 'vue'
+import { Component } from 'vue-facing-decorator'
 import { ThemeStore } from '@/mainWindow/store/themes'
+import { Vue } from 'vue-facing-decorator'
 
 type StyleElement = {
   sheet: CSSStyleSheet
@@ -79,6 +79,26 @@ export default class ThemeHandler extends Vue {
     this._themeStore = vxm
   }
 
+  private rgba2hex(rgba: string) {
+    let tmp: String
+
+    if (rgba.startsWith('rgb(')) {
+      tmp = rgba.replaceAll('rgb(', '').replaceAll(')', '')
+    } else if (rgba.startsWith('rgba(')) {
+      tmp = rgba.replaceAll('rgba(', '').replaceAll(')', '')
+    } else {
+      return rgba
+    }
+
+    const split = tmp.split(',').map((val) => val.trim())
+
+    const r = parseInt(split[0])
+    const g = parseInt(split[1])
+    const b = parseInt(split[2])
+
+    return `#${r.toString(16)}${g.toString(16)}${b.toString(16)}`
+  }
+
   private setCheckboxValues() {
     const docStyle = getComputedStyle(this.root)
     let style = document.getElementById('checkbox-stylesheet')
@@ -92,12 +112,16 @@ export default class ThemeHandler extends Vue {
     if (sheet.cssRules.length > 0) {
       sheet.deleteRule(0)
     }
+
+    let textPrimary = docStyle.getPropertyValue('--textPrimary')
+    if (textPrimary) {
+      textPrimary = this.rgba2hex(textPrimary)
+    }
     sheet.insertRule(
-      `.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after { background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%278%27 height=%278%27 viewBox=%270 0 8 8%27%3e%3cpath fill=%27%23${docStyle
-        .getPropertyValue('--textPrimary')
+      `.custom-checkbox .custom-control-input:checked ~ .custom-control-label::after { background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%278%27 height=%278%27 viewBox=%270 0 8 8%27%3e%3cpath fill=%27%23${textPrimary
         .replace('#', '')
         .trim()
-        .toLowerCase()}%27 d=%27M6.564.75l-3.59 3.612-1.538-1.55L0 4.26l2.974 2.99L8 2.193z%27/%3e%3c/svg%3e") !important; }`
+        .toLowerCase()}%27 d=%27M6.564.75l-3.59 3.612-1.538-1.55L0 4.26l2.974 2.99L8 2.193z%27/%3e%3c/svg%3e") !important; }`,
     )
   }
 
@@ -111,7 +135,7 @@ export default class ThemeHandler extends Vue {
       'textSecondary',
       'textInverse',
       'accent',
-      'divider'
+      'divider',
     ]
     for (const key of keys) {
       this.root.style.setProperty(`--${key}-rgb`, this.hexToRgb(docStyle.getPropertyValue(`--${key}`).trim()))
@@ -119,13 +143,14 @@ export default class ThemeHandler extends Vue {
   }
 
   private hexToRgb(hex: string) {
+    let parsedHex = hex
     if (hex.startsWith('#')) {
-      hex = hex.substring(1)
+      parsedHex = hex.substring(1)
     }
 
-    const r = parseInt(hex.substring(0, 2), 16)
-    const g = parseInt(hex.substring(2, 4), 16)
-    const b = parseInt(hex.substring(4, 6), 16)
+    const r = parseInt(parsedHex.substring(0, 2), 16)
+    const g = parseInt(parsedHex.substring(2, 4), 16)
+    const b = parseInt(parsedHex.substring(4, 6), 16)
 
     return [r, g, b].join(',')
   }
@@ -136,12 +161,19 @@ export default class ThemeHandler extends Vue {
 
   public fetchSongView() {
     window.ThemeUtils.getSongView().then(
-      (view) => this.themeStore && ((this._themeStore as ThemeStore).songView = view)
+      (view) => this.themeStore && (this._themeStore as ThemeStore).songView === view,
     )
+  }
+
+  private listenTempTheme() {
+    window.ThemeUtils.onThemeRefresh((theme) => {
+      this.setColorsToRoot(theme)
+    })
   }
 
   mounted() {
     this.fetchSongView()
     this.fetchThemeFromID()
+    this.listenTempTheme()
   }
 }

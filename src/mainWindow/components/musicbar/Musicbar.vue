@@ -11,34 +11,16 @@
   <div class="musicbar-content d-flex">
     <div class="background w-100">
       <div class="musicbar h-100">
-        <VueSlider
-          :min="0"
-          :max="maxInterval"
-          class="timeline pl-2 pr-2"
-          :interval="1"
-          :dotSize="10"
-          :value="currentTimestamp"
-          :duration="0.1"
-          :tooltip="'none'"
-          :disabled="disableSeekbar"
-          @change="updateTimestmp"
-        />
+        <VueSlider class="timeline pl-2 pr-2" :min="0" :max="maxInterval" :interval="1" :dotSize="10"
+          :modelValue="currentTimestamp" :duration="0.1" :tooltip="'none'" :disabled="disableSeekbar" :useKeyboard="false"
+          @change="updateTimestmp" />
+
         <b-container fluid class="d-flex bar-container h-100 pb-2">
-          <b-row
-            no-gutters
-            align-v="center"
-            align-h="center"
-            align-content="center"
-            class="no-gutters w-100 control-row justify-content-between"
-          >
+          <b-row no-gutters align-v="center" align-h="center" align-content="center"
+            class="no-gutters w-100 control-row justify-content-between">
             <b-col cols="4" class="no-gutters details-col w-100">
-              <Details
-                :title="currentSong ? currentSong.title : '-'"
-                :artists="currentSong ? currentSong.artists : []"
-                :imgSrc="cover"
-                :iconType="iconType"
-                :iconURL="iconURL"
-              />
+              <Details :title="currentSong ? currentSong.title : '-'" :artists="currentSong ? currentSong.artists : []"
+                :imgSrc="cover" :iconType="iconType" :iconURL="iconURL" @contextmenu="showContextMenu" />
             </b-col>
             <b-col align-self="center" class="no-gutters controls-col">
               <Controls :duration="currentSong ? currentSong.duration : 0" :timestamp="timestamp" />
@@ -50,13 +32,10 @@
         </b-container>
       </div>
     </div>
-    <div
-      class="slider"
-      :class="{ open: sliderPosition, close: !sliderPosition }"
-      :style="{ height: `calc(100% - ${!hasFrame ? '7.5rem' : '6rem'})` }"
-    >
+    <div class="slider" :class="{ open: sliderPosition, close: !sliderPosition }"
+      :style="{ height: `calc(100% - ${!hasFrame ? '7.5rem' : '6rem'})` }">
       <MusicInfo :currentSong="currentSong">
-        <AudioStream :playerState="playerState" @onTimeUpdate="updateTimestamp" :forceSeek="forceSeek" />
+        <AudioStream :playerState="playerState" @onTimeUpdate="updateTimestamp" />
       </MusicInfo>
     </div>
   </div>
@@ -68,13 +47,14 @@ import Controls from '@/mainWindow/components/musicbar/components/Controls.vue'
 import Details from '@/mainWindow/components/musicbar/components/Details.vue'
 import ExtraControls from '@/mainWindow/components/musicbar/components/ExtraControls.vue'
 import MusicInfo from '@/mainWindow/components/musicbar/components/MusicInfo.vue'
-import { Component, Watch } from 'vue-property-decorator'
-import { mixins } from 'vue-class-component'
+import { Component, Watch } from 'vue-facing-decorator'
+import { mixins } from 'vue-facing-decorator'
 import { vxm } from '@/mainWindow/store'
 import { bus } from '@/mainWindow/main'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import Timestamp from '@/mainWindow/components/musicbar/components/Timestamp.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
+import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 
 @Component({
   components: {
@@ -86,8 +66,7 @@ import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
     Timestamp
   }
 })
-export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
-  forceSeek = 0
+export default class MusicBar extends mixins(ImgLoader, JukeboxMixin, ContextMenuMixin) {
   PlayerState: PlayerState = 'PAUSED'
   sliderPosition = false
   hasFrame = false
@@ -148,8 +127,8 @@ export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
   }
 
   updateTimestmp(value: number) {
-    bus.$emit('forceSeek', value / 1000)
-    this.forceSeek = value / 1000
+    bus.emit('forceSeek', value / 1000)
+    vxm.player.forceSeek = value / 1000
   }
 
   get currentSong() {
@@ -176,9 +155,21 @@ export default class MusicBar extends mixins(ImgLoader, JukeboxMixin) {
     vxm.player.currentTime = timestamp
   }
 
+  showContextMenu(event: MouseEvent) {
+    if (this.currentSong) {
+      this.getContextMenu(event, {
+        type: 'CURRENT_SONG',
+        args: {
+          song: this.currentSong,
+          isRemote: this.currentSong.type === 'YOUTUBE' || this.currentSong.type === 'SPOTIFY'
+        }
+      })
+    }
+  }
+
   async mounted() {
     this.hasFrame = await window.WindowUtils.hasFrame()
-    bus.$on('onToggleSliderWindow', this.toggleSlider)
+    bus.on('onToggleSliderWindow', this.toggleSlider)
     this.iconType = (await this.getIconType()) ?? ''
   }
 }

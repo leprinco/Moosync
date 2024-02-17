@@ -10,32 +10,31 @@
 import {
   BrowserWindow,
   Menu,
+  ThumbarButton,
   Tray,
   app,
   dialog,
-  protocol,
-  webFrameMain,
-  ThumbarButton,
   nativeImage,
   net,
+  protocol,
+  session,
   shell,
-  session
+  webFrameMain,
 } from 'electron'
+import { ButtonEnum, PlayerButtons } from 'media-controller'
 import { SongEvents, WindowEvents } from './ipc/constants'
-import { getWindowSize, setWindowSize, loadPreferences } from './db/preferences'
-
-import path from 'path'
 import { access, readFile } from 'fs/promises'
+import { getMprisChannel, getRodioChannel, getSpotifyPlayerChannel } from './ipc/index'
+import { getWindowSize, loadPreferences, setWindowSize } from './db/preferences'
+
+import { $t } from './i18nLoader'
+import { Readable } from 'stream'
 import { getActiveTheme } from './themes/preferences'
-import pie from 'puppeteer-in-electron'
-import puppeteer from 'puppeteer-core'
 import { getExtensionHostChannel } from './ipc'
 import { getSongDB } from './db/index'
-import { Readable } from 'stream'
-import { getMprisChannel, getSpotifyPlayerChannel } from './ipc/index'
-import { ButtonEnum, PlayerButtons } from 'media-controller'
-import { nativeTheme } from 'electron'
 import { logger } from './logger'
+import { nativeTheme } from 'electron'
+import path from 'path'
 
 export class WindowHandler {
   private static mainWindow: number
@@ -81,8 +80,8 @@ export class WindowHandler {
         // Use pluginOptions.nodeIntegration, leave this alone
         // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
         nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
-        preload: path.join(__dirname, 'preload.js')
-      }
+        preload: path.join(__dirname, 'preload.js'),
+      },
     }
   }
 
@@ -92,7 +91,7 @@ export class WindowHandler {
       ...getWindowSize('mainWindow', { width: 1016, height: 653 }),
       minHeight: 400,
       minWidth: 300,
-      ...(await this.getBaseWindowProps())
+      ...(await this.getBaseWindowProps()),
     }
   }
 
@@ -102,7 +101,7 @@ export class WindowHandler {
       ...getWindowSize('prefWindow', { width: 840, height: 653 }),
       minHeight: 672,
       minWidth: 840,
-      ...(await this.getBaseWindowProps())
+      ...(await this.getBaseWindowProps()),
     }
   }
 
@@ -153,7 +152,7 @@ export class WindowHandler {
     redirectUrl: string,
     requestHeaders: Record<string, string>,
     method: string,
-    callback: (response: Electron.ProtocolResponse | NodeJS.ReadableStream) => void
+    callback: (response: Electron.ProtocolResponse | NodeJS.ReadableStream) => void,
   ) {
     try {
       const req = net.request(redirectUrl)
@@ -166,7 +165,7 @@ export class WindowHandler {
           headers: res.headers,
           statusCode: res.statusCode,
           mimeType: res.headers['content-type'] as string,
-          data: res as unknown as NodeJS.ReadableStream
+          data: res as unknown as NodeJS.ReadableStream,
         })
       })
 
@@ -184,7 +183,7 @@ export class WindowHandler {
         const data = await extensionHost.sendExtraEvent({
           type: 'customRequest',
           data: [request.url],
-          packageName: extensionPackageName
+          packageName: extensionPackageName,
         })
 
         if (data[extensionPackageName]) {
@@ -201,9 +200,9 @@ export class WindowHandler {
             callback({
               statusCode: 200,
               headers: {
-                'content-type': mimeType
+                'content-type': mimeType,
               },
-              data: Readable.from(Buffer.from(respData))
+              data: Readable.from(Buffer.from(respData)),
             })
           }
         }
@@ -305,7 +304,6 @@ export class WindowHandler {
 
     if (isMainWindow) {
       if (!AppExitHandler._isQuitting && AppExitHandler._minimizeToTray) {
-        await this.trayHandler.createTray()
         event.preventDefault()
         window.hide()
       } else {
@@ -316,6 +314,7 @@ export class WindowHandler {
   }
 
   public async stopAll() {
+    getRodioChannel().stop()
     getSpotifyPlayerChannel().closePlayer()
     // Stop extension Host
     await getExtensionHostChannel().closeExtensionHost()
@@ -343,21 +342,17 @@ export class WindowHandler {
     window.webContents.setWindowOpenHandler((details) => {
       if (['new-window', 'foreground-tab', 'background-tab', 'default'].includes(details.disposition)) {
         shell.openExternal(details.url, {
-          activate: true
+          activate: true,
         })
         return {
-          action: 'deny'
+          action: 'deny',
         }
       } else {
         return {
-          action: 'allow'
+          action: 'allow',
         }
       }
     })
-    // window.webContents.on('', (event, url) {
-    //   event.preventDefault()
-    //   open(url)
-    // })
 
     window.webContents.on(
       'did-frame-navigate',
@@ -380,7 +375,7 @@ export class WindowHandler {
             return
           }
         }
-      }
+      },
     )
 
     // TODO: Hopefully expand the blocklist in future
@@ -388,7 +383,7 @@ export class WindowHandler {
       { urls: ['*://googleads.g.doubleclick.net/*', '*://*.youtube.com/api/stats/ads'] },
       (details, callback) => {
         callback({ cancel: true })
-      }
+      },
     )
 
     if (isMainWindow) {
@@ -406,7 +401,7 @@ export class WindowHandler {
     this.setFullscreen(isMainWindow, !window?.isFullScreen() ?? false)
   }
 
-  public setFullscreen(isMainWindow = true, value: boolean) {
+  public setFullscreen(isMainWindow: boolean, value: boolean) {
     const window = WindowHandler.getWindow(isMainWindow)
     if (window?.fullScreenable) {
       window.setFullScreen(value)
@@ -430,12 +425,12 @@ export class WindowHandler {
     window?.webContents.isDevToolsOpened() ? window.webContents.closeDevTools() : window?.webContents.openDevTools()
   }
 
-  public async openFileBrowser(isMainWindow = true, options: Electron.OpenDialogOptions) {
+  public async openFileBrowser(isMainWindow: boolean, options: Electron.OpenDialogOptions) {
     const window = WindowHandler.getWindow(isMainWindow)
     return window && dialog.showOpenDialog(window, options)
   }
 
-  public async openSaveDialog(isMainWindow = true, options: Electron.SaveDialogOptions) {
+  public async openSaveDialog(isMainWindow: boolean, options: Electron.SaveDialogOptions) {
     const window = WindowHandler.getWindow(isMainWindow)
     return window && dialog.showSaveDialog(window, options)
   }
@@ -443,94 +438,6 @@ export class WindowHandler {
   public closeWindow(isMainWindow = true) {
     const window = WindowHandler.getWindow(isMainWindow)
     window && !window?.isDestroyed() && window.close()
-  }
-
-  public async automateSpotifyAppCreation() {
-    const browser = await pie.connect(app, puppeteer)
-
-    const window = new BrowserWindow()
-    const url = 'https://developer.spotify.com/dashboard/login'
-    await window.loadURL(url)
-
-    try {
-      const page = await pie.getPage(browser, window)
-
-      if (await page.$('button[data-ng-click="login()"]')) {
-        await page.click('button[data-ng-click="login()"]')
-
-        const loginPage = await (await browser.waitForTarget((target) => target.opener() === page.target())).page()
-        if (loginPage) {
-          await new Promise((resolve) => loginPage.on('close', resolve))
-        }
-
-        await page.waitForNavigation()
-        await new Promise((resolve) => setTimeout(resolve, 500))
-      }
-
-      const acceptTerms = await page.$('input[value="Accept the Terms"]')
-      if (acceptTerms) {
-        await (await page.$('span[class="control-indicator"]'))?.evaluate((b) => (b as HTMLElement).click())
-        await (await page.$('input[value="Accept the Terms"]'))?.evaluate((b) => (b as HTMLElement).click())
-        await page.waitForNavigation()
-      }
-
-      await page.waitForSelector('button[ng-click="flowStart()"]')
-      await page.click('button[ng-click="flowStart()"]')
-      await page.waitForSelector('input[data-ng-model="name"]', { visible: true })
-
-      await page.focus('input[data-ng-model="name"]')
-      await page.type('input[data-ng-model="name"]', 'Moosync')
-      await page.focus('textarea[data-ng-model="description"]')
-      await page.type('textarea[data-ng-model="description"]', 'A simple music player')
-      await (await page.$('span[class="control-indicator"]'))?.evaluate((b) => (b as HTMLElement).click())
-
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-      await (await page.$('button[type="submit"]'))?.evaluate((b) => (b as HTMLElement).click())
-      await page.waitForNavigation()
-
-      await page.waitForSelector('button[ng-show="!showClientSecret"]')
-      await (await page.$('button[ng-show="!showClientSecret"]'))?.evaluate((b) => (b as HTMLElement).click())
-
-      await page.waitForSelector('div[ng-show="showClientSecret"] > code', { visible: true })
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      const clientID = await (await page.$('.client-credential > code'))?.evaluate((el) => el.innerHTML)
-      const clientSecret = await (
-        await page.$('div[ng-show="showClientSecret"] > code')
-      )?.evaluate((el) => el.innerHTML)
-
-      await (await page.$('button[data-target="#settings-modal"]'))?.evaluate((b) => (b as HTMLElement).click())
-      await page.waitForSelector('div[id="settings-modal"]', { visible: true })
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      await page.focus('input[id="newRedirectUri"]')
-      await page.type('input[id="newRedirectUri"]', 'https://moosync.app/spotify')
-      await page.click('button[id="addRedirectUri"]')
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      await page.focus('input[id="newRedirectUri"]')
-      await page.type('input[id="newRedirectUri"]', 'http://localhost')
-      await page.click('button[id="addRedirectUri"]')
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      await page.focus('input[id="newRedirectUri"]')
-      await page.type('input[id="newRedirectUri"]', 'http://localhost:8080')
-      await page.click('button[id="addRedirectUri"]')
-      await new Promise((resolve) => setTimeout(resolve, 500))
-
-      await new Promise((resolve) => setTimeout(resolve, 300))
-      await (await page.$('button[ng-click="update(application)"]'))?.evaluate((b) => (b as HTMLElement).click())
-
-      browser.disconnect()
-      window.close()
-
-      return { clientID, clientSecret }
-    } catch (e) {
-      console.error(e)
-    }
-
-    browser.disconnect()
-    window.close()
   }
 }
 
@@ -547,7 +454,7 @@ class WindowToolbarButtonsHandler {
       buttons.push({
         icon: getThemeIcon('prev_track'),
         click: () => getMprisChannel().onButtonPressed(ButtonEnum.Previous),
-        tooltip: 'Previous track'
+        tooltip: 'Previous track',
       })
     }
 
@@ -555,7 +462,7 @@ class WindowToolbarButtonsHandler {
       buttons.push({
         icon: getThemeIcon('play'),
         click: () => getMprisChannel().onButtonPressed(ButtonEnum.Play),
-        tooltip: 'Play'
+        tooltip: 'Play',
       })
     }
 
@@ -563,7 +470,7 @@ class WindowToolbarButtonsHandler {
       buttons.push({
         icon: getThemeIcon('pause'),
         click: () => getMprisChannel().onButtonPressed(ButtonEnum.Pause),
-        tooltip: 'Pause'
+        tooltip: 'Pause',
       })
     }
 
@@ -571,7 +478,7 @@ class WindowToolbarButtonsHandler {
       buttons.push({
         icon: getThemeIcon('next_track'),
         click: () => getMprisChannel().onButtonPressed(ButtonEnum.Next),
-        tooltip: 'Next track'
+        tooltip: 'Next track',
       })
     }
 
@@ -608,6 +515,12 @@ class TrayHandler {
       } catch (e) {
         this._tray = new Tray(path.join(__static, process.platform === 'darwin' ? 'logo_osx.png' : 'logo.png'))
       }
+
+      this._tray.addListener('double-click', () => {
+        AppExitHandler._isQuitting = false
+        WindowHandler.getWindow()?.show()
+        WindowHandler.getWindow()?.focus()
+      })
       this.setupContextMenu()
     }
   }
@@ -616,69 +529,69 @@ class TrayHandler {
     const buttons: (Electron.MenuItem | Electron.MenuItemConstructorOptions)[] = []
     if (buttonState.play) {
       buttons.push({
-        label: 'Play',
+        label: $t('tray.play'),
         icon: getThemeIcon('play'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Play)
-        }
+        },
       })
     }
 
     if (buttonState.pause) {
       buttons.push({
-        label: 'Pause',
+        label: $t('tray.pause'),
         icon: getThemeIcon('pause'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Pause)
-        }
+        },
       })
     }
 
     if (buttonState.next) {
       buttons.push({
-        label: 'Next',
+        label: $t('tray.next'),
         icon: getThemeIcon('next_track'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Next)
-        }
+        },
       })
     }
 
     if (buttonState.prev) {
       buttons.push({
-        label: 'Prev',
+        label: $t('tray.prev'),
         icon: getThemeIcon('prev_track'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Previous)
-        }
+        },
       })
     }
 
     if (buttonState.loop) {
       buttons.push({
-        label: 'Repeat',
+        label: $t('tray.repeat'),
         icon: getThemeIcon('repeat'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Repeat)
-        }
+        },
       })
     } else {
       buttons.push({
-        label: 'No Repeat',
+        label: $t('tray.no_repeat'),
         icon: getThemeIcon('repeat'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Repeat)
-        }
+        },
       })
     }
 
     if (buttonState.shuffle) {
       buttons.push({
-        label: 'Shuffle',
+        label: $t('tray.shuffle'),
         icon: getThemeIcon('shuffle'),
         click: () => {
           getMprisChannel().onButtonPressed(ButtonEnum.Shuffle)
-        }
+        },
       })
     }
 
@@ -690,25 +603,25 @@ class TrayHandler {
       this._tray.setContextMenu(
         Menu.buildFromTemplate([
           {
-            label: 'Show App',
+            label: $t('tray.show_app'),
             icon: getThemeIcon('show_eye'),
             click: () => {
               // this.destroy()
               AppExitHandler._isQuitting = false
               WindowHandler.getWindow()?.show()
               WindowHandler.getWindow()?.focus()
-            }
+            },
           },
           ...this.extraButtons,
           {
-            label: 'Quit',
+            label: $t('tray.quit'),
             icon: getThemeIcon('close'),
             click: function () {
               AppExitHandler._isQuitting = true
               app.quit()
-            }
-          }
-        ])
+            },
+          },
+        ]),
       )
     }
   }
@@ -725,7 +638,7 @@ class TrayHandler {
 
 function getThemeIcon(iconName: string) {
   return nativeImage.createFromPath(
-    path.join(__static, `${iconName}${nativeTheme.shouldUseDarkColors ? '' : '_light'}.png`)
+    path.join(__static, `${iconName}${nativeTheme.shouldUseDarkColors ? '' : '_light'}.png`),
   )
 }
 

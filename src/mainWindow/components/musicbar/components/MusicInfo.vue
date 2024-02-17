@@ -10,44 +10,24 @@
 <template>
   <div class="h-100 w-100">
     <div v-if="computedImg" class="dark-overlay" :style="{ top: !hasFrame ? '-28px' : '0px' }"></div>
-    <transition
-      name="custom-fade"
-      enter-active-class="animate__animated animate__fadeIn"
-      leave-active-class="animate__animated animate__fadeOut animate__faster"
-    >
-      <video
-        v-if="showSpotifyCanvas && spotifyCanvas"
-        class="bg-img w-100 h-100"
-        :src="spotifyCanvas"
-        :key="spotifyCanvas"
-        autoplay
-        loop
-      />
-      <b-img
-        class="bg-img"
-        v-else-if="computedImg"
-        :src="computedImg"
-        :key="computedImg"
-        referrerPolicy="no-referrer"
-      ></b-img>
+    <transition name="custom-fade" enter-active-class="animate__animated animate__fadeIn"
+      leave-active-class="animate__animated animate__fadeOut animate__faster">
+      <video v-if="showSpotifyCanvas && spotifyCanvas" class="bg-img w-100 h-100" :src="spotifyCanvas"
+        :key="spotifyCanvas" autoplay loop />
+      <b-img class="bg-img" v-else-if="computedImg" :src="computedImg" :key="computedImg"
+        referrerPolicy="no-referrer"></b-img>
     </transition>
 
     <b-container fluid class="w-100 h-100 main-container">
       <b-row no-gutters align-h="end">
         <b-col cols="auto">
-          <CrossIcon class="cross-icon button-grow" @click.native="close" />
+          <CrossIcon class="cross-icon button-grow" @click="close" />
         </b-col>
       </b-row>
       <b-row no-gutters align-h="center" class="h-100 flex-nowrap">
         <b-col cols="4">
-          <SongDetailsCompact
-            :cardHoverText="lyrics"
-            :forceWhiteText="true"
-            :currentSong="currentSong"
-            :forceCover="computedImg"
-            :isShowLyricsActive="showPlayer"
-            @toggleLyrics="onToggleLyrics"
-          />
+          <SongDetailsCompact :cardHoverText="lyrics" :forceWhiteText="true" :currentSong="currentSong"
+            :forceCover="computedImg" :isShowLyricsActive="showPlayer" @toggleLyrics="onToggleLyrics" />
           <div class="audioStream-slot" v-show="showPlayer === 2">
             <b-container fluid class="scrollable">
               <b-row no-gutters>
@@ -74,21 +54,11 @@
             </b-row>
             <b-row class="queue-container-outer">
               <b-col class="h-100 queue-container mr-4">
-                <RecycleScroller
-                  class="w-100 h-100"
-                  :items="queueOrder"
-                  :item-size="94"
-                  ref="recycle-scroller"
-                  key-field="id"
-                  :direction="'vertical'"
-                >
+                <RecycleScroller class="w-100 h-100" :items="queueOrder" :item-size="94" ref="recycle-scroller"
+                  key-field="id" :direction="'vertical'">
                   <template v-slot="{ item, index }">
-                    <QueueItem
-                      :id="`queue-item-${item.id}`"
-                      :song="getSong(item.songID)"
-                      :index="index"
-                      :current="index === currentIndex"
-                    />
+                    <QueueItem :id="`queue-item-${item.id}`" :song="getSong(item.songID)" :index="index"
+                      :current="index === currentIndex" />
                   </template>
                 </RecycleScroller>
               </b-col>
@@ -104,8 +74,8 @@
 </template>
 
 <script lang="ts">
-import { mixins } from 'vue-class-component'
-import { Component, Prop, Watch } from 'vue-property-decorator'
+import { mixins } from 'vue-facing-decorator'
+import { Component, Prop, Watch } from 'vue-facing-decorator'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
 import ImageLoader from '@/utils/ui/mixins/ImageLoader'
 import ModelHelper from '@/utils/ui/mixins/ModelHelper'
@@ -120,7 +90,8 @@ import { PeerMode } from '@/mainWindow/store/syncState'
 import CrossIcon from '@/icons/CrossIcon.vue'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
-import Vue from 'vue/types/umd'
+import { convertProxy } from '@/utils/ui/common'
+import type { RecycleScroller } from 'vue-virtual-scroller'
 
 @Component({
   components: {
@@ -157,7 +128,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   }
 
   close() {
-    bus.$emit('onToggleSlider', false)
+    bus.emit('onToggleSlider', false)
   }
 
   onDragEnd() {
@@ -171,7 +142,8 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
       return
     }
 
-    ;(this.$refs['recycle-scroller'] as Vue)?.$el.scrollTo({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ; (this.$refs['recycle-scroller'] as any)?.$el.scrollTo({
       top: this.currentIndex * 94,
       behavior: 'smooth'
     })
@@ -185,15 +157,16 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
     await this.$nextTick()
     this.scrollToActive()
 
-    bus.$on(EventBus.IGNORE_MUSIC_INFO_SCROLL, () => (this.ignoreScroll = true))
+    bus.on(EventBus.IGNORE_MUSIC_INFO_SCROLL, () => (this.ignoreScroll = true))
   }
 
   private async getLyricsFromExtension() {
     if (this.currentSong) {
       const { _id } = this.currentSong
+
       const resp = await window.ExtensionUtils.sendEvent({
         type: 'requestedLyrics',
-        data: [this.currentSong]
+        data: [convertProxy(this.currentSong)]
       })
 
       const lyrics = resp && Object.values(resp).find((val) => !!val)
@@ -206,7 +179,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
 
   @Watch('lyrics', { immediate: true })
   onLyricsChange() {
-    bus.$emit(EventBus.REFRESH_LYRICS, this.lyrics)
+    bus.emit(EventBus.REFRESH_LYRICS, this.lyrics)
   }
 
   get showSpotifyCanvas() {
@@ -226,8 +199,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
       } else {
         const searchRes = (
           await vxm.providers.spotifyProvider.searchSongs(
-            `${
-              this.currentSong.artists ? this.currentSong.artists?.map((val) => val.artist_name).join(', ') + ' - ' : ''
+            `${this.currentSong.artists ? this.currentSong.artists?.map((val) => val.artist_name).join(', ') + ' - ' : ''
             }${this.currentSong.title}`
           )
         )[0]
@@ -247,7 +219,9 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
         this.lyrics = 'Searching Lyrics...'
 
         const { _id } = this.currentSong
-        const resp = (await this.getLyricsFromExtension()) ?? (await window.SearchUtils.searchLyrics(this.currentSong))
+        const resp =
+          (await this.getLyricsFromExtension()) ??
+          (await window.SearchUtils.searchLyrics(convertProxy(this.currentSong)))
 
         // Don't update lyrics if song has changed while fetching lyrics
         if (this.currentSong._id === _id) {
@@ -266,8 +240,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   }
 
   @Watch('currentIndex')
-  async onIndexChange(old: number, newVal: number) {
-    console.log(old, newVal)
+  async onIndexChange() {
     await this.$nextTick()
     this.scrollToActive()
   }
@@ -317,7 +290,7 @@ export default class MusicInfo extends mixins(ImageLoader, ModelHelper, JukeboxM
   }
 
   saveAsPlaylist() {
-    bus.$emit(EventBus.SHOW_NEW_PLAYLIST_MODAL, this.parseQueueItems())
+    bus.emit(EventBus.SHOW_NEW_PLAYLIST_MODAL, this.parseQueueItems())
   }
 
   private handleIndexChange(change: {

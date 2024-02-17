@@ -14,14 +14,7 @@
         <Link />
       </b-col>
       <b-col cols="auto" align-self="center" class="flex-grow-1 justify-content-start">
-        <b-input
-          v-model="model"
-          :placeholder="hint"
-          id="ext-input"
-          class="ext-input"
-          debounce="500"
-          @update="onInputChange"
-        />
+        <b-input :placeholder="hint" id="ext-input" class="ext-input" debounce="500" @update="onInputChange" />
       </b-col>
       <b-col cols="auto" class="mr-4"></b-col>
     </b-row>
@@ -29,22 +22,21 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator'
+import { Component, Prop, Vue } from 'vue-facing-decorator'
 import Link from '@/icons/LinkIcon.vue'
 
 @Component({
   components: {
     Link
-  }
+  },
+  emits: ['update']
 })
 export default class InputGroup extends Vue {
-  model = ''
-
   @Prop()
   hint!: string
 
-  onInputChange() {
-    this.$emit('update', this.model)
+  onInputChange(val: string) {
+    this.$emit('update', val)
   }
 }
 </script>

@@ -3,11 +3,11 @@ name: Build/release
 on:
   push:
     tags:
-      - "*"
+      - '*'
 
     branches:
-      - "dev"
-      - "main"
+      - 'dev'
+      - 'main'
 
 jobs:
   release:
@@ -28,8 +28,8 @@ jobs:
       - name: Install Node.js, NPM and Yarn
         uses: actions/setup-node@v3
         with:
-          node-version: "16"
-          cache: "yarn"
+          node-version: '21'
+          cache: 'yarn'
 
       - name: Get yarn cache
         id: yarn-cache
@@ -89,13 +89,13 @@ jobs:
           fi
       - name: setup env
         env:
-          YOUTUBECLIENTID: "${{ secrets.YOUTUBECLIENTID }}"
-          YOUTUBECLIENTSECRET: "${{ secrets.YOUTUBECLIENTSECRET }}"
-          LASTFMAPIKEY: "${{ secrets.LASTFMAPIKEY }}"
-          LASTFMSECRET: "${{ secrets.LASTFMSECRET }}"
-          SPOTIFYCLIENTID: "${{ secrets.SPOTIFYCLIENTID }}"
-          SPOTIFYCLIENTSECRET: "${{ secrets.SPOTIFYCLIENTSECRET }}"
-          FANARTTVAPIKEY: "${{ secrets.FANARTTVAPIKEY }}"
+          YOUTUBECLIENTID: '${{ secrets.YOUTUBECLIENTID }}'
+          YOUTUBECLIENTSECRET: '${{ secrets.YOUTUBECLIENTSECRET }}'
+          LASTFMAPIKEY: '${{ secrets.LASTFMAPIKEY }}'
+          LASTFMSECRET: '${{ secrets.LASTFMSECRET }}'
+          SPOTIFYCLIENTID: '${{ secrets.SPOTIFYCLIENTID }}'
+          SPOTIFYCLIENTSECRET: '${{ secrets.SPOTIFYCLIENTSECRET }}'
+          FANARTTVAPIKEY: '${{ secrets.FANARTTVAPIKEY }}'
         run: chmod +x setup_env.sh && . setup_env.sh
         shell: bash
 

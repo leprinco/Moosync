@@ -6,147 +6,83 @@ export enum InvidiousApiResources {
   SEARCH = 'search',
   STATS = 'stats',
   CHANNELS = 'channels/{channel_id}',
-  CHANNEL_VIDEOS = 'channels/{channel_id}/videos'
+  CHANNEL_VIDEOS = 'channels/{channel_id}/videos',
 }
 
 export enum HotkeyEvents {
-  PLAY,
-  PAUSE,
-  PLAY_TOGGLE,
-  MUTE_ACTIVE,
-  MUTE_INACTIVE,
-  MUTE_TOGGLE,
-  VOLUME_INC,
-  VOLUME_DEC,
-  REPEAT_ACTIVE,
-  REPEAT_INACTIVE,
-  REPEAT_TOGGLE,
-  QUEUE_OPEN,
-  QUEUE_CLOSE,
-  QUEUE_TOGGLE,
-  RELOAD_PAGE,
-  DEVTOOLS_TOGGLE,
-  HELP,
-  FULLSCREEN,
-  SELECT_ALL,
-  TOP,
-  BOTTOM,
-  LEFT,
-  RIGHT,
-  PLAYNOW_SELECTION,
-  QUEUE_SELECTION
-}
-
-export const HotKeyEventsExtras: Record<HotkeyEvents, { title: string }> = {
-  [HotkeyEvents.PLAY]: {
-    title: 'Play song'
-  },
-  [HotkeyEvents.PAUSE]: {
-    title: 'Pause song'
-  },
-  [HotkeyEvents.PLAY_TOGGLE]: {
-    title: 'Toggle play'
-  },
-  [HotkeyEvents.MUTE_ACTIVE]: {
-    title: 'Mute'
-  },
-  [HotkeyEvents.MUTE_INACTIVE]: {
-    title: 'Unmute'
-  },
-  [HotkeyEvents.MUTE_TOGGLE]: {
-    title: 'Toggle mute'
-  },
-  [HotkeyEvents.VOLUME_INC]: {
-    title: 'Increase volume'
-  },
-  [HotkeyEvents.VOLUME_DEC]: {
-    title: 'Decrease volume'
-  },
-  [HotkeyEvents.REPEAT_ACTIVE]: {
-    title: 'Repeat song'
-  },
-  [HotkeyEvents.REPEAT_INACTIVE]: {
-    title: 'Disable repeat'
-  },
-  [HotkeyEvents.REPEAT_TOGGLE]: {
-    title: 'Toggle repeat'
-  },
-  [HotkeyEvents.QUEUE_OPEN]: {
-    title: 'Open song queue'
-  },
-  [HotkeyEvents.QUEUE_CLOSE]: {
-    title: 'Close song queue'
-  },
-  [HotkeyEvents.QUEUE_TOGGLE]: {
-    title: 'Toggle song queue'
-  },
-  [HotkeyEvents.RELOAD_PAGE]: {
-    title: 'Reload page'
-  },
-  [HotkeyEvents.DEVTOOLS_TOGGLE]: {
-    title: 'Toggle dev-tools'
-  },
-  [HotkeyEvents.HELP]: {
-    title: 'Open help'
-  },
-  [HotkeyEvents.FULLSCREEN]: {
-    title: 'Fullscreen'
-  },
-  [HotkeyEvents.SELECT_ALL]: {
-    title: 'Select All'
-  },
-  [HotkeyEvents.TOP]: {
-    title: 'Move Top'
-  },
-  [HotkeyEvents.BOTTOM]: {
-    title: 'Move Bottom'
-  },
-  [HotkeyEvents.LEFT]: {
-    title: 'Move Left'
-  },
-  [HotkeyEvents.RIGHT]: {
-    title: 'Move Right'
-  },
-  [HotkeyEvents.PLAYNOW_SELECTION]: {
-    title: 'Play Now Selection'
-  },
-  [HotkeyEvents.QUEUE_SELECTION]: {
-    title: 'Queue Selection'
-  }
+  PLAY = 0,
+  PAUSE = 1,
+  PLAY_TOGGLE = 2,
+  MUTE_ACTIVE = 3,
+  MUTE_INACTIVE = 4,
+  MUTE_TOGGLE = 5,
+  VOLUME_INC = 6,
+  VOLUME_DEC = 7,
+  REPEAT_ACTIVE = 8,
+  REPEAT_INACTIVE = 9,
+  REPEAT_TOGGLE = 10,
+  QUEUE_OPEN = 11,
+  QUEUE_CLOSE = 12,
+  QUEUE_TOGGLE = 13,
+  RELOAD_PAGE = 14,
+  DEVTOOLS_TOGGLE = 15,
+  HELP = 16,
+  FULLSCREEN = 17,
+  NEXT_SONG = 18,
+  PREV_SONG = 19,
+  SEEK_FORWARD = 20,
+  SEEK_BACKWARDS = 21,
+  SEEK_0 = 22,
+  SEEK_1 = 23,
+  SEEK_2 = 24,
+  SEEK_3 = 25,
+  SEEK_4 = 26,
+  SEEK_5 = 27,
+  SEEK_6 = 28,
+  SEEK_7 = 29,
+  SEEK_8 = 30,
+  SEEK_9 = 31,
+  SELECT_ALL = 32,
+  NAV_TOP = 33,
+  NAV_BOTTOM = 34,
+  NAV_LEFT = 35,
+  NAV_RIGHT = 36,
+  PLAYNOW_SELECTION = 37,
+  QUEUE_SELECTION = 38
 }
 
 export const defaultKeybinds: HotkeyPair[] = [
   {
     key: [['Space']],
-    value: HotkeyEvents.PLAY_TOGGLE
+    value: HotkeyEvents.PLAY_TOGGLE,
   },
   {
     key: [['ShiftLeft', 'Equal'], ['NumpadAdd']],
-    value: HotkeyEvents.VOLUME_INC
+    value: HotkeyEvents.VOLUME_INC,
   },
   {
     key: [['NumpadSubtract'], ['Minus']],
-    value: HotkeyEvents.VOLUME_DEC
+    value: HotkeyEvents.VOLUME_DEC,
   },
   {
     key: [['KeyM']],
-    value: HotkeyEvents.MUTE_TOGGLE
+    value: HotkeyEvents.MUTE_TOGGLE,
   },
   {
     key: [['KeyR']],
-    value: HotkeyEvents.REPEAT_TOGGLE
+    value: HotkeyEvents.REPEAT_TOGGLE,
   },
   {
     key: [['F5']],
-    value: HotkeyEvents.RELOAD_PAGE
+    value: HotkeyEvents.RELOAD_PAGE,
   },
   {
     key: [['ControlLeft', 'ShiftLeft', 'KeyI']],
-    value: HotkeyEvents.DEVTOOLS_TOGGLE
+    value: HotkeyEvents.DEVTOOLS_TOGGLE,
   },
   {
     key: [['F11']],
-    value: HotkeyEvents.FULLSCREEN
+    value: HotkeyEvents.FULLSCREEN,
   },
   {
     key: [['ControlLeft', 'A']],
@@ -154,7 +90,7 @@ export const defaultKeybinds: HotkeyPair[] = [
   },
   {
     key: [['F1']],
-    value: HotkeyEvents.HELP
+    value: HotkeyEvents.HELP,
   },
   {
     key: [['Escape']],
@@ -162,34 +98,42 @@ export const defaultKeybinds: HotkeyPair[] = [
   },
   {
     key: [['Arrow Top']],
-    value: HotkeyEvents.TOP
+    value: HotkeyEvents.NAV_TOP
   },
   {
     key: [['Arrow Bottom']],
-    value: HotkeyEvents.BOTTOM
+    value: HotkeyEvents.NAV_BOTTOM
   },
   {
     key: [['Arrow']],
-    value: HotkeyEvents.LEFT
+    value: HotkeyEvents.NAV_LEFT
   },
   {
     key: [['Arrow Right']],
-    value: HotkeyEvents.RIGHT
-  }
+    value: HotkeyEvents.NAV_RIGHT
+  },
+  {
+    key: [['ArrowRight']],
+    value: HotkeyEvents.SEEK_FORWARD,
+  },
+  {
+    key: [['ArrowLeft']],
+    value: HotkeyEvents.SEEK_BACKWARDS,
+  },
 ]
 
 export enum ProviderScopes {
-  SEARCH,
-  PLAYLISTS,
-  PLAYLIST_SONGS,
-  ARTIST_SONGS,
-  ALBUM_SONGS,
-  RECOMMENDATIONS,
-  SCROBBLES,
-  PLAYLIST_FROM_URL,
-  SONG_FROM_URL,
-  SEARCH_ALBUM,
-  SEARCH_ARTIST
+  SEARCH = 0,
+  PLAYLISTS = 1,
+  PLAYLIST_SONGS = 2,
+  ARTIST_SONGS = 3,
+  ALBUM_SONGS = 4,
+  RECOMMENDATIONS = 5,
+  SCROBBLES = 6,
+  PLAYLIST_FROM_URL = 7,
+  SONG_FROM_URL = 8,
+  SEARCH_ALBUM = 9,
+  SEARCH_ARTIST = 10,
 }
 
 export const FAVORITES_PLAYLIST_ID = 'favorites_playlist'
@@ -197,11 +141,17 @@ export const FAVORITES_PLAYLIST_ID = 'favorites_playlist'
 export enum VolumePersistMode {
   SINGLE = 'SINGLE',
   SEPARATE_VOLUME_MAP = 'SEPARATE_VOLUME_MAP',
-  CLAMP_MAP = 'CLAMP_MAP'
+  CLAMP_MAP = 'CLAMP_MAP',
 }
 
 export enum ScanStatus {
-  UNDEFINED,
-  SCANNING,
-  QUEUED
+  UNDEFINED = 0,
+  SCANNING = 1,
+  QUEUED = 2,
+}
+
+export enum RepeatState {
+  DISABLED = 0,
+  ONCE = 1,
+  ALWAYS = 2,
 }

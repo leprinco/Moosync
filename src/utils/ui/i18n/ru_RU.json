@@ -2,7 +2,7 @@
   "sidebar": {
     "tabs": {
       "queue": "Очередь",
-      "allSongs": "Все треки",
+      "allSongs": "Все песни",
       "playlists": "Плейлисты",
       "albums": "Альбомы",
       "artists": "Исполнители",
@@ -27,6 +27,16 @@
     "genres": "Жанры",
     "explore": "Обзор"
   },
+  "playlists": {
+    "local": "Локальный",
+    "new_playlist": {
+      "create": "Создать",
+      "description_placeholder": "Описание..."
+    },
+    "url": {
+      "input_hint": "Введите URL здесь (Youtube или Spotify)"
+    }
+  },
   "songView": {
     "details": {
       "songCount": "{count} трека | {count} треков"
@@ -41,10 +51,17 @@
     "playSingle": "Воспроизвести {title}",
     "addToQueue": "Добавить {title} в очередь",
     "addToLibrary": "Добавить {title} в фонотеку",
-    "playRandom": "Воспроизвести 100 случайных песен"
+    "playRandom": "Воспроизвести 100 случайных песен",
+    "fetchAll": "Получить все песни",
+    "close": "Закрыть",
+    "add": "Добавить",
+    "save": "Сохранить",
+    "cancel": "Отмена"
   },
   "loading": "Загрузка...",
+  "now_playing": "Сейчас играет",
   "contextMenu": {
+    "sort_by": "Сортировать по",
     "sort": {
       "title": "По названию",
       "album": "По альбому",
@@ -79,19 +96,35 @@
       "showInLibrary": "Показать в фонотеке",
       "showHidden": "Показать скрытые треки",
       "hideHidden": "Скрыть скрытые треки",
-      "openInBrowser": "Открыть в браузере"
+      "openInBrowser": "Открыть в браузере",
+      "gotoAlbum": "Перейти к альбому ({title})",
+      "gotoArtists": "Перейти к исполнителям"
+    },
+    "artist": {
+      "remove": "Удалить исполнителя"
+    },
+    "album": {
+      "remove": "Удалить альбом"
     },
     "moreInfo": "Доп. сведения",
     "incorrectPlayback": "Неправильное воспроизведение?"
   },
+  "explore": {
+    "you_listened_to": "Вы слушали",
+    "of_music": "музыки",
+    "played_for": "Играло",
+    "hot_from": "Популярное из"
+  },
   "providers": {
-    "youtube": "Youtube",
+    "youtube": "YouTube",
     "spotify": "Spotify",
     "invidious": "Invidious",
-    "lastfm": "LastFM"
+    "lastfm": "Last.fm"
   },
-  "save": "Сохранить",
-  "cancel": "Отмена",
+  "accounts": {
+    "connect": "Подключиться",
+    "sign_out": "Выйти"
+  },
   "settings": {
     "paths": {
       "songDirectories": "Расположения треков",
@@ -107,7 +140,9 @@
       "splitter": "Шаблон разделения имени исполнителя",
       "splitter_tooltip": "Регулярное выражение для разделения имён исполнителей. Оставьте пустым, чтобы отключить разделение.",
       "scan_interval": "Интервал сканирования",
-      "scan_interval_tooltip": "Интервал в секундах для запуска задачи сканирования. Установите равным «-1» для отключения автоматического сканирования"
+      "scan_interval_tooltip": "Интервал сканирования. Введите -1 для отключения автоматического сканирования",
+      "scan_threads": "Потоки сканирования",
+      "scan_threads_tooltip": "Количество потоков процессора, используемых для сканирования локального хранилища"
     },
     "themes": {
       "songView": "Вид треков",
@@ -124,7 +159,9 @@
         "name": "Название темы",
         "author": "Автор",
         "colors": "Цвета",
-        "colors_tooltip": "Изменить цвета для настройки интерфейса"
+        "colors_tooltip": "Изменить цвета для настройки интерфейса",
+        "css": "Пользовательский CSS",
+        "watch_css": "См. CSS для изменения файлов"
       },
       "primary": "Основной",
       "secondary": "Вторичный",
@@ -160,15 +197,16 @@
         "sponsorBlock": "Использовать SponsorBlock для автоперехода к выделенной части трека на Youtube"
       },
       "audioSettings_tooltip": "Настройки, связанные с воспроизведением аудио",
+      "gapless_skip": "Пропустить песню до окончания (секунды)",
       "invidiousUrlUnsupported": "Эта ссылка не поддерживает Invidious API",
       "invidious_tooltip": "Invidious экземпляр для использования вместо youtube",
       "restartApp": "Перезапустить Moosync",
       "zoom": "Масштаб (Бета)",
       "zoom_tooltip": "Масштаб окон в процентах. Это может сломать пользовательский интерфейс.",
       "spotify": {
-        "client_id": "Spotify Client ID",
+        "client_id": "ИД клиента Spotify",
         "client_id_tooltip": "Требуется Spotify Client ID для входа в Spotify. Нажмите, чтобы узнать больше",
-        "client_secret": "Spotify Client Secret",
+        "client_secret": "Секретный ключ клиента Spotify",
         "client_secret_tooltip": "Требуется Spotify Client Secret для входа в Spotify. Нажмите, чтобы узнать больше",
         "autoFetchButton": "Получить информацию Spotify автоматически",
         "autoFetchPreTitle": "Получить",
@@ -190,14 +228,14 @@
         }
       },
       "youtube": {
-        "client_id": "Youtube Client ID",
-        "client_secret": "Youtube Client Secret",
+        "client_id": "ИД клиента YouTube ",
+        "client_secret": "Секретный ключ клиента YouTube",
         "client_id_tooltip": "Требуется Youtube Client ID для входа в Youtube. Нажмите, чтобы узнать больше",
         "client_secret_tooltip": "Требуется Youtube Client Secret для входа в Youtube. Нажмите, чтобы узнать больше"
       },
       "lastfm": {
-        "client_id": "LastFM Api Key",
-        "client_secret": "LastFM Client Secret"
+        "client_id": "Ключ API Last.fm",
+        "client_secret": "Секретный ключ клиента Last.fm"
       },
       "youtubeAlternative": {
         "title": "Альтернативные сервисы YouTube",
@@ -272,7 +310,70 @@
       "logSettings": "Настройки журнала",
       "level": "Уровень",
       "process": "Процесс",
-      "filterMessage": "Фильтр сообщений"
+      "filterMessage": "Фильтр сообщений",
+      "levels": {
+        "all": "Все",
+        "debug": "Отладка",
+        "info": "Информация",
+        "warn": "Предупреждение",
+        "error": "Ошибка"
+      },
+      "debug_logging": "Включить логирование отладки",
+      "table": {
+        "time": "Время",
+        "level": "Уровень",
+        "process": "Процесс",
+        "message": "Сообщение"
+      }
     }
+  },
+  "hotkeys": {
+    "play": "Воспроизвести",
+    "pause": "Пауза",
+    "play_toggle": "Переключить воспроизведение",
+    "mute_active": "Выключить звук",
+    "mute_inactive": "Включить звук",
+    "mute_toggle": "Переключить звук",
+    "volume_inc": "Увеличить громкость",
+    "volume_dec": "Уменьшить громкость",
+    "repeat_active": "Повторять песню",
+    "repeat_inactive": "Выключить повторение",
+    "repeat_toggle": "Переключить повторение",
+    "queue_open": "Открыть очередь песен",
+    "queue_close": "Закрыть очередь песен",
+    "queue_toggle": "Переключить очередь песен",
+    "reload_page": "Обновить страницу",
+    "devtools": "Переключить инструменты разработчика",
+    "help": "Помощь",
+    "fullscreen": "Полный экран",
+    "next_song": "Пропустить песню",
+    "prev_song": "Предыдущая песня",
+    "seek_forward": "Перемотать на 5 секунд вперед",
+    "seek_backwards": "Перемотать на 5 секунд назад",
+    "seek_0": "Перемотать на 0%",
+    "seek_1": "Перемотать на 10%",
+    "seek_2": "Перемотать на 20%",
+    "seek_3": "Перемотать на 30%",
+    "seek_4": "Перемотать на 40%",
+    "seek_5": "Перемотать на 50%",
+    "seek_6": "Перемотать на 60%",
+    "seek_7": "Перемотать на 70%",
+    "seek_8": "Перемотать на 80%",
+    "seek_9": "Перемотать на 90%"
+  },
+  "tray": {
+    "play": "Воспроизвести",
+    "pause": "Пауза",
+    "next": "Следующий",
+    "prev": "Предыдущий",
+    "repeat": "Повторять",
+    "no_repeat": "Не повторять",
+    "shuffle": "Перемешать",
+    "show_app": "Показать приложение",
+    "quit": "Выйти"
+  },
+  "toasts": {
+    "queued": "В очереди {count} песня | В очереди {count} песен",
+    "shuffled": "Перемешано"
   }
 }

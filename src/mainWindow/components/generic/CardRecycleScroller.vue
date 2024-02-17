@@ -16,27 +16,13 @@
       </b-col>
     </b-row>
     <b-row class="recycle-row" ref="scrollerRow">
-      <RecycleScroller
-        ref="scroller"
-        class="scroller w-100 h-100"
-        :items="filteredItems"
-        :item-size="itemWidth"
-        :itemSecondarySize="itemWidth"
-        :key-field="keyField"
-        :grid-items="itemsInRow"
-        :buffer="400"
-        :direction="'vertical'"
-        @resize="onScrollerResize"
-      >
+      <RecycleScroller ref="scroller" class="scroller w-100 h-100" :items="filteredItems" :item-size="itemWidth"
+        :itemSecondarySize="itemWidth" :key-field="keyField" :grid-items="itemsInRow" :buffer="400"
+        :direction="'vertical'" @resize="onScrollerResize">
         <template v-slot="{ item, index }">
-          <CardView
-            :title="item[titleKey]"
-            :imgSrc="item[imageKey]"
-            :maxWidth="`${itemWidth - 60}px`"
-            :selected="isSelectedIndex(index)"
-            @click.native="emitClick(item)"
-            @CardContextMenu="emitContextMenu(item, ...arguments)"
-          >
+          <CardView :title="item[titleKey]" :imgSrc="item[imageKey]" :maxWidth="`${itemWidth - 60}px`"
+            :selected="isSelectedIndex(index)" @click.native="emitClick(item)"
+            @CardContextMenu="emitContextMenu($event, item, ...arguments)">
             <template #defaultCover>
               <slot ref="defaultCover" name="defaultCover" />
             </template>
@@ -49,7 +35,8 @@
 
 <script lang="ts">
 import CardView from '@/mainWindow/components/generic/CardView.vue'
-import { Component, Prop, Ref, Vue } from 'vue-property-decorator'
+import { Component, Prop, Ref } from 'vue-facing-decorator'
+import { Vue } from 'vue-facing-decorator'
 import TabCarousel from '../../components/generic/TabCarousel.vue'
 import { RecycleScroller } from 'vue-virtual-scroller'
 import { KeyboardNavigation } from '@/utils/ui/mixins/KeyboardNavigation'
@@ -59,7 +46,8 @@ import { bus } from '@/mainWindow/main'
   components: {
     CardView,
     TabCarousel
-  }
+  },
+  emits: ['generalContextMenu', 'CardContextMenu', 'click']
 })
 export default class CardRecycleScroller extends Vue {
   @Prop({ default: () => [] })

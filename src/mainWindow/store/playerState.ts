@@ -7,12 +7,12 @@
  *  See LICENSE in the project root for license information.
  */
 
+import { RepeatState, VolumePersistMode } from '../../utils/commonConstants'
 import { action, mutation } from 'vuex-class-component'
 
 import { VuexModule } from './module'
+import { convertProxy } from '@/utils/ui/common'
 import { v4 } from 'uuid'
-import Vue from 'vue'
-import { VolumePersistMode } from '../../utils/commonConstants'
 
 class Queue implements GenericQueue<Song> {
   data: QueueData<Song> = {}
@@ -24,7 +24,7 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
   private state: PlayerState = 'PAUSED'
   public currentSong: Song | null | undefined | undefined = null
   private songQueue = new Queue()
-  private repeat = false
+  private repeat: RepeatState = RepeatState.DISABLED
 
   public volumeMode: VolumePersistMode = VolumePersistMode.SINGLE
 
@@ -41,7 +41,7 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
     this._volume = vol
     if (this.currentSong) {
       const type = this.currentSong.providerExtension ?? this.currentSong.type
-      Vue.set(this.volumeMap, type, vol)
+      this.volumeMap[type] = vol
     }
   }
 
@@ -81,7 +81,7 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
     return this.repeat
   }
 
-  set Repeat(repeat: boolean) {
+  set Repeat(repeat: RepeatState) {
     this.repeat = repeat
   }
 
@@ -96,6 +96,8 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
   set queueIndex(value: number) {
     this.songQueue.index = value
   }
+
+  forceSeek: number | undefined = undefined
 
   @mutation
   setQueueDataSong(song: Song) {
@@ -112,7 +114,7 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
 
   @mutation
   private _setSongQueueOrder(order: QueueOrder) {
-    this.songQueue.order = order.filter((obj) => !!obj)
+    this.songQueue.order = convertProxy(order.filter((obj) => !!obj))
   }
 
   @action
@@ -188,7 +190,7 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
     this.songQueue.order.push(
       ...item.map((obj) => {
         return { id: v4(), songID: obj._id }
-      })
+      }),
     )
   }
 
@@ -217,7 +219,7 @@ export class PlayerStore extends VuexModule.With({ namespaced: 'player' }) {
       0,
       ...item.map((obj) => {
         return { id: v4(), songID: obj._id }
-      })
+      }),
     )
   }
 

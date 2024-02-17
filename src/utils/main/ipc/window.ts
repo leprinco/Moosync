@@ -9,12 +9,12 @@
 
 import { IpcEvents, WindowEvents } from './constants'
 
-import { WindowHandler, _windowHandler } from '../windowManager'
 import { mainWindowHasMounted } from '../../../background'
+import { oauthHandler } from '../oauth/handler'
+import { WindowHandler, _windowHandler } from '../windowManager'
+import { downloadFile } from '@/utils/main/mainUtils'
 import { app, shell } from 'electron'
 import path from 'path'
-import { oauthHandler } from '../oauth/handler'
-import { downloadFile } from '@/utils/main/mainUtils'
 
 export class BrowserWindowChannel implements IpcChannelInterface {
   name = IpcEvents.BROWSER_WINDOWS
@@ -75,9 +75,6 @@ export class BrowserWindowChannel implements IpcChannelInterface {
       case WindowEvents.SHOW_TITLEBAR_ICONS:
         this.showTitlebarIcons(event, request)
         break
-      case WindowEvents.AUTOMATE_SPOTIFY:
-        this.automateSpotify(event, request)
-        break
       case WindowEvents.RESTART_APP:
         this.restartApp(event, request)
         break
@@ -137,7 +134,7 @@ export class BrowserWindowChannel implements IpcChannelInterface {
     _windowHandler
       .openFileBrowser(request.params.isMainWindow, {
         properties: [request.params.file ? 'openFile' : 'openDirectory'],
-        filters: request.params.filters
+        filters: request.params.filters,
       })
       .then((data) => event.reply(request.responseChannel, data))
   }
@@ -216,7 +213,7 @@ export class BrowserWindowChannel implements IpcChannelInterface {
 
       event.sender.startDrag({
         file: filePath,
-        icon: showFileThumb ? filePath : path.join(__static, 'logo.png')
+        icon: showFileThumb ? filePath : path.join(__static, 'logo.png'),
       })
     }
     event.reply(request.responseChannel)
@@ -228,11 +225,6 @@ export class BrowserWindowChannel implements IpcChannelInterface {
 
   private showTitlebarIcons(event: Electron.IpcMainEvent, request: IpcRequest) {
     event.reply(request.responseChannel, WindowHandler.showTitlebarIcons)
-  }
-
-  private async automateSpotify(event: Electron.IpcMainEvent, request: IpcRequest) {
-    const data = await _windowHandler.automateSpotifyAppCreation()
-    event.reply(request.responseChannel, data)
   }
 
   private restartApp(event: Electron.IpcMainEvent, request: IpcRequest) {

@@ -9,17 +9,10 @@
 
 <template>
   <div class="h-100 w-100 parent" @contextmenu="contextHandler">
-    <CardRecycleScroller
-      :title="$t('pages.albums')"
-      :itemList="filteredAlbumList"
-      :titleKey="'album_name'"
-      :imageKey="'album_coverPath_high'"
-      :keyField="'album_id'"
-      @click="gotoAlbum"
-      @CardContextMenu="singleItemContextHandler"
-      @generalContextMenu="contextHandler"
-      :isSortAsc="isSortAsc"
-    >
+    <CardRecycleScroller :title="$t('pages.albums')" :itemList="filteredAlbumList" :titleKey="'album_name'"
+      :imageKey="'album_coverPath_high'" :keyField="'album_id'" @click="gotoAlbum"
+      @CardContextMenu="(event: MouseEvent, album: Albums) => singleItemContextHandler(event, album)"
+      @generalContextMenu="contextHandler" :isSortAsc="isSortAsc">
       <template #defaultCover>
         <AlbumDefault />
       </template>
@@ -29,8 +22,8 @@
 
 <script lang="ts">
 import CardRecycleScroller from '@/mainWindow/components/generic/CardRecycleScroller.vue'
-import { mixins } from 'vue-class-component'
-import { Component } from 'vue-property-decorator'
+import { mixins } from 'vue-facing-decorator'
+import { Component } from 'vue-facing-decorator'
 import RouterPushes from '@/utils/ui/mixins/RouterPushes'
 import AlbumDefault from '@/icons/AlbumDefaultIcon.vue'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
@@ -80,11 +73,12 @@ export default class Albums extends mixins(RouterPushes, ContextMenuMixin) {
     })
   }
 
-  public singleItemContextHandler(album: Album, event: MouseEvent) {
+  public singleItemContextHandler(event: MouseEvent, album: Album) {
     this.getContextMenu(event, {
       type: 'ALBUM',
       args: {
-        album
+        album,
+        refreshCallback: this.getAlbums
       }
     })
   }

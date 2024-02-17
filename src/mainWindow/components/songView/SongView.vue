@@ -9,43 +9,34 @@
 
 <template>
   <b-container fluid class="song-container h-100" @contextmenu="onGeneralContextMenu">
-    <transition
-      name="custom-classes-transition"
+    <transition name="custom-classes-transition"
       enter-active-class="animate__animated animate__slideInLeft animate__delay-1s animate__slideInLeft_delay"
-      leave-active-class="animate__animated animate__slideOutRight animate__slideOutRight_faster"
-    >
-      <component
-        v-bind:is="songView"
-        :songList="filteredSongList"
-        :currentSong="currentSong"
-        :defaultDetails="defaultDetails"
-        :detailsButtonGroup="detailsButtonGroup"
-        :optionalProviders="optionalProviders"
-        :isLoading="isLoading"
-        @onItemsChanged="onOptionalProviderChanged"
-        @onRowDoubleClicked="queueSong([arguments[0]])"
-        @onRowContext="onSongContextMenu"
-        @onRowSelected="updateCoverDetails"
-        @onRowSelectionClear="clearSelection"
-        @onRowPlayNowClicked="playTop([arguments[0]])"
-        @onArtistClicked="gotoArtist"
-        @onAlbumClicked="gotoAlbum"
-        @playAll="playAll"
-        @addToQueue="addToQueue"
-        @addToLibrary="addToLibrary"
-        @onSortClicked="showSortMenu"
-        @onSearchChange="onSearchChange"
-        @playRandom="playRandom"
-        @fetchAll="fetchAll"
-        @scroll="onScroll"
-      ></component>
+      leave-active-class="animate__animated animate__slideOutRight animate__slideOutRight_faster">
+      <SongViewCompact v-if="songView === 'SongViewCompact'" :songList="filteredSongList" :currentSong="currentSong"
+        :defaultDetails="defaultDetails" :detailsButtonGroup="detailsButtonGroup" :optionalProviders="optionalProviders"
+        :isLoading="isLoading" @onItemsChanged="onOptionalProviderChanged"
+        @onRowDoubleClicked="(song: Song) => queueSong([song])" @onRowContext="onSongContextMenu"
+        @onRowSelected="updateCoverDetails" @onRowSelectionClear="clearSelection"
+        @onRowPlayNowClicked="(song: Song) => playTop([song])" @onArtistClicked="gotoArtist" @onAlbumClicked="gotoAlbum"
+        @playAll="playAll" @addToQueue="addToQueue" @addToLibrary="addToLibrary" @onSortClicked="showSortMenu"
+        @onSearchChange="onSearchChange" @playRandom="playRandom" @fetchAll="fetchAll" @onScrollEnd="onScrollEnd">
+      </SongViewCompact>
+
+      <SongViewClassic v-else :songList="filteredSongList" :currentSong="currentSong" :defaultDetails="defaultDetails"
+        :detailsButtonGroup="detailsButtonGroup" :optionalProviders="optionalProviders" :isLoading="isLoading"
+        @onItemsChanged="onOptionalProviderChanged" @onRowDoubleClicked="(song: Song) => queueSong([song])"
+        @onRowContext="onSongContextMenu" @onRowSelected="updateCoverDetails" @onRowSelectionClear="clearSelection"
+        @onRowPlayNowClicked="(song: Song) => playTop([song])" @onArtistClicked="gotoArtist" @onAlbumClicked="gotoAlbum"
+        @playAll="playAll" @addToQueue="addToQueue" @addToLibrary="addToLibrary" @onSortClicked="showSortMenu"
+        @onSearchChange="onSearchChange" @playRandom="playRandom" @fetchAll="fetchAll" @onScrollEnd="onScrollEnd">
+      </SongViewClassic>
     </transition>
   </b-container>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Watch } from 'vue-property-decorator'
-import { mixins } from 'vue-class-component'
+import { Component, Prop, Watch } from 'vue-facing-decorator'
+import { mixins } from 'vue-facing-decorator'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
 import ModelHelper from '@/utils/ui/mixins/ModelHelper'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
@@ -63,9 +54,19 @@ import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
     SongViewClassic,
     SongViewCompact,
     SongViewGrid
-  }
+  },
+  emits: [
+    'playAll',
+    'addToQueue',
+    'addToLibrary',
+    'playRandom',
+    'fetchAll',
+    'onOptionalProviderChanged',
+    'onSearchChange',
+    'onScrollEnd'
+  ]
 })
-export default class AllSongs extends mixins(
+export default class SongView extends mixins(
   PlayerControls,
   ModelHelper,
   RemoteSong,
@@ -106,7 +107,7 @@ export default class AllSongs extends mixins(
 
     const playCounts = await window.SearchUtils.getPlayCount(...difference.map((val) => val._id))
     for (const song of difference) {
-      this.$set(song, 'playCount', playCounts[song._id] ?? 0)
+      song['playCount'] = playCounts[song._id]?.playCount ?? 0
     }
   }
 
@@ -114,8 +115,8 @@ export default class AllSongs extends mixins(
     return vxm.themes.songView === 'compact'
       ? 'SongViewCompact'
       : vxm.themes.songView === 'grid'
-      ? 'SongViewGrid'
-      : 'SongViewClassic'
+        ? 'SongViewGrid'
+        : 'SongViewClassic'
   }
 
   private selected: Song[] | null = null
@@ -178,7 +179,7 @@ export default class AllSongs extends mixins(
     }
   }
 
-  showSortMenu(event: Event) {
+  showSortMenu(event: MouseEvent) {
     this.getContextMenu(event, {
       type: 'SONG_SORT',
       args: {
@@ -248,11 +249,8 @@ export default class AllSongs extends mixins(
     this.$emit('onSearchChange', text)
   }
 
-  onScroll(e: MouseEvent) {
-    const { scrollTop, clientHeight, scrollHeight } = e.target as HTMLDivElement
-    if (scrollTop + clientHeight >= scrollHeight - 1) {
-      this.$emit('onScrollEnd')
-    }
+  onScrollEnd() {
+    this.$emit('onScrollEnd')
   }
 }
 </script>

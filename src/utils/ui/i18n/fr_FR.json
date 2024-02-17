@@ -4,7 +4,7 @@
       "queue": "File d'attente",
       "allSongs": "Toutes les chansons",
       "playlists": "Listes de lecture",
-      "albums": "Albums",
+      "albums": "Albums ",
       "artists": "Artistes",
       "genre": "Genres",
       "explore": "Explorer",
@@ -27,6 +27,16 @@
     "genres": "Genres",
     "explore": "Explorer"
   },
+  "playlists": {
+    "local": "Local",
+    "new_playlist": {
+      "create": "Create",
+      "description_placeholder": "Description..."
+    },
+    "url": {
+      "input_hint": "Enter URL Here.. (Youtube or Spotify)"
+    }
+  },
   "songView": {
     "details": {
       "songCount": "{count} chanson | {count} chansons"
@@ -41,13 +51,20 @@
     "playSingle": "Jouer {title}",
     "addToQueue": "Ajouter {title} à la file d'attente",
     "addToLibrary": "Ajouter {title} à la bibliothèque",
-    "playRandom": "Jouer 100 chansons aléatoirement"
+    "playRandom": "Jouer 100 chansons aléatoirement",
+    "fetchAll": "Fetch all songs",
+    "close": "Close",
+    "add": "Add",
+    "save": "Save",
+    "cancel": "Cancel"
   },
   "loading": "Chargement en cours...",
+  "now_playing": "Now playing",
   "contextMenu": {
+    "sort_by": "Sort by",
     "sort": {
       "title": "Titre",
-      "album": "Album",
+      "album": "Album (Track No.)",
       "artist": "Artiste",
       "genre": "Genre",
       "date_added": "Date d'ajout",
@@ -79,10 +96,24 @@
       "showInLibrary": "Afficher dans la bibliothèque",
       "showHidden": "Afficher les chansons masquées",
       "hideHidden": "Masquer les chansons masquées",
-      "openInBrowser": "Open in browser"
+      "openInBrowser": "Open in browser",
+      "gotoAlbum": "Goto album ({title})",
+      "gotoArtists": "Goto artists"
+    },
+    "artist": {
+      "remove": "Remove artist"
+    },
+    "album": {
+      "remove": "Remove album"
     },
     "moreInfo": "Plus d'info",
     "incorrectPlayback": "Lecture Incorrecte ?"
+  },
+  "explore": {
+    "you_listened_to": "You've listened to",
+    "of_music": "of music",
+    "played_for": "Played for",
+    "hot_from": "Hot from"
   },
   "providers": {
     "youtube": "YouTube",
@@ -90,8 +121,10 @@
     "invidious": "Invivable",
     "lastfm": "LastFM"
   },
-  "save": "Enregistrer",
-  "cancel": "Abandonner",
+  "accounts": {
+    "connect": "Connect",
+    "sign_out": "Sign out"
+  },
   "settings": {
     "paths": {
       "songDirectories": "Répertoires de chansons",
@@ -107,7 +140,9 @@
       "splitter": "Modèle de séparation du nom de l'artiste",
       "splitter_tooltip": "Regex pour découper le nom de l'artiste. Laisser vide pour désactiver le découpage.",
       "scan_interval": "Scan interval",
-      "scan_interval_tooltip": "Interval in seconds to trigger a scan task. Set to -1 to disable automatic scanning"
+      "scan_interval_tooltip": "Interval in minutes to trigger a scan task. Set to -1 to disable automatic scanning",
+      "scan_threads": "Scan CPU threads",
+      "scan_threads_tooltip": "Number of threads to use when scanning for local music"
     },
     "themes": {
       "songView": "Vue des chansons",
@@ -124,7 +159,9 @@
         "name": "Nom du thème",
         "author": "Auteur",
         "colors": "Couleurs",
-        "colors_tooltip": "Changer les couleurs pour personnaliser l'interface utilisateur"
+        "colors_tooltip": "Changer les couleurs pour personnaliser l'interface utilisateur",
+        "css": "Custom CSS",
+        "watch_css": "Watch CSS for file changes"
       },
       "primary": "Primaire",
       "secondary": "Secondaire",
@@ -160,6 +197,7 @@
         "sponsorBlock": "Utiliser SponsorBlock pour passer automatiquement à une partie en surbrillance de la chanson Youtube"
       },
       "audioSettings_tooltip": "Paramètres qui sont liés à la lecture audio",
+      "gapless_skip": "Skip song before end (seconds)",
       "invidiousUrlUnsupported": "Cette url ne supporte pas l'API Invidious",
       "invidious_tooltip": "Instance insensée à utiliser à la place de youtube",
       "restartApp": "Redémarrer Moosync",
@@ -272,7 +310,70 @@
       "logSettings": "Paramètres du journal",
       "level": "Niveau",
       "process": "Processus",
-      "filterMessage": "Filtrer le message"
+      "filterMessage": "Filtrer le message",
+      "levels": {
+        "all": "All",
+        "debug": "Debug",
+        "info": "Info",
+        "warn": "Warn",
+        "error": "Error"
+      },
+      "debug_logging": "Enable debug logging",
+      "table": {
+        "time": "Time",
+        "level": "Level",
+        "process": "Process",
+        "message": "Message"
+      }
     }
+  },
+  "hotkeys": {
+    "play": "Play Song",
+    "pause": "Pause song",
+    "play_toggle": "Toggle play",
+    "mute_active": "Mute",
+    "mute_inactive": "Unmute",
+    "mute_toggle": " Toggle mute",
+    "volume_inc": "Increase volume",
+    "volume_dec": "Decrease volume",
+    "repeat_active": "Repeat song",
+    "repeat_inactive": "Disable repeat",
+    "repeat_toggle": "Toggle repeat",
+    "queue_open": "Open song queue",
+    "queue_close": "Close song queue",
+    "queue_toggle": "Toggle song queue",
+    "reload_page": "Reload page",
+    "devtools": "Toggle dev-tools",
+    "help": "Open help",
+    "fullscreen": "Fullscreen",
+    "next_song": "Skip song",
+    "prev_song": "Prev song",
+    "seek_forward": "Seek 5s forward",
+    "seek_backwards": "Seek 5s backwards",
+    "seek_0": "Seek to 0%",
+    "seek_1": "Seek to 10%",
+    "seek_2": "Seek to 20%",
+    "seek_3": "Seek to 30%",
+    "seek_4": "Seek to 40%",
+    "seek_5": "Seek to 50%",
+    "seek_6": "Seek to 60%",
+    "seek_7": "Seek to 70%",
+    "seek_8": "Seek to 80%",
+    "seek_9": "Seek to 90%"
+  },
+  "tray": {
+    "play": "Play",
+    "pause": "Pause",
+    "next": "Next",
+    "prev": "Prev",
+    "repeat": "Repeat",
+    "no_repeat": "No repeat",
+    "shuffle": "Shuffle",
+    "show_app": "Show app",
+    "quit": "Quit"
+  },
+  "toasts": {
+    "queued": "Queued {count} song | Queued {count} songs",
+    "shuffled": "Shuffled"
   }
 }

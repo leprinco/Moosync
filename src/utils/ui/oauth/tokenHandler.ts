@@ -17,7 +17,7 @@ import {
   TokenErrorJson,
   TokenRequest,
   TokenResponse,
-  TokenResponseJson
+  TokenResponseJson,
 } from '@openid/appauth'
 
 export class TokenRequestHandlerWClientSecret extends BaseTokenRequestHandler {
@@ -34,18 +34,18 @@ export class TokenRequestHandlerWClientSecret extends BaseTokenRequestHandler {
 
   async performTokenRequest(
     configuration: AuthorizationServiceConfiguration,
-    request: TokenRequest
+    request: TokenRequest,
   ): Promise<TokenResponse> {
     // Force client-secret in token fetch request
     const reqStrMap = request.toStringMap()
-    reqStrMap['client_secret'] = this.clientSecret
+    reqStrMap.client_secret = this.clientSecret
 
     const tokenResponse = this.requestor.xhr<TokenResponseJson | TokenErrorJson>({
       url: configuration.tokenEndpoint,
       method: 'POST',
       dataType: 'json', // adding implicit dataType
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      data: this.utils.stringify(reqStrMap)
+      data: this.utils.stringify(reqStrMap),
     })
 
     return tokenResponse.then((response) => {

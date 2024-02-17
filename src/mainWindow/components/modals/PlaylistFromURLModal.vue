@@ -14,13 +14,8 @@
         <b-row no-gutters class="d-flex">
           <b-col cols="auto">
             <SongDefault v-if="forceEmptyImg || !playlist || !playlist.playlist_coverPath" class="playlist-url-cover" />
-            <b-img
-              v-else
-              class="playlist-url-cover"
-              :src="playlist.playlist_coverPath"
-              @error="handleImageError"
-              referrerPolicy="no-referrer"
-            ></b-img>
+            <b-img v-else class="playlist-url-cover" :src="playlist.playlist_coverPath" @error="handleImageError"
+              referrerPolicy="no-referrer"></b-img>
 
             <div v-if="isLoading" class="loading-spinner d-flex justify-content-center">
               <b-spinner class="align-self-center" />
@@ -36,53 +31,44 @@
                 </b-row>
                 <b-row class="w-100">
                   <div class="subtitle text-truncate" :class="{ deactivated: !playlist }">
-                    {{ playlist ? (playlist.playlist_song_count || songList.length) + ' Songs' : '0 Songs' }}
+                    {{ songCount ? songCount + ' Songs' : '' }}
                   </div>
                 </b-row>
               </b-col>
             </b-row>
             <b-row no-gutters>
               <b-col cols="12">
-                <InputGroup class="input-group" hint="Enter URL Here.. (Youtube or Spotify)" @update="parseURL" />
+                <InputGroup class="input-group" :hint="$t('playlists.url.input_hint')" v-model="playlistUrl"
+                  @update="parseURL" />
               </b-col>
             </b-row>
           </b-col>
         </b-row>
         <b-row v-if="songList && songList.length !== 0" no-gutters class="playlist-content-recycler-row">
           <div class="h-100 w-100">
-            <RecycleScroller
-              class="scroller"
-              :items="songList"
-              :item-size="83"
-              key-field="_id"
-              v-slot="{ item, index }"
-              :direction="'vertical'"
-            >
-              <SingleSearchResult
-                class="single-result"
-                :title="item.title"
-                :subtitle="item.artists ? item.artists.map((val) => val.artist_name).join(', ') : ''"
-                :coverImg="getImgSrc(getValidImageLow(item))"
-                :divider="index != songList.length - 1"
-                :id="index"
-                @imgClick="handleClick"
-              />
+            <RecycleScroller class="scroller" :items="songList" :item-size="83" key-field="_id" v-slot="{ item, index }"
+              :direction="'vertical'">
+              <SingleSearchResult class="single-result" :title="item.title"
+                :subtitle="item.artists ? item.artists.map((val: Artists) => val.artist_name).join(', ') : ''"
+                :coverImg="getImgSrc(getValidImageLow(item))" :divider="index != songList.length - 1" :id="index"
+                @imgClick="handleClick" />
             </RecycleScroller>
           </div>
         </b-row>
       </b-container>
-      <b-button class="close-button ml-3" @click="close">Close</b-button>
-      <b-button class="create-button" :disabled="!addButtonEnabled" @click="addToLibrary">Add</b-button>
+      <b-button class="close-button ml-3" @click="close">{{ $t('buttons.close') }}</b-button>
+      <b-button class="create-button" :disabled="!addButtonEnabled" @click="addToLibrary">{{ $t('buttons.add')
+      }}</b-button>
     </div>
   </b-modal>
 </template>
 
 <script lang="ts">
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop } from 'vue-facing-decorator'
 import SongDefault from '@/icons/SongDefaultIcon.vue'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import SingleSearchResult from '@/mainWindow/components/generic/SingleSearchResult.vue'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
@@ -91,6 +77,8 @@ import { v4 } from 'uuid'
 import RemoteSong from '@/utils/ui/mixins/remoteSongMixin'
 import ProviderMixin from '@/utils/ui/mixins/ProviderMixin'
 import { ProviderScopes } from '@/utils/commonConstants'
+import { toast } from 'vue3-toastify'
+import { convertProxy } from '../../../utils/ui/common';
 
 @Component({
   components: {
@@ -112,6 +100,10 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
 
   addButtonEnabled = false
 
+  get songCount() {
+    return this.playlist?.playlist_song_count || this.songList.length
+  }
+
   handleImageError() {
     this.forceEmptyImg = true
   }
@@ -124,6 +116,8 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
     this.$bvModal.hide(this.id)
   }
 
+  playlistUrl!: string
+
   async parseURL(url: string) {
     if (url) {
       this.isLoading = true
@@ -132,12 +126,14 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
       this.playlist = null
       this.addButtonEnabled = false
 
+      const trimmed = url.trim()
+
       if (url.startsWith('http')) {
         const providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_FROM_URL)
         for (const p of providers) {
-          if (p.matchPlaylist(url)) {
+          if (p.matchPlaylist(trimmed)) {
             try {
-              this.playlist = (await p.getPlaylistDetails(url)) ?? null
+              this.playlist = (await p.getPlaylistDetails(trimmed)) ?? null
               if (this.playlist) {
                 this.addButtonEnabled = true
                 break
@@ -148,7 +144,7 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
           }
         }
       } else {
-        const data = await window.FileUtils.scanSinglePlaylist(url)
+        const data = await window.FileUtils.scanSinglePlaylist(trimmed)
         this.playlist = {
           playlist_id: data.playlist?.playlist_id ?? v4(),
           playlist_name: data.playlist?.playlist_name ?? 'New Playlist',
@@ -177,11 +173,11 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
 
   async addToLibrary() {
     if (this.playlist) {
-      const playlistId = await window.DBUtils.createPlaylist(this.playlist)
+      const playlistId = await window.DBUtils.createPlaylist(convertProxy(this.playlist))
 
-      if (!this.playlist.extension) await window.DBUtils.addToPlaylist(playlistId, ...this.songList)
+      if (!this.playlist.extension) await window.DBUtils.addToPlaylist(playlistId, ...convertProxy(this.songList, true))
 
-      this.$toasted.show(`Added ${this.playlist.playlist_name} to library`)
+      toast(`Added ${this.playlist.playlist_name} to library`)
 
       this.playlist = null
       this.songList = []
@@ -193,7 +189,7 @@ export default class PlaylistFromUrlModal extends mixins(PlayerControls, ImgLoad
   }
 
   mounted() {
-    bus.$on(EventBus.SHOW_PLAYLIST_FROM_URL_MODAL, (refreshCallback: () => void) => {
+    bus.on(EventBus.SHOW_PLAYLIST_FROM_URL_MODAL, (refreshCallback: () => void) => {
       this.addButtonEnabled = false
       this.refreshCallback = refreshCallback
       this.$bvModal.show(this.id)

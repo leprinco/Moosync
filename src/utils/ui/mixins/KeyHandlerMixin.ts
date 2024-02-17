@@ -7,12 +7,14 @@
  *  See LICENSE in the project root for license information.
  */
 
-import { Component } from 'vue-property-decorator'
+import { HotkeyEvents, RepeatState, defaultKeybinds } from '@/utils/commonConstants'
+
+import { Component } from 'vue-facing-decorator'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
-import { mixins } from 'vue-class-component'
 import { bus } from '@/mainWindow/main'
-import { defaultKeybinds, HotkeyEvents } from '@/utils/commonConstants'
 import { KeyboardNavigation } from './KeyboardNavigation'
+import { mixins } from 'vue-facing-decorator'
+import { vxm } from '@/mainWindow/store'
 
 @Component
 export default class KeyHandlerMixin extends mixins(PlayerControls) {
@@ -22,7 +24,7 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
 
   async created() {
     this.keyboardHotKeyMap = Object.freeze(
-      (await window.PreferenceUtils.loadSelective('hotkeys', false, defaultKeybinds)) as HotkeyPair[]
+      (await window.PreferenceUtils.loadSelective('hotkeys', false, defaultKeybinds)) as HotkeyPair[],
     )
 
     window.PreferenceUtils.listenPreferenceChanged('hotkeys', true, (_, val: HotkeyPair[]) => {
@@ -77,16 +79,17 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
         this.unmute()
         break
       case HotkeyEvents.REPEAT_ACTIVE:
-        this.repeat = true
+        this.repeat = RepeatState.ALWAYS
         break
       case HotkeyEvents.REPEAT_INACTIVE:
-        this.repeat = false
+        this.repeat = RepeatState.DISABLED
         break
       case HotkeyEvents.REPEAT_TOGGLE:
         this.toggleRepeat()
         break
       case HotkeyEvents.RELOAD_PAGE:
         window.SpotifyPlayer.close()
+          .then(() => window.RodioUtils.stop())
           .then(() => window.WindowUtils.handleReload())
           .then(() => location.reload())
         break
@@ -97,13 +100,13 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
         window.WindowUtils.openExternal('https://github.com/Moosync/Moosync#readme')
         break
       case HotkeyEvents.QUEUE_CLOSE:
-        bus.$emit('onToggleSlider', false)
+        bus.emit('onToggleSlider', false)
         break
       case HotkeyEvents.QUEUE_OPEN:
-        bus.$emit('onToggleSlider', true)
+        bus.emit('onToggleSlider', true)
         break
       case HotkeyEvents.QUEUE_TOGGLE:
-        bus.$emit('onToggleSlider')
+        bus.emit('onToggleSlider')
         break
       case HotkeyEvents.FULLSCREEN:
         window.WindowUtils.toggleFullscreen(true)
@@ -117,12 +120,32 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
       case HotkeyEvents.QUEUE_SELECTION:
         bus.$emit('onQueueSelection')
         break
-      case HotkeyEvents.TOP:
-      case HotkeyEvents.BOTTOM:
-      case HotkeyEvents.LEFT:
-      case HotkeyEvents.RIGHT:
+      case HotkeyEvents.NAV_TOP:
+      case HotkeyEvents.NAV_BOTTOM:
+      case HotkeyEvents.NAV_LEFT:
+      case HotkeyEvents.NAV_RIGHT:
         this.currentKeyboardNavigation.onMove(action)
         break
+      case HotkeyEvents.NEXT_SONG:
+        this.nextSong()
+        break
+      case HotkeyEvents.PREV_SONG:
+        this.prevSong()
+        break
+      case HotkeyEvents.SEEK_BACKWARDS:
+        vxm.player.forceSeek = vxm.player.currentTime - 5
+        break
+      case HotkeyEvents.SEEK_FORWARD:
+        vxm.player.forceSeek = vxm.player.currentTime + 5
+        break
+      default: {
+        const duration = vxm.player.currentSong?.duration
+        if (duration && (action >= 22 || action <= 31)) {
+          const seekPercent = action % 22
+          const seekTime = ((seekPercent * 10) / 100) * duration
+          vxm.player.forceSeek = seekTime
+        }
+      }
     }
   }
 

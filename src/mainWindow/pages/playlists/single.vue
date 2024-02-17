@@ -14,35 +14,27 @@
 </route>
 <template>
   <div class="w-100 h-100">
-    <SongView
-      :defaultDetails="defaultDetails"
-      :songList="songList"
-      :detailsButtonGroup="buttonGroups"
-      :isLoading="isLoading"
-      :isRemote="isRemote"
-      :onSongContextMenuOverride="onSongContextMenuOverride"
-      @playAll="playPlaylist"
-      @addToQueue="addPlaylistToQueue"
-      @addToLibrary="addPlaylistToLibrary"
-      @onScrollEnd="loadNextPage"
-      @onSearchChange="onSearchChange"
-      @playRandom="playRandom"
-      @fetchAll="fetchAll"
-    />
+    <SongView :defaultDetails="defaultDetails" :songList="songList" :detailsButtonGroup="buttonGroups"
+      :isLoading="isLoading" :isRemote="isRemote" :onSongContextMenuOverride="onSongContextMenuOverride"
+      @playAll="playPlaylist" @addToQueue="addPlaylistToQueue" @addToLibrary="addPlaylistToLibrary"
+      @onScrollEnd="loadNextPage" @onSearchChange="onSearchChange" @playRandom="playRandom" @fetchAll="fetchAll" />
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop } from 'vue-property-decorator'
+import { Component, Prop } from 'vue-facing-decorator'
 import SongView from '@/mainWindow/components/songView/SongView.vue'
 
-import { mixins } from 'vue-class-component'
+import { mixins } from 'vue-facing-decorator'
 import ContextMenuMixin from '@/utils/ui/mixins/ContextMenuMixin'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
-import { ProviderScopes } from '@/utils/commonConstants'
 import { arrayDiff, emptyGen, getRandomFromArray } from '@/utils/common'
 import ProviderFetchMixin from '@/utils/ui/mixins/ProviderFetchMixin'
+import { GenericProvider } from '@/utils/ui/providers/generics/genericProvider'
+import { ProviderScopes } from '@/utils/commonConstants'
+import { toast } from 'vue3-toastify'
+import { FAVORITES_PLAYLIST_ID } from '../../../utils/commonConstants'
 
 @Component({
   components: {
@@ -57,7 +49,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
 
   private invalidateCache = false
 
-  private providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_SONGS)
+  private providers: GenericProvider[] = []
 
   private getPlaylistOwnerProvider() {
     if (this.playlist?.playlist_id) {
@@ -81,38 +73,52 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   get defaultDetails(): SongDetailDefaults {
     return {
       defaultTitle: this.playlist?.playlist_name ?? '',
-      defaultSubSubtitle: this.$tc('songView.details.songCount', this.filteredSongList.length),
-      defaultCover: this.playlist?.playlist_coverPath ?? ''
+      defaultSubSubtitle: this.$t('songView.details.songCount', this.filteredSongList.length),
+      defaultCover:
+        this.playlist.playlist_id === FAVORITES_PLAYLIST_ID
+          ? FAVORITES_PLAYLIST_ID
+          : this.playlist?.playlist_coverPath ?? ''
     }
   }
 
   private get isYoutube() {
-    return (this.$route.query.id as string)?.startsWith('youtube')
+    return (this.$route?.query?.id as string)?.startsWith('youtube')
   }
 
   private get isSpotify() {
-    return (this.$route.query.id as string)?.startsWith('spotify')
+    return (this.$route?.query?.id as string)?.startsWith('spotify')
   }
 
   private get isExtension() {
-    return this.$route.query.extension
+    return this.$route?.query?.extension
   }
 
   isRemote() {
     return !!(this.isYoutube || this.isSpotify || this.isExtension)
   }
 
-  private async refresh() {
+  private async clearAndFetch() {
     this.clearSongList()
     this.clearNextPageTokens()
+
     await this.fetchSongList()
   }
 
+  private async refresh() {
+    for (const [key, checked] of Object.entries(this.activeProviders)) {
+      if (checked) {
+        await this.onProviderChanged({ key, checked })
+      }
+    }
+  }
+
   async created() {
-    this.localSongFetch = async (sortBy) =>
+    this.providers = this.getProvidersByScope(ProviderScopes.PLAYLIST_SONGS)
+
+    this.localSongFetch = async (sortBy: SongSortOptions[]) =>
       window.SearchUtils.searchSongsByOptions({
         playlist: {
-          playlist_id: this.$route.query.playlist_id as string
+          playlist_id: this.$route?.query?.playlist_id as string
         },
         sortBy
       })
@@ -134,7 +140,6 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
         playlist: { playlist_id: this.playlist.playlist_id }
       })
     )[0]
-    this.refresh()
 
     const owner = this.getPlaylistOwnerProvider()
     if (owner) {
@@ -145,23 +150,25 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
   mounted() {
     this.enableRefresh()
     this.listenGlobalRefresh()
+    this.clearAndFetch()
   }
 
   private listenGlobalRefresh() {
-    bus.$on(EventBus.REFRESH_PAGE, () => {
+    bus.on(EventBus.REFRESH_PAGE, async () => {
       this.invalidateCache = true
-      this.refresh()
+      await this.clearAndFetch()
+      await this.refresh()
     })
   }
 
   private get playlist() {
     return {
-      playlist_id: this.$route.query.playlist_id as string,
-      playlist_name: this.$route.query.playlist_name as string,
-      playlist_coverPath: this.$route.query.playlist_coverPath as string,
-      playlist_song_count: parseInt(this.$route.query.playlist_song_count as string) ?? 0,
-      playlist_path: this.$route.query.playlist_path as string | undefined,
-      extension: this.$route.query.extension as string | undefined
+      playlist_id: this.$route?.query?.playlist_id as string,
+      playlist_name: this.$route?.query?.playlist_name as string,
+      playlist_coverPath: this.$route?.query?.playlist_coverPath as string,
+      playlist_song_count: parseInt(this.$route?.query?.playlist_song_count as string) ?? 0,
+      playlist_path: this.$route?.query?.playlist_path as string | undefined,
+      extension: this.$route?.query?.extension as string | undefined
     }
   }
 
@@ -183,7 +190,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
 
   addPlaylistToLibrary() {
     window.DBUtils.createPlaylist(this.playlist)
-    this.$toasted.show(`Added ${this.playlist.playlist_name} to library`)
+    toast(`Added ${this.playlist.playlist_name} to library`)
   }
 
   onSearchChange() {
@@ -198,7 +205,7 @@ export default class SinglePlaylistView extends mixins(ContextMenuMixin, Provide
 
   onSongContextMenuOverride(event: PointerEvent, songs: Song[]) {
     this.getContextMenu(event, {
-      type: 'PLAYLIST_SONGS',
+      type: 'PLAYLIST_CONTENT',
       args: {
         playlistId: this.playlist.playlist_id,
         songs,

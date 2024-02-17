@@ -11,13 +11,13 @@
   <div class="h-100 w-100">
     <div ref="audioHolder" class="h-100 w-100">
       <div class="w-100 h-100 position-relative">
-        <div class="yt-player" ref="yt-player" id="yt-player"></div>
+        <div class="yt-player" ref="ytAudioElement" id="yt-player"></div>
         <div class="yt-player-overlay h-100 w-100" v-if="isJukeboxModeActive"></div>
       </div>
       <audio id="dummy-yt-player" />
-      <audio ref="audio" preload="auto" crossorigin="anonymous" />
-      <video ref="dash-player" class="dash-player" crossorigin="anonymous"></video>
-      <video ref="hls-player" class="hls-player" crossorigin="anonymous"></video>
+      <audio ref="audioElement" preload="auto" crossorigin="anonymous" />
+      <video ref="dashPlayerDiv" class="dash-player" crossorigin="anonymous"></video>
+      <video ref="hlsPlayerDiv" class="hls-player" crossorigin="anonymous"></video>
     </div>
   </div>
 </template>
@@ -37,13 +37,14 @@ const enum ButtonEnum {
   Shuffle = 10,
   Repeat = 11,
   Seek = 12,
-  PlayPause = 13
+  PlayPause = 13,
+  Position = 14
 }
 
 const SONG_CHANGE_DEBOUNCE = 100
 
-import { Component, Prop, Ref, Watch } from 'vue-property-decorator'
-import { mixins } from 'vue-class-component'
+import { Component, Prop, Ref, Watch } from 'vue-facing-decorator'
+import { mixins } from 'vue-facing-decorator'
 import { Player } from '@/utils/ui/players/player'
 import { YoutubePlayer } from '@/utils/ui/players/youtube'
 import { LocalPlayer } from '@/utils/ui/players/local'
@@ -52,7 +53,6 @@ import CacheMixin from '@/utils/ui/mixins/CacheMixin'
 import { vxm } from '@/mainWindow/store'
 import ErrorHandler from '@/utils/ui/mixins/errorHandler'
 import PlayerControls from '@/utils/ui/mixins/PlayerControls'
-import Vue from 'vue'
 import { InvidiousPlayer } from '../../../../utils/ui/players/invidious'
 import { DashPlayer } from '../../../../utils/ui/players/dash'
 import JukeboxMixin from '@/utils/ui/mixins/JukeboxMixin'
@@ -65,8 +65,14 @@ import { SpotifyPlayer } from '@/utils/ui/players/spotify'
 import { isEmpty } from '@/utils/common'
 import { bus } from '@/mainWindow/main'
 import { EventBus } from '@/utils/main/ipc/constants'
+import { nextTick } from 'vue'
+import { convertProxy } from '@/utils/ui/common'
+import { RepeatState } from '../../../../utils/commonConstants';
+import { RodioPlayer } from '../../../../utils/ui/players/rodio';
 
-@Component({})
+@Component({
+  emits: ['onTimeUpdate']
+})
 export default class AudioStream extends mixins(
   SyncMixin,
   PlayerControls,
@@ -75,23 +81,20 @@ export default class AudioStream extends mixins(
   JukeboxMixin,
   ProviderMixin
 ) {
-  @Ref('audio')
+  @Ref
   private audioElement!: HTMLAudioElement
 
-  @Ref('yt-player')
+  @Ref
   private ytAudioElement!: HTMLDivElement
 
-  @Ref('dash-player')
+  @Ref
   private dashPlayerDiv!: HTMLVideoElement
 
-  @Ref('hls-player')
+  @Ref
   private hlsPlayerDiv!: HTMLVideoElement
 
   @Prop({ default: '' })
   roomID!: string
-
-  @Prop({ default: 0 })
-  forceSeek!: number
 
   get currentSong(): Song | null | undefined {
     return vxm.player.currentSong
@@ -138,10 +141,6 @@ export default class AudioStream extends mixins(
     vxm.themes.showPlayer = show
   }
 
-  get volume() {
-    return vxm.player.volume
-  }
-
   /**
    * Method called when vuex player state changes
    * This method is responsible for reflecting that state on active player
@@ -170,11 +169,19 @@ export default class AudioStream extends mixins(
     let player: Player | undefined = undefined
 
     let tries = 0
-    while (!(player && song.playbackUrl) && tries < vxm.playerRepo.allPlayers.length) {
+    while (!(player && (song.path ?? song.playbackUrl)) && tries < vxm.playerRepo.allPlayers.length) {
+
+      if (song.path && !this.playerBlacklist.includes('LOCAL')) {
+        newType = 'LOCAL'
+      }
+
       player = this.findPlayer(newType, this.playerBlacklist)
-      console.debug('Found player', player?.key)
+      console.debug('Found player', song, newType, player?.key)
 
       if (newType === 'LOCAL' && player) {
+        if (song.duration < 0) {
+          song.duration = (await this.getPlaybackDurationFromPlayer(song)) ?? 0
+        }
         break
       }
 
@@ -183,8 +190,9 @@ export default class AudioStream extends mixins(
       }
 
       if (!player) {
-        console.error('No player found to play', song.playbackUrl)
+        console.error('No player found to play', song.path || song.playbackUrl)
         if (vxm.player.queueOrder.length > 1) {
+          this.playerBlacklist = []
           this.nextSong()
         }
         return
@@ -216,10 +224,11 @@ export default class AudioStream extends mixins(
       if (player) {
         console.debug('Initializing player', player.key)
         await this.initializePlayer(player)
+        console.debug('Initialized player', player.key)
 
         this.activePlayer = player
 
-        this.activePlayer.volume = vxm.player.volume
+        this.activePlayer.volume = this.volume
         this.registerPlayerListeners()
         this.activePlayerTypes = newType
 
@@ -252,6 +261,7 @@ export default class AudioStream extends mixins(
   @Watch('currentSong', { immediate: true })
   onSongChanged(newSong: Song | null | undefined) {
     if (newSong) {
+      this.playerBlacklist = []
       this.clearSongChangeTimer()
       this.songChangeTimer = setTimeout(() => this.loadAudio(newSong, false), SONG_CHANGE_DEBOUNCE)
     } else {
@@ -265,19 +275,22 @@ export default class AudioStream extends mixins(
   /**
    * Method triggered when vuex volume changes
    */
-  onVolumeChanged(newValue: number) {
+  onVolumeChanged() {
     if (this.activePlayer) {
-      this.activePlayer.volume = newValue
+      this.activePlayer.volume = this.volume
     }
   }
 
   /**
    * Method triggered when user seeks on timeline and forceSeek prop changes
    */
-  @Watch('forceSeek') onSeek(newValue: number) {
-    if (this.activePlayer) {
-      this.activePlayer.currentTime = newValue
-      if (this.isSyncing) this.remoteSeek(newValue)
+  onSeek(newValue?: number) {
+    if (typeof newValue === 'number') {
+      if (this.activePlayer) {
+        this.activePlayer.currentTime = newValue
+        if (this.isSyncing) this.remoteSeek(newValue)
+        vxm.player.forceSeek = undefined
+      }
     }
   }
 
@@ -315,6 +328,7 @@ export default class AudioStream extends mixins(
     const players = await new Promise<Player[]>((resolve) => {
       const players: Player[] = []
 
+      players.push(new RodioPlayer())
       players.push(new LocalPlayer())
       players.push(new DashPlayer())
       players.push(new HLSPlayer())
@@ -367,7 +381,7 @@ export default class AudioStream extends mixins(
       return
     }
 
-    if (player instanceof SpotifyPlayer) {
+    if (player instanceof SpotifyPlayer || player instanceof RodioPlayer) {
       await player.initialize()
     }
 
@@ -388,16 +402,21 @@ export default class AudioStream extends mixins(
   }
 
   private registerRoomListeners() {
-    // this.$root.$on('join-room', (data: string) => this.joinRoom(data))
-    // this.$root.$on('create-room', () => this.createRoom())
+    // bus.on('join-room', (data: string) => this.joinRoom(data))
+    // bus.on('create-room', () => this.createRoom())
   }
 
   private async onSongEnded() {
     vxm.player.playAfterLoad = true
     this.lastLoadedSong = undefined
-    if (this.repeat && this.currentSong) {
+    if (this.repeat !== RepeatState.DISABLED && this.currentSong) {
       // Re load entire audio instead of setting current time to 0
       this.loadAudio(this.currentSong, false)
+
+      if (this.repeat === RepeatState.ONCE) {
+        this.repeat = RepeatState.DISABLED
+      }
+
     } else {
       vxm.player.currentSong = undefined
       await this.nextSong()
@@ -423,6 +442,8 @@ export default class AudioStream extends mixins(
     return false
   }
 
+  private timeSkipSeconds = 0
+
   /**
    * Register all listeners related to players
    */
@@ -436,12 +457,18 @@ export default class AudioStream extends mixins(
       this.activePlayer.onTimeUpdate = async (time) => {
         this.$emit('onTimeUpdate', time)
 
+        this.updateMprisPosition(time)
+
         if (this.currentSong) {
-          if (time >= this.currentSong.duration - preloadDuration) {
+          if (time >= this.currentSong.duration - preloadDuration - this.timeSkipSeconds) {
             await this.preloadNextSong()
             if (this.isSilent()) {
               this.onSongEnded()
             }
+          }
+
+          if (this.timeSkipSeconds && time >= this.currentSong.duration - this.timeSkipSeconds) {
+            this.onSongEnded()
           }
         }
       }
@@ -539,7 +566,7 @@ export default class AudioStream extends mixins(
         ) {
           // this.activePlayer.setPlaybackQuality('small')
           this?.pause()
-          Vue.nextTick(() => this.play())
+          nextTick(() => this.play())
 
           console.debug('Triggered buffer trap')
         }
@@ -554,9 +581,18 @@ export default class AudioStream extends mixins(
     }
   }
 
+  private handleSeek(seek: number, relative: boolean) {
+    if (seek) {
+      const parsed = seek / 10e5
+      const newPos = relative ? vxm.player.currentTime + parsed : parsed
+      bus.emit('forceSeek', newPos)
+      vxm.player.forceSeek = newPos
+    }
+  }
+
   private registerMediaControlListener() {
-    window.MprisUtils.listenMediaButtonPress((args) => {
-      switch (args) {
+    window.MprisUtils.listenMediaButtonPress((button, arg) => {
+      switch (button) {
         case ButtonEnum.Play:
           this.play()
           break
@@ -581,20 +617,36 @@ export default class AudioStream extends mixins(
         case ButtonEnum.PlayPause:
           this.togglePlay()
           break
+        case ButtonEnum.Seek:
+          this.handleSeek(arg as number, true)
+          break
+        case ButtonEnum.Position:
+          this.handleSeek((arg as { position: number })?.position, false)
+          break
       }
     })
   }
 
-  private registerListeners() {
+  private async updateMprisPosition(position: number) {
+    await window.MprisUtils.updatePosition(position)
+  }
+
+  private async registerListeners() {
     this.registerRoomListeners()
     this.registerMediaControlListener()
 
     vxm.player.$watch('playerState', this.onPlayerStateChanged, { immediate: true, deep: false })
+    vxm.player.$watch('forceSeek', this.onSeek)
 
-    bus.$on(EventBus.FORCE_LOAD_SONG, () => {
+    bus.on(EventBus.FORCE_LOAD_SONG, () => {
       if (this.currentSong) {
         this.loadAudio(this.currentSong, true, true)
       }
+    })
+
+    this.timeSkipSeconds = await window.PreferenceUtils.loadSelective<number>('gapless.skip', false) ?? 0
+    window.PreferenceUtils.listenPreferenceChanged<number>('gapless.skip', true, (_, value) => {
+      this.timeSkipSeconds = value
     })
   }
 
@@ -610,26 +662,19 @@ export default class AudioStream extends mixins(
     }
   }
 
-  private async getPlaybackUrlAndDuration(
-    provider: GenericProvider | undefined,
-    song: Song,
-    player: string
-  ): Promise<{ url: string | undefined; duration?: number } | undefined> {
-    if (provider) {
-      const res = await provider.getPlaybackUrlAndDuration(song, player)
-      if (res) return res
-    }
-
+  private async getPlaybackDurationFromPlayer(song: Song) {
     try {
-      const data = await new Promise<{ url: string; duration: number } | undefined>((resolve, reject) => {
-        if (song.playbackUrl) {
+      const data = await new Promise<number | undefined>((resolve, reject) => {
+        const url = song.path ? `media://${song.path}` : song.playbackUrl
+
+        if (url) {
           const audio = new Audio()
           audio.onloadedmetadata = () => {
-            if (song.playbackUrl) resolve({ url: song.playbackUrl, duration: audio.duration })
+            if (url) resolve(audio.duration)
           }
           audio.onerror = reject
 
-          audio.src = song.playbackUrl
+          audio.src = url
         } else {
           resolve(undefined)
         }
@@ -640,21 +685,41 @@ export default class AudioStream extends mixins(
     }
   }
 
+  private async getPlaybackUrlAndDuration(
+    provider: GenericProvider | undefined,
+    song: Song,
+    player: string
+  ): Promise<{ url: string | undefined; duration?: number } | undefined> {
+    if (provider) {
+      console.debug('Fetching playback URL and duration from', provider.key)
+      const res = await provider.getPlaybackUrlAndDuration(song, player)
+      if (res) return res
+    }
+
+    const duration = await this.getPlaybackDurationFromPlayer(song)
+    if (duration) {
+      return { duration, url: song.playbackUrl }
+    }
+  }
+
   /**
    * Set media info which is recognised by different applications and OS specific API
    */
   private async setMediaInfo(song: Song) {
+    const raw = convertProxy(song)
     await window.MprisUtils.updateSongInfo({
-      title: song.title,
-      albumName: song.album?.album_name,
-      albumArtist: song.album?.album_artist,
-      artistName: song.artists && song.artists.map((val) => val.artist_name).join(', '),
-      genres: song.genre,
+      id: raw._id,
+      title: raw.title,
+      duration: raw.duration,
+      albumName: raw.album?.album_name,
+      albumArtist: raw.album?.album_artist,
+      artistName: raw.artists && raw.artists.map((val) => val.artist_name).join(', '),
+      genres: raw.genre,
       thumbnail:
-        song.song_coverPath_high ??
-        song.album?.album_coverPath_high ??
-        song.song_coverPath_low ??
-        song.album?.album_coverPath_low
+        raw.song_coverPath_high ??
+        raw.album?.album_coverPath_high ??
+        raw.song_coverPath_low ??
+        raw.album?.album_coverPath_low
     })
   }
 
@@ -752,13 +817,13 @@ export default class AudioStream extends mixins(
     const songExists = (
       await window.SearchUtils.searchSongsByOptions({
         song: {
-          _id: song._id
+          _id: convertProxy(song._id)
         }
       })
     )[0]
 
     if (songExists) {
-      await window.DBUtils.updateSongs([song])
+      await window.DBUtils.updateSongs([convertProxy(song)])
     }
   }
 
@@ -790,7 +855,7 @@ export default class AudioStream extends mixins(
       // Mutating those properties should also mutate song and vice-versa
       if (vxm.player.currentSong && song) {
         song.duration = res.duration
-        this.$set(song, 'playbackUrl', res.url)
+        song.playbackUrl = res.url
 
         this.setItem(`url_duration:${song._id}`, res)
 
@@ -829,7 +894,10 @@ export default class AudioStream extends mixins(
 
     vxm.player.loading = true
 
-    await this.onPlayerTypesChanged(PlayerTypes, song)
+    const changedPlayer = await this.onPlayerTypesChanged(PlayerTypes, song)
+    if (!changedPlayer) {
+      return this.nextSong()
+    }
 
     // Don't proceed if song has changed while we were fetching playback url and duration
     if (song._id !== this.currentSong?._id) {
@@ -845,28 +913,19 @@ export default class AudioStream extends mixins(
       return
     }
 
-    if (PlayerTypes === 'LOCAL') {
+    try {
       this.activePlayer?.load(
         song.path ? 'media://' + song.path : song.playbackUrl,
         this.volume,
         vxm.player.playAfterLoad || this.playerState === 'PLAYING'
       )
-      console.debug('Loaded song at', song.path ? 'media://' + song.path : song.playbackUrl)
-      vxm.player.loading = false
-    } else {
-      console.debug('PlaybackUrl for song', song._id, 'is', song.playbackUrl)
-      console.debug('Loaded song at', song.playbackUrl)
-
-      try {
-        await this.activePlayer?.load(
-          song.playbackUrl,
-          this.volume,
-          vxm.player.playAfterLoad || this.playerState !== 'PAUSED'
-        )
-      } catch (e) {
-        console.error('failed to load song', e)
-      }
+    } catch (e) {
+      console.error('failed to load song', e)
     }
+
+    console.debug('Loaded song at', song.path ? 'media://' + song.path : song.playbackUrl)
+    vxm.player.loading = false
+
 
     vxm.player.playAfterLoad = false
 
@@ -890,9 +949,12 @@ export default class AudioStream extends mixins(
   private unloadAudio() {
     console.debug('Unloading audio')
     this.activePlayer?.stop()
+    window.MprisUtils.updateSongInfo({})
   }
 
   private async handleActivePlayerState(newState: PlayerState) {
+    if (!this.currentSong) return
+
     try {
       switch (newState) {
         case 'PLAYING':
@@ -915,14 +977,17 @@ export default class AudioStream extends mixins(
 h3 {
   margin: 40px 0 0;
 }
+
 ul {
   list-style-type: none;
   padding: 0;
 }
+
 li {
   display: inline-block;
   margin: 0 10px;
 }
+
 a {
   color: #42b983;
 }

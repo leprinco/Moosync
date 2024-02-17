@@ -12,4 +12,5 @@ import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
 import { RecycleScroller } from 'vue-virtual-scroller'
 import Vue from 'vue'
 
-Vue.component('RecycleScroller', RecycleScroller)
+// rome-ignore lint/suspicious/noExplicitAny: <explanation>
+Vue.component('RecycleScroller', RecycleScroller as any)
