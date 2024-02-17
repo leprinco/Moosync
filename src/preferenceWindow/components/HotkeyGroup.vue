@@ -172,6 +172,27 @@ export default class HotkeyGroup extends mixins(ExtensionPreferenceMixin) {
       [HotkeyEvents.SEEK_9]: {
         title: this.$t('hotkeys.seek_9'),
       },
+      [HotkeyEvents.SELECT_ALL]: {
+        title: this.$t('hotkeys.select_all'),
+      },
+      [HotkeyEvents.NAV_TOP]: {
+        title: this.$t('hotkeys.nav_top'),
+      },
+      [HotkeyEvents.NAV_BOTTOM]: {
+        title: this.$t('hotkeys.nav_bottom'),
+      },
+      [HotkeyEvents.NAV_LEFT]: {
+        title: this.$t('hotkeys.nav_left'),
+      },
+      [HotkeyEvents.NAV_RIGHT]: {
+        title: this.$t('hotkeys.nav_right'),
+      },
+      [HotkeyEvents.PLAYNOW_SELECTION]: {
+        title: this.$t('hotkeys.playnow_selection'),
+      },
+      [HotkeyEvents.QUEUE_SELECTION]: {
+        title: this.$t('hotkeys.queue_selection'),
+      },
     }
   }
 

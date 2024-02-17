@@ -17,37 +17,13 @@
         </b-col>
       </b-row>
       <b-row no-gutters class="h-100">
-<<<<<<< HEAD
-        <RecycleScroller
-          ref="scroller"
-          :class="`scroller w-100  ${isLoading ? 'low-height' : 'full-height'}`"
-          :items="songList"
-          :item-size="94"
-          key-field="_id"
-          :direction="'vertical'"
-          @scroll.native="onScroll"
-          v-click-outside="clearSelection"
-        >
+        <RecycleScroller ref="scroller" :class="`scroller w-100  ${isLoading ? 'low-height' : 'full-height'}`"
+          :items="songList" :item-size="94" key-field="_id" :direction="'vertical'" @scroll.native="onScroll"
+          @scroll-end="onScrollEnd" v-click-outside="clearSelection">
           <template v-slot="{ item, index }">
-            <SongListCompactItem
-              :item="item"
-              :index="index"
-              :selected="isSelectedIndex(index)"
-              @onRowDoubleClicked="onRowDoubleClicked"
-              @onRowSelected="onRowSelected"
-              @onRowContext="onRowContext"
-              @onPlayNowClicked="onPlayNowClicked"
-              @onArtistClicked="onArtistClicked"
-            />
-=======
-        <RecycleScroller :class="`scroller w-100  ${isLoading ? 'low-height' : 'full-height'}`" :items="songList"
-          :item-size="94" key-field="_id" :direction="'vertical'" @scroll-end="onScrollEnd"
-          v-click-outside="clearSelection">
-          <template v-slot="{ item, index }">
-            <SongListCompactItem :item="item" :index="index" :selected="selected" @onRowDoubleClicked="onRowDoubleClicked"
-              @onRowSelected="onRowSelected" @onRowContext="onRowContext" @onPlayNowClicked="onPlayNowClicked"
-              @onArtistClicked="onArtistClicked" />
->>>>>>> 552da7048871e24df91dedd0a695072131f6277d
+            <SongListCompactItem :item="item" :index="index" :selected="isSelectedIndex(index)"
+              @onRowDoubleClicked="onRowDoubleClicked" @onRowSelected="onRowSelected" @onRowContext="onRowContext"
+              @onPlayNowClicked="onPlayNowClicked" @onArtistClicked="onArtistClicked" />
           </template>
         </RecycleScroller>
       </b-row>

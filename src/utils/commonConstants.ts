@@ -105,7 +105,7 @@ export const defaultKeybinds: HotkeyPair[] = [
     value: HotkeyEvents.NAV_BOTTOM
   },
   {
-    key: [['Arrow']],
+    key: [['Arrow Left']],
     value: HotkeyEvents.NAV_LEFT
   },
   {
@@ -113,11 +113,11 @@ export const defaultKeybinds: HotkeyPair[] = [
     value: HotkeyEvents.NAV_RIGHT
   },
   {
-    key: [['ArrowRight']],
+    key: [['ShiftLeft', 'Arrow Right']],
     value: HotkeyEvents.SEEK_FORWARD,
   },
   {
-    key: [['ArrowLeft']],
+    key: [['ShiftLeft', 'Arrow Left']],
     value: HotkeyEvents.SEEK_BACKWARDS,
   },
 ]

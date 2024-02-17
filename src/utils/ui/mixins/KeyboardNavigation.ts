@@ -72,22 +72,22 @@ export class KeyboardNavigation {
     if (this.selected.value.length > 0) {
       sel = this.selected.value[0]
       switch (action) {
-        case HotkeyEvents.TOP:
+        case HotkeyEvents.NAV_TOP:
           if (sel - songsPerRow >= 0) {
             sel -= 1 * songsPerRow
           }
           break
-        case HotkeyEvents.BOTTOM:
+        case HotkeyEvents.NAV_BOTTOM:
           if (sel + songsPerRow < this.scroller.items.length) {
             sel += 1 * songsPerRow
           }
           break
-        case HotkeyEvents.LEFT:
+        case HotkeyEvents.NAV_LEFT:
           if (sel % songsPerRow > 0) {
             sel -= 1
           }
           break
-        case HotkeyEvents.RIGHT:
+        case HotkeyEvents.NAV_RIGHT:
           if (sel % songsPerRow < songsPerRow - 1 && sel + 1 < this.scroller.items.length) {
             sel += 1
           }

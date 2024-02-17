@@ -9,40 +9,20 @@
 
 <template>
   <b-row no-gutters class="w-100 h-100 list-container">
-    <RecycleScroller
-      ref="scroller"
-      :class="`scroller w-100  ${isLoading ? 'low-height' : 'full-height'}`"
-      :items="songList"
-      key-field="_id"
-      :direction="'vertical'"
-      :item-size="80"
-      :item-secondary-size="400"
-      v-click-outside="clearSelection"
-      :grid-items="songsPerRow"
-    >
+    <RecycleScroller ref="scroller" :class="`scroller w-100  ${isLoading ? 'low-height' : 'full-height'}`"
+      :items="songList" key-field="_id" :direction="'vertical'" :item-size="80" :item-secondary-size="400"
+      v-click-outside="clearSelection" :grid-items="songsPerRow">
       <template v-slot="{ item, index }">
-        <b-container
-          fluid
-          @dblclick="onRowDoubleClicked(item)"
-          @click.exact="onRowSelected(index, undefined)"
-          @click.shift="onRowSelected(index, 'Shift')"
-          @click.ctrl="onRowSelected(index, 'Control')"
-          @contextmenu="onRowContext(arguments[0], item)"
-          class="wrapper w-100"
-          :class="{ selectedItem: isSelectedIndex(index) }"
-        >
+        <b-container fluid @dblclick="onRowDoubleClicked(item)" @click.exact="onRowSelected(index, undefined)"
+          @click.shift="onRowSelected(index, 'Shift')" @click.ctrl="onRowSelected(index, 'Control')"
+          @contextmenu="onRowContext(arguments[0], item)" class="wrapper w-100"
+          :class="{ selectedItem: isSelectedIndex(index) }">
           <b-row no-gutters align-content="center" class="w-100">
             <b-col cols="1" align-self="center">
               {{ index + 1 }}
             </b-col>
-            <LowImageCol
-              @click.native="onPlayNowClicked(item)"
-              height="56px"
-              width="56px"
-              class="col-2 mr-0"
-              :src="getValidImageLow(item)"
-              :showPlayHoverButton="showPlayHoverButton"
-            />
+            <LowImageCol @click.native="onPlayNowClicked(item)" height="56px" width="56px" class="col-2 mr-0"
+              :src="getValidImageLow(item)" :showPlayHoverButton="showPlayHoverButton" />
             <b-col cols="9" align-self="center">
               <b-row no-gutters align-v="center">
                 <div class="text-truncate">
@@ -50,13 +30,8 @@
                 </div>
               </b-row>
               <b-row no-gutters class="flex-nowrap">
-                <div
-                  v-for="(artist, index) in item.artists"
-                  :key="index"
-                  class="subtitle text-truncate"
-                  :class="index !== 0 ? 'ml-1' : ''"
-                  @click="onSubtitleClicked(artist)"
-                >
+                <div v-for="(artist, index) in item.artists" :key="index" class="subtitle text-truncate"
+                  :class="index !== 0 ? 'ml-1' : ''" @click="onSubtitleClicked(artist)">
                   <span> {{ artist.artist_name }}{{ index !== item.artists.length - 1 ? ',' : '' }}</span>
                 </div>
               </b-row>
@@ -66,20 +41,14 @@
       </template>
     </RecycleScroller>
 
-    <SongDetails
-      class="details-container h-100"
-      :defaultDetails="defaultDetails"
-      :buttonGroup="detailsButtonGroup"
-      :currentSong="currentSong"
-      :optionalProviders="optionalProviders"
-      v-on="$listeners"
-    />
+    <SongDetails class="details-container h-100" :defaultDetails="defaultDetails" :buttonGroup="detailsButtonGroup"
+      :currentSong="currentSong" :optionalProviders="optionalProviders" v-on="$listeners" />
   </b-row>
 </template>
 
 <script lang="ts">
-import { Component, Prop } from 'vue-property-decorator'
-import { mixins } from 'vue-class-component'
+import { Component, Prop } from 'vue-facing-decorator'
+import { mixins } from 'vue-facing-decorator'
 import ImgLoader from '@/utils/ui/mixins/ImageLoader'
 import LowImageCol from '@/mainWindow/components/generic/LowImageCol.vue'
 import SongDetails from './SongDetails.vue'

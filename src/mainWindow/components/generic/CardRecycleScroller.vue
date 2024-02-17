@@ -105,7 +105,7 @@ export default class CardRecycleScroller extends Vue {
     this.$emit('click', item)
   }
 
-  public emitContextMenu(item: unknown, ...args: unknown[]) {
+  public emitContextMenu(event: Event, item: unknown, ...args: unknown[]) {
     this.$emit('CardContextMenu', item, ...args)
   }
 
@@ -119,7 +119,7 @@ export default class CardRecycleScroller extends Vue {
     if (this.keyboardNavigation == null) {
       this.keyboardNavigation = new KeyboardNavigation(this.scroller, this.callback)
     }
-    bus.$emit('activateKeyboardNavigation', this.keyboardNavigation)
+    bus.emit('activateKeyboardNavigation', this.keyboardNavigation)
   }
 
   public onScrollerResize() {

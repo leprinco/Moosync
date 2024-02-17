@@ -69,20 +69,20 @@ export default class SongListMixin extends Vue {
     if (this.keyboardNavigation == null) {
       this.keyboardNavigation = new KeyboardNavigation(this.scroller, this.onRowSelectedCallback)
     }
-    bus.$emit('activateKeyboardNavigation', this.keyboardNavigation)
+    bus.emit('activateKeyboardNavigation', this.keyboardNavigation)
 
-    bus.$on('onSelectAll', () => {
+    bus.on('onSelectAll', () => {
       this.selectAll()
     })
-    bus.$on('onPlayNowSelection', () => {
+    bus.on('onPlayNowSelection', () => {
       this.playNowSelection()
     })
-    bus.$on('onQueueSelection', () => {
+    bus.on('onQueueSelection', () => {
       this.queueSelection()
     })
   }
 
   beforeUnmount() {
-    this.destroyKeyEvents()
+    //this.destroyKeyEvents()
   }
 }

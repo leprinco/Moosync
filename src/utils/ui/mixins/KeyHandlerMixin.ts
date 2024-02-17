@@ -31,7 +31,7 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
       this.keyboardHotKeyMap = Object.freeze(val)
     })
 
-    bus.$on('activateKeyboardNavigation', (keyboardNavigation: KeyboardNavigation) => {
+    bus.on('activateKeyboardNavigation', (keyboardNavigation: KeyboardNavigation) => {
       this.currentKeyboardNavigation = keyboardNavigation
     })
   }
@@ -112,13 +112,13 @@ export default class KeyHandlerMixin extends mixins(PlayerControls) {
         window.WindowUtils.toggleFullscreen(true)
         break
       case HotkeyEvents.SELECT_ALL:
-        bus.$emit('onSelectAll')
+        bus.emit('onSelectAll')
         break
       case HotkeyEvents.PLAYNOW_SELECTION:
-        bus.$emit('onPlayNowSelection')
+        bus.emit('onPlayNowSelection')
         break
       case HotkeyEvents.QUEUE_SELECTION:
-        bus.$emit('onQueueSelection')
+        bus.emit('onQueueSelection')
         break
       case HotkeyEvents.NAV_TOP:
       case HotkeyEvents.NAV_BOTTOM:
